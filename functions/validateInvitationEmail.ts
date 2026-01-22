@@ -20,6 +20,15 @@ Deno.serve(async (req) => {
     const userEmail = user.email.toLowerCase().trim();
     console.log(`🔒 Validating invitation for: ${userEmail}`);
 
+    // App owner bypass
+    if (userEmail === 'mciviero30@gmail.com') {
+      return Response.json({ 
+        valid: true,
+        reason: 'App owner',
+        email: userEmail
+      });
+    }
+
     // Check if admin/CEO - they bypass validation
     if (user.role === 'admin' || user.role === 'ceo' || user.position === 'CEO') {
       return Response.json({ 
