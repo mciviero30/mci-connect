@@ -32,8 +32,10 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list(),
     initialData: [],
+    staleTime: 300000
   });
 
+  // PERFORMANCE: Fetch individual entities ONLY for editing
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: timeEntries } = useQuery({
     queryKey: ['timeEntries', employee.id, employee.email],
@@ -42,6 +44,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
       return base44.entities.TimeEntry.filter(query);
     },
     initialData: [],
+    staleTime: 30000
   });
 
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
@@ -52,6 +55,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
       return base44.entities.DrivingLog.filter(query);
     },
     initialData: [],
+    staleTime: 30000
   });
 
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
@@ -62,23 +66,19 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
       return base44.entities.Expense.filter(query);
     },
     initialData: [],
+    staleTime: 30000
   });
 
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-  const { data: weeklyPayrolls } = useQuery({
-    queryKey: ['weeklyPayrolls', employee.id, employee.email],
-    queryFn: () => {
-      const query = buildUserQuery(employee, 'user_id', 'employee_email');
-      return base44.entities.WeeklyPayroll.filter(query);
-    },
-    initialData: []
-  });
+  // PERFORMANCE: Reuse aggregated payroll from parent cache
+  const aggregatedPayroll = queryClient.getQueryData([
+    'payrollAggregate', 
+    format(weekStart, 'yyyy-MM-dd'), 
+    format(weekEnd, 'yyyy-MM-dd')
+  ]);
 
-  // Find payroll for current week
-  const currentWeekPayroll = weeklyPayrolls.find(p =>
-    p.week_start === format(weekStart, 'yyyy-MM-dd') &&
-    p.week_end === format(weekEnd, 'yyyy-MM-dd')
-  );
+  const currentWeekPayroll = aggregatedPayroll?.payrollData?.find(p => 
+    p.employee.id === employee.id
+  )?.weekPayroll || null;
 
   const updateTimeMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.TimeEntry.update(id, data),

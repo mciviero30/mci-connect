@@ -15,7 +15,7 @@ import EmployeePayrollDetail from "../components/nomina/EmployeePayrollDetail";
 import DateRangeFilter from "../components/reportes/DateRangeFilter";
 import AutoPayrollCalculator from "../components/payroll/AutoPayrollCalculator";
 import PaystubGenerator from "../components/payroll/PaystubGenerator";
-import { buildUserQuery } from "@/components/utils/userResolution";
+import { Loader2 } from "lucide-react";
 
 export default function Nomina() {
   const { t, language } = useLanguage();
@@ -41,184 +41,26 @@ export default function Nomina() {
     staleTime: 30000
   });
 
-  const { data: employees } = useQuery({
-    queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
-    initialData: [],
-    staleTime: 60000,
-  });
-
-  const { data: timeEntries } = useQuery({
-    queryKey: ['timeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list(),
-    initialData: [],
+  // PERFORMANCE: Single aggregated query instead of 7 separate entities
+  const { data: aggregatedPayroll, isLoading: payrollLoading } = useQuery({
+    queryKey: ['payrollAggregate', format(weekStart, 'yyyy-MM-dd'), format(weekEnd, 'yyyy-MM-dd')],
+    queryFn: async () => {
+      const response = await base44.functions.invoke('getAggregatedPayroll', {
+        week_start: format(weekStart, 'yyyy-MM-dd'),
+        week_end: format(weekEnd, 'yyyy-MM-dd')
+      });
+      return response.data;
+    },
+    enabled: !!user,
     staleTime: 30000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
-  const { data: drivingLogs } = useQuery({
-    queryKey: ['drivingLogs'],
-    queryFn: () => base44.entities.DrivingLog.list(),
-    initialData: [],
-    staleTime: 30000,
-  });
+  const payrollData = aggregatedPayroll?.payrollData || [];
 
-  const { data: expenses } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list(),
-    initialData: [],
-    staleTime: 30000,
-  });
-
-  const { data: weeklyPayrolls } = useQuery({
-    queryKey: ['weeklyPayrolls'],
-    queryFn: () => base44.entities.WeeklyPayroll.list('-created_date'),
-    initialData: [],
-    staleTime: 30000,
-  });
-
-  // NEW: Prompt #60 - Query bonus configurations
-  const { data: bonusConfigurations } = useQuery({
-    queryKey: ['bonusConfigurations'],
-    queryFn: () => base44.entities.BonusConfiguration.filter({ status: 'active' }),
-    initialData: [],
-    staleTime: 30000,
-  });
-
-  // NEW: Prompt #60 - Query jobs to check invoice status
-  const { data: jobs } = useQuery({
-    queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
-    initialData: [],
-    staleTime: 30000,
-  });
-
-  const { data: invoices } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
-    initialData: [],
-    staleTime: 30000,
-  });
-
-  const activeEmployees = employees.filter((emp) => !emp.employment_status || emp.employment_status === 'active');
-
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-  const getEmployeePayroll = (employee) => {
-    // FILTER BY APPROVED STATUS ONLY
-    const weekTimeEntries = timeEntries.filter((entry) => {
-      const entryDate = new Date(entry.date);
-      // Match by user_id first, fallback to email
-      const matchesEmployee = entry.user_id ? entry.user_id === employee.id : entry.employee_email === employee.email;
-      return matchesEmployee &&
-      entry.status === 'approved' &&
-      entryDate >= weekStart &&
-      entryDate <= weekEnd;
-    });
-
-    const weekDrivingLogs = drivingLogs.filter((log) => {
-      const logDate = new Date(log.date);
-      // Match by user_id first, fallback to email
-      const matchesEmployee = log.user_id ? log.user_id === employee.id : log.employee_email === employee.email;
-      return matchesEmployee &&
-      log.status === 'approved' &&
-      logDate >= weekStart &&
-      logDate <= weekEnd;
-    });
-
-    const weekExpenses = expenses.filter((exp) => {
-      const expDate = new Date(exp.date);
-      // Match by user_id first, fallback to email
-      const matchesEmployee = exp.user_id ? exp.user_id === employee.id : exp.employee_email === employee.email;
-      return matchesEmployee &&
-      exp.status === 'approved' &&
-      expDate >= weekStart &&
-      expDate <= weekEnd;
-    });
-
-    // WORK HOURS ONLY (NOT driving hours) - for OT calculation
-    const totalWorkHours = weekTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
-    const normalHours = Math.min(totalWorkHours, 40);
-    const overtimeHours = Math.max(0, totalWorkHours - 40);
-
-    // DRIVING: hours paid at normal rate, miles at $0.60/mi
-    const drivingHours = weekDrivingLogs.reduce((sum, log) => sum + (log.hours || 0), 0);
-    const drivingMiles = weekDrivingLogs.reduce((sum, log) => sum + (log.miles || 0), 0);
-    
-    // NEW: Use employee's configured rates
-    const hourlyRate = employee.hourly_rate || 25;
-    const overtimeRate = employee.hourly_rate_overtime || (hourlyRate * 1.5);
-    const perDiemDaily = employee.per_diem_amount || 50;
-    
-    const mileagePay = drivingMiles * 0.60;
-    const drivingHoursPay = drivingHours * hourlyRate;
-    const totalDrivingPay = mileagePay + drivingHoursPay;
-
-    // PER DIEM - NEW: Calculate based on actual work days
-    const workDaysSet = new Set();
-    weekTimeEntries.forEach(entry => workDaysSet.add(entry.date));
-    const workDaysCount = workDaysSet.size;
-    const perDiemAmount = workDaysCount * perDiemDaily;
-
-    // REIMBURSABLE EXPENSES (personal payment, not per diem)
-    const reimbursements = weekExpenses
-      .filter((exp) => exp.payment_method === 'personal' && exp.category !== 'per_diem')
-      .reduce((sum, exp) => sum + exp.amount, 0);
-
-    // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-    // NEW: Prompt #60 - Calculate bonuses for completed and paid jobs
-    let bonusAmount = 0;
-    const employeeBonuses = bonusConfigurations.filter(bc => {
-      // Match by user_id first, fallback to email
-      const matchesEmployee = bc.user_id ? bc.user_id === employee.id : bc.employee_email === employee.email;
-      return matchesEmployee && bc.status === 'active';
-    });
-
-    for (const bonusConfig of employeeBonuses) {
-      // Check if job has a paid invoice
-      const job = jobs.find(j => j.id === bonusConfig.job_id);
-      const jobInvoice = invoices.find(inv => inv.job_id === bonusConfig.job_id && inv.status === 'paid');
-      
-      if (job && jobInvoice) {
-        if (bonusConfig.bonus_type === 'percentage') {
-          // Percentage of contract amount
-          bonusAmount += (job.contract_amount || 0) * (bonusConfig.bonus_value / 100);
-        } else if (bonusConfig.bonus_type === 'fixed_amount') {
-          // Fixed amount
-          bonusAmount += bonusConfig.bonus_value;
-        }
-      }
-    }
-
-    // NEW: Use configured rates for work pay calculation
-    const workPay = (normalHours * hourlyRate) + (overtimeHours * overtimeRate);
-    const totalPay = workPay + totalDrivingPay + reimbursements + perDiemAmount + bonusAmount; // NEW: Added bonusAmount
-
-    return {
-      normalHours,
-      overtimeHours,
-      drivingHours,
-      drivingMiles,
-      perDiemAmount,
-      workDaysCount,
-      workPay,
-      drivingPay: totalDrivingPay,
-      reimbursements,
-      bonusAmount, // NEW
-      totalPay,
-      hourlyRate,
-      overtimeRate
-    };
-  };
-
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-  const getEmployeeWeekPayroll = (employee) => {
-    return weeklyPayrolls.find(p => {
-      // Match by user_id first, fallback to email
-      const matchesEmployee = p.user_id ? p.user_id === employee.id : p.employee_email === employee.email;
-      return matchesEmployee &&
-        p.week_start === format(weekStart, 'yyyy-MM-dd') &&
-        p.week_end === format(weekEnd, 'yyyy-MM-dd');
-    });
-  };
+  // PERFORMANCE: Data already aggregated by backend
+  // No client-side filtering needed
 
   // IMPROVED: Better contrast for status badges
   const statusConfig = {
@@ -229,12 +71,9 @@ export default function Nomina() {
     paid: { label: t('paid'), color: 'bg-blue-100 text-blue-800 border-blue-300' }
   };
 
-  const payrollData = activeEmployees.map((emp) => ({
-    employee: emp,
-    ...getEmployeePayroll(emp)
-  }));
+  // PERFORMANCE: Use backend-aggregated data (no client filtering)
 
-  const filteredPayrollData = payrollData.filter((p) =>
+  const filteredPayrollData = (payrollData || []).filter((p) =>
     p.employee.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.employee.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -259,8 +98,7 @@ export default function Nomina() {
     const csvData = [
       ['Employee', 'Normal Hours', 'Overtime Hours', 'Driving Hours', 'Miles', 'Work Days', 'Per Diem', 'Work Pay', 'Driving Pay', 'Reimbursements', 'Bonus', 'Total Pay', 'Status'], // Added Bonus column
       ...filteredPayrollData.map((p) => {
-        const weekPayroll = getEmployeeWeekPayroll(p.employee);
-        const statusLabel = weekPayroll ? statusConfig[weekPayroll.status]?.label : statusConfig.draft.label;
+        const statusLabel = p.weekPayroll ? statusConfig[p.weekPayroll.status]?.label : statusConfig.draft.label;
         return [
           p.employee.full_name,
           p.normalHours.toFixed(2),
@@ -318,6 +156,17 @@ export default function Nomina() {
 
 
 
+        {payrollLoading ? (
+          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-xl mb-6 border-slate-200 dark:border-slate-700">
+            <CardContent className="p-12 text-center">
+              <Loader2 className="w-12 h-12 text-[#507DB4] mx-auto mb-4 animate-spin" />
+              <p className="text-slate-600 dark:text-slate-400">
+                {language === 'es' ? 'Calculando nómina...' : 'Calculating payroll...'}
+              </p>
+            </CardContent>
+          </Card>
+        ) : null}
+
         <StatsSummaryGrid 
           stats={[
             { label: t('totalWorkPay'), value: `$${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Briefcase, subtitle: `${totals.normalHours.toFixed(1)}h + ${totals.overtimeHours.toFixed(1)}h OT` },
@@ -344,8 +193,7 @@ export default function Nomina() {
         </Card>
 
         <div className="grid gap-3 md:gap-4">
-          {filteredPayrollData.map(({ employee, normalHours, overtimeHours, drivingHours, drivingMiles, perDiemAmount, workDaysCount, workPay, drivingPay, reimbursements, bonusAmount, totalPay, hourlyRate, overtimeRate }) => {
-            const weekPayroll = getEmployeeWeekPayroll(employee);
+          {filteredPayrollData.map(({ employee, normalHours, overtimeHours, drivingHours, drivingMiles, perDiemAmount, workDaysCount, workPay, drivingPay, reimbursements, bonusAmount, totalPay, hourlyRate, overtimeRate, weekPayroll }) => {
             const config = weekPayroll ? statusConfig[weekPayroll.status] : statusConfig.draft;
             
             return (
@@ -436,7 +284,20 @@ export default function Nomina() {
                         </Button>
                         <Button
                           onClick={() => {
-                            setPaystubEmployee({ ...employee, ...getEmployeePayroll(employee) });
+                            setPaystubEmployee({ 
+                              ...employee, 
+                              normalHours, 
+                              overtimeHours, 
+                              drivingHours, 
+                              drivingMiles, 
+                              perDiemAmount, 
+                              workDaysCount, 
+                              workPay, 
+                              drivingPay, 
+                              reimbursements, 
+                              bonusAmount, 
+                              totalPay 
+                            });
                             setShowPaystub(true);
                           }}
                           variant="outline"
