@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { differenceInDays, format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { enforceUserIdOnWrite } from "@/components/utils/writeGuards";
+import { SyncStatusBadge, useSyncStatus } from "@/components/feedback/SyncStatusBadge";
 
 const categories = [
   { value: "travel", label: "Viajes", labelEn: "Travel" },
@@ -30,6 +31,9 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.list('name'),
   });
+
+  // Check sync status for existing expense
+  const syncStatus = useSyncStatus('Expense', expense?.id);
 
   // Remove past expenses query as AIExpenseCategorizer is removed
   // const { data: user } = useQuery({ queryKey: ['currentUser'] });
@@ -153,9 +157,24 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
   return (
     <Card className="bg-white shadow-xl border-slate-200">
       <CardHeader className="border-b border-slate-200">
-        <CardTitle className="flex items-center gap-2 text-slate-900">
-          <Receipt className="w-5 h-5 text-[#3B9FF3]" />
-          {expense ? t('edit') : t('new_expense')}
+        <CardTitle className="flex items-center justify-between text-slate-900">
+          <div className="flex items-center gap-2">
+            <Receipt className="w-5 h-5 text-[#3B9FF3]" />
+            {expense ? t('edit') : t('new_expense')}
+          </div>
+          <SyncStatusBadge 
+            status={syncStatus}
+            onRetry={() => {
+              const queue = JSON.parse(localStorage.getItem('offline_mutation_queue') || '[]');
+              const updated = queue.map(op => 
+                op.entity === 'Expense' && op.entityId === expense?.id
+                  ? { ...op, status: 'pending', retryCount: 0 }
+                  : op
+              );
+              localStorage.setItem('offline_mutation_queue', JSON.stringify(updated));
+              window.location.reload();
+            }}
+          />
         </CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>

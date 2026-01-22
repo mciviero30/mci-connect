@@ -12,6 +12,7 @@ import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
 import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
+import { SyncStatusBadge } from '@/components/feedback/SyncStatusBadge';
 
 export default function MobilePhotoCapture({ 
   open, 
@@ -30,11 +31,40 @@ export default function MobilePhotoCapture({
   const [saveProgress, setSaveProgress] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationType, setConfirmationType] = useState('success');
+  const [photoSyncStatus, setPhotoSyncStatus] = useState(null);
   
   // Prevent double submit
   const { isSubmitting, preventDoubleSubmit } = useDoubleSubmitPrevention(1000);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+
+  // Check photo sync status
+  React.useEffect(() => {
+    const checkStatus = () => {
+      try {
+        const queue = JSON.parse(localStorage.getItem('offline_mutation_queue') || '[]');
+        const photoOps = queue.filter(op => op.entity === 'Photo' && op.data?.job_id === jobId);
+        
+        if (photoOps.some(op => op.status === 'failed_permanent')) {
+          setPhotoSyncStatus('failed_permanent');
+        } else if (photoOps.some(op => op.status === 'pending_retry')) {
+          setPhotoSyncStatus('pending_retry');
+        } else if (photoOps.some(op => op.status === 'pending')) {
+          setPhotoSyncStatus('pending');
+        } else {
+          setPhotoSyncStatus(null);
+        }
+      } catch (e) {
+        setPhotoSyncStatus(null);
+      }
+    };
+    
+    if (open) {
+      checkStatus();
+      const interval = setInterval(checkStatus, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [open, jobId]);
 
   const resetState = () => {
     setStep('capture');
@@ -209,7 +239,22 @@ export default function MobilePhotoCapture({
         {step === 'capture' && (
           <div className="p-6">
             <DialogHeader className="mb-6">
-              <DialogTitle className="text-slate-900 dark:text-white">Add Photo</DialogTitle>
+              <div className="flex items-center justify-between">
+                <DialogTitle className="text-slate-900 dark:text-white">Add Photo</DialogTitle>
+                <SyncStatusBadge 
+                  status={photoSyncStatus}
+                  onRetry={() => {
+                    const queue = JSON.parse(localStorage.getItem('offline_mutation_queue') || '[]');
+                    const updated = queue.map(op => 
+                      op.entity === 'Photo' && op.data?.job_id === jobId && op.status === 'failed_permanent'
+                        ? { ...op, status: 'pending', retryCount: 0 }
+                        : op
+                    );
+                    localStorage.setItem('offline_mutation_queue', JSON.stringify(updated));
+                    setPhotoSyncStatus('pending');
+                  }}
+                />
+              </div>
             </DialogHeader>
             
             <div className="space-y-4">

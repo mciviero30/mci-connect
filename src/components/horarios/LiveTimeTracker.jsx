@@ -21,6 +21,7 @@ import LocationPermissionPrompt from '@/components/shared/LocationPermissionProm
 import telemetry from '@/components/telemetry/GeofenceTelemetry';
 import { usePerformanceMonitor } from '@/components/field/hooks/usePerformanceMonitor';
 import { buildUserQuery } from '@/components/utils/userResolution';
+import { SyncStatusBadge } from '@/components/feedback/SyncStatusBadge';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -56,6 +57,25 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   // PASO 3: GPS Permission state
   const [showLocationDenied, setShowLocationDenied] = useState(false);
   const [isBreakAction, setIsBreakAction] = useState(false);
+  
+  // Check if pending sync from session storage
+  const [pendingSync, setPendingSync] = useState(false);
+  
+  useEffect(() => {
+    const checkPending = () => {
+      try {
+        const queue = JSON.parse(localStorage.getItem('offline_mutation_queue') || '[]');
+        const hasPending = queue.some(op => op.entity === 'TimeEntry' && op.status !== 'completed');
+        setPendingSync(hasPending);
+      } catch (e) {
+        setPendingSync(false);
+      }
+    };
+    
+    checkPending();
+    const interval = setInterval(checkPending, 3000);
+    return () => clearInterval(interval);
+  }, []);
   
   // NEW: Prompt #52 - Work Type and Task Details
   const [workType, setWorkType] = useState('normal');
@@ -927,6 +947,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
 
       <Card className="border-0 shadow-2xl mb-8 bg-gradient-to-br from-slate-100 to-white dark:from-slate-900 dark:to-slate-800">
         <CardContent className="p-8 text-center">
+          {pendingSync && (
+            <div className="mb-4">
+              <SyncStatusBadge status="pending" />
+            </div>
+          )}
           <div className="relative inline-block">
             <Button
               onClick={handleClockIn}

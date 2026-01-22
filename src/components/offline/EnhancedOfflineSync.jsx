@@ -266,6 +266,23 @@ export function useEnhancedOfflineSync() {
 
 export default function EnhancedOfflineSync() {
   const { isOnline, queueSize, isSyncing, syncQueue } = useEnhancedOfflineSync();
+  const [failedCount, setFailedCount] = useState(0);
+
+  useEffect(() => {
+    const checkFailed = () => {
+      try {
+        const queue = JSON.parse(localStorage.getItem('offline_mutation_queue') || '[]');
+        const failed = queue.filter(op => op.status === 'failed_permanent').length;
+        setFailedCount(failed);
+      } catch (e) {
+        setFailedCount(0);
+      }
+    };
+
+    checkFailed();
+    const interval = setInterval(checkFailed, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (queueSize === 0 && isOnline) return null;
 
@@ -283,9 +300,17 @@ export default function EnhancedOfflineSync() {
               {isOnline ? 'Conectado' : 'Sin conexión'}
             </p>
             {queueSize > 0 && (
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                {queueSize} operaciones pendientes
-              </p>
+              <div className="flex items-center gap-2 mt-1">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  {queueSize} operaciones pendientes
+                </p>
+                {failedCount > 0 && (
+                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 text-xs">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {failedCount} error{failedCount > 1 ? 'es' : ''}
+                  </Badge>
+                )}
+              </div>
             )}
           </div>
           {isOnline && queueSize > 0 && (

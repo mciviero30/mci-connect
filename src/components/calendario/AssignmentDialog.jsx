@@ -13,6 +13,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
+import { SyncStatusBadge, useSyncStatus } from '@/components/feedback/SyncStatusBadge';
 
 export default function AssignmentDialog({ 
   open, 
@@ -38,6 +39,9 @@ export default function AssignmentDialog({
   const [endTime, setEndTime] = useState('15:00');
   const [notes, setNotes] = useState('');
   const [customColor, setCustomColor] = useState('');
+
+  // Check sync status for existing shift
+  const syncStatus = useSyncStatus('ScheduleShift', shift?.id);
 
   useEffect(() => {
     if (shift) {
@@ -272,13 +276,30 @@ export default function AssignmentDialog({
       <DialogContent className="max-w-3xl bg-white border-0 rounded-2xl shadow-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl font-bold text-[#1E3A8A] flex items-center gap-3">
-              {isAppointment && <CalendarIcon className="w-6 h-6 text-[#1E3A8A]" />}
-              {isJobWork && <Briefcase className="w-6 h-6 text-[#1E3A8A]" />}
-              {shift 
-                ? (isAppointment ? 'Edit Appointment' : 'Edit Job Shift')
-                : (isAppointment ? 'New Appointment' : 'New Job Shift')}
-            </DialogTitle>
+            <div className="flex items-center gap-3">
+              <DialogTitle className="text-2xl font-bold text-[#1E3A8A] flex items-center gap-3">
+                {isAppointment && <CalendarIcon className="w-6 h-6 text-[#1E3A8A]" />}
+                {isJobWork && <Briefcase className="w-6 h-6 text-[#1E3A8A]" />}
+                {shift 
+                  ? (isAppointment ? 'Edit Appointment' : 'Edit Job Shift')
+                  : (isAppointment ? 'New Appointment' : 'New Job Shift')}
+              </DialogTitle>
+              {shift && (
+                <SyncStatusBadge 
+                  status={syncStatus}
+                  onRetry={() => {
+                    const queue = JSON.parse(localStorage.getItem('offline_mutation_queue') || '[]');
+                    const updated = queue.map(op => 
+                      op.entity === 'ScheduleShift' && op.entityId === shift.id
+                        ? { ...op, status: 'pending', retryCount: 0 }
+                        : op
+                    );
+                    localStorage.setItem('offline_mutation_queue', JSON.stringify(updated));
+                    window.location.reload();
+                  }}
+                />
+              )}
+            </div>
             {shift && (
               <div className="flex gap-1">
                 <Button
