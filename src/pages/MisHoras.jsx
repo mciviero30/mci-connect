@@ -10,6 +10,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function MisHoras() {
   const { t, language } = useLanguage();
@@ -18,11 +19,13 @@ export default function MisHoras() {
 
   const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: timeEntries = [], isLoading } = useQuery({
-    queryKey: ['myTimeEntries', user?.email],
+    queryKey: ['myTimeEntries', user?.id, user?.email],
     queryFn: async () => {
       if (!user) return [];
-      return base44.entities.TimeEntry.filter({ employee_email: user.email }, '-date');
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.TimeEntry.filter(query, '-date');
     },
     enabled: !!user,
     staleTime: 300000, // 5 min - data changes on approval

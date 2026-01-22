@@ -12,6 +12,7 @@ import { getDisplayName, capitalizeName } from "@/components/utils/nameHelpers";
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { createPageUrl } from '@/utils';
+import { resolveUser, resolveDisplayName } from '@/components/utils/userResolution';
 
 export default function Directory() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,6 +27,7 @@ export default function Directory() {
   const userRole = (user?.role || 'employee').toLowerCase();
   const isAdminOrManager = userRole === 'admin' || userRole === 'manager';
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   // Use EmployeeDirectory as primary source (safe, public data)
   const { data: directoryEntries = [], isLoading: directoryLoading } = useQuery({
     queryKey: ['employeeDirectory'],

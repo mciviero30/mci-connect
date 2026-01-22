@@ -23,6 +23,7 @@ import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
 import CompanyInfo from './pages/CompanyInfo';
 import CompanySettings from './pages/CompanySettings';
 import ComplianceHub from './pages/ComplianceHub';
+import ComplianceReviewHub from './pages/ComplianceReviewHub';
 import Configuracion from './pages/Configuracion';
 import Contabilidad from './pages/Contabilidad';
 import CrearChangeOrder from './pages/CrearChangeOrder';
@@ -110,13 +111,12 @@ import TimeTracking from './pages/TimeTracking';
 import Trabajos from './pages/Trabajos';
 import TravelBookings from './pages/TravelBookings';
 import VerChangeOrder from './pages/VerChangeOrder';
+import VerRFI from './pages/VerRFI';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
-import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
-import ComplianceReviewHub from './pages/ComplianceReviewHub';
 import __Layout from './Layout.jsx';
 
 
@@ -146,6 +146,7 @@ export const PAGES = {
     "CompanyInfo": CompanyInfo,
     "CompanySettings": CompanySettings,
     "ComplianceHub": ComplianceHub,
+    "ComplianceReviewHub": ComplianceReviewHub,
     "Configuracion": Configuracion,
     "Contabilidad": Contabilidad,
     "CrearChangeOrder": CrearChangeOrder,
@@ -233,13 +234,12 @@ export const PAGES = {
     "Trabajos": Trabajos,
     "TravelBookings": TravelBookings,
     "VerChangeOrder": VerChangeOrder,
+    "VerRFI": VerRFI,
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
-    "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
-    "ComplianceReviewHub": ComplianceReviewHub,
 }
 
 export const pagesConfig = {
