@@ -35,10 +35,12 @@ export default function Recognitions() {
   });
 
   // Calculate stats
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const totalRecognitions = allRecognitions.length;
   const totalPoints = allRecognitions.reduce((sum, rec) => sum + (rec.points || 0), 0);
-  const uniqueGivers = new Set(allRecognitions.map(r => r.given_by_email)).size;
-  const uniqueReceivers = new Set(allRecognitions.map(r => r.employee_email)).size;
+  // Count unique users by user_id or email to prevent duplicates
+  const uniqueGivers = new Set(allRecognitions.map(r => r.given_by_user_id || r.given_by_email)).size;
+  const uniqueReceivers = new Set(allRecognitions.map(r => r.employee_user_id || r.employee_email)).size;
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">

@@ -9,6 +9,7 @@ import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function MyPayroll() {
   const { language } = useLanguage();
@@ -17,27 +18,47 @@ export default function MyPayroll() {
 
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: timeEntries = [] } = useQuery({
-    queryKey: ['myTimeEntries', user?.email],
-    queryFn: () => user ? base44.entities.TimeEntry.filter({ employee_email: user.email }) : [],
+    queryKey: ['myTimeEntries', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.TimeEntry.filter(query);
+    },
     enabled: !!user,
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: drivingLogs = [] } = useQuery({
-    queryKey: ['myDrivingLogs', user?.email],
-    queryFn: () => user ? base44.entities.DrivingLog.filter({ employee_email: user.email }) : [],
+    queryKey: ['myDrivingLogs', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.DrivingLog.filter(query);
+    },
     enabled: !!user,
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: expenses = [] } = useQuery({
-    queryKey: ['myExpenses', user?.email],
-    queryFn: () => user ? base44.entities.Expense.filter({ employee_email: user.email }) : [],
+    queryKey: ['myExpenses', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.Expense.filter(query);
+    },
     enabled: !!user,
   });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: weeklyPayrolls = [] } = useQuery({
-    queryKey: ['myWeeklyPayrolls', user?.email],
-    queryFn: () => user ? base44.entities.WeeklyPayroll.filter({ employee_email: user.email }, '-week_start') : [],
+    queryKey: ['myWeeklyPayrolls', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.WeeklyPayroll.filter(query, '-week_start');
+    },
     enabled: !!user,
   });
 

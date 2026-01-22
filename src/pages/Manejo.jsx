@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
   const { t, language } = useLanguage();
@@ -115,9 +116,14 @@ export default function Manejo() {
   const queryClient = useQueryClient();
   const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: drivingLogs = [], isLoading } = useQuery({
-    queryKey: ['myMileageLogs', user?.email],
-    queryFn: () => user ? base44.entities.DrivingLog.filter({ employee_email: user.email }, '-date') : [],
+    queryKey: ['myMileageLogs', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.DrivingLog.filter(query, '-date');
+    },
     enabled: !!user,
   });
 

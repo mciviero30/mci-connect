@@ -15,6 +15,7 @@ import EmployeePayrollDetail from "../components/nomina/EmployeePayrollDetail";
 import DateRangeFilter from "../components/reportes/DateRangeFilter";
 import AutoPayrollCalculator from "../components/payroll/AutoPayrollCalculator";
 import PaystubGenerator from "../components/payroll/PaystubGenerator";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function Nomina() {
   const { t, language } = useLanguage();
@@ -100,11 +101,14 @@ export default function Nomina() {
 
   const activeEmployees = employees.filter((emp) => !emp.employment_status || emp.employment_status === 'active');
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const getEmployeePayroll = (employee) => {
     // FILTER BY APPROVED STATUS ONLY
     const weekTimeEntries = timeEntries.filter((entry) => {
       const entryDate = new Date(entry.date);
-      return entry.employee_email === employee.email &&
+      // Match by user_id first, fallback to email
+      const matchesEmployee = entry.user_id ? entry.user_id === employee.id : entry.employee_email === employee.email;
+      return matchesEmployee &&
       entry.status === 'approved' &&
       entryDate >= weekStart &&
       entryDate <= weekEnd;
@@ -112,7 +116,9 @@ export default function Nomina() {
 
     const weekDrivingLogs = drivingLogs.filter((log) => {
       const logDate = new Date(log.date);
-      return log.employee_email === employee.email &&
+      // Match by user_id first, fallback to email
+      const matchesEmployee = log.user_id ? log.user_id === employee.id : log.employee_email === employee.email;
+      return matchesEmployee &&
       log.status === 'approved' &&
       logDate >= weekStart &&
       logDate <= weekEnd;
@@ -120,7 +126,9 @@ export default function Nomina() {
 
     const weekExpenses = expenses.filter((exp) => {
       const expDate = new Date(exp.date);
-      return exp.employee_email === employee.email &&
+      // Match by user_id first, fallback to email
+      const matchesEmployee = exp.user_id ? exp.user_id === employee.id : exp.employee_email === employee.email;
+      return matchesEmployee &&
       exp.status === 'approved' &&
       expDate >= weekStart &&
       expDate <= weekEnd;
@@ -155,11 +163,14 @@ export default function Nomina() {
       .filter((exp) => exp.payment_method === 'personal' && exp.category !== 'per_diem')
       .reduce((sum, exp) => sum + exp.amount, 0);
 
+    // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
     // NEW: Prompt #60 - Calculate bonuses for completed and paid jobs
     let bonusAmount = 0;
-    const employeeBonuses = bonusConfigurations.filter(bc => 
-      bc.employee_email === employee.email && bc.status === 'active'
-    );
+    const employeeBonuses = bonusConfigurations.filter(bc => {
+      // Match by user_id first, fallback to email
+      const matchesEmployee = bc.user_id ? bc.user_id === employee.id : bc.employee_email === employee.email;
+      return matchesEmployee && bc.status === 'active';
+    });
 
     for (const bonusConfig of employeeBonuses) {
       // Check if job has a paid invoice
@@ -198,12 +209,15 @@ export default function Nomina() {
     };
   };
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const getEmployeeWeekPayroll = (employee) => {
-    return weeklyPayrolls.find(p => 
-      p.employee_email === employee.email &&
-      p.week_start === format(weekStart, 'yyyy-MM-dd') &&
-      p.week_end === format(weekEnd, 'yyyy-MM-dd')
-    );
+    return weeklyPayrolls.find(p => {
+      // Match by user_id first, fallback to email
+      const matchesEmployee = p.user_id ? p.user_id === employee.id : p.employee_email === employee.email;
+      return matchesEmployee &&
+        p.week_start === format(weekStart, 'yyyy-MM-dd') &&
+        p.week_end === format(weekEnd, 'yyyy-MM-dd');
+    });
   };
 
   // IMPROVED: Better contrast for status badges

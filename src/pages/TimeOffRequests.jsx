@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { notifyTimeOffStatus } from "../components/notifications/notificationHelpers";
 import { toast } from "sonner"; // Assuming sonner for toast notifications
 import { Toaster } from "@/components/ui/sonner"; // Assuming Toaster component for sonner
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function TimeOffRequests() {
   const queryClient = useQueryClient();
@@ -121,7 +122,14 @@ export default function TimeOffRequests() {
   const approved = requests.filter(r => r.status === 'approved');
   const rejected = requests.filter(r => r.status === 'rejected');
 
-  const myRequests = requests.filter(r => r.employee_email === user?.email);
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  const myRequests = requests.filter(r => {
+    // Match by user_id first, fallback to email
+    if (r.user_id && user?.id) {
+      return r.user_id === user.id;
+    }
+    return r.employee_email === user?.email;
+  });
 
   const statusColors = {
     pending: 'bg-amber-100 text-amber-700 border-amber-300',
@@ -136,9 +144,16 @@ export default function TimeOffRequests() {
     unpaid: 'bg-gray-100 text-gray-700'
   };
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   // Get employee balance for time off type
   const getEmployeeBalance = (request) => {
-    const employee = employees.find(e => e.email === request.employee_email);
+    // Match employee by user_id first, fallback to email
+    const employee = employees.find(e => {
+      if (request.user_id && e.id) {
+        return e.id === request.user_id;
+      }
+      return e.email === request.employee_email;
+    });
     if (!employee) return null;
 
     switch (request.time_off_type) {
