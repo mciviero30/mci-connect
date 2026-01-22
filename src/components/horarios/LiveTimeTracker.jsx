@@ -968,7 +968,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       
       {/* Job Selection Dialog */}
       <Dialog open={showJobSelector} onOpenChange={setShowJobSelector}>
-        <DialogContent className="bg-white">
+        <DialogContent className="bg-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{language === 'es' ? 'Selecciona un Trabajo' : 'Select a Job'}</DialogTitle>
           </DialogHeader>
@@ -987,7 +987,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
 
       {/* NEW: Prompt #52 - Work Type and Task Details Dialog */}
       <Dialog open={showWorkTypeDialog} onOpenChange={setShowWorkTypeDialog}>
-        <DialogContent className="bg-white max-w-md">
+        <DialogContent className="bg-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{language === 'es' ? 'Tipo de Trabajo' : 'Type of Work'}</DialogTitle>
           </DialogHeader>
