@@ -306,17 +306,27 @@ export default function CrearEstimado() {
 
       // Step 3: Build final data with generated number + approval workflow
       const approvalStatus = requiresApproval ? 'pending_approval' : 'approved';
+      
+      // WRITE GUARD — user_id required for new records (legacy tolerated)
       const finalData = {
         ...normalizedData,
         quote_number,
         status: 'draft',
         approval_status: approvalStatus,
+        created_by_user_id: user?.id, // NEW: Enforce user_id
         created_by_role: user?.position || user?.role || '',
         ...(approvalStatus === 'approved' && {
           approved_by: user.email,
           approved_at: new Date().toISOString()
         })
       };
+
+      if (!user?.id) {
+        console.warn('[WRITE GUARD] ⚠️ Creating Quote without user_id', {
+          email: user?.email,
+          quote_number
+        });
+      }
 
       console.log('Final quote data (normalized):', finalData);
       const result = await base44.entities.Quote.create(finalData);
