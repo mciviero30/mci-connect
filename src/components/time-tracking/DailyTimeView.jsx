@@ -7,15 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Coffee, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, addDays, subDays } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function DailyTimeView({ user, selectedDate, onDateChange }) {
   const { language } = useLanguage();
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: entries = [], isLoading } = useQuery({
-    queryKey: ['dailyTimeEntries', user?.email, format(selectedDate, 'yyyy-MM-dd')],
+    queryKey: ['dailyTimeEntries', user?.id, user?.email, format(selectedDate, 'yyyy-MM-dd')],
     queryFn: async () => {
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
       return await base44.entities.TimeEntry.filter({
-        employee_email: user.email,
+        ...query,
         date: format(selectedDate, 'yyyy-MM-dd')
       });
     },

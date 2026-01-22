@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, eachDayOfInterval } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function WeeklyTimeView({ user, selectedDate, onDateChange }) {
   const { language } = useLanguage();
@@ -14,11 +15,13 @@ export default function WeeklyTimeView({ user, selectedDate, onDateChange }) {
   const weekStart = startOfWeek(selectedDate);
   const weekEnd = endOfWeek(selectedDate);
 
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: entries = [], isLoading } = useQuery({
-    queryKey: ['weeklyTimeEntries', user?.email, format(weekStart, 'yyyy-MM-dd')],
+    queryKey: ['weeklyTimeEntries', user?.id, user?.email, format(weekStart, 'yyyy-MM-dd')],
     queryFn: async () => {
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
       return await base44.entities.TimeEntry.filter({
-        employee_email: user.email,
+        ...query,
         date: { $gte: format(weekStart, 'yyyy-MM-dd'), $lte: format(weekEnd, 'yyyy-MM-dd') }
       });
     },
