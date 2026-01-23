@@ -92,6 +92,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
 import TaxProfileGate from "@/components/tax/TaxProfileGate";
 import InvitationGate from "@/components/security/InvitationGate";
+import EmployeeDirectoryGuard from "@/components/security/EmployeeDirectoryGuard";
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
@@ -1219,13 +1220,15 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           <PermissionsProvider>
             <UIProvider>
               <InvitationGate user={user}>
-                <AgreementGate>
-                  <TaxProfileGate>
-                    <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                      {children}
-                    </LayoutContentWrapper>
-                  </TaxProfileGate>
-                </AgreementGate>
+                <EmployeeDirectoryGuard user={user}>
+                  <AgreementGate>
+                    <TaxProfileGate>
+                      <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                        {children}
+                      </LayoutContentWrapper>
+                    </TaxProfileGate>
+                  </AgreementGate>
+                </EmployeeDirectoryGuard>
               </InvitationGate>
             </UIProvider>
           </PermissionsProvider>
