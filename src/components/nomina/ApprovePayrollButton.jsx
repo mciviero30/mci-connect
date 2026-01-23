@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { markCommissionsPaid } from "@/functions/markCommissionsPaid";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,29 @@ export default function ApprovePayrollButton({ payroll }) {
     }
   });
 
+  const markPaidMutation = useMutation({
+    mutationFn: async () => {
+      // 1. Update payroll to 'paid'
+      await base44.entities.WeeklyPayroll.update(payroll.id, {
+        status: 'paid'
+      });
+
+      // 2. Mark related commissions as 'paid'
+      await markCommissionsPaid({
+        payroll_id: payroll.id,
+        week_start: payroll.week_start || payroll.week_start_date,
+        week_end: payroll.week_end,
+        employee_user_id: payroll.user_id
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['weeklyPayrolls'] });
+      queryClient.invalidateQueries({ queryKey: ['weekCommissions'] });
+      queryClient.invalidateQueries({ queryKey: ['myWeekCommissions'] });
+      alert('✅ Payroll marked as paid! Commissions updated.');
+    }
+  });
+
   const rejectMutation = useMutation({
     mutationFn: async () => {
       await base44.entities.WeeklyPayroll.update(payroll.id, {
@@ -50,28 +74,52 @@ export default function ApprovePayrollButton({ payroll }) {
 
   const isAdmin = user?.role === 'admin';
   const canApprove = payroll.status === 'submitted';
+  const canMarkPaid = payroll.status === 'approved';
 
-  if (!isAdmin || !canApprove) return null;
+  if (!isAdmin || (!canApprove && !canMarkPaid)) return null;
 
   return (
     <>
       <div className="flex gap-2">
-        <Button 
-          onClick={() => approveMutation.mutate()}
-          disabled={approveMutation.isPending}
-          className="bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30 hover:from-emerald-600 hover:to-green-600"
-        >
-          <CheckCircle className="w-4 h-4 mr-2" />
-          Approve
-        </Button>
-        <Button 
-          onClick={() => setShowRejectDialog(true)}
-          variant="outline"
-          className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
-        >
-          <XCircle className="w-4 h-4 mr-2" />
-          Reject
-        </Button>
+        {canApprove && (
+          <>
+            <Button 
+              onClick={() => approveMutation.mutate()}
+              disabled={approveMutation.isPending}
+              className="bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/30 hover:from-emerald-600 hover:to-green-600"
+            >
+              {approveMutation.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4 mr-2" />
+              )}
+              Approve
+            </Button>
+            <Button 
+              onClick={() => setShowRejectDialog(true)}
+              variant="outline"
+              className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+            >
+              <XCircle className="w-4 h-4 mr-2" />
+              Reject
+            </Button>
+          </>
+        )}
+
+        {canMarkPaid && (
+          <Button 
+            onClick={() => markPaidMutation.mutate()}
+            disabled={markPaidMutation.isPending}
+            className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/30 hover:from-blue-600 hover:to-cyan-600"
+          >
+            {markPaidMutation.isPending ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <CheckCircle className="w-4 h-4 mr-2" />
+            )}
+            Mark as Paid
+          </Button>
+        )}
       </div>
 
       <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
