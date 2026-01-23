@@ -328,8 +328,19 @@ export default function CommissionRuleManagement() {
           </CardContent>
         </Card>
 
+        {/* Version History Modal */}
+        {showVersionHistory && selectedRuleForHistory && (
+          <RuleVersionHistory
+            versions={selectedRuleForHistory}
+            onClose={() => {
+              setShowVersionHistory(false);
+              setSelectedRuleForHistory(null);
+            }}
+          />
+        )}
+
         {/* Draft Form (Modal) */}
-        {showDraftForm && draftRule && (
+        {showDraftForm && draftRule && !showVersionHistory && (
           <RuleVersionEditor
             sourceRule={draftRule}
             onSave={handleSaveVersion}
