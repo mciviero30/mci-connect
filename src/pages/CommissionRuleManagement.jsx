@@ -51,6 +51,8 @@ export default function CommissionRuleManagement() {
   // UI State
   const [draftRule, setDraftRule] = useState(null);
   const [showDraftForm, setShowDraftForm] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [selectedRuleForHistory, setSelectedRuleForHistory] = useState(null);
 
   // Create new version mutation with end date update for previous version
   const createVersionMutation = useMutation({
