@@ -120,47 +120,13 @@ export default function CommissionRuleManagement() {
 
   // Clone rule for new version
   const handleCreateVersion = (sourceRule) => {
-    const newVersion = {
-      rule_name: sourceRule.rule_name,
-      rule_description: sourceRule.rule_description,
-      applicable_roles: sourceRule.applicable_roles || [],
-      applicable_user_ids: sourceRule.applicable_user_ids || [],
-      commission_model: sourceRule.commission_model,
-      trigger_event: sourceRule.trigger_event,
-      rate: sourceRule.rate || 0,
-      flat_amount: sourceRule.flat_amount || 0,
-      tiers: sourceRule.tiers || [],
-      base_amount: sourceRule.base_amount || 0,
-      bonus_rate: sourceRule.bonus_rate || 0,
-      min_commission: sourceRule.min_commission || 10,
-      max_commission_percent_of_profit: sourceRule.max_commission_percent_of_profit || 30,
-      min_profit_threshold: sourceRule.min_profit_threshold || 100,
-      is_active: true,
-      effective_date: format(new Date(), 'yyyy-MM-dd'),
-      end_date: null,
-      version: (sourceRule.version || 1) + 1,
-      previous_rule_id: sourceRule.id
-    };
-
-    setDraftRule(newVersion);
+    setDraftRule(sourceRule);
     setShowDraftForm(true);
   };
 
   // Save new version
-  const handleSaveVersion = () => {
-    if (!draftRule) return;
-
-    // Validation
-    if (!draftRule.rule_name) {
-      toast.error('Rule name is required');
-      return;
-    }
-    if (!draftRule.effective_date) {
-      toast.error('Effective date is required');
-      return;
-    }
-
-    createVersionMutation.mutate(draftRule);
+  const handleSaveVersion = (ruleData) => {
+    createVersionMutation.mutate(ruleData);
   };
 
   // Loading state
