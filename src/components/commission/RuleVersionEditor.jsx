@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { 
   Save, 
@@ -17,7 +18,7 @@ import {
   Trash2,
   Calendar
 } from 'lucide-react';
-import { format, addDays, isAfter, isBefore, parseISO } from 'date-fns';
+import { format, addDays, isAfter, isBefore, parseISO, formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 
 export default function RuleVersionEditor({ 
@@ -55,6 +56,7 @@ export default function RuleVersionEditor({
   });
 
   const [errors, setErrors] = useState({});
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Validation
   const validateForm = () => {
@@ -147,6 +149,12 @@ export default function RuleVersionEditor({
       return;
     }
 
+    // Show confirmation modal instead of saving immediately
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmSave = () => {
+    setShowConfirmation(false);
     onSave(formData);
   };
 
@@ -208,6 +216,15 @@ export default function RuleVersionEditor({
           <AlertTriangle className="w-4 h-4 text-amber-600" />
           <AlertDescription className="text-amber-900 dark:text-amber-200">
             🔒 This creates a NEW version. Previous versions remain unchanged and historical.
+          </AlertDescription>
+        </Alert>
+
+        {/* Future Effective Date Warning */}
+        <Alert className="border-red-300 bg-red-50 dark:bg-red-900/20">
+          <AlertTriangle className="w-4 h-4 text-red-600" />
+          <AlertDescription className="text-red-900 dark:text-red-200">
+            ⚠️ <strong>Important:</strong> This rule will apply ONLY to future invoices after the effective date ({formData.effective_date}). 
+            Existing invoices will NOT be retroactively affected.
           </AlertDescription>
         </Alert>
 
@@ -573,6 +590,70 @@ export default function RuleVersionEditor({
           </Button>
         </div>
       </CardContent>
+
+      {/* Confirmation Modal */}
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <AlertTriangle className="w-5 h-5" />
+              Confirm Rule Change
+            </DialogTitle>
+            <DialogDescription className="text-slate-700 dark:text-slate-300 mt-2">
+              Please review before proceeding. This change cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-4">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-1">
+                Rule: {formData.rule_name} (v{formData.version})
+              </p>
+              <p className="text-xs text-blue-800 dark:text-blue-300">
+                Model: {formData.commission_model.replace('_', ' ')}
+              </p>
+            </div>
+
+            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+              <p className="text-xs font-semibold text-amber-900 dark:text-amber-200 mb-2">
+                ⚠️ Effective Date: {format(new Date(formData.effective_date), 'EEEE, MMMM d, yyyy')}
+              </p>
+              <p className="text-xs text-amber-800 dark:text-amber-300">
+                This rule applies ONLY to invoices created after {formData.effective_date}. 
+                Existing invoices will NOT be affected.
+              </p>
+            </div>
+
+            {formData.change_notes && (
+              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Reason for Change:
+                </p>
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  {formData.change_notes}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="gap-2 flex justify-end">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmation(false)}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmSave}
+              disabled={isSaving}
+              className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white"
+            >
+              {isSaving ? 'Confirming...' : 'Confirm & Save'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
