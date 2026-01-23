@@ -130,7 +130,7 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
                     const url = window.URL.createObjectURL(pdfData);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `Invoice-${invoice.invoice_number}.pdf`;
+                    a.download = `Invoice-${invoice.invoice_number}-${invoice.customer_name}.pdf`;
                     document.body.appendChild(a);
                     a.click();
                     

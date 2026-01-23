@@ -293,7 +293,7 @@ export default function VerFactura() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${invoice.invoice_number}-${invoice.customer_name}.pdf`;
+      a.download = `Invoice-${invoice.invoice_number}-${invoice.customer_name}.pdf`;
       document.body.appendChild(a);
       a.click();
       
