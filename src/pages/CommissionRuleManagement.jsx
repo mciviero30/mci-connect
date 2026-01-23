@@ -232,7 +232,7 @@ export default function CommissionRuleManagement() {
                   <thead className="bg-slate-100 dark:bg-slate-800">
                     <tr>
                       <th className="p-3 text-left font-semibold">Rule Name</th>
-                      <th className="p-3 text-center font-semibold">Version</th>
+                      <th className="p-3 text-center font-semibold">Versions</th>
                       <th className="p-3 text-left font-semibold">Model</th>
                       <th className="p-3 text-left font-semibold">Parameters</th>
                       <th className="p-3 text-left font-semibold">Effective Date</th>
