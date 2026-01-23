@@ -30,10 +30,17 @@ export default function CommissionSimulator() {
     staleTime: Infinity
   });
 
+  // SECURITY: Admin/Finance/CEO only - NO employee access
   const isAuthorized = useMemo(() => {
     if (!user) return false;
-    const allowedRoles = ['admin', 'finance', 'ceo'];
-    return allowedRoles.includes(user.role) || user.position === 'CEO';
+    
+    const isAdmin = user.role === 'admin';
+    const isCEO = user.role === 'ceo' || user.position === 'CEO';
+    const isFinance = user.role === 'finance' || 
+                      user.position?.toLowerCase().includes('finance') || 
+                      user.department?.toLowerCase() === 'finance';
+    
+    return isAdmin || isCEO || isFinance;
   }, [user]);
 
   // Simulation Parameters (UI State Only)
@@ -257,13 +264,46 @@ export default function CommissionSimulator() {
     );
   }
 
-  // Authorization check
+  // EXECUTIVE-ONLY GATE: Block all non-authorized users
   if (!isAuthorized) {
     return (
-      <div className="p-8 max-w-2xl mx-auto text-center">
-        <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-        <p className="text-slate-600">This simulator is only available to Admin, Finance, and CEO roles.</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 p-6">
+        <Card className="max-w-md w-full border-2 border-red-300 dark:border-red-900/30 shadow-xl">
+          <CardHeader className="text-center pb-4">
+            <div className="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">
+              Access Restricted
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <div className="space-y-2">
+              <p className="text-slate-700 dark:text-slate-300 font-medium">
+                Commission Simulator: Executive Access Only
+              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                This tool is restricted to:
+              </p>
+              <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3 text-sm">
+                <ul className="space-y-1 text-slate-700 dark:text-slate-300 text-left">
+                  <li>✓ Administrators</li>
+                  <li>✓ Finance Department</li>
+                  <li>✓ CEO / Executive Leadership</li>
+                </ul>
+              </div>
+            </div>
+            <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-900/20 text-left">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-xs text-amber-800 dark:text-amber-200">
+                This sandbox allows scenario modeling of commission structures. Access is restricted to prevent unauthorized financial data exposure.
+              </AlertDescription>
+            </Alert>
+            <p className="text-xs text-slate-500 dark:text-slate-500 mt-4">
+              Contact your administrator if you believe you should have access.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }

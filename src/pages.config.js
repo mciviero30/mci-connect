@@ -21,6 +21,7 @@ import CommissionDashboard from './pages/CommissionDashboard';
 import CommissionManagement from './pages/CommissionManagement';
 import CommissionReports from './pages/CommissionReports';
 import CommissionReview from './pages/CommissionReview';
+import CommissionSimulator from './pages/CommissionSimulator';
 import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
 import CompanyInfo from './pages/CompanyInfo';
 import CompanySettings from './pages/CompanySettings';
@@ -69,6 +70,7 @@ import KnowledgeSubmit from './pages/KnowledgeSubmit';
 import LiveGPSTracking from './pages/LiveGPSTracking';
 import ManagerDashboard from './pages/ManagerDashboard';
 import Manejo from './pages/Manejo';
+import MarginCommissionAnalyzer from './pages/MarginCommissionAnalyzer';
 import MeasurementPackage from './pages/MeasurementPackage';
 import MiScorecard from './pages/MiScorecard';
 import MileageApproval from './pages/MileageApproval';
@@ -120,8 +122,6 @@ import VerIncidente from './pages/VerIncidente';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
-import MarginCommissionAnalyzer from './pages/MarginCommissionAnalyzer';
-import CommissionSimulator from './pages/CommissionSimulator';
 import __Layout from './Layout.jsx';
 
 
@@ -149,6 +149,7 @@ export const PAGES = {
     "CommissionManagement": CommissionManagement,
     "CommissionReports": CommissionReports,
     "CommissionReview": CommissionReview,
+    "CommissionSimulator": CommissionSimulator,
     "CommissionTotalsGusto": CommissionTotalsGusto,
     "CompanyInfo": CompanyInfo,
     "CompanySettings": CompanySettings,
@@ -197,6 +198,7 @@ export const PAGES = {
     "LiveGPSTracking": LiveGPSTracking,
     "ManagerDashboard": ManagerDashboard,
     "Manejo": Manejo,
+    "MarginCommissionAnalyzer": MarginCommissionAnalyzer,
     "MeasurementPackage": MeasurementPackage,
     "MiScorecard": MiScorecard,
     "MileageApproval": MileageApproval,
@@ -248,8 +250,6 @@ export const PAGES = {
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
-    "MarginCommissionAnalyzer": MarginCommissionAnalyzer,
-    "CommissionSimulator": CommissionSimulator,
 }
 
 export const pagesConfig = {
