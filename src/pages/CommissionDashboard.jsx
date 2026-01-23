@@ -30,43 +30,53 @@ export default function CommissionDashboard() {
     }
   }, [period, customStart, customEnd]);
 
-  // Fetch all commissions
-  const { data: allCommissions = [], isLoading } = useQuery({
-    queryKey: ['commissionDashboard', format(periodDates.start, 'yyyy-MM-dd'), format(periodDates.end, 'yyyy-MM-dd')],
-    queryFn: async () => {
-      return base44.entities.CommissionRecord.list('-calculation_date', 1000);
-    }
-  });
-
-  // Filter by period
-  const periodCommissions = useMemo(() => {
-    return allCommissions.filter(c => {
-      const calcDate = new Date(c.calculation_date);
-      return calcDate >= periodDates.start && calcDate <= periodDates.end;
-    });
-  }, [allCommissions, periodDates]);
-
-  // Fetch invoices for joins (read-only)
-  const invoiceIds = useMemo(() => 
-    [...new Set(periodCommissions.map(c => c.trigger_entity_id))],
-    [periodCommissions]
+  // Stable cache key - normalize period to string
+  const cacheKey = useMemo(() => 
+    ['commissionDashboard', format(periodDates.start, 'yyyy-MM-dd'), format(periodDates.end, 'yyyy-MM-dd')],
+    [periodDates.start, periodDates.end]
   );
 
-  const { data: invoices = [] } = useQuery({
-    queryKey: ['invoicesForCommissions', invoiceIds],
+  // Single aggregated query - fetch commissions with all needed data
+  const { data: dashboardData = { commissions: [], invoiceMap: {} }, isLoading } = useQuery({
+    queryKey: cacheKey,
     queryFn: async () => {
-      if (invoiceIds.length === 0) return [];
-      const invoices = await base44.entities.Invoice.list('', 1000);
-      return invoices.filter(inv => invoiceIds.includes(inv.id));
+      // Fetch commissions
+      const allCommissions = await base44.entities.CommissionRecord.list('-calculation_date', 1000);
+      
+      // Filter by period (server doesn't support date range filter)
+      const startTime = periodDates.start.getTime();
+      const endTime = periodDates.end.getTime();
+      const periodCommissions = allCommissions.filter(c => {
+        const calcDate = new Date(c.calculation_date).getTime();
+        return calcDate >= startTime && calcDate <= endTime;
+      });
+
+      // Extract unique invoice IDs
+      const invoiceIds = [...new Set(periodCommissions.map(c => c.trigger_entity_id))];
+      
+      // Batch fetch invoices if needed
+      let invoiceMap = {};
+      if (invoiceIds.length > 0) {
+        const invoices = await base44.entities.Invoice.list('', 1000);
+        invoices.forEach(inv => {
+          if (invoiceIds.includes(inv.id)) {
+            invoiceMap[inv.id] = inv;
+          }
+        });
+      }
+
+      return {
+        commissions: periodCommissions,
+        invoiceMap
+      };
     },
-    enabled: invoiceIds.length > 0
+    staleTime: 5 * 60 * 1000, // 5 minutes - prevent refetch loops
+    gcTime: 10 * 60 * 1000, // 10 minutes cache
   });
 
-  // Fetch users for display (read-only)
-  const { data: users = [] } = useQuery({
-    queryKey: ['usersForCommissions'],
-    queryFn: () => base44.entities.User.list()
-  });
+  // Extract for backward compatibility
+  const periodCommissions = dashboardData.commissions;
+  const invoices = Object.values(dashboardData.invoiceMap);
 
   // KPI Calculations
   const kpis = useMemo(() => {
