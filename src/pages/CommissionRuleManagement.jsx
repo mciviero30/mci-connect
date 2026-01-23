@@ -3,28 +3,19 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   Shield, 
   AlertTriangle, 
-  Plus, 
   Copy,
-  Save,
-  X,
-  DollarSign,
-  Percent,
   Layers,
-  Calendar,
-  CheckCircle2
+  Calendar
 } from 'lucide-react';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import RuleVersionEditor from '../components/commission/RuleVersionEditor';
 
 export default function CommissionRuleManagement() {
   // Authentication & Authorization
