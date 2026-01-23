@@ -218,7 +218,9 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
             <span>{invoiceNumber}</span>
             {invoice?.invoice_date && (() => {
               try {
-                return <span>{format(new Date(invoice.invoice_date), 'MMM d, yyyy')}</span>;
+                const date = new Date(invoice.invoice_date);
+                if (isNaN(date.getTime())) return null;
+                return <span>{format(date, 'MMM d, yyyy')}</span>;
               } catch {
                 return null;
               }
@@ -226,11 +228,13 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
           </div>
           {invoice?.due_date && (() => {
             try {
+              const date = new Date(invoice.due_date);
+              if (isNaN(date.getTime())) return null;
               return (
                 <div className="flex items-center justify-between mt-1">
                   <span>{language === 'es' ? 'Vence:' : 'Due:'}</span>
                   <span className={daysOverdue > 0 ? 'text-red-600 font-semibold' : ''}>
-                    {format(new Date(invoice.due_date), 'MMM d, yyyy')}
+                    {format(date, 'MMM d, yyyy')}
                   </span>
                 </div>
               );
