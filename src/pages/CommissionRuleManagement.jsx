@@ -236,10 +236,26 @@ export default function CommissionRuleManagement() {
                             {getModelSummary(rule)}
                           </td>
                           <td className="p-3">
-                            {rule.effective_date ? format(new Date(rule.effective_date), 'MMM d, yyyy') : '-'}
+                           {rule.effective_date ? (() => {
+                             try {
+                               const date = new Date(rule.effective_date);
+                               if (isNaN(date.getTime())) return '-';
+                               return format(date, 'MMM d, yyyy');
+                             } catch {
+                               return '-';
+                             }
+                           })() : '-'}
                           </td>
                           <td className="p-3">
-                            {rule.end_date ? format(new Date(rule.end_date), 'MMM d, yyyy') : 'Indefinite'}
+                           {rule.end_date ? (() => {
+                             try {
+                               const date = new Date(rule.end_date);
+                               if (isNaN(date.getTime())) return 'Indefinite';
+                               return format(date, 'MMM d, yyyy');
+                             } catch {
+                               return 'Indefinite';
+                             }
+                           })() : 'Indefinite'}
                           </td>
                           <td className="p-3 text-center">
                             <Badge className={status.color}>{status.label}</Badge>
