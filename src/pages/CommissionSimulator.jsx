@@ -51,23 +51,31 @@ export default function CommissionSimulator() {
   const [baseAmount, setBaseAmount] = useState(50);
   const [bonusRate, setBonusRate] = useState(2);
 
-  // Fetch READ ONLY data
+  // Fetch READ ONLY data - REUSE CACHE from MarginCommissionAnalyzer
   const { data: commissionRecords = [] } = useQuery({
-    queryKey: ['commissionRecords'],
+    queryKey: ['commission-records-simulator'], // Stable cache key
     queryFn: () => base44.entities.CommissionRecord.list('-calculation_date', 500),
     enabled: isAuthorized,
-    staleTime: 60000
+    staleTime: Infinity, // Never refetch - simulation is read-only
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
   });
 
   const { data: commissionRules = [] } = useQuery({
-    queryKey: ['commissionRules'],
+    queryKey: ['commission-rules-active'], // Stable cache key
     queryFn: () => base44.entities.CommissionRule.filter({ is_active: true }),
     enabled: isAuthorized,
-    staleTime: 60000
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
   });
 
   const { data: employees = [] } = useQuery({
-    queryKey: ['employeeDirectory'],
+    queryKey: ['employee-directory-simulator'], // Stable cache key
     queryFn: async () => {
       const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' });
       return directory.map(d => ({
@@ -77,11 +85,15 @@ export default function CommissionSimulator() {
       }));
     },
     enabled: isAuthorized,
-    staleTime: 300000
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
   });
 
-  // Simulation Logic: Clone production formula
-  const calculateSimulatedCommission = (record, simulatedRule) => {
+  // Simulation Logic: Clone production formula (MEMOIZED)
+  const calculateSimulatedCommission = React.useCallback((record, simulatedRule) => {
     const inputs = record.calculation_inputs;
     if (!inputs || !inputs.profit) return 0;
 
@@ -123,10 +135,12 @@ export default function CommissionSimulator() {
     if (commission > maxCommission) commission = maxCommission;
 
     return Math.round(commission * 100) / 100;
-  };
+  }, []); // No dependencies - pure calculation function
 
-  // Filter records based on simulation scope
+  // Filter records based on simulation scope (MEMOIZED - no refetch)
   const filteredRecords = useMemo(() => {
+    if (!commissionRecords.length) return [];
+    
     let records = [...commissionRecords];
 
     if (simulationScope === 'rule' && selectedRuleId) {
@@ -139,8 +153,23 @@ export default function CommissionSimulator() {
     return records;
   }, [commissionRecords, simulationScope, selectedRuleId, selectedUserId]);
 
-  // Run simulation (IN MEMORY ONLY)
+  // Run simulation (IN MEMORY ONLY - FULLY MEMOIZED)
   const simulation = useMemo(() => {
+    if (!filteredRecords.length) {
+      return {
+        actualTotal: 0,
+        simulatedTotal: 0,
+        totalDelta: 0,
+        totalDeltaPercent: 0,
+        comparisons: [],
+        totalRevenue: 0,
+        totalProfit: 0,
+        netMarginAfterSimulation: 0,
+        simulatedCommissionPercentOfProfit: 0,
+        recordCount: 0
+      };
+    }
+    
     const simulatedRule = {
       commission_model: commissionModel,
       rate,
@@ -204,7 +233,7 @@ export default function CommissionSimulator() {
       simulatedCommissionPercentOfProfit,
       recordCount: filteredRecords.length
     };
-  }, [filteredRecords, commissionModel, rate, flatAmount, tiers, baseAmount, bonusRate, employees]);
+  }, [filteredRecords, commissionModel, rate, flatAmount, tiers, baseAmount, bonusRate, employees, calculateSimulatedCommission]);
 
   const resetToDefaults = () => {
     setCommissionModel('percentage_profit');
