@@ -469,51 +469,180 @@ export default function CommissionSimulator() {
           )}
         </div>
 
-        {/* Results Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-6">
-          {/* Actual Total */}
-          <Card className="border-2 border-slate-300 dark:border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-sm text-slate-600 dark:text-slate-400">Current Commissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">
-                ${simulation.actualTotal.toLocaleString()}
+        {/* Scenario Comparison: A (Actual) vs B (Simulated) */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Scenario A: ACTUAL */}
+          <Card className="border-2 border-slate-400 dark:border-slate-600 shadow-lg">
+            <CardHeader className="bg-slate-100 dark:bg-slate-800">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">
+                  Scenario A: ACTUAL
+                </CardTitle>
+                <Badge className="bg-slate-600 text-white">Current State</Badge>
               </div>
-              <p className="text-xs text-slate-500 mt-2">
-                {simulation.recordCount} commission records
-              </p>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              {/* Total Commission */}
+              <div className="pb-4 border-b border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 uppercase font-semibold mb-1">Total Commission</p>
+                <p className="text-3xl font-bold text-slate-900 dark:text-white">
+                  ${simulation.actualTotal.toLocaleString()}
+                </p>
+              </div>
+
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Commission % of Profit</p>
+                  <p className="text-xl font-bold text-slate-900 dark:text-white">
+                    {simulation.totalProfit > 0 ? ((simulation.actualTotal / simulation.totalProfit) * 100).toFixed(1) : 0}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Net Margin</p>
+                  <p className="text-xl font-bold text-slate-900 dark:text-white">
+                    ${(simulation.totalProfit - simulation.actualTotal).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Avg per Invoice</p>
+                  <p className="text-xl font-bold text-slate-900 dark:text-white">
+                    ${simulation.recordCount > 0 ? Math.round(simulation.actualTotal / simulation.recordCount).toLocaleString() : 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Records</p>
+                  <p className="text-xl font-bold text-slate-900 dark:text-white">
+                    {simulation.recordCount}
+                  </p>
+                </div>
+              </div>
+
+              {/* Risk Indicators */}
+              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Risk Indicators</p>
+                <div className="space-y-2">
+                  {simulation.totalProfit > 0 && (simulation.actualTotal / simulation.totalProfit) > 0.30 && (
+                    <Badge className="w-full justify-start bg-orange-100 text-orange-800 border border-orange-300">
+                      <AlertTriangle className="w-3 h-3 mr-2" />
+                      Commission &gt; 30% of profit
+                    </Badge>
+                  )}
+                  {(simulation.totalProfit - simulation.actualTotal) < 0 && (
+                    <Badge className="w-full justify-start bg-red-100 text-red-800 border border-red-300">
+                      <AlertTriangle className="w-3 h-3 mr-2" />
+                      Negative margin
+                    </Badge>
+                  )}
+                  {simulation.totalProfit > 0 && (simulation.actualTotal / simulation.totalProfit) <= 0.30 && (simulation.totalProfit - simulation.actualTotal) >= 0 && (
+                    <Badge className="w-full justify-start bg-green-100 text-green-800 border border-green-300">
+                      ✓ Within safe limits
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Simulated Total */}
-          <Card className="border-2 border-blue-500">
-            <CardHeader>
-              <CardTitle className="text-sm text-blue-600 dark:text-blue-400">Simulated Commissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-600">
-                ${simulation.simulatedTotal.toLocaleString()}
+          {/* Scenario B: SIMULATED */}
+          <Card className="border-2 border-blue-500 shadow-lg">
+            <CardHeader className="bg-blue-50 dark:bg-blue-900/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-bold text-blue-900 dark:text-blue-200">
+                  Scenario B: SIMULATED
+                </CardTitle>
+                <Badge className="bg-blue-600 text-white">What-If Analysis</Badge>
               </div>
-              <p className="text-xs text-slate-500 mt-2">
-                With new parameters
-              </p>
-            </CardContent>
-          </Card>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              {/* Total Commission */}
+              <div className="pb-4 border-b border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-blue-600 dark:text-blue-400 uppercase font-semibold mb-1">Total Commission</p>
+                <div className="flex items-baseline gap-3">
+                  <p className="text-3xl font-bold text-blue-600">
+                    ${simulation.simulatedTotal.toLocaleString()}
+                  </p>
+                  <Badge className={`${simulation.totalDelta >= 0 ? 'bg-red-500' : 'bg-green-500'} text-white`}>
+                    {simulation.totalDelta >= 0 ? '+' : ''}{simulation.totalDeltaPercent.toFixed(1)}%
+                  </Badge>
+                </div>
+              </div>
 
-          {/* Delta */}
-          <Card className={`border-2 ${simulation.totalDelta >= 0 ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : 'border-green-500 bg-green-50 dark:bg-green-900/20'}`}>
-            <CardHeader>
-              <CardTitle className="text-sm">Impact</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-3xl font-bold flex items-center gap-2 ${simulation.totalDelta >= 0 ? 'text-red-600' : 'text-green-600'}`}>
-                {simulation.totalDelta >= 0 ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
-                {simulation.totalDelta >= 0 ? '+' : ''}${simulation.totalDelta.toLocaleString()}
+              {/* Metrics Grid */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Commission % of Profit</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-xl font-bold text-blue-600">
+                      {simulation.simulatedCommissionPercentOfProfit.toFixed(1)}%
+                    </p>
+                    <span className={`text-xs ${
+                      simulation.simulatedCommissionPercentOfProfit > (simulation.actualTotal / simulation.totalProfit * 100) 
+                      ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                      ({simulation.simulatedCommissionPercentOfProfit > (simulation.actualTotal / simulation.totalProfit * 100) ? '+' : ''}
+                      {(simulation.simulatedCommissionPercentOfProfit - (simulation.actualTotal / simulation.totalProfit * 100)).toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Net Margin</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-xl font-bold text-blue-600">
+                      ${simulation.netMarginAfterSimulation.toLocaleString()}
+                    </p>
+                    <span className={`text-xs ${
+                      simulation.netMarginAfterSimulation < (simulation.totalProfit - simulation.actualTotal)
+                      ? 'text-red-600' : 'text-green-600'
+                    }`}>
+                      ({simulation.netMarginAfterSimulation < (simulation.totalProfit - simulation.actualTotal) ? '' : '+'}
+                      ${(simulation.netMarginAfterSimulation - (simulation.totalProfit - simulation.actualTotal)).toLocaleString()})
+                    </span>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Avg per Invoice</p>
+                  <p className="text-xl font-bold text-blue-600">
+                    ${simulation.recordCount > 0 ? Math.round(simulation.simulatedTotal / simulation.recordCount).toLocaleString() : 0}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Impact Delta</p>
+                  <p className={`text-xl font-bold ${simulation.totalDelta >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    {simulation.totalDelta >= 0 ? '+' : ''}${simulation.totalDelta.toLocaleString()}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-slate-600 mt-2">
-                {simulation.totalDelta >= 0 ? '+' : ''}{simulation.totalDeltaPercent.toFixed(1)}% change
-              </p>
+
+              {/* Risk Indicators */}
+              <div className="pt-4 border-t border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-blue-600 dark:text-blue-400 uppercase font-semibold mb-2">Risk Indicators</p>
+                <div className="space-y-2">
+                  {simulation.simulatedCommissionPercentOfProfit > 30 && (
+                    <Badge className="w-full justify-start bg-red-100 text-red-800 border border-red-300">
+                      <AlertTriangle className="w-3 h-3 mr-2" />
+                      ⚠️ Commission &gt; 30% of profit
+                    </Badge>
+                  )}
+                  {simulation.netMarginAfterSimulation < 0 && (
+                    <Badge className="w-full justify-start bg-red-100 text-red-800 border border-red-300">
+                      <AlertTriangle className="w-3 h-3 mr-2" />
+                      🚨 NEGATIVE MARGIN AFTER COMMISSION
+                    </Badge>
+                  )}
+                  {simulation.simulatedTotal > (simulation.totalRevenue * 0.15) && (
+                    <Badge className="w-full justify-start bg-orange-100 text-orange-800 border border-orange-300">
+                      <AlertTriangle className="w-3 h-3 mr-2" />
+                      Commission exceeds 15% of revenue
+                    </Badge>
+                  )}
+                  {simulation.simulatedCommissionPercentOfProfit <= 30 && simulation.netMarginAfterSimulation >= 0 && (
+                    <Badge className="w-full justify-start bg-green-100 text-green-800 border border-green-300">
+                      ✓ Within safe limits
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
