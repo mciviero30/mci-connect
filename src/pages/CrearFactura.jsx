@@ -822,10 +822,21 @@ export default function CrearFactura() {
         `${item.quantity}${item.unit ? ` ${item.unit}` : ''}x ${item.description} - $${item.unit_price.toFixed(2)} = $${item.total.toFixed(2)}`
       ).join('\n');
 
+      // Safe date formatting for email
+      const formatEmailDate = (dateValue) => {
+        try {
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) return 'N/A';
+          return format(date, 'd MMMM yyyy', { locale: language === 'es' ? es : undefined });
+        } catch {
+          return 'N/A';
+        }
+      };
+
       await base44.integrations.Core.SendEmail({
         to: invoiceData.customer_email,
         subject: `${t('invoice')} ${invoice_number} - ${invoiceData.job_name}`,
-        body: `Dear ${invoiceData.customer_name},\n\nPlease find your invoice for: ${invoiceData.job_name}\n\nInvoice #: ${invoice_number}\nDate: ${format(new Date(invoiceData.invoice_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\nDue Date: ${format(new Date(invoiceData.due_date), 'd MMMM yyyy', { locale: language === 'es' ? es : undefined })}\n\nITEMS:\n${itemsList}\n\nSubtotal: $${invoiceData.subtotal.toFixed(2)}\nTax (${invoiceData.tax_rate}%): $${invoiceData.tax_amount.toFixed(2)}\nTOTAL: $${invoiceData.total.toFixed(2)}\n\nNotes:\n${invoiceData.notes}\n\nTerms:\n${invoiceData.terms}\n\nThank you for your business.`
+        body: `Dear ${invoiceData.customer_name},\n\nPlease find your invoice for: ${invoiceData.job_name}\n\nInvoice #: ${invoice_number}\nDate: ${formatEmailDate(invoiceData.invoice_date)}\nDue Date: ${formatEmailDate(invoiceData.due_date)}\n\nITEMS:\n${itemsList}\n\nSubtotal: $${invoiceData.subtotal.toFixed(2)}\nTax (${invoiceData.tax_rate}%): $${invoiceData.tax_amount.toFixed(2)}\nTOTAL: $${invoiceData.total.toFixed(2)}\n\nNotes:\n${invoiceData.notes}\n\nTerms:\n${invoiceData.terms}\n\nThank you for your business.`
       });
 
       return savedInvoice;
