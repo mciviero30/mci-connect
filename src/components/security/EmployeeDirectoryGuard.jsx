@@ -83,6 +83,26 @@ export default function EmployeeDirectoryGuard({ children, user }) {
   if (!directoryRecords || directoryRecords.length === 0) {
     console.error(`🚫 SECURITY BLOCK: User ${user.email} (${user.id}) has no EmployeeDirectory record`);
     
+    // AUDIT LOG: Silent logging for admin visibility
+    React.useEffect(() => {
+      const logBlockedAccess = async () => {
+        try {
+          await base44.entities.AuditLog.create({
+            event: 'access_blocked_not_onboarded',
+            user_id: user.id,
+            email: user.email,
+            timestamp: new Date().toISOString(),
+            details: `User authenticated but no EmployeeDirectory record found`,
+            severity: 'warning',
+            category: 'security'
+          });
+        } catch (err) {
+          console.error('Failed to log blocked access:', err);
+        }
+      };
+      logBlockedAccess();
+    }, [user.id, user.email]);
+    
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 dark:from-slate-900 dark:to-red-900/20 p-4">
         <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border-2 border-red-300 dark:border-red-800 p-8">
