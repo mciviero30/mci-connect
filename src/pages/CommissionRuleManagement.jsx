@@ -242,26 +242,37 @@ export default function CommissionRuleManagement() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rules.map(rule => {
-                      const status = getRuleStatus(rule);
+                    {Object.entries(ruleGroups).map(([ruleName, ruleVersions]) => {
+                      // Show only the latest version in main table
+                      const latestRule = ruleVersions.sort((a, b) => (b.version || 0) - (a.version || 0))[0];
+                      const status = getRuleStatus(latestRule);
+                      const versionCount = ruleVersions.length;
+                      
                       return (
-                        <tr key={rule.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <td className="p-3 font-medium">{rule.rule_name}</td>
+                        <tr key={latestRule.id} className="border-b border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                          <td className="p-3 font-medium">{latestRule.rule_name}</td>
                           <td className="p-3 text-center">
-                            <Badge variant="outline">v{rule.version || 1}</Badge>
+                            <div className="flex items-center justify-center gap-1">
+                              <Badge variant="outline">v{latestRule.version || 1}</Badge>
+                              {versionCount > 1 && (
+                                <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-[10px]">
+                                  +{versionCount - 1}
+                                </Badge>
+                              )}
+                            </div>
                           </td>
                           <td className="p-3">
                             <span className="text-xs bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded">
-                              {rule.commission_model.replace('_', ' ')}
+                              {latestRule.commission_model.replace('_', ' ')}
                             </span>
                           </td>
                           <td className="p-3 text-slate-600 dark:text-slate-400">
-                            {getModelSummary(rule)}
+                            {getModelSummary(latestRule)}
                           </td>
                           <td className="p-3">
-                           {rule.effective_date ? (() => {
+                           {latestRule.effective_date ? (() => {
                              try {
-                               const date = new Date(rule.effective_date);
+                               const date = new Date(latestRule.effective_date);
                                if (isNaN(date.getTime())) return '-';
                                return format(date, 'MMM d, yyyy');
                              } catch {
@@ -270,9 +281,9 @@ export default function CommissionRuleManagement() {
                            })() : '-'}
                           </td>
                           <td className="p-3">
-                           {rule.end_date ? (() => {
+                           {latestRule.end_date ? (() => {
                              try {
-                               const date = new Date(rule.end_date);
+                               const date = new Date(latestRule.end_date);
                                if (isNaN(date.getTime())) return 'Indefinite';
                                return format(date, 'MMM d, yyyy');
                              } catch {
@@ -284,15 +295,28 @@ export default function CommissionRuleManagement() {
                             <Badge className={status.color}>{status.label}</Badge>
                           </td>
                           <td className="p-3 text-center">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleCreateVersion(rule)}
-                              className="gap-2"
-                            >
-                              <Copy className="w-3 h-3" />
-                              New Version
-                            </Button>
+                            <div className="flex items-center justify-center gap-2">
+                              {versionCount > 1 && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleShowHistory(ruleName)}
+                                  className="gap-2 border-blue-400 text-blue-700 hover:bg-blue-50"
+                                >
+                                  <History className="w-3 h-3" />
+                                  History
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleCreateVersion(latestRule)}
+                                className="gap-2"
+                              >
+                                <Copy className="w-3 h-3" />
+                                New Version
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       );
