@@ -48,7 +48,7 @@ export default function Facturas() {
       if (statusFilter !== 'all') filters.status = statusFilter;
       if (teamFilter !== 'all') filters.team_id = teamFilter;
       
-      return base44.entities.Invoice.filter(filters, '-created_date');
+      return base44.entities.Invoice.filter(filters, 'invoice_number');
     },
     staleTime: 5 * 60 * 1000,
   });
