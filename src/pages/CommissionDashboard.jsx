@@ -37,13 +37,21 @@ export default function CommissionDashboard() {
     }
   }, [period, customStart, customEnd]);
 
+  // SECURITY: Check authorization before rendering
+  const isAuthorized = useMemo(() => {
+    if (!currentUser) return false;
+    const role = currentUser.role?.toLowerCase();
+    const position = currentUser.position?.toLowerCase();
+    return role === 'admin' || position === 'ceo' || position === 'finance';
+  }, [currentUser]);
+
   // Stable cache key - normalize period to string
   const cacheKey = useMemo(() => 
     ['commissionDashboard', format(periodDates.start, 'yyyy-MM-dd'), format(periodDates.end, 'yyyy-MM-dd')],
     [periodDates.start, periodDates.end]
   );
 
-  // Single aggregated query - fetch commissions with all needed data
+  // Single aggregated query - ONLY runs if authorized
   const { data: dashboardData = { commissions: [], invoiceMap: {} }, isLoading } = useQuery({
     queryKey: cacheKey,
     queryFn: async () => {
