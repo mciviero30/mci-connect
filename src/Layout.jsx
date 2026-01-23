@@ -472,6 +472,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Review', url: createPageUrl("CommissionReview"), icon: TrendingUp },
         { title: 'Commission Reports', url: createPageUrl("CommissionReports"), icon: BarChart3 },
+        { title: 'Margin vs Commission', url: createPageUrl("MarginCommissionAnalyzer"), icon: TrendingUp },
         { title: 'Commission Totals (Gusto)', url: createPageUrl("CommissionTotalsGusto"), icon: Banknote },
         { title: 'Audit Trail', url: createPageUrl("AuditTrail"), icon: Shield },
         { title: 'System Health', url: createPageUrl("SystemHealthCheck"), icon: Zap },

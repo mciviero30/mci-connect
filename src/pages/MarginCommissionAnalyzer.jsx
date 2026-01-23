@@ -55,10 +55,16 @@ export default function MarginCommissionAnalyzer() {
     };
   }, [period, customStart, customEnd]);
 
-  // Authorization check
+  // STRICT Authorization: Admin / Finance / CEO ONLY
   const isAuthorized = useMemo(() => {
     if (!user) return false;
-    return hasFullAccess(user) || user.role === 'finance' || user.role === 'ceo' || user.position === 'CEO';
+    
+    // Explicit whitelist - no exceptions
+    const allowedRoles = ['admin', 'finance', 'ceo'];
+    const isRoleAuthorized = allowedRoles.includes(user.role);
+    const isCEOPosition = user.position === 'CEO';
+    
+    return isRoleAuthorized || isCEOPosition;
   }, [user]);
 
   // Fetch data - stable cache keys, no unused queries
@@ -234,12 +240,29 @@ export default function MarginCommissionAnalyzer() {
 
   const isLoading = loadingInvoices || loadingCommissions;
 
+  // SECURITY GATE: Block unauthorized users immediately
+  if (!user) {
+    return (
+      <div className="p-8 max-w-2xl mx-auto text-center">
+        <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />
+        <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
+        <p className="text-slate-600">Please log in to continue.</p>
+      </div>
+    );
+  }
+
   if (!isAuthorized) {
     return (
       <div className="p-8 max-w-2xl mx-auto text-center">
         <AlertTriangle className="w-16 h-16 mx-auto text-red-500 mb-4" />
         <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
-        <p className="text-slate-600">This dashboard is only available to Admin, Finance, and CEO roles.</p>
+        <p className="text-slate-600 mb-2">This financial dashboard is restricted to:</p>
+        <ul className="text-sm text-slate-500 list-disc list-inside">
+          <li>Admin</li>
+          <li>Finance</li>
+          <li>CEO</li>
+        </ul>
+        <p className="text-xs text-slate-400 mt-4">Your role: {user.role || 'Unknown'}</p>
       </div>
     );
   }
