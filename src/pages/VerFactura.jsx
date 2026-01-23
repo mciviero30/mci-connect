@@ -419,7 +419,7 @@ export default function VerFactura() {
 
           <div className="flex items-center gap-2">
             {/* Pay Now Button - STRIPE PAYMENTS */}
-            {balance > 0 && invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+            {invoice.balance > 0 && invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
               <Button
                 size="sm"
                 onClick={async () => {
@@ -446,7 +446,7 @@ export default function VerFactura() {
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg"
               >
                 <CreditCard className="w-4 h-4 mr-2" />
-                Pay ${balance?.toLocaleString() || '0'}
+                Pay ${invoice.balance?.toLocaleString() || '0'}
               </Button>
             )}
 
