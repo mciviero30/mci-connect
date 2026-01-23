@@ -119,6 +119,7 @@ import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import MyCommissions from './pages/MyCommissions';
 import CommissionManagement from './pages/CommissionManagement';
+import CommissionDashboard from './pages/CommissionDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -244,6 +245,7 @@ export const PAGES = {
     "WelcomeMessage": WelcomeMessage,
     "MyCommissions": MyCommissions,
     "CommissionManagement": CommissionManagement,
+    "CommissionDashboard": CommissionDashboard,
 }
 
 export const pagesConfig = {
