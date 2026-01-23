@@ -87,7 +87,12 @@ export default function Facturas() {
   const duplicateMutation = useMutation({
     mutationFn: async (invoice) => {
       // Use atomic number generator to prevent duplicates
-      const { invoice_number: newInvoiceNumber } = await base44.functions.invoke('generateInvoiceNumber');
+      const response = await base44.functions.invoke('generateInvoiceNumber', {});
+      const newInvoiceNumber = response?.data?.invoice_number || response?.invoice_number;
+      
+      if (!newInvoiceNumber) {
+        throw new Error('Failed to generate invoice number');
+      }
       
       const newInvoice = {
         ...invoice,
