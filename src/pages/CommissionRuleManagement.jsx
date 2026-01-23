@@ -16,6 +16,7 @@ import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import RuleVersionEditor from '../components/commission/RuleVersionEditor';
+import RuleVersionHistory from '../components/commission/RuleVersionHistory';
 
 export default function CommissionRuleManagement() {
   // Authentication & Authorization
