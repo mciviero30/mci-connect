@@ -10,7 +10,8 @@ import {
   AlertTriangle, 
   Copy,
   Layers,
-  Calendar
+  Calendar,
+  History
 } from 'lucide-react';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { toast } from 'sonner';
