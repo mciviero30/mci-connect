@@ -17,6 +17,8 @@ import ClientPortal from './pages/ClientPortal';
 import Clientes from './pages/Clientes';
 import CodebaseExport from './pages/CodebaseExport';
 import CommissionAgreements from './pages/CommissionAgreements';
+import CommissionDashboard from './pages/CommissionDashboard';
+import CommissionManagement from './pages/CommissionManagement';
 import CommissionReports from './pages/CommissionReports';
 import CommissionReview from './pages/CommissionReview';
 import CommissionTotalsGusto from './pages/CommissionTotalsGusto';
@@ -73,6 +75,7 @@ import MileageApproval from './pages/MileageApproval';
 import MisGastos from './pages/MisGastos';
 import MisHoras from './pages/MisHoras';
 import MisProyectos from './pages/MisProyectos';
+import MyCommissions from './pages/MyCommissions';
 import MyPayroll from './pages/MyPayroll';
 import MyProfile from './pages/MyProfile';
 import NewsFeed from './pages/NewsFeed';
@@ -111,15 +114,12 @@ import TimeTracking from './pages/TimeTracking';
 import Trabajos from './pages/Trabajos';
 import TravelBookings from './pages/TravelBookings';
 import VerChangeOrder from './pages/VerChangeOrder';
-import VerRFI from './pages/VerRFI';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
+import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
-import MyCommissions from './pages/MyCommissions';
-import CommissionManagement from './pages/CommissionManagement';
-import CommissionDashboard from './pages/CommissionDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -143,6 +143,8 @@ export const PAGES = {
     "Clientes": Clientes,
     "CodebaseExport": CodebaseExport,
     "CommissionAgreements": CommissionAgreements,
+    "CommissionDashboard": CommissionDashboard,
+    "CommissionManagement": CommissionManagement,
     "CommissionReports": CommissionReports,
     "CommissionReview": CommissionReview,
     "CommissionTotalsGusto": CommissionTotalsGusto,
@@ -199,6 +201,7 @@ export const PAGES = {
     "MisGastos": MisGastos,
     "MisHoras": MisHoras,
     "MisProyectos": MisProyectos,
+    "MyCommissions": MyCommissions,
     "MyPayroll": MyPayroll,
     "MyProfile": MyProfile,
     "NewsFeed": NewsFeed,
@@ -237,15 +240,12 @@ export const PAGES = {
     "Trabajos": Trabajos,
     "TravelBookings": TravelBookings,
     "VerChangeOrder": VerChangeOrder,
-    "VerRFI": VerRFI,
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
     "VerIncidente": VerIncidente,
+    "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
-    "MyCommissions": MyCommissions,
-    "CommissionManagement": CommissionManagement,
-    "CommissionDashboard": CommissionDashboard,
 }
 
 export const pagesConfig = {
