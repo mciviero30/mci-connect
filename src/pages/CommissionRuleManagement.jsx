@@ -51,11 +51,31 @@ export default function CommissionRuleManagement() {
   const [draftRule, setDraftRule] = useState(null);
   const [showDraftForm, setShowDraftForm] = useState(false);
 
-  // Create new version mutation
+  // Create new version mutation with end date update for previous version
   const createVersionMutation = useMutation({
     mutationFn: async (newRuleData) => {
       console.log('[CommissionRuleManagement] Creating new version:', newRuleData);
-      return await base44.entities.CommissionRule.create(newRuleData);
+      
+      // Create new version
+      const newRule = await base44.entities.CommissionRule.create(newRuleData);
+      
+      // If there's a previous version, update its end_date to be one day before new effective_date
+      if (newRuleData.previous_rule_id && newRuleData.effective_date) {
+        try {
+          const previousEndDate = new Date(newRuleData.effective_date);
+          previousEndDate.setDate(previousEndDate.getDate() - 1);
+          
+          await base44.entities.CommissionRule.update(newRuleData.previous_rule_id, {
+            end_date: format(previousEndDate, 'yyyy-MM-dd')
+          });
+          
+          console.log('[CommissionRuleManagement] Updated previous version end_date');
+        } catch (updateError) {
+          console.warn('[CommissionRuleManagement] Could not update previous version:', updateError);
+        }
+      }
+      
+      return newRule;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['commission-rules-management'] });
