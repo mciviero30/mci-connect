@@ -38,20 +38,31 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check if user's employment_status is 'active' - they are already validated
-    if (user.employment_status === 'active') {
-      console.log(`✅ User has employment_status: active, bypassing invitation check for ${userEmail}`);
+    // STRICT VALIDATION: Check EmployeeDirectory by user_id
+    // If user exists but no EmployeeDirectory record -> BLOCK
+    const directoryRecords = await base44.asServiceRole.entities.EmployeeDirectory.filter({
+      user_id: user.id
+    });
+
+    if (directoryRecords.length > 0) {
+      console.log(`✅ User ${userEmail} found in EmployeeDirectory (user_id: ${user.id})`);
       return Response.json({ 
         valid: true,
-        reason: 'Already active employee',
+        reason: 'Active employee with directory record',
         email: userEmail
       });
+    }
+
+    // Check if user's employment_status is 'active' AND has directory record
+    if (user.employment_status === 'active') {
+      console.log(`⚠️ User ${userEmail} has employment_status: active but NO EmployeeDirectory record`);
+      // Continue validation - they need invitation or directory record
     }
 
     // Check PendingEmployee invitations
     const allPending = await base44.asServiceRole.entities.PendingEmployee.list();
     const pendingMatch = allPending.find(p => 
-      p.email?.toLowerCase().trim() === userEmail
+      p.email?.toLowerCase().trim() === userEmail || p.user_id === user.id
     );
 
     if (pendingMatch) {
@@ -67,7 +78,7 @@ Deno.serve(async (req) => {
     // Check ProjectMember (client) invitations
     const allMembers = await base44.asServiceRole.entities.ProjectMember.list();
     const clientMatch = allMembers.find(m => 
-      m.user_email?.toLowerCase().trim() === userEmail && 
+      (m.user_email?.toLowerCase().trim() === userEmail || m.user_id === user.id) && 
       m.role === 'client'
     );
 
@@ -81,13 +92,13 @@ Deno.serve(async (req) => {
       });
     }
 
-    // No invitation found - BLOCK ACCESS
-    console.error(`🚫 SECURITY: No invitation found for ${userEmail}`);
+    // No invitation or directory record found - BLOCK ACCESS
+    console.error(`🚫 SECURITY BLOCK: No invitation or EmployeeDirectory record for ${userEmail} (user_id: ${user.id})`);
     return Response.json({ 
       valid: false,
       email: userEmail,
-      error: 'No invitation found for this email',
-      message: 'You must be invited with this specific email address to access the system.'
+      error: 'Account not onboarded',
+      message: 'Your account is not onboarded. Please contact your administrator.'
     });
 
   } catch (error) {
