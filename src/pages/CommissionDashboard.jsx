@@ -85,6 +85,7 @@ export default function CommissionDashboard() {
         invoiceMap
       };
     },
+    enabled: isAuthorized, // SECURITY: Only fetch if authorized
     staleTime: 5 * 60 * 1000, // 5 minutes - prevent refetch loops
     gcTime: 10 * 60 * 1000, // 10 minutes cache
   });
