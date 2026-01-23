@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   History,
   GitBranch,
@@ -15,21 +16,19 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
-  X
+  X,
+  Layers,
+  Eye,
+  Zap
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import RuleVersionTimeline from './RuleVersionTimeline';
+import RuleVersionComparison from './RuleVersionComparison';
+import RuleAuditTrail from './RuleAuditTrail';
 
-/**
- * Commission Rule Version History Component
- * 
- * Read-only audit trail and comparison view for commission rule versions.
- * CFO-friendly visibility into rate changes and effective periods.
- * 
- * @param {Array} versions - Array of rule versions (same rule_name)
- * @param {Function} onClose - Close handler
- */
 export default function RuleVersionHistory({ versions = [], onClose }) {
   const [selectedVersions, setSelectedVersions] = useState([]);
+  const [activeTab, setActiveTab] = useState('timeline');
   
   // Sort versions by version number descending (newest first)
   const sortedVersions = useMemo(() => {
@@ -52,7 +51,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
     } else if (selectedVersions.length < 2) {
       setSelectedVersions([...selectedVersions, version]);
     } else {
-      // Replace oldest selection
       setSelectedVersions([selectedVersions[1], version]);
     }
   };
@@ -63,30 +61,18 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
     const endDate = version.end_date ? new Date(version.end_date) : null;
 
     if (effectiveDate > today) {
-      return {
-        label: 'Future',
-        class: 'bg-blue-100 text-blue-800 border-blue-300'
-      };
+      return { label: 'Future', class: 'bg-blue-100 text-blue-800 border-blue-300' };
     }
 
     if (endDate && endDate < today) {
-      return {
-        label: 'Expired',
-        class: 'bg-slate-100 text-slate-600 border-slate-300'
-      };
+      return { label: 'Expired', class: 'bg-slate-100 text-slate-600 border-slate-300' };
     }
 
     if (effectiveDate <= today && (!endDate || endDate >= today)) {
-      return {
-        label: 'Active',
-        class: 'bg-green-100 text-green-800 border-green-300'
-      };
+      return { label: 'Active', class: 'bg-green-100 text-green-800 border-green-300' };
     }
 
-    return {
-      label: 'Inactive',
-      class: 'bg-slate-100 text-slate-500 border-slate-300'
-    };
+    return { label: 'Inactive', class: 'bg-slate-100 text-slate-500 border-slate-300' };
   };
 
   const getModelLabel = (model) => {
@@ -123,7 +109,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
 
     const changes = [];
 
-    // Model change
     if (older.commission_model !== newer.commission_model) {
       changes.push({
         field: 'Commission Model',
@@ -133,7 +118,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
       });
     }
 
-    // Rate change
     if (older.rate !== newer.rate) {
       changes.push({
         field: 'Rate',
@@ -143,7 +127,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
       });
     }
 
-    // Flat amount change
     if (older.flat_amount !== newer.flat_amount) {
       changes.push({
         field: 'Flat Amount',
@@ -153,7 +136,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
       });
     }
 
-    // Base amount change
     if (older.base_amount !== newer.base_amount) {
       changes.push({
         field: 'Base Amount',
@@ -163,7 +145,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
       });
     }
 
-    // Bonus rate change
     if (older.bonus_rate !== newer.bonus_rate) {
       changes.push({
         field: 'Bonus Rate',
@@ -173,7 +154,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
       });
     }
 
-    // Min commission change
     if (older.min_commission !== newer.min_commission) {
       changes.push({
         field: 'Min Commission',
@@ -183,7 +163,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
       });
     }
 
-    // Max commission change
     if (older.max_commission_percent_of_profit !== newer.max_commission_percent_of_profit) {
       changes.push({
         field: 'Max Commission % of Profit',
@@ -193,7 +172,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
       });
     }
 
-    // Trigger event change
     if (older.trigger_event !== newer.trigger_event) {
       changes.push({
         field: 'Trigger Event',
@@ -204,11 +182,11 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
     }
 
     return (
-      <Card className="border-2 border-blue-500 shadow-xl mt-6">
+      <Card className="border-2 border-blue-500 shadow-xl">
         <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30">
           <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-200">
             <GitBranch className="w-5 h-5" />
-            Comparison: v{older.version} → v{newer.version}
+            Detailed Comparison: v{older.version} → v{newer.version}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
@@ -231,7 +209,7 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
                       : 'bg-blue-50 border-blue-300 dark:bg-blue-900/20 dark:border-blue-700'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       {change.type === 'critical' && <AlertTriangle className="w-4 h-4 text-red-600" />}
                       {change.type === 'rate' && <TrendingUp className="w-4 h-4 text-amber-600" />}
@@ -251,7 +229,7 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
                       {change.type === 'critical' ? 'Critical' : change.type === 'rate' ? 'Rate Change' : 'Parameter'}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-3 mt-2 text-sm">
+                  <div className="flex items-center gap-3 text-sm">
                     <div className="px-3 py-1 bg-white dark:bg-slate-800 rounded border border-slate-300 dark:border-slate-700">
                       <span className="text-slate-600 dark:text-slate-400">Old: </span>
                       <span className="font-semibold text-slate-900 dark:text-white">{change.old}</span>
@@ -266,38 +244,6 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
               ))}
             </div>
           )}
-
-          <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
-            <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-3">Additional Context</h4>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded">
-                <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Version {older.version}</p>
-                <p className="text-xs text-slate-700 dark:text-slate-300">
-                  <Calendar className="w-3 h-3 inline mr-1" />
-                  {format(parseISO(older.effective_date), 'MMM d, yyyy')}
-                  {older.end_date && ` - ${format(parseISO(older.end_date), 'MMM d, yyyy')}`}
-                </p>
-                {older.change_notes && (
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 italic">
-                    "{older.change_notes}"
-                  </p>
-                )}
-              </div>
-              <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded">
-                <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Version {newer.version}</p>
-                <p className="text-xs text-slate-700 dark:text-slate-300">
-                  <Calendar className="w-3 h-3 inline mr-1" />
-                  {format(parseISO(newer.effective_date), 'MMM d, yyyy')}
-                  {newer.end_date && ` - ${format(parseISO(newer.end_date), 'MMM d, yyyy')}`}
-                </p>
-                {newer.change_notes && (
-                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 italic">
-                    "{newer.change_notes}"
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
     );
@@ -319,11 +265,11 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-                <History className="w-5 h-5" />
+                <Layers className="w-5 h-5" />
                 Version History: {sortedVersions[0]?.rule_name}
               </CardTitle>
               <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                {sortedVersions.length} version{sortedVersions.length !== 1 ? 's' : ''} • Read-only audit trail
+                {sortedVersions.length} version{sortedVersions.length !== 1 ? 's' : ''} • Complete audit trail with visuals and comparisons
               </p>
             </div>
             {onClose && (
@@ -337,153 +283,65 @@ export default function RuleVersionHistory({ versions = [], onClose }) {
           <Alert className="border-blue-300 bg-blue-50 dark:bg-blue-900/20">
             <CheckCircle2 className="w-4 h-4 text-blue-600" />
             <AlertDescription className="text-blue-900 dark:text-blue-200">
-              Select up to 2 versions to compare changes. Current active version is highlighted.
+              📊 Three views: Timeline (visual), Compare (parameter diff), Audit Trail (CFO-friendly)
             </AlertDescription>
           </Alert>
         </CardContent>
       </Card>
 
-      {/* Timeline */}
+      {/* Tabbed Views */}
       <Card className="shadow-lg">
-        <CardHeader className="border-b">
-          <CardTitle className="text-slate-900 dark:text-white">Version Timeline</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            {sortedVersions.map((version, idx) => {
-              const status = getStatusBadge(version);
-              const isActive = activeVersion?.id === version.id;
-              const isSelected = selectedVersions.find(v => v.id === version.id);
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="timeline" className="flex items-center gap-2">
+              <Zap className="w-4 h-4" />
+              <span className="hidden sm:inline">Timeline</span>
+            </TabsTrigger>
+            <TabsTrigger value="compare" className="flex items-center gap-2">
+              <Eye className="w-4 h-4" />
+              <span className="hidden sm:inline">Compare</span>
+            </TabsTrigger>
+            <TabsTrigger value="audit" className="flex items-center gap-2">
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">Audit</span>
+            </TabsTrigger>
+          </TabsList>
 
-              return (
-                <div
-                  key={version.id}
-                  onClick={() => toggleVersionSelection(version)}
-                  className={`relative p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                    isActive
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20 shadow-md'
-                      : isSelected
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                  }`}
-                >
-                  {/* Timeline connector */}
-                  {idx < sortedVersions.length - 1 && (
-                    <div className="absolute left-8 top-full h-4 w-0.5 bg-slate-300 dark:bg-slate-700" />
-                  )}
+          <CardContent className="p-6">
+            <TabsContent value="timeline" className="space-y-4">
+              <RuleVersionTimeline versions={sortedVersions} />
+              {renderComparison()}
+            </TabsContent>
 
-                  <div className="flex items-start gap-4">
-                    {/* Version Badge */}
-                    <div className="flex-shrink-0">
-                      <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-white ${
-                          isActive
-                            ? 'bg-gradient-to-br from-green-500 to-green-600 shadow-lg'
-                            : isSelected
-                            ? 'bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg'
-                            : 'bg-gradient-to-br from-slate-400 to-slate-500'
-                        }`}
-                      >
-                        v{version.version}
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <Badge className={`${status.class} border`}>
-                            {status.label}
-                          </Badge>
-                          {isActive && (
-                            <Badge className="bg-green-600 text-white">
-                              <CheckCircle2 className="w-3 h-3 mr-1" />
-                              Current
-                            </Badge>
-                          )}
-                          {isSelected && (
-                            <Badge className="bg-blue-600 text-white">
-                              Selected
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Model & Rate */}
-                      <div className="flex items-center gap-4 mb-3">
-                        <div className="flex items-center gap-2">
-                          <Percent className="w-4 h-4 text-slate-400" />
-                          <span className="text-sm font-semibold text-slate-900 dark:text-white">
-                            {getModelLabel(version.commission_model)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-green-600" />
-                          <span className="text-sm font-bold text-green-700 dark:text-green-400">
-                            {formatModelParams(version)}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Dates */}
-                      <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mb-2">
-                        <Calendar className="w-3 h-3" />
-                        <span>
-                          {format(parseISO(version.effective_date), 'MMM d, yyyy')}
-                          {version.end_date && ` → ${format(parseISO(version.end_date), 'MMM d, yyyy')}`}
-                          {!version.end_date && ' → Indefinite'}
-                        </span>
-                      </div>
-
-                      {/* Creator & Date */}
-                      {version.created_by && (
-                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mb-2">
-                          <User className="w-3 h-3" />
-                          <span>Created by {version.created_by}</span>
-                          {version.created_date && (
-                            <>
-                              <Clock className="w-3 h-3 ml-2" />
-                              <span>{format(parseISO(version.created_date), 'MMM d, yyyy HH:mm')}</span>
-                            </>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Change Notes */}
-                      {version.change_notes && (
-                        <div className="mt-2 p-2 bg-slate-100 dark:bg-slate-800 rounded text-xs text-slate-700 dark:text-slate-300 italic">
-                          "{version.change_notes}"
-                        </div>
-                      )}
-
-                      {/* Additional Details */}
-                      <div className="mt-3 grid grid-cols-3 gap-3 text-xs">
-                        <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
-                          <p className="text-slate-500 dark:text-slate-400">Min Commission</p>
-                          <p className="font-semibold text-slate-900 dark:text-white">${version.min_commission}</p>
-                        </div>
-                        <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
-                          <p className="text-slate-500 dark:text-slate-400">Max % of Profit</p>
-                          <p className="font-semibold text-slate-900 dark:text-white">{version.max_commission_percent_of_profit}%</p>
-                        </div>
-                        <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded">
-                          <p className="text-slate-500 dark:text-slate-400">Trigger</p>
-                          <p className="font-semibold text-slate-900 dark:text-white text-[10px]">
-                            {version.trigger_event?.replace('_', ' ')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <TabsContent value="compare">
+              {sortedVersions.length < 2 ? (
+                <div className="p-8 text-center text-slate-500 bg-slate-50 dark:bg-slate-800 rounded-lg">
+                  <p>At least 2 versions required for comparison</p>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
+              ) : (
+                <RuleVersionComparison versions={sortedVersions} />
+              )}
+            </TabsContent>
+
+            <TabsContent value="audit">
+              <RuleAuditTrail versions={sortedVersions} />
+            </TabsContent>
+          </CardContent>
+        </Tabs>
       </Card>
 
-      {/* Comparison */}
-      {renderComparison()}
+      {/* Interactive Selection Helper (for manual comparison) */}
+      {activeTab === 'timeline' && (
+        <Card className="shadow-lg border-l-4 border-l-slate-400">
+          <CardHeader>
+            <CardTitle className="text-sm">Interactive Version Selector</CardTitle>
+            <p className="text-xs text-slate-500 mt-1">Click on versions below to manually compare (uses old interface)</p>
+          </CardHeader>
+          <CardContent className="p-4 text-xs text-slate-600 dark:text-slate-400">
+            <p>Selected: {selectedVersions.length} / 2 versions</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
