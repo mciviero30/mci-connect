@@ -60,7 +60,7 @@ export default function LineItemsTable({
                 {item.item_name || <span className="text-gray-400">(No item selected)</span>}
               </div>
               {/* ALWAYS render description below */}
-              <div className="text-xs text-gray-500 mt-0.5">
+              <div className="text-xs text-gray-500 mt-0.5 whitespace-pre-line">
                 {item.description || <span className="text-gray-400">-</span>}
               </div>
             </td>
