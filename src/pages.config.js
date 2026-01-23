@@ -117,6 +117,8 @@ import VerFactura from './pages/VerFactura';
 import VerIncidente from './pages/VerIncidente';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
+import MyCommissions from './pages/MyCommissions';
+import CommissionManagement from './pages/CommissionManagement';
 import __Layout from './Layout.jsx';
 
 
@@ -240,6 +242,8 @@ export const PAGES = {
     "VerIncidente": VerIncidente,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
+    "MyCommissions": MyCommissions,
+    "CommissionManagement": CommissionManagement,
 }
 
 export const pagesConfig = {
