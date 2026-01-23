@@ -214,7 +214,8 @@ export default function Facturas() {
     job_id: inv?.job_id || null,
     drive_folder_url: inv?.drive_folder_url || null,
     field_project_id: inv?.field_project_id || null
-  }));
+    };
+  });
 
   // Log bad invoices in DEV
   if (import.meta.env.DEV) {
