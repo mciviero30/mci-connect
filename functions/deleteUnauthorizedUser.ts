@@ -16,8 +16,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'user_id is required' }, { status: 400 });
     }
 
-    // Delete user using service role
-    await base44.asServiceRole.users.delete(user_id);
+    // Delete user using service role - use fetch directly to Base44 API
+    const response = await fetch(`https://api.base44.com/v1/apps/${Deno.env.get('BASE44_APP_ID')}/users/${user_id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('BASE44_SERVICE_ROLE_KEY')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      throw new Error(`Failed to delete user: ${response.status} - ${errorData}`);
+    }
 
     console.log(`[SECURITY] User deleted: ${user_id} by ${user.email}. Reason: ${reason || 'No reason provided'}`);
 
