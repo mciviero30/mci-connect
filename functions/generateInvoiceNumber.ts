@@ -21,11 +21,17 @@ Deno.serve(async (req) => {
     const nextNumber = data.value;
     const formattedNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
 
+    // GUARDRAIL: Validate format before returning
+    if (!/^INV-\d{5}$/.test(formattedNumber)) {
+      throw new Error(`Format validation failed: ${formattedNumber}`);
+    }
+
     console.log(`✅ Generated invoice number: ${formattedNumber} (counter: ${nextNumber})`);
     
     return Response.json({ 
       invoice_number: formattedNumber,
-      next_sequence: nextNumber
+      next_sequence: nextNumber,
+      formatted: true
     });
   } catch (error) {
     if (error instanceof Response) throw error;
