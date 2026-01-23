@@ -149,7 +149,14 @@ export default function Estimados() {
 
   const convertToInvoiceMutation = useMutation({
     mutationFn: async (quote) => {
-      const invoiceNumber = `INV-${Date.now()}`;
+      // Generate proper invoice number using atomic counter
+      const numResponse = await base44.functions.invoke('generateInvoiceNumber', {});
+      const invoiceNumber = numResponse?.invoice_number || numResponse?.data?.invoice_number;
+      
+      if (!invoiceNumber || !invoiceNumber.startsWith('INV-')) {
+        throw new Error('Failed to generate valid invoice number - format validation failed');
+      }
+
       const invoiceData = {
         invoice_number: invoiceNumber,
         quote_id: quote.id,
@@ -206,17 +213,32 @@ export default function Estimados() {
     },
   });
 
-  const filteredQuotes = quotes.filter(quote => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = !searchTerm ||
-      quote.customer_name?.toLowerCase().includes(searchLower) ||
-      quote.quote_number?.toLowerCase().includes(searchLower) ||
-      quote.job_name?.toLowerCase().includes(searchLower);
+  // GUARDRAIL 2️⃣: Defensive normalization for quotes
+  const safeQuotes = (quotes || []).map(q => {
+   const rawNumber = q?.quote_number || '';
+   const isValidFormat = /^(EST-|QT-)\d{5}$/.test(rawNumber);
 
-    const matchesStatus = statusFilter === 'all' || quote.status === statusFilter;
-    const matchesTeam = teamFilter === 'all' || quote.team_id === teamFilter;
+   if (import.meta.env.DEV && !isValidFormat && rawNumber) {
+     console.warn(`[HARDENING] Invalid quote number format: "${rawNumber}" (should be EST-XXXXX or QT-XXXXX)`, { quote_id: q?.id });
+   }
 
-    return matchesSearch && matchesStatus && matchesTeam;
+   return {
+     ...q,
+     quote_number: isValidFormat ? rawNumber : (rawNumber || 'DRAFT')
+   };
+  });
+
+  const filteredQuotes = safeQuotes.filter(quote => {
+   const searchLower = searchTerm.toLowerCase();
+   const matchesSearch = !searchTerm ||
+     quote.customer_name?.toLowerCase().includes(searchLower) ||
+     quote.quote_number?.toLowerCase().includes(searchLower) ||
+     quote.job_name?.toLowerCase().includes(searchLower);
+
+   const matchesStatus = statusFilter === 'all' || quote.status === statusFilter;
+   const matchesTeam = teamFilter === 'all' || quote.team_id === teamFilter;
+
+   return matchesSearch && matchesStatus && matchesTeam;
   });
 
   // Memoize expensive filters
@@ -301,7 +323,7 @@ export default function Estimados() {
           <SkeletonDocumentList count={6} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-            {filteredQuotes.map(quote => (
+            {filteredQuotes.length > 0 && filteredQuotes.map(quote => (
               <ModernQuoteCard
                 key={quote.id}
                 quote={quote}

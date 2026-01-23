@@ -190,9 +190,18 @@ export default function Facturas() {
   };
 
   // Defensive normalization - prevent crashes from legacy invoices
-  const safeInvoices = (invoices || []).map(inv => ({
+  const safeInvoices = (invoices || []).map(inv => {
+    // GUARDRAIL 1️⃣: Validate invoice_number format (INV-00001 format)
+    const rawNumber = inv?.invoice_number || inv?.number || '';
+    const isValidFormat = /^INV-\d{5}$/.test(rawNumber);
+    
+    if (import.meta.env.DEV && !isValidFormat && rawNumber) {
+      console.warn(`[HARDENING] Invalid invoice number format: "${rawNumber}" (should be INV-XXXXX)`, { invoice_id: inv?.id });
+    }
+
+    return {
     ...inv,
-    invoice_number: inv?.invoice_number || inv?.number || 'DRAFT',
+    invoice_number: isValidFormat ? rawNumber : (rawNumber || 'DRAFT'),
     customer_name: inv?.customer_name || 'N/A',
     status: inv?.status || 'draft',
     total: Number(inv?.total) || 0,
