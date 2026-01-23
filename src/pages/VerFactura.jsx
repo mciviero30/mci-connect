@@ -170,19 +170,12 @@ export default function VerFactura() {
 
   const cloneMutation = useMutation({
     mutationFn: async () => {
-      const invoices = await base44.entities.Invoice.list();
-      const existingNumbers = invoices
-        .map(inv => inv.invoice_number)
-        .filter(n => n?.startsWith('INV-'))
-        .map(n => parseInt(n.replace('INV-', '')))
-        .filter(n => !isNaN(n));
-
-      const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
-      const new_invoice_number = `INV-${String(nextNumber).padStart(5, '0')}`;
-
+      // Use atomic number generator to prevent duplicates
+      const { invoice_number: newInvoiceNumber } = await base44.functions.invoke('generateInvoiceNumber');
+      
       const clonedInvoice = {
         ...invoice,
-        invoice_number: new_invoice_number,
+        invoice_number: newInvoiceNumber,
         invoice_date: format(new Date(), 'yyyy-MM-dd'),
         due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
         status: 'draft',
