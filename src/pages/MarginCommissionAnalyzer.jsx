@@ -61,9 +61,9 @@ export default function MarginCommissionAnalyzer() {
     return hasFullAccess(user) || user.role === 'finance' || user.role === 'ceo' || user.position === 'CEO';
   }, [user]);
 
-  // Fetch data
+  // Fetch data - stable cache keys, no unused queries
   const { data: invoices = [], isLoading: loadingInvoices } = useQuery({
-    queryKey: ['marginCommissionAnalyzer-invoices', startDate, endDate],
+    queryKey: ['marginCommissionAnalyzer', 'invoices', startDate, endDate],
     queryFn: async () => {
       const allInvoices = await base44.entities.Invoice.filter({
         status: { $in: ['paid', 'partial'] },
@@ -72,11 +72,14 @@ export default function MarginCommissionAnalyzer() {
       return allInvoices;
     },
     enabled: isAuthorized && !!startDate && !!endDate,
-    staleTime: 300000
+    staleTime: 600000, // 10 min cache
+    gcTime: 1200000, // 20 min garbage collection
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: commissions = [], isLoading: loadingCommissions } = useQuery({
-    queryKey: ['marginCommissionAnalyzer-commissions', startDate, endDate],
+    queryKey: ['marginCommissionAnalyzer', 'commissions', startDate, endDate],
     queryFn: async () => {
       const allCommissions = await base44.entities.CommissionRecord.filter({
         status: { $in: ['paid', 'approved'] },
@@ -85,44 +88,14 @@ export default function MarginCommissionAnalyzer() {
       return allCommissions;
     },
     enabled: isAuthorized && !!startDate && !!endDate,
-    staleTime: 300000
+    staleTime: 600000,
+    gcTime: 1200000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
-  const { data: jobs = [] } = useQuery({
-    queryKey: ['marginCommissionAnalyzer-jobs'],
-    queryFn: () => base44.entities.Job.list('', 500),
-    enabled: isAuthorized,
-    staleTime: 600000
-  });
-
-  const { data: expenses = [] } = useQuery({
-    queryKey: ['marginCommissionAnalyzer-expenses', startDate, endDate],
-    queryFn: async () => {
-      const allExpenses = await base44.entities.Expense.filter({
-        status: 'approved',
-        date: { $gte: startDate, $lte: endDate }
-      }, '', 500);
-      return allExpenses;
-    },
-    enabled: isAuthorized && !!startDate && !!endDate,
-    staleTime: 300000
-  });
-
-  const { data: timeEntries = [] } = useQuery({
-    queryKey: ['marginCommissionAnalyzer-time', startDate, endDate],
-    queryFn: async () => {
-      const allTime = await base44.entities.TimeEntry.filter({
-        status: 'approved',
-        date: { $gte: startDate, $lte: endDate }
-      }, '', 1000);
-      return allTime;
-    },
-    enabled: isAuthorized && !!startDate && !!endDate,
-    staleTime: 300000
-  });
-
-  // Calculate metrics
-  const analytics = useMemo(() => {
+  // KPIs - memoized separately for stability
+  const kpis = useMemo(() => {
     if (!invoices.length) return null;
 
     const totalRevenue = invoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
@@ -145,11 +118,26 @@ export default function MarginCommissionAnalyzer() {
     const commissionPctOfRevenue = totalRevenue > 0 ? (totalCommissions / totalRevenue) * 100 : 0;
     const commissionPctOfProfit = grossProfit > 0 ? (totalCommissions / grossProfit) * 100 : 0;
 
-    // By Invoice
-    const byInvoice = invoices.map(inv => {
+    return {
+      totalRevenue,
+      totalJobCost,
+      totalCommissions,
+      grossProfit,
+      netMargin,
+      commissionPctOfRevenue,
+      commissionPctOfProfit,
+      jobCosts
+    };
+  }, [invoices, commissions]);
+
+  // By Invoice - memoized separately
+  const byInvoice = useMemo(() => {
+    if (!kpis) return [];
+    
+    return invoices.map(inv => {
       const invCommissions = commissions.filter(c => c.trigger_entity_id === inv.job_id);
       const commissionTotal = invCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
-      const jobCost = jobCosts.get(inv.job_id) || 0;
+      const jobCost = kpis.jobCosts.get(inv.job_id) || 0;
       const profit = (inv.total || 0) - jobCost;
       const netMarginAfterComm = profit - commissionTotal;
       const commPctOfProfit = profit > 0 ? (commissionTotal / profit) * 100 : 0;
@@ -167,8 +155,12 @@ export default function MarginCommissionAnalyzer() {
         isNegativeMargin: netMarginAfterComm < 0
       };
     });
+  }, [invoices, commissions, kpis]);
 
-    // By Employee
+  // By Employee - memoized separately
+  const byEmployee = useMemo(() => {
+    if (!kpis) return [];
+    
     const employeeMap = new Map();
     commissions.forEach(c => {
       const userId = c.user_id || c.employee_email;
@@ -185,12 +177,16 @@ export default function MarginCommissionAnalyzer() {
         emp.revenueInfluenced += relatedInvoice.total || 0;
       }
     });
-    const byEmployee = Array.from(employeeMap.values()).map(e => ({
+    return Array.from(employeeMap.values()).map(e => ({
       ...e,
       avgPerInvoice: e.invoiceCount > 0 ? e.totalCommission / e.invoiceCount : 0
     })).sort((a, b) => b.totalCommission - a.totalCommission);
+  }, [commissions, invoices, kpis]);
 
-    // By Rule
+  // By Rule - memoized separately
+  const byRule = useMemo(() => {
+    if (!kpis) return [];
+    
     const ruleMap = new Map();
     commissions.forEach(c => {
       const ruleId = c.rule_id;
@@ -202,14 +198,18 @@ export default function MarginCommissionAnalyzer() {
       rule.totalCommission += c.commission_amount || 0;
       rule.count += 1;
     });
-    const byRule = Array.from(ruleMap.values()).map(r => ({
+    return Array.from(ruleMap.values()).map(r => ({
       ...r,
-      pctOfTotal: totalCommissions > 0 ? (r.totalCommission / totalCommissions) * 100 : 0,
+      pctOfTotal: kpis.totalCommissions > 0 ? (r.totalCommission / kpis.totalCommissions) * 100 : 0,
       avgPerInvoice: r.count > 0 ? r.totalCommission / r.count : 0,
-      isDominant: totalCommissions > 0 && (r.totalCommission / totalCommissions) > 0.4
+      isDominant: kpis.totalCommissions > 0 && (r.totalCommission / kpis.totalCommissions) > 0.4
     })).sort((a, b) => b.totalCommission - a.totalCommission);
+  }, [commissions, kpis]);
 
-    // By Period (weekly)
+  // By Period - memoized separately
+  const byPeriod = useMemo(() => {
+    if (!kpis) return [];
+    
     const weekMap = new Map();
     invoices.forEach(inv => {
       const weekStart = moment(inv.payment_date).startOf('week').format('YYYY-MM-DD');
@@ -219,34 +219,18 @@ export default function MarginCommissionAnalyzer() {
       const week = weekMap.get(weekStart);
       week.revenue += inv.total || 0;
       
-      const jobCost = jobCosts.get(inv.job_id) || 0;
+      const jobCost = kpis.jobCosts.get(inv.job_id) || 0;
       week.jobCost += jobCost;
       
       const invCommissions = commissions.filter(c => c.trigger_entity_id === inv.job_id);
       week.commission += invCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
     });
-    const byPeriod = Array.from(weekMap.values()).map(w => ({
+    return Array.from(weekMap.values()).map(w => ({
       ...w,
       profit: w.revenue - w.jobCost,
       netMargin: w.revenue - w.jobCost - w.commission
     })).sort((a, b) => moment(a.week).valueOf() - moment(b.week).valueOf());
-
-    return {
-      kpis: {
-        totalRevenue,
-        totalJobCost,
-        totalCommissions,
-        grossProfit,
-        netMargin,
-        commissionPctOfRevenue,
-        commissionPctOfProfit
-      },
-      byInvoice,
-      byEmployee,
-      byRule,
-      byPeriod
-    };
-  }, [invoices, commissions, jobs, expenses, timeEntries]);
+  }, [invoices, commissions, kpis]);
 
   const isLoading = loadingInvoices || loadingCommissions;
 
@@ -275,7 +259,7 @@ export default function MarginCommissionAnalyzer() {
     );
   }
 
-  if (!analytics) {
+  if (!kpis) {
     return (
       <div className="p-8">
         <PageHeader title="Margin vs Commission Analyzer" icon={TrendingUp} />
@@ -348,7 +332,7 @@ export default function MarginCommissionAnalyzer() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${analytics.kpis.totalRevenue.toLocaleString()}</div>
+            <div className="text-2xl font-bold">${kpis.totalRevenue.toLocaleString()}</div>
           </CardContent>
         </Card>
 
@@ -357,7 +341,7 @@ export default function MarginCommissionAnalyzer() {
             <CardTitle className="text-sm font-medium text-slate-600">Job Costs</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${analytics.kpis.totalJobCost.toLocaleString()}</div>
+            <div className="text-2xl font-bold">${kpis.totalJobCost.toLocaleString()}</div>
             <p className="text-xs text-slate-500 mt-1">Labor + Materials + Expenses</p>
           </CardContent>
         </Card>
@@ -367,14 +351,14 @@ export default function MarginCommissionAnalyzer() {
             <CardTitle className="text-sm font-medium text-slate-600">Total Commissions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">${analytics.kpis.totalCommissions.toLocaleString()}</div>
+            <div className="text-2xl font-bold text-orange-600">${kpis.totalCommissions.toLocaleString()}</div>
             <p className="text-xs text-slate-500 mt-1">
-              {analytics.kpis.commissionPctOfRevenue.toFixed(1)}% of revenue
+              {kpis.commissionPctOfRevenue.toFixed(1)}% of revenue
             </p>
           </CardContent>
         </Card>
 
-        <Card className={analytics.kpis.netMargin < 0 ? 'border-red-500' : 'border-green-500'}>
+        <Card className={kpis.netMargin < 0 ? 'border-red-500' : 'border-green-500'}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-slate-600 flex items-center gap-2">
               <Percent className="w-4 h-4" />
@@ -382,8 +366,8 @@ export default function MarginCommissionAnalyzer() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${analytics.kpis.netMargin < 0 ? 'text-red-600' : 'text-green-600'}`}>
-              ${analytics.kpis.netMargin.toLocaleString()}
+            <div className={`text-2xl font-bold ${kpis.netMargin < 0 ? 'text-red-600' : 'text-green-600'}`}>
+              ${kpis.netMargin.toLocaleString()}
             </div>
             <p className="text-xs text-slate-500 mt-1">
               After commissions
@@ -405,20 +389,20 @@ export default function MarginCommissionAnalyzer() {
             <div>
               <div className="font-semibold">Commission % of Profit</div>
               <div className="text-2xl font-bold text-amber-600">
-                {analytics.kpis.commissionPctOfProfit.toFixed(1)}%
+                {kpis.commissionPctOfProfit.toFixed(1)}%
               </div>
             </div>
             <div>
               <div className="font-semibold">High Commission Invoices</div>
               <div className="text-2xl font-bold">
-                {analytics.byInvoice.filter(i => i.isHighCommission).length}
+                {byInvoice.filter(i => i.isHighCommission).length}
               </div>
               <div className="text-xs text-slate-600">&gt;30% of profit</div>
             </div>
             <div>
               <div className="font-semibold">Negative Margin</div>
               <div className="text-2xl font-bold text-red-600">
-                {analytics.byInvoice.filter(i => i.isNegativeMargin).length}
+                {byInvoice.filter(i => i.isNegativeMargin).length}
               </div>
               <div className="text-xs text-slate-600">After commissions</div>
             </div>
@@ -457,7 +441,7 @@ export default function MarginCommissionAnalyzer() {
                     </tr>
                   </thead>
                   <tbody>
-                    {analytics.byInvoice.map((inv, idx) => (
+                    {byInvoice.map((inv, idx) => (
                       <tr key={idx} className={`border-b ${inv.isNegativeMargin ? 'bg-red-50' : inv.isHighCommission ? 'bg-amber-50' : ''}`}>
                         <td className="py-2">{inv.invoice_number}</td>
                         <td className="py-2 text-right">${inv.revenue.toLocaleString()}</td>
@@ -500,7 +484,7 @@ export default function MarginCommissionAnalyzer() {
                     </tr>
                   </thead>
                   <tbody>
-                    {analytics.byEmployee.map((emp, idx) => (
+                    {byEmployee.map((emp, idx) => (
                       <tr key={idx} className="border-b">
                         <td className="py-2">{emp.name}</td>
                         <td className="py-2 text-right font-semibold text-orange-600">${emp.totalCommission.toLocaleString()}</td>
@@ -532,7 +516,7 @@ export default function MarginCommissionAnalyzer() {
                     </tr>
                   </thead>
                   <tbody>
-                    {analytics.byRule.map((rule, idx) => (
+                    {byRule.map((rule, idx) => (
                       <tr key={idx} className={`border-b ${rule.isDominant ? 'bg-amber-50' : ''}`}>
                         <td className="py-2">
                           {rule.ruleName}
@@ -570,7 +554,7 @@ export default function MarginCommissionAnalyzer() {
                     </tr>
                   </thead>
                   <tbody>
-                    {analytics.byPeriod.map((week, idx) => (
+                    {byPeriod.map((week, idx) => (
                       <tr key={idx} className="border-b">
                         <td className="py-2">{moment(week.week).format('MMM D, YYYY')}</td>
                         <td className="py-2 text-right">${week.revenue.toLocaleString()}</td>
