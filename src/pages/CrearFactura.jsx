@@ -601,25 +601,20 @@ export default function CrearFactura() {
       return;
     }
 
-    // Unified validation using isValidLineItem
-    const invalid = (formData.items || []).filter(i => !isValidLineItem(i));
-    if (invalid.length > 0) {
-      toast({
-        title: 'Error',
-        description: language === 'es' ? 'Por favor completa todos los campos requeridos de los items' : 'Please complete all required item fields',
-        variant: 'destructive'
-      });
-      return;
-    }
+    // For drafts, allow incomplete items - filter out empty ones
+    const validItems = (formData.items || []).filter(i => 
+      i.item_name || i.description || i.quantity > 0 || i.unit_price > 0
+    );
 
     // Calculate estimated hours from items
-    const estimated_hours = (formData.items || []).reduce((sum, item) => {
+    const estimated_hours = validItems.reduce((sum, item) => {
       const hours = (item.installation_time || 0) * (item.quantity || 0);
       return sum + hours;
     }, 0);
 
     createMutation.mutate({
       ...formData,
+      items: validItems.length > 0 ? validItems : [{ item_name: "", description: "", quantity: 1, unit: "pcs", unit_price: 0, total: 0 }],
       estimated_hours
     });
   };
@@ -1294,25 +1289,37 @@ export default function CrearFactura() {
                   {updateMutation.isPending ? t('saving') : t('saveDraft')}
                 </Button>
               ) : (
-                // If creating a new invoice, "Save Draft" triggers form submission via handleSubmit -> createMutation
-                <Button
-                  type="submit" // This button will trigger the form's onSubmit handler
-                  disabled={createMutation.isPending || !formData.customer_name || !formData.job_name || (formData.items || []).some(i => !isValidLineItem(i))}
-                  variant="outline"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {createMutation.isPending ? t('saving') : t('saveDraft')}
-                </Button>
+               // If creating a new invoice, "Save Draft" triggers form submission via handleSubmit -> createMutation
+               <Button
+                 type="submit" // This button will trigger the form's onSubmit handler
+                 disabled={createMutation.isPending || !formData.customer_name || !formData.job_name}
+                 variant="outline"
+               >
+                 <Save className="w-4 h-4 mr-2" />
+                 {createMutation.isPending ? t('saving') : t('saveDraft')}
+               </Button>
               )}
               <Button
-                onClick={() => sendMutation.mutate(formData)}
-                disabled={!canSend || sendMutation.isPending || !formData.customer_name || !formData.customer_email || !formData.job_name || (formData.items || []).some(i => !isValidLineItem(i))}
-                className="bg-gradient-to-r from-emerald-600 to-emerald-700"
-                type="button"
-                title={!canSend ? (language === 'es' ? 'Pendiente de aprobación' : 'Pending approval') : ''}
+               onClick={() => {
+                 // Validate items for sending
+                 const invalid = (formData.items || []).filter(i => !isValidLineItem(i));
+                 if (invalid.length > 0) {
+                   toast({
+                     title: 'Error',
+                     description: language === 'es' ? 'Por favor completa todos los campos de los items antes de enviar' : 'Please complete all item fields before sending',
+                     variant: 'destructive'
+                   });
+                   return;
+                 }
+                 sendMutation.mutate(formData);
+               }}
+               disabled={!canSend || sendMutation.isPending || !formData.customer_name || !formData.customer_email || !formData.job_name}
+               className="bg-gradient-to-r from-emerald-600 to-emerald-700"
+               type="button"
+               title={!canSend ? (language === 'es' ? 'Pendiente de aprobación' : 'Pending approval') : ''}
               >
-                <Send className="w-4 h-4 mr-2" />
-                {sendMutation.isPending ? t('sending') : t('saveAndSend')}
+               <Send className="w-4 h-4 mr-2" />
+               {sendMutation.isPending ? t('sending') : t('saveAndSend')}
               </Button>
             </CardFooter>
           </Card>
