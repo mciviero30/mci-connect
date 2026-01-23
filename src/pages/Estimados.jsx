@@ -49,7 +49,7 @@ export default function Estimados() {
       if (statusFilter !== 'all') filters.status = statusFilter;
       if (teamFilter !== 'all') filters.team_id = teamFilter;
       
-      return base44.entities.Quote.filter(filters, '-created_date');
+      return base44.entities.Quote.filter(filters, 'quote_number');
     },
     staleTime: 5 * 60 * 1000,
   });
