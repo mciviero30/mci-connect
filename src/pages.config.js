@@ -121,6 +121,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import MarginCommissionAnalyzer from './pages/MarginCommissionAnalyzer';
+import CommissionSimulator from './pages/CommissionSimulator';
 import __Layout from './Layout.jsx';
 
 
@@ -248,6 +249,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "MarginCommissionAnalyzer": MarginCommissionAnalyzer,
+    "CommissionSimulator": CommissionSimulator,
 }
 
 export const pagesConfig = {
