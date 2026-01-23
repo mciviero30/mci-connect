@@ -132,6 +132,25 @@ export default function CommissionRuleManagement() {
     createVersionMutation.mutate(ruleData);
   };
 
+  // Show version history for a rule family
+  const handleShowHistory = (ruleName) => {
+    const ruleVersions = rules.filter(r => r.rule_name === ruleName);
+    setSelectedRuleForHistory(ruleVersions);
+    setShowVersionHistory(true);
+  };
+
+  // Group rules by name for history view
+  const ruleGroups = useMemo(() => {
+    const groups = {};
+    rules.forEach(rule => {
+      if (!groups[rule.rule_name]) {
+        groups[rule.rule_name] = [];
+      }
+      groups[rule.rule_name].push(rule);
+    });
+    return groups;
+  }, [rules]);
+
   // Loading state
   if (userLoading) {
     return (
