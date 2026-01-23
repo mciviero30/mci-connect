@@ -1,3 +1,4 @@
+import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import AIScheduleCenter from './pages/AIScheduleCenter';
 import AdminCleanup from './pages/AdminCleanup';
 import AgreementSignatures from './pages/AgreementSignatures';
@@ -123,11 +124,11 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import CommissionRuleManagement from './pages/CommissionRuleManagement';
-import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AIAssistantPersonal": AIAssistantPersonal,
     "AIScheduleCenter": AIScheduleCenter,
     "AdminCleanup": AdminCleanup,
     "AgreementSignatures": AgreementSignatures,
@@ -253,7 +254,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "CommissionRuleManagement": CommissionRuleManagement,
-    "AIAssistantPersonal": AIAssistantPersonal,
 }
 
 export const pagesConfig = {

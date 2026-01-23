@@ -197,12 +197,24 @@ export default function CrearFactura() {
       const shouldLockPrices = existingInvoice.status === 'sent' || existingInvoice.status === 'paid' || existingInvoice.status === 'partial';
       setPricesLocked(shouldLockPrices);
 
+      // Safe date formatting with validation
+      const formatSafeDate = (dateValue) => {
+        if (!dateValue) return format(new Date(), 'yyyy-MM-dd');
+        try {
+          const date = new Date(dateValue);
+          if (isNaN(date.getTime())) return format(new Date(), 'yyyy-MM-dd');
+          return format(date, 'yyyy-MM-dd');
+        } catch {
+          return format(new Date(), 'yyyy-MM-dd');
+        }
+      };
+
       setFormData({
         ...existingInvoice,
         items: itemsWithItemName,
         // Ensure date formats are correct for input type="date"
-        invoice_date: format(new Date(existingInvoice.invoice_date), 'yyyy-MM-dd'),
-        due_date: format(new Date(existingInvoice.due_date), 'yyyy-MM-dd'),
+        invoice_date: formatSafeDate(existingInvoice.invoice_date),
+        due_date: formatSafeDate(existingInvoice.due_date),
         auto_tax_enabled: existingInvoice.auto_tax_enabled ?? false
       });
     }
