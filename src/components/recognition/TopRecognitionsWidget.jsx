@@ -44,9 +44,18 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
     initialData: [],
   });
 
+  // SSOT: EmployeeDirectory is the only source for employee listings
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name'),
+    queryFn: async () => {
+      const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name');
+      return directory.map(d => ({
+        id: d.user_id || d.id,
+        email: d.employee_email,
+        full_name: d.full_name,
+        profile_photo_url: d.profile_photo_url
+      }));
+    },
     staleTime: 300000,
     initialData: [],
   });

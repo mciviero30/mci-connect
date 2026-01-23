@@ -89,7 +89,18 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
     const [breakMinutes, setBreakMinutes] = useState(existingAssignment?.scheduled_break_minutes || 60);
     const [maxHours, setMaxHours] = useState(existingAssignment?.max_daily_hours || 8);
 
-    const { data: employees, isLoading: loadingEmployees } = useQuery({ queryKey: ['employees'], queryFn: () => base44.entities.User.list() });
+    // SSOT: EmployeeDirectory is the only source for employee listings
+    const { data: employees, isLoading: loadingEmployees } = useQuery({ 
+      queryKey: ['employees'], 
+      queryFn: async () => {
+        const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' });
+        return directory.map(d => ({
+          id: d.user_id || d.id,
+          email: d.employee_email,
+          full_name: d.full_name
+        }));
+      }
+    });
     const { data: jobs, isLoading: loadingJobs } = useQuery({ queryKey: ['activeJobs'], queryFn: () => base44.entities.Job.filter({ status: 'active' }) });
 
     const { data: currentUser } = useQuery({

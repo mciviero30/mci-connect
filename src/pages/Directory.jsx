@@ -30,43 +30,30 @@ export default function Directory() {
   const userRole = (user?.role || 'employee').toLowerCase();
   const isAdminOrManager = userRole === 'admin' || userRole === 'manager';
 
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-  // Use EmployeeDirectory as primary source (safe, public data)
-  const { data: directoryEntries = [], isLoading: directoryLoading } = useQuery({
+  // SSOT: EmployeeDirectory is the ONLY source for employee listings (no fallback)
+  const { data: directoryEntries = [], isLoading } = useQuery({
     queryKey: ['employeeDirectory'],
     queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
     staleTime: 30000,
     enabled: !!user,
   });
 
-  // Fallback to User entity if directory is empty
-  const { data: usersBackup = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['employees-backup'],
-    queryFn: () => base44.entities.User.filter({ employment_status: 'active' }),
-    enabled: !!user && directoryEntries.length === 0 && !directoryLoading,
-    staleTime: 30000,
-  });
-
   // PERFORMANCE: Memoize employees transformation
   const employees = useMemo(() => 
-    directoryEntries.length > 0 
-      ? directoryEntries.map(d => ({
-          id: d.id,
-          email: d.employee_email,
-          full_name: d.full_name,
-          first_name: d.first_name,
-          last_name: d.last_name,
-          position: d.position,
-          department: d.department,
-          phone: d.phone,
-          team_name: d.team_name,
-          profile_photo_url: d.profile_photo_url
-        }))
-      : usersBackup,
-    [directoryEntries, usersBackup]
+    directoryEntries.map(d => ({
+      id: d.user_id || d.id,
+      email: d.employee_email,
+      full_name: d.full_name,
+      first_name: d.first_name,
+      last_name: d.last_name,
+      position: d.position,
+      department: d.department,
+      phone: d.phone,
+      team_name: d.team_name,
+      profile_photo_url: d.profile_photo_url
+    })),
+    [directoryEntries]
   );
-
-  const isLoading = directoryLoading || usersLoading;
 
   // PERFORMANCE: Memoize filtered employees
   const filteredEmployees = useMemo(() => 

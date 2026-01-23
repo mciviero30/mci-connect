@@ -246,9 +246,33 @@ export default function Dashboard() {
     initialData: [],
   });
 
+  // SSOT: EmployeeDirectory is the only source for employee listings
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name'),
+    queryFn: async () => {
+      // Fetch from EmployeeDirectory with active status
+      const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name');
+      
+      // Enrich with User data for employment_status and dob
+      const userIds = directory.filter(d => d.user_id).map(d => d.user_id);
+      const users = await Promise.all(
+        userIds.map(id => base44.entities.User.filter({ id }).catch(() => []))
+      );
+      const userMap = users.flat().reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+      
+      return directory.map(d => {
+        const user = userMap[d.user_id];
+        return {
+          id: d.user_id || d.id,
+          email: d.employee_email,
+          full_name: d.full_name,
+          position: d.position,
+          department: d.department,
+          employment_status: user?.employment_status || 'active',
+          dob: user?.dob
+        };
+      });
+    },
     enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
     staleTime: 1800000,
     gcTime: 3600000,

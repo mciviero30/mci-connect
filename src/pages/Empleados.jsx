@@ -122,9 +122,44 @@ export default function Empleados() {
     );
   }
 
+  // SSOT: EmployeeDirectory is the only source for employee listings
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('-created_date'),
+    queryFn: async () => {
+      // Fetch from EmployeeDirectory, then enrich with User data
+      const directory = await base44.entities.EmployeeDirectory.list('-created_date');
+      
+      // Enrich with User entity data (for employment_status, role, etc.)
+      const userIds = directory.filter(d => d.user_id).map(d => d.user_id);
+      const users = await Promise.all(
+        userIds.map(id => base44.entities.User.filter({ id }).catch(() => []))
+      );
+      const userMap = users.flat().reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+      
+      return directory.map(d => {
+        const user = userMap[d.user_id];
+        return {
+          id: d.user_id || d.id,
+          email: d.employee_email,
+          full_name: d.full_name,
+          first_name: d.first_name,
+          last_name: d.last_name,
+          position: d.position,
+          department: d.department,
+          phone: d.phone,
+          team_id: d.team_id,
+          team_name: d.team_name,
+          profile_photo_url: d.profile_photo_url,
+          // User entity data
+          employment_status: user?.employment_status || 'active',
+          role: user?.role || 'user',
+          hourly_rate: user?.hourly_rate,
+          onboarding_completed: user?.onboarding_completed,
+          invitation_count: user?.invitation_count,
+          last_invitation_sent: user?.last_invitation_sent
+        };
+      });
+    },
     staleTime: 30000
   });
 
