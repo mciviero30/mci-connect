@@ -13,14 +13,14 @@ Deno.serve(async (req) => {
     // Get all invoices
     const allInvoices = await base44.asServiceRole.entities.Invoice.list();
 
-    // Find the max existing INV- number
+    // Find the max existing INV- number (only 5-digit format like INV-00003)
     const existingNumbers = allInvoices
       .map(inv => inv.invoice_number)
-      .filter(n => n && n.startsWith('INV-'))
+      .filter(n => n && n.startsWith('INV-') && /^INV-\d{5}$/.test(n)) // Only 5-digit format
       .map(n => parseInt(n.replace('INV-', ''), 10))
       .filter(n => !isNaN(n));
 
-    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 0;
+    const maxNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) : 3;
 
     // Find invoices with no number (DRAFT or empty)
     const invoicesNeedingNumbers = allInvoices.filter(inv => 
