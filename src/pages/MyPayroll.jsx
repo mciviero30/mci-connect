@@ -62,6 +62,24 @@ export default function MyPayroll() {
     enabled: !!user,
   });
 
+  // Fetch approved commissions for the week
+  const { data: weekCommissions = [] } = useQuery({
+    queryKey: ['myWeekCommissions', user?.id, currentWeekStart, currentWeekEnd],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const commissions = await base44.entities.CommissionRecord.filter({
+        user_id: user.id,
+        status: 'approved'
+      });
+      // Filter by calculation_date in period
+      return commissions.filter(c => {
+        const calcDate = new Date(c.calculation_date);
+        return calcDate >= currentWeekStart && calcDate <= currentWeekEnd;
+      });
+    },
+    enabled: !!user?.id
+  });
+
   const calculations = useMemo(() => {
     const weekStart = currentWeekStart;
     const weekEnd = currentWeekEnd;
@@ -94,7 +112,8 @@ export default function MyPayroll() {
     const normalWorkPay = normalWorkHours * hourlyRate;
     const overtimeWorkPay = overtimeWorkHours * (hourlyRate * 1.5);
     const drivingHoursPay = totalDrivingHours * hourlyRate;
-    const totalPay = normalWorkPay + overtimeWorkPay + drivingHoursPay + drivingMilesPay + perDiemAmount + reimbursements;
+    const totalCommission = weekCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+    const totalPay = normalWorkPay + overtimeWorkPay + drivingHoursPay + drivingMilesPay + perDiemAmount + reimbursements + totalCommission;
 
     const groupedByDate = {};
     weekTimeEntries.forEach(entry => {
@@ -218,6 +237,56 @@ export default function MyPayroll() {
           <ChevronRight className="w-5 h-5" />
         </Button>
       </div>
+
+      {/* Commission Section */}
+      {calculations.totalCommission > 0 && (
+        <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 shadow-lg border-green-200 dark:border-green-800 mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-100 dark:bg-green-900/50 rounded-xl">
+                  <TrendingUp className="w-8 h-8 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-green-600 dark:text-green-400">
+                    {language === 'es' ? 'Comisiones Aprobadas' : 'Approved Commissions'}
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    {weekCommissions.length} {weekCommissions.length === 1 ? 'commission' : 'commissions'} this week
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  ${calculations.totalCommission.toFixed(2)}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  {language === 'es' ? 'Incluido en el total' : 'Included in total pay'}
+                </p>
+              </div>
+            </div>
+            
+            {/* Commission Details */}
+            <div className="mt-4 space-y-2">
+              {weekCommissions.map(comm => (
+                <div key={comm.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-3">
+                    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400">
+                      {comm.trigger_entity_number || comm.trigger_entity_id}
+                    </Badge>
+                    <span className="text-sm text-slate-600 dark:text-slate-400">
+                      {comm.rule_snapshot?.rule_name}
+                    </span>
+                  </div>
+                  <span className="font-semibold text-green-600 dark:text-green-400">
+                    ${comm.commission_amount.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Daily Breakdown */}
       <ModernCard title={language === 'es' ? 'Desglose Diario' : 'Daily Breakdown'} icon={CalendarDays}>

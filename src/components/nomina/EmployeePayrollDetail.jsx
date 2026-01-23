@@ -70,6 +70,23 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
     staleTime: 30000
   });
 
+  // Fetch approved commissions for the week
+  const { data: weekCommissions = [] } = useQuery({
+    queryKey: ['weekCommissions', employee.id, weekStart, weekEnd],
+    queryFn: async () => {
+      if (!employee?.id) return [];
+      const commissions = await base44.entities.CommissionRecord.filter({
+        user_id: employee.id,
+        status: 'approved'
+      });
+      return commissions.filter(c => {
+        const calcDate = new Date(c.calculation_date);
+        return calcDate >= weekStart && calcDate <= weekEnd;
+      });
+    },
+    enabled: !!employee?.id
+  });
+
   // PERFORMANCE: Reuse aggregated payroll from parent cache
   const aggregatedPayroll = queryClient.getQueryData([
     'payrollAggregate', 
@@ -220,7 +237,10 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
     const mileagePay = weekTotals.drivingMiles * 0.60;
     const totalDrivingPay = drivingHoursPay + mileagePay;
 
-    const totalPay = workPay + totalDrivingPay + weekTotals.perDiem + weekTotals.reimbursements;
+    // COMMISSION: sum approved commissions for the week
+    const totalCommission = weekCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+
+    const totalPay = workPay + totalDrivingPay + weekTotals.perDiem + weekTotals.reimbursements + totalCommission;
 
     return {
       regularHours,
@@ -231,9 +251,10 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
       drivingHoursPay,
       mileagePay,
       totalDrivingPay,
+      totalCommission,
       totalPay
     };
-  }, [weekTotals, hourlyRate]);
+  }, [weekTotals, hourlyRate, weekCommissions]);
 
   const payrollData = {
     regularHours: payCalculations.regularHours,
@@ -373,13 +394,56 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
               <p className="text-sm text-slate-400">Recibos</p>
               <p className="text-2xl font-bold text-pink-400">${weekTotals.reimbursements.toFixed(2)}</p>
             </div>
-            <div className="col-span-2">
+            {payCalculations.totalCommission > 0 && (
+              <div>
+                <p className="text-sm text-slate-400">Comisiones</p>
+                <p className="text-2xl font-bold text-green-400">${payCalculations.totalCommission.toFixed(2)}</p>
+              </div>
+            )}
+            <div className={payCalculations.totalCommission > 0 ? 'col-span-1' : 'col-span-2'}>
               <p className="text-sm text-slate-400">{t('totalPay')}</p>
               <p className="text-3xl font-bold text-emerald-400">${payCalculations.totalPay.toFixed(2)}</p>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Commission Details */}
+      {weekCommissions.length > 0 && (
+        <Card className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/20 shadow-xl">
+          <CardContent className="p-4">
+            <h3 className="font-bold text-lg text-green-400 mb-3">
+              ✅ Approved Commissions (${payCalculations.totalCommission.toFixed(2)})
+            </h3>
+            <div className="space-y-2">
+              {weekCommissions.map(comm => (
+                <div key={comm.id} className="p-3 bg-slate-800/50 rounded-lg border border-green-500/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Badge className="bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400">
+                        {comm.trigger_entity_number}
+                      </Badge>
+                      <span className="text-sm text-slate-300">
+                        {comm.rule_snapshot?.rule_name}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {format(new Date(comm.calculation_date), 'MMM d')}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-400">${comm.commission_amount.toFixed(2)}</p>
+                      <p className="text-xs text-slate-500">{comm.calculation_inputs?.model_used}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500 mt-3 italic">
+              Read-only: Commissions are automatically calculated when invoices are paid
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Daily Details */}
       <div className="space-y-3">
