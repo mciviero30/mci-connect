@@ -50,15 +50,26 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
     initialData: [],
   });
 
-  // PHASE 3: Frontend Alignment - Use EmployeeDirectory for managers
+  // 🚫 EMPLOYEE SSOT: EmployeeDirectory is canonical source
+  // DO NOT USE User.list() or User.filter() for employee lists
   const { data: managers } = useQuery({
     queryKey: ['managers'],
     queryFn: async () => {
       const directory = await base44.entities.EmployeeDirectory.list();
-      return directory.filter(d => 
-        ['CEO', 'manager', 'supervisor'].includes(d.position) && 
-        d.status === 'active'
-      );
+      
+      // DEFENSIVE: Validate manager records
+      const validManagers = directory.filter(d => {
+        if (!d.user_id) {
+          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ Manager missing user_id', {
+            component: 'EmployeeForm',
+            email: d.employee_email
+          });
+          return false;
+        }
+        return ['CEO', 'manager', 'supervisor'].includes(d.position) && d.status === 'active';
+      });
+      
+      return validManagers;
     },
     initialData: [],
   });

@@ -24,25 +24,53 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
     initialData: [],
   });
 
-  // PHASE 3: Frontend Alignment - Use EmployeeDirectory for managers
+  // 🚫 EMPLOYEE SSOT: EmployeeDirectory is canonical source
+  // DO NOT USE User.list() or User.filter() for employee lists
   const { data: managers } = useQuery({
     queryKey: ['managers'],
     queryFn: async () => {
       const directory = await base44.entities.EmployeeDirectory.list();
-      return directory.filter(d => 
-        ['CEO', 'manager', 'supervisor'].includes(d.position) && 
-        d.status === 'active'
-      );
+      
+      // DEFENSIVE: Validate manager records
+      const validManagers = directory.filter(d => {
+        if (!d.user_id) {
+          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ Manager missing user_id', {
+            component: 'ActiveEmployeeForm',
+            email: d.employee_email
+          });
+          return false;
+        }
+        return ['CEO', 'manager', 'supervisor'].includes(d.position) && d.status === 'active';
+      });
+      
+      return validManagers;
     },
     initialData: [],
   });
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'] });
 
-  // PHASE 3: Frontend Alignment - Use EmployeeDirectory for team capacity
+  // 🚫 EMPLOYEE SSOT: EmployeeDirectory is canonical source
+  // DO NOT USE User.list() or User.filter() for employee lists
   const { data: employees } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
+    queryFn: async () => {
+      const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' });
+      
+      // DEFENSIVE: Validate employee records
+      const validEmployees = directory.filter(d => {
+        if (!d.user_id) {
+          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ Employee missing user_id', {
+            component: 'ActiveEmployeeForm',
+            email: d.employee_email
+          });
+          return false;
+        }
+        return true;
+      });
+      
+      return validEmployees;
+    },
     initialData: [],
   });
 

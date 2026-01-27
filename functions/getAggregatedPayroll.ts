@@ -15,7 +15,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'week_start and week_end required' }, { status: 400 });
     }
 
-    // PHASE 2: Backend Alignment - Use EmployeeDirectory as SSOT
+    // 🚫 EMPLOYEE SSOT: EmployeeDirectory is canonical source
+    // DO NOT USE User.list() or User.filter() for employee lists
     const [directoryEmployees, timeEntries, drivingLogs, expenses, weeklyPayrolls, bonusConfigs, jobs, invoices] = await Promise.all([
       base44.entities.EmployeeDirectory.filter({ status: 'active' }),
       base44.entities.TimeEntry.list(),
@@ -27,6 +28,16 @@ Deno.serve(async (req) => {
       base44.entities.Invoice.list()
     ]);
 
+    // DEFENSIVE: Validate all employees have user_id
+    directoryEmployees.forEach(d => {
+      if (!d.user_id) {
+        console.warn('[PAYROLL_EMPLOYEE_MISMATCH] ⚠️ EmployeeDirectory missing user_id', {
+          employee_email: d.employee_email,
+          id: d.id
+        });
+      }
+    });
+
     // Enrich with User data for rates and settings
     const userIds = directoryEmployees.filter(d => d.user_id).map(d => d.user_id);
     const users = await Promise.all(
@@ -34,9 +45,18 @@ Deno.serve(async (req) => {
     );
     const userMap = users.flat().reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
 
-    // Map directory to employee shape
+    // Map directory to employee shape (enrich with User data)
     const employees = directoryEmployees.map(d => {
       const user = userMap[d.user_id];
+      
+      // DEFENSIVE: Warn if User data missing for payroll
+      if (d.user_id && !user) {
+        console.warn('[PAYROLL_EMPLOYEE_MISMATCH] ⚠️ User not found for employee', {
+          user_id: d.user_id,
+          employee_email: d.employee_email
+        });
+      }
+      
       return {
         id: d.user_id || d.id,
         email: d.employee_email,

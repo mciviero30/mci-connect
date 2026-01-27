@@ -117,12 +117,36 @@ export default function Calendario() {
     refetchOnWindowFocus: false
   });
 
+  // 🚫 EMPLOYEE SSOT: EmployeeDirectory is canonical source
+  // DO NOT USE User.list() or User.filter() for employee lists
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       const directory = await base44.entities.EmployeeDirectory.list();
-      return directory.map(d => ({
-        id: d.user_id || d.id,
+      
+      // DEFENSIVE: Filter out records missing critical fields
+      const validEmployees = directory.filter(d => {
+        if (!d.user_id) {
+          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ EmployeeDirectory record missing user_id', {
+            component: 'Calendario',
+            employee_email: d.employee_email,
+            id: d.id
+          });
+          return false; // Skip records without user_id
+        }
+        if (!d.employee_email) {
+          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ EmployeeDirectory record missing email', {
+            component: 'Calendario',
+            user_id: d.user_id,
+            id: d.id
+          });
+          return false;
+        }
+        return true;
+      });
+      
+      return validEmployees.map(d => ({
+        id: d.user_id,
         email: d.employee_email,
         full_name: d.full_name || `${d.first_name || ''} ${d.last_name || ''}`.trim(),
         first_name: d.first_name,
