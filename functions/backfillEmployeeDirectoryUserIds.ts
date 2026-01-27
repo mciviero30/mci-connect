@@ -27,15 +27,15 @@ Deno.serve(async (req) => {
     };
 
     // Get all EmployeeDirectory records
-    const allDirectory = await base44.asServiceRole.entities.EmployeeDirectory.list();
+    const allDirectory = await base44.asServiceRole.entities.EmployeeDirectory.list('', 1000);
     results.total_records = allDirectory.length;
 
     // Get all Users for matching
-    const allUsers = await base44.asServiceRole.entities.User.list();
-    const userEmailMap = {};
+    const allUsers = await base44.asServiceRole.entities.User.list('', 1000);
+    const userEmailMap = new Map();
     allUsers.forEach(u => {
       if (u.email) {
-        userEmailMap[u.email.toLowerCase().trim()] = u;
+        userEmailMap.set(u.email.toLowerCase().trim(), u);
       }
     });
 
@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
         }
 
         // Find matching User
-        const matchingUser = userEmailMap[email];
+        const matchingUser = userEmailMap.get(email);
         
         if (!matchingUser) {
           results.no_user_match++;
