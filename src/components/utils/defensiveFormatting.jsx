@@ -3,6 +3,8 @@
  * ✅ No behavior changes - only safeguards against crashes
  */
 
+import { format } from 'date-fns';
+
 /**
  * Safe date formatting with fallback
  * @param {Date|string} dateValue - Date to format
@@ -10,7 +12,7 @@
  * @param {string} fallback - Fallback if date invalid
  * @returns {string} Formatted date or fallback
  */
-export const safeFormatDate = (dateValue, format, fallback = 'N/A') => {
+export const safeFormatDate = (dateValue, formatStr, fallback = 'N/A') => {
   if (!dateValue) return fallback;
   
   try {
@@ -25,12 +27,11 @@ export const safeFormatDate = (dateValue, format, fallback = 'N/A') => {
       return fallback;
     }
 
-    // Safe formatting with date-fns
-    const { format: formatFn } = await import('date-fns');
-    return formatFn(date, format);
+    // Safe formatting with date-fns (imported at top level)
+    return format(date, formatStr);
   } catch (err) {
     if (import.meta.env.DEV) {
-      console.error('[Defensive] Date formatting error:', err, { dateValue, format });
+      console.error('[Defensive] Date formatting error:', err, { dateValue, formatStr });
     }
     return fallback;
   }
@@ -42,7 +43,7 @@ export const safeFormatDate = (dateValue, format, fallback = 'N/A') => {
  * @param {string} currency - Currency code (default USD)
  * @returns {string} Formatted currency string
  */
-export const safeFormatCurrency = (value, currency = 'USD') => {
+export const formatCurrency = (value, currency = 'USD') => {
   try {
     const num = Number(value) || 0;
     return new Intl.NumberFormat('en-US', {
@@ -56,6 +57,8 @@ export const safeFormatCurrency = (value, currency = 'USD') => {
     return `$${(Number(value) || 0).toFixed(2)}`;
   }
 };
+
+export const safeFormatCurrency = formatCurrency;
 
 /**
  * Safe decimal formatting with guard against NaN
