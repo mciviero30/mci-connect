@@ -20,9 +20,9 @@ export default function JobQuoteCleanup() {
     staleTime: Infinity
   });
 
-  // Redirect if not admin
+  // Redirect if not admin or CEO
   React.useEffect(() => {
-    if (user && user.role !== 'admin') {
+    if (user && user.role !== 'admin' && user.role !== 'ceo') {
       window.location.href = '/';
     }
   }, [user]);
