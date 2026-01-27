@@ -94,6 +94,7 @@ import PaymentReconciliation from './pages/PaymentReconciliation';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import PerDiem from './pages/PerDiem';
 import PerformanceManagement from './pages/PerformanceManagement';
+import ProfitabilityDashboard from './pages/ProfitabilityDashboard';
 import QuoteImporter from './pages/QuoteImporter';
 import RFIs from './pages/RFIs';
 import Recognitions from './pages/Recognitions';
@@ -109,8 +110,8 @@ import SystemReadiness from './pages/SystemReadiness';
 import SystemTest from './pages/SystemTest';
 import TaxOnboarding from './pages/TaxOnboarding';
 import TeamDetails from './pages/TeamDetails';
-import TeamGoals from './pages/TeamGoals';
 import Teams from './pages/Teams';
+import TeamGoals from './pages/TeamGoals';
 import TestingChecklist from './pages/TestingChecklist';
 import TimeOffRequests from './pages/TimeOffRequests';
 import TimeReports from './pages/TimeReports';
@@ -124,7 +125,6 @@ import VerIncidente from './pages/VerIncidente';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
-import ProfitabilityDashboard from './pages/ProfitabilityDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -225,6 +225,7 @@ export const PAGES = {
     "PayrollAutoFlow": PayrollAutoFlow,
     "PerDiem": PerDiem,
     "PerformanceManagement": PerformanceManagement,
+    "ProfitabilityDashboard": ProfitabilityDashboard,
     "QuoteImporter": QuoteImporter,
     "RFIs": RFIs,
     "Recognitions": Recognitions,
@@ -240,8 +241,8 @@ export const PAGES = {
     "SystemTest": SystemTest,
     "TaxOnboarding": TaxOnboarding,
     "TeamDetails": TeamDetails,
-    "TeamGoals": TeamGoals,
     "Teams": Teams,
+    "TeamGoals": TeamGoals,
     "TestingChecklist": TestingChecklist,
     "TimeOffRequests": TimeOffRequests,
     "TimeReports": TimeReports,
@@ -255,7 +256,6 @@ export const PAGES = {
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
-    "ProfitabilityDashboard": ProfitabilityDashboard,
 }
 
 export const pagesConfig = {
