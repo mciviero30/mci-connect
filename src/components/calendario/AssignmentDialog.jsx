@@ -586,12 +586,19 @@ export default function AssignmentDialog({
                 customColor === 'violet' ? 'bg-violet-600' :
                 customColor === 'fuchsia' ? 'bg-fuchsia-600' :
                 customColor === 'rose' ? 'bg-rose-600' :
+                customColor === 'slate' ? 'bg-slate-600' :
+                customColor === 'gray' ? 'bg-gray-600' :
+                customColor === 'zinc' ? 'bg-zinc-600' :
+                customColor === 'stone' ? 'bg-stone-600' :
+                customColor === 'brown' ? 'bg-amber-800' :
+                customColor === 'darkbrown' ? 'bg-yellow-900' :
+                customColor === 'black' ? 'bg-black' :
                 'bg-slate-300 dark:bg-slate-600'
               } shadow-md transition-all`} />
               Shift Color
               {customColor && <span className="text-xs font-normal text-slate-600 dark:text-slate-400">({customColor})</span>}
             </Label>
-            <div className="grid grid-cols-8 gap-1.5">
+            <div className="grid grid-cols-10 gap-1">
               {[
                 { name: 'blue', bg: 'bg-blue-600', hover: 'hover:bg-blue-700' },
                 { name: 'green', bg: 'bg-green-600', hover: 'hover:bg-green-700' },
@@ -609,24 +616,31 @@ export default function AssignmentDialog({
                 { name: 'indigo', bg: 'bg-indigo-600', hover: 'hover:bg-indigo-700' },
                 { name: 'violet', bg: 'bg-violet-600', hover: 'hover:bg-violet-700' },
                 { name: 'fuchsia', bg: 'bg-fuchsia-600', hover: 'hover:bg-fuchsia-700' },
-                { name: 'rose', bg: 'bg-rose-600', hover: 'hover:bg-rose-700' }
+                { name: 'rose', bg: 'bg-rose-600', hover: 'hover:bg-rose-700' },
+                { name: 'slate', bg: 'bg-slate-600', hover: 'hover:bg-slate-700' },
+                { name: 'gray', bg: 'bg-gray-600', hover: 'hover:bg-gray-700' },
+                { name: 'zinc', bg: 'bg-zinc-600', hover: 'hover:bg-zinc-700' },
+                { name: 'stone', bg: 'bg-stone-600', hover: 'hover:bg-stone-700' },
+                { name: 'brown', bg: 'bg-amber-800', hover: 'hover:bg-amber-900' },
+                { name: 'darkbrown', bg: 'bg-yellow-900', hover: 'hover:bg-yellow-950' },
+                { name: 'black', bg: 'bg-black', hover: 'hover:bg-gray-900' }
               ].map((color) => (
                 <button
                   key={color.name}
                   type="button"
                   onClick={() => setCustomColor(color.name)}
                   className={cn(
-                    "h-9 rounded-lg transition-all shadow-md active:scale-95",
+                    "h-6 rounded transition-all shadow-sm active:scale-90",
                     color.bg,
                     color.hover,
                     customColor === color.name 
-                      ? 'ring-2 ring-[#1E3A8A] ring-offset-1 scale-105' 
+                      ? 'ring-1 ring-[#1E3A8A] ring-offset-1 scale-105' 
                       : 'hover:scale-105'
                   )}
                   title={color.name}
                 >
                   {customColor === color.name && (
-                    <Check className="w-4 h-4 text-white mx-auto drop-shadow-lg" />
+                    <Check className="w-3 h-3 text-white mx-auto drop-shadow-lg" />
                   )}
                 </button>
               ))}
