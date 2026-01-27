@@ -120,10 +120,17 @@ export default function Calendario() {
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      const data = await base44.entities.User.filter({ 
-        employment_status: 'active'
+      const directory = await base44.entities.EmployeeDirectory.filter({ 
+        status: 'active'
       });
-      return data || [];
+      return directory.map(d => ({
+        id: d.user_id || d.id,
+        email: d.employee_email,
+        full_name: d.full_name,
+        first_name: d.first_name,
+        last_name: d.last_name,
+        employment_status: d.status
+      }));
     },
     initialData: [],
     staleTime: 300000,
