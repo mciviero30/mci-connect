@@ -66,6 +66,7 @@ import Items from './pages/Items';
 import JobDetails from './pages/JobDetails';
 import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
 import JobPhotos from './pages/JobPhotos';
+import JobQuoteCleanup from './pages/JobQuoteCleanup';
 import KnowledgeAdmin from './pages/KnowledgeAdmin';
 import KnowledgeLibrary from './pages/KnowledgeLibrary';
 import KnowledgeSubmit from './pages/KnowledgeSubmit';
@@ -126,7 +127,6 @@ import VerIncidente from './pages/VerIncidente';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
-import JobQuoteCleanup from './pages/JobQuoteCleanup';
 import __Layout from './Layout.jsx';
 
 
@@ -199,6 +199,7 @@ export const PAGES = {
     "JobDetails": JobDetails,
     "JobPerformanceAnalysis": JobPerformanceAnalysis,
     "JobPhotos": JobPhotos,
+    "JobQuoteCleanup": JobQuoteCleanup,
     "KnowledgeAdmin": KnowledgeAdmin,
     "KnowledgeLibrary": KnowledgeLibrary,
     "KnowledgeSubmit": KnowledgeSubmit,
@@ -259,7 +260,6 @@ export const PAGES = {
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
-    "JobQuoteCleanup": JobQuoteCleanup,
 }
 
 export const pagesConfig = {
