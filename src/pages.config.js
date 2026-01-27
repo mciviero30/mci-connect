@@ -89,6 +89,7 @@ import NotificationPreferences from './pages/NotificationPreferences';
 import NotificationSettings from './pages/NotificationSettings';
 import OnboardingWizard from './pages/OnboardingWizard';
 import OperationalModesDoc from './pages/OperationalModesDoc';
+import OrphanedQuoteCleanup from './pages/OrphanedQuoteCleanup';
 import Papelera from './pages/Papelera';
 import PaymentReconciliation from './pages/PaymentReconciliation';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
@@ -110,8 +111,8 @@ import SystemReadiness from './pages/SystemReadiness';
 import SystemTest from './pages/SystemTest';
 import TaxOnboarding from './pages/TaxOnboarding';
 import TeamDetails from './pages/TeamDetails';
-import Teams from './pages/Teams';
 import TeamGoals from './pages/TeamGoals';
+import Teams from './pages/Teams';
 import TestingChecklist from './pages/TestingChecklist';
 import TimeOffRequests from './pages/TimeOffRequests';
 import TimeReports from './pages/TimeReports';
@@ -125,7 +126,7 @@ import VerIncidente from './pages/VerIncidente';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
-import OrphanedQuoteCleanup from './pages/OrphanedQuoteCleanup';
+import JobQuoteCleanup from './pages/JobQuoteCleanup';
 import __Layout from './Layout.jsx';
 
 
@@ -221,6 +222,7 @@ export const PAGES = {
     "NotificationSettings": NotificationSettings,
     "OnboardingWizard": OnboardingWizard,
     "OperationalModesDoc": OperationalModesDoc,
+    "OrphanedQuoteCleanup": OrphanedQuoteCleanup,
     "Papelera": Papelera,
     "PaymentReconciliation": PaymentReconciliation,
     "PayrollAutoFlow": PayrollAutoFlow,
@@ -242,8 +244,8 @@ export const PAGES = {
     "SystemTest": SystemTest,
     "TaxOnboarding": TaxOnboarding,
     "TeamDetails": TeamDetails,
-    "Teams": Teams,
     "TeamGoals": TeamGoals,
+    "Teams": Teams,
     "TestingChecklist": TestingChecklist,
     "TimeOffRequests": TimeOffRequests,
     "TimeReports": TimeReports,
@@ -257,7 +259,7 @@ export const PAGES = {
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
-    "OrphanedQuoteCleanup": OrphanedQuoteCleanup,
+    "JobQuoteCleanup": JobQuoteCleanup,
 }
 
 export const pagesConfig = {
