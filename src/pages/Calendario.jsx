@@ -424,7 +424,7 @@ export default function Calendario() {
     updateMutation.mutate({ id: shiftId, data: updatedData });
   };
 
-  const getDateRange = useMemo(() => {
+  const dateRangeLabel = useMemo(() => {
     if (view === 'day') return format(currentDate, 'MMMM d, yyyy');
     if (view === 'week') {
       const start = startOfWeek(currentDate, { weekStartsOn: 1 });
@@ -701,7 +701,7 @@ export default function Calendario() {
               <Button variant="ghost" size="sm" onClick={handleNext} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10 h-9">
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              <h2 className="text-sm md:text-xl font-bold text-slate-900 ml-2 md:ml-4 truncate">{getDateRange()}</h2>
+              <h2 className="text-sm md:text-xl font-bold text-slate-900 ml-2 md:ml-4 truncate">{dateRangeLabel}</h2>
             </div>
 
             <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto justify-end">
