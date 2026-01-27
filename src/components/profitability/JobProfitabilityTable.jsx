@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react';
+import { AlertTriangle, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
 import { formatCurrency } from '@/components/utils/defensiveFormatting';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -53,6 +53,58 @@ export default function JobProfitabilityTable({ jobs, language = 'en' }) {
     return 'healthy';
   };
 
+  const getDriftIndicator = (job) => {
+    if (job.drift === null || job.drift === undefined) {
+      return {
+        badge: <span className="text-xs text-slate-400">—</span>,
+        tooltip: language === 'es' ? 'Sin estimado base' : 'No baseline estimate'
+      };
+    }
+
+    const drift = job.drift;
+    const isFinal = job.status === 'completed' || job.status === 'archived';
+
+    if (drift > 2) {
+      return {
+        badge: (
+          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 font-semibold">
+            <TrendingUp className="w-3 h-3 mr-1" />
+            +{drift.toFixed(1)}%
+          </Badge>
+        ),
+        tooltip: language === 'es' 
+          ? `Margen actual (${job.margin.toFixed(1)}%) supera el estimado (${job.estimated_margin.toFixed(1)}%)${isFinal ? ' · Final' : ''}`
+          : `Current margin (${job.margin.toFixed(1)}%) exceeds estimate (${job.estimated_margin.toFixed(1)}%)${isFinal ? ' · Final' : ''}`
+      };
+    }
+
+    if (drift >= -2 && drift <= 2) {
+      return {
+        badge: (
+          <Badge className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <ArrowRight className="w-3 h-3 mr-1" />
+            {drift >= 0 ? '+' : ''}{drift.toFixed(1)}%
+          </Badge>
+        ),
+        tooltip: language === 'es' 
+          ? `Margen en línea con estimado (±2%)${isFinal ? ' · Final' : ''}`
+          : `Margin in line with estimate (±2%)${isFinal ? ' · Final' : ''}`
+      };
+    }
+
+    return {
+      badge: (
+        <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 font-bold">
+          <TrendingDown className="w-3 h-3 mr-1" />
+          {drift.toFixed(1)}%
+        </Badge>
+      ),
+      tooltip: language === 'es' 
+        ? `Costos exceden estimado por ${Math.abs(drift).toFixed(1)}% · Actual: ${job.margin.toFixed(1)}% vs Estimado: ${job.estimated_margin.toFixed(1)}%${isFinal ? ' · Final' : ''}`
+        : `Costs exceed estimate by ${Math.abs(drift).toFixed(1)}% · Current: ${job.margin.toFixed(1)}% vs Estimated: ${job.estimated_margin.toFixed(1)}%${isFinal ? ' · Final' : ''}`
+    };
+  };
+
   return (
     <Card className="border-slate-200 dark:border-slate-700">
       <CardHeader>
@@ -91,6 +143,9 @@ export default function JobProfitabilityTable({ jobs, language = 'en' }) {
                 </th>
                 <th className="text-center p-3 font-semibold text-slate-700 dark:text-slate-300">
                   {language === 'es' ? 'Margen' : 'Margin'}
+                </th>
+                <th className="text-center p-3 font-semibold text-slate-700 dark:text-slate-300">
+                  {language === 'es' ? 'Desviación' : 'Drift'}
                 </th>
                 <th className="text-center p-3 font-semibold text-slate-700 dark:text-slate-300">
                   {language === 'es' ? 'Alertas' : 'Alerts'}
@@ -136,6 +191,16 @@ export default function JobProfitabilityTable({ jobs, language = 'en' }) {
                     </td>
                     <td className="p-3 text-center">
                       {getMarginBadge(job.margin)}
+                    </td>
+                    <td className="p-3 text-center">
+                      <Tooltip>
+                        <TooltipTrigger>
+                          {getDriftIndicator(job).badge}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-xs">{getDriftIndicator(job).tooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </td>
                     <td className="p-3 text-center">
                       <TooltipProvider>

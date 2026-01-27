@@ -54,7 +54,13 @@ export default function ProfitabilityDashboard() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const isLoading = loadingInvoices || loadingExpenses || loadingTime || loadingCommissions || loadingJobs || loadingEmployees;
+  const { data: quotes = [], isLoading: loadingQuotes } = useQuery({
+    queryKey: ['profitability-quotes'],
+    queryFn: () => base44.entities.Quote.filter({ deleted_at: null }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const isLoading = loadingInvoices || loadingExpenses || loadingTime || loadingCommissions || loadingJobs || loadingEmployees || loadingQuotes;
 
   // Memoized aggregations (read-only calculations)
   const profitabilityData = useMemo(() => {
@@ -85,19 +91,26 @@ export default function ProfitabilityDashboard() {
     const jobMap = new Map();
 
     jobs.forEach(job => {
+      // Find related quote to get estimated margin
+      const relatedQuote = quotes.find(q => q.job_id === job.id || q.quote_id === job.quote_id);
+      const estimatedMargin = relatedQuote?.profit_margin || job.profit_margin || null;
+
       jobMap.set(job.id, {
         job_id: job.id,
         job_name: job.name,
         job_number: job.id,
         customer_name: job.customer_name,
         estimated_cost: Number(job.estimated_cost) || 0,
+        estimated_margin: estimatedMargin !== null ? Number(estimatedMargin) : null,
+        status: job.status,
         revenue: 0,
         laborCost: 0,
         expenseCost: 0,
         commissions: 0,
         totalCost: 0,
         profit: 0,
-        margin: 0
+        margin: 0,
+        drift: null
       });
     });
 
@@ -147,11 +160,16 @@ export default function ProfitabilityDashboard() {
       }
     });
 
-    // Calculate totals
+    // Calculate totals and drift
     jobMap.forEach(job => {
       job.totalCost = job.laborCost + job.expenseCost + job.commissions;
       job.profit = job.revenue - job.totalCost;
       job.margin = job.revenue > 0 ? (job.profit / job.revenue) * 100 : 0;
+      
+      // Drift = current margin - estimated margin (visual only, no prediction)
+      if (job.estimated_margin !== null) {
+        job.drift = job.margin - job.estimated_margin;
+      }
     });
 
     const jobsArray = Array.from(jobMap.values()).filter(j => j.revenue > 0 || j.totalCost > 0);
@@ -163,6 +181,7 @@ export default function ProfitabilityDashboard() {
     const netProfit = totalRevenue - totalCost;
     const avgMargin = jobsArray.length > 0 ? jobsArray.reduce((sum, j) => sum + j.margin, 0) / jobsArray.length : 0;
     const negativeMarginCount = jobsArray.filter(j => j.margin < 0).length;
+    const jobsOffTrack = jobsArray.filter(j => j.drift !== null && j.drift < -3).length;
 
     // Aggregate by client
     const clientMap = new Map();
@@ -197,11 +216,12 @@ export default function ProfitabilityDashboard() {
         totalCommissions,
         netProfit,
         avgMargin,
-        negativeMarginCount
+        negativeMarginCount,
+        jobsOffTrack
       },
       clientData
     };
-  }, [invoices, expenses, timeEntries, commissions, jobs, employees, dateRange, isLoading]);
+  }, [invoices, expenses, timeEntries, commissions, jobs, employees, quotes, dateRange, isLoading]);
 
   return (
     <CommissionAccessGuard>

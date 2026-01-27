@@ -5,7 +5,7 @@ import { formatCurrency } from '@/components/utils/defensiveFormatting';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function ProfitabilityKPIs({ kpis, language = 'en' }) {
-  const { totalRevenue, totalCost, totalCommissions, netProfit, avgMargin, negativeMarginCount } = kpis;
+  const { totalRevenue, totalCost, totalCommissions, netProfit, avgMargin, negativeMarginCount, jobsOffTrack } = kpis;
 
   const cards = [
     {
@@ -49,6 +49,13 @@ export default function ProfitabilityKPIs({ kpis, language = 'en' }) {
       icon: AlertTriangle,
       color: 'text-amber-600 dark:text-amber-400',
       bgColor: 'bg-amber-50 dark:bg-amber-900/20'
+    },
+    {
+      title: language === 'es' ? 'Trabajos Fuera de Meta' : 'Jobs Off Track',
+      value: jobsOffTrack || 0,
+      icon: TrendingDown,
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-50 dark:bg-red-900/20'
     }
   ];
 
@@ -56,7 +63,7 @@ export default function ProfitabilityKPIs({ kpis, language = 'en' }) {
     <TooltipProvider>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         {cards.map((card, idx) => {
-          const showAlert = (idx === 5 && negativeMarginCount > 0) || (idx === 3 && netProfit < 0);
+          const showAlert = (idx === 5 && negativeMarginCount > 0) || (idx === 3 && netProfit < 0) || (idx === 6 && jobsOffTrack > 0);
           
           return (
             <Card key={idx} className={`border-slate-200 dark:border-slate-700 ${showAlert ? 'ring-2 ring-amber-400 dark:ring-amber-600' : ''}`}>
@@ -85,6 +92,15 @@ export default function ProfitabilityKPIs({ kpis, language = 'en' }) {
                         {language === 'es' 
                           ? '🔴 Pérdida neta - costos exceden ingresos' 
                           : '🔴 Net loss - costs exceed revenue'}
+                      </p>
+                    </TooltipContent>
+                  )}
+                  {idx === 6 && jobsOffTrack > 0 && (
+                    <TooltipContent>
+                      <p className="text-xs font-semibold text-red-600">
+                        {language === 'es' 
+                          ? `🔴 ${jobsOffTrack} trabajos con margen por debajo del estimado` 
+                          : `🔴 ${jobsOffTrack} jobs tracking below estimated margin`}
                       </p>
                     </TooltipContent>
                   )}
