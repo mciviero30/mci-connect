@@ -273,7 +273,7 @@ export default function AssignmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl bg-white border-0 rounded-2xl shadow-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-0 rounded-2xl shadow-2xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -329,7 +329,7 @@ export default function AssignmentDialog({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 py-6">
+        <form onSubmit={handleSubmit} className="space-y-4 py-4">
           {isAppointment && (
             <div>
               <Label className="text-slate-700 font-semibold mb-2 block">Event Title *</Label>
@@ -426,17 +426,17 @@ export default function AssignmentDialog({
           )}
 
           {selectedJob && (
-            <Card className="p-5 bg-slate-50 border-slate-200 rounded-xl">
-              <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#1E3A8A]" />
+            <Card className="p-3 bg-slate-50 border-slate-200 rounded-lg">
+              <h3 className="font-semibold text-sm text-slate-900 mb-2 flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-[#1E3A8A]" />
                 Job Details
               </h3>
-              <div className="space-y-2 text-sm">
+              <div className="space-y-1 text-xs">
                 {selectedJob.address && (
                   <p className="text-slate-700"><span className="text-slate-500 font-medium">Address:</span> {selectedJob.address}</p>
                 )}
                 {selectedJob.description && (
-                  <p className="text-slate-700"><span className="text-slate-500 font-medium">Description:</span> {selectedJob.description}</p>
+                  <p className="text-slate-700 line-clamp-2"><span className="text-slate-500 font-medium">Description:</span> {selectedJob.description}</p>
                 )}
               </div>
             </Card>
@@ -556,18 +556,18 @@ export default function AssignmentDialog({
           </div>
 
           <div>
-            <Label className="text-slate-700 font-semibold mb-2 block">Notes / Instructions</Label>
+            <Label className="text-slate-700 font-semibold mb-2 block text-sm">Notes / Instructions</Label>
             <Textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               placeholder="Additional information..."
-              className="bg-slate-50 border-slate-200 text-slate-900 h-24 focus:border-[#1E3A8A]"
+              className="bg-slate-50 border-slate-200 text-slate-900 h-20 text-sm focus:border-[#1E3A8A]"
             />
           </div>
 
-          {/* Enhanced Color Picker - Modern Design */}
-          <div className="space-y-3 p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
-            <Label className="text-slate-900 dark:text-white font-bold text-base flex items-center gap-2">
+          {/* Enhanced Color Picker - Compact Design */}
+          <div className="space-y-2 p-3 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-lg border border-slate-200 dark:border-slate-700">
+            <Label className="text-slate-900 dark:text-white font-semibold text-sm flex items-center gap-2">
               <div className={`w-5 h-5 rounded-lg ${
                 customColor === 'blue' ? 'bg-blue-600' :
                 customColor === 'green' ? 'bg-green-600' :
@@ -589,9 +589,9 @@ export default function AssignmentDialog({
                 'bg-slate-300 dark:bg-slate-600'
               } shadow-md transition-all`} />
               Shift Color
-              {customColor && <span className="text-sm font-normal text-slate-600 dark:text-slate-400">({customColor})</span>}
+              {customColor && <span className="text-xs font-normal text-slate-600 dark:text-slate-400">({customColor})</span>}
             </Label>
-            <div className="grid grid-cols-6 gap-2.5">
+            <div className="grid grid-cols-8 gap-1.5">
               {[
                 { name: 'blue', bg: 'bg-blue-600', hover: 'hover:bg-blue-700' },
                 { name: 'green', bg: 'bg-green-600', hover: 'hover:bg-green-700' },
@@ -616,17 +616,17 @@ export default function AssignmentDialog({
                   type="button"
                   onClick={() => setCustomColor(color.name)}
                   className={cn(
-                    "h-14 rounded-xl transition-all shadow-lg active:scale-95",
+                    "h-9 rounded-lg transition-all shadow-md active:scale-95",
                     color.bg,
                     color.hover,
                     customColor === color.name 
-                      ? 'ring-4 ring-[#1E3A8A] ring-offset-2 scale-110' 
+                      ? 'ring-2 ring-[#1E3A8A] ring-offset-1 scale-105' 
                       : 'hover:scale-105'
                   )}
                   title={color.name}
                 >
                   {customColor === color.name && (
-                    <Check className="w-5 h-5 text-white mx-auto drop-shadow-lg" />
+                    <Check className="w-4 h-4 text-white mx-auto drop-shadow-lg" />
                   )}
                 </button>
               ))}
@@ -646,7 +646,7 @@ export default function AssignmentDialog({
 
           {/* Delete Options Modal */}
           {showDeleteOptions && shift && (
-            <div className="mb-4 p-5 bg-red-50 border border-red-200 rounded-xl">
+            <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-900 mb-3 font-semibold">
                 ¿Qué deseas eliminar? / What do you want to delete?
               </p>
@@ -686,7 +686,7 @@ export default function AssignmentDialog({
             </div>
           )}
 
-          <div className="flex justify-between gap-3 pt-6 border-t border-slate-100">
+          <div className="flex justify-between gap-3 pt-4 border-t border-slate-100">
             {shift && !showDeleteOptions ? (
               <Button 
                 type="button" 
