@@ -165,15 +165,6 @@ Deno.serve(async (req) => {
             job_id: newJobId
           });
           
-          await base44.asServiceRole.entities.AuditLog.create({
-            event: 'invoice_job_reference_repaired',
-            entity_type: 'Invoice',
-            entity_id: invoice.id,
-            old_value: invoice.job_id,
-            new_value: newJobId,
-            metadata: JSON.stringify({ invoice_number: invoice.invoice_number })
-          });
-          
           console.log(`  ✅ Invoice updated with job_id: ${newJobId}`);
         } else {
           console.log(`  🔍 DRY RUN: Would update invoice with job_id: ${newJobId}`);
@@ -255,15 +246,6 @@ Deno.serve(async (req) => {
         if (!dry_run) {
           await base44.asServiceRole.entities.TimeEntry.update(entry.id, {
             job_id: newJobId
-          });
-          
-          await base44.asServiceRole.entities.AuditLog.create({
-            event: 'timeentry_job_reference_repaired',
-            entity_type: 'TimeEntry',
-            entity_id: entry.id,
-            old_value: entry.job_id,
-            new_value: newJobId,
-            metadata: JSON.stringify({ date: entry.date, employee: entry.employee_name })
           });
           
           console.log(`  ✅ TimeEntry updated with job_id: ${newJobId}`);
