@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react';
 import { formatCurrency } from '@/components/utils/defensiveFormatting';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function ProfitabilityKPIs({ kpis, language = 'en' }) {
   const { totalRevenue, totalCost, totalCommissions, netProfit, avgMargin, negativeMarginCount } = kpis;
@@ -52,24 +53,52 @@ export default function ProfitabilityKPIs({ kpis, language = 'en' }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-      {cards.map((card, idx) => (
-        <Card key={idx} className="border-slate-200 dark:border-slate-700">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              {card.title}
-            </CardTitle>
-            <div className={`p-2 rounded-lg ${card.bgColor}`}>
-              <card.icon className={`w-4 h-4 ${card.color}`} />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${card.color}`}>
-              {card.value}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <TooltipProvider>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {cards.map((card, idx) => {
+          const showAlert = (idx === 5 && negativeMarginCount > 0) || (idx === 3 && netProfit < 0);
+          
+          return (
+            <Card key={idx} className={`border-slate-200 dark:border-slate-700 ${showAlert ? 'ring-2 ring-amber-400 dark:ring-amber-600' : ''}`}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  {card.title}
+                </CardTitle>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className={`p-2 rounded-lg ${card.bgColor}`}>
+                      <card.icon className={`w-4 h-4 ${card.color}`} />
+                    </div>
+                  </TooltipTrigger>
+                  {idx === 5 && negativeMarginCount > 0 && (
+                    <TooltipContent>
+                      <p className="text-xs font-semibold text-amber-600">
+                        {language === 'es' 
+                          ? `⚠️ ${negativeMarginCount} trabajos con margen negativo o bajo` 
+                          : `⚠️ ${negativeMarginCount} jobs with negative or low margin`}
+                      </p>
+                    </TooltipContent>
+                  )}
+                  {idx === 3 && netProfit < 0 && (
+                    <TooltipContent>
+                      <p className="text-xs font-semibold text-red-600">
+                        {language === 'es' 
+                          ? '🔴 Pérdida neta - costos exceden ingresos' 
+                          : '🔴 Net loss - costs exceed revenue'}
+                      </p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </CardHeader>
+              <CardContent>
+                <div className={`text-2xl font-bold ${card.color}`}>
+                  {card.value}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </TooltipProvider>
   );
 }
