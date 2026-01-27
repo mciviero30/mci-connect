@@ -165,7 +165,7 @@ Deno.serve(async (req) => {
             job_id: newJobId
           });
           
-          console.log(`  ✅ Invoice updated with job_id: ${newJobId}`);
+          console.log(`  ✅ Invoice ${invoice.invoice_number} repaired → Job ${newJobId}`);
         } else {
           console.log(`  🔍 DRY RUN: Would update invoice with job_id: ${newJobId}`);
         }
@@ -248,7 +248,7 @@ Deno.serve(async (req) => {
             job_id: newJobId
           });
           
-          console.log(`  ✅ TimeEntry updated with job_id: ${newJobId}`);
+          console.log(`  ✅ TimeEntry ${entry.date} repaired → Job ${newJobId}`);
         } else {
           console.log(`  🔍 DRY RUN: Would update TimeEntry with job_id: ${newJobId}`);
         }
