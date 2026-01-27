@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -8,14 +8,18 @@ import ProfitabilityKPIs from '@/components/profitability/ProfitabilityKPIs';
 import JobProfitabilityTable from '@/components/profitability/JobProfitabilityTable';
 import ProfitMarginChart from '@/components/profitability/ProfitMarginChart';
 import ClientProfitChart from '@/components/profitability/ClientProfitChart';
+import MarginSimulator from '@/components/profitability/MarginSimulator';
 import { TrendingUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { hasFullAccess } from '@/components/core/roleRules';
 
 export default function ProfitabilityDashboard() {
   const { language } = useLanguage();
   const [dateRange, setDateRange] = useState('all'); // all, ytd, q4, q3, q2, q1
+  const [simulationActive, setSimulationActive] = useState(false);
+  const [simulatedData, setSimulatedData] = useState(null);
 
   // Fetch all required data (read-only)
   const { data: invoices = [], isLoading: loadingInvoices } = useQuery({
@@ -60,7 +64,25 @@ export default function ProfitabilityDashboard() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+  });
+
   const isLoading = loadingInvoices || loadingExpenses || loadingTime || loadingCommissions || loadingJobs || loadingEmployees || loadingQuotes;
+
+  const canSimulate = hasFullAccess(user);
+
+  const handleSimulationToggle = useCallback(() => {
+    setSimulationActive(prev => !prev);
+    if (simulationActive) {
+      setSimulatedData(null);
+    }
+  }, [simulationActive]);
+
+  const handleSimulationChange = useCallback((data) => {
+    setSimulatedData(data);
+  }, []);
 
   // Memoized aggregations (read-only calculations)
   const profitabilityData = useMemo(() => {
@@ -223,6 +245,8 @@ export default function ProfitabilityDashboard() {
     };
   }, [invoices, expenses, timeEntries, commissions, jobs, employees, quotes, dateRange, isLoading]);
 
+  const displayData = simulationActive && simulatedData ? simulatedData : profitabilityData;
+
   return (
     <CommissionAccessGuard>
       <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
@@ -259,7 +283,17 @@ export default function ProfitabilityDashboard() {
             </Card>
           ) : profitabilityData ? (
             <>
-              <ProfitabilityKPIs kpis={profitabilityData.kpis} language={language} />
+              {canSimulate && (
+                <MarginSimulator
+                  originalData={profitabilityData}
+                  isActive={simulationActive}
+                  onToggle={handleSimulationToggle}
+                  onSimulationChange={handleSimulationChange}
+                  language={language}
+                />
+              )}
+
+              <ProfitabilityKPIs kpis={displayData.kpis} language={language} />
 
               <Tabs defaultValue="jobs" className="space-y-6">
                 <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
@@ -275,7 +309,11 @@ export default function ProfitabilityDashboard() {
                 </TabsList>
 
                 <TabsContent value="jobs">
-                  <JobProfitabilityTable jobs={profitabilityData.jobs} language={language} />
+                  <JobProfitabilityTable 
+                    jobs={displayData.jobs} 
+                    language={language} 
+                    simulationActive={simulationActive}
+                  />
                 </TabsContent>
 
                 <TabsContent value="clients">
