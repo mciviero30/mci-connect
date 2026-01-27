@@ -6,7 +6,7 @@ import { formatCurrency } from '@/components/utils/defensiveFormatting';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
-export default function JobProfitabilityTable({ jobs, language = 'en' }) {
+export default function JobProfitabilityTable({ jobs, language = 'en', simulationActive = false }) {
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredJobs = jobs.filter(job => {
@@ -155,14 +155,22 @@ export default function JobProfitabilityTable({ jobs, language = 'en' }) {
             <tbody>
               {filteredJobs.map((job, idx) => {
                 const riskLevel = getRiskLevel(job);
-                const rowClass = riskLevel === 'critical' ? 'bg-red-50/50 dark:bg-red-900/10' : '';
+                const isSimulated = job.simulated;
+                const rowClass = isSimulated 
+                  ? 'bg-blue-50/50 dark:bg-blue-900/10 border-l-4 border-blue-500' 
+                  : (riskLevel === 'critical' ? 'bg-red-50/50 dark:bg-red-900/10' : '');
                 
                 return (
                   <tr key={idx} className={`border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 ${rowClass}`}>
                     <td className="p-3">
                       <div className="flex items-center gap-2">
-                        {riskLevel === 'critical' && (
+                        {riskLevel === 'critical' && !isSimulated && (
                           <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                        )}
+                        {isSimulated && (
+                          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 text-[10px] px-1 py-0">
+                            SIM
+                          </Badge>
                         )}
                         <div>
                           <div className="font-medium text-slate-900 dark:text-white">
@@ -188,9 +196,19 @@ export default function JobProfitabilityTable({ jobs, language = 'en' }) {
                     </td>
                     <td className={`p-3 text-right font-semibold ${job.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                       {formatCurrency(job.profit)}
+                      {isSimulated && job.profitDelta !== undefined && (
+                        <div className={`text-xs font-semibold ${job.profitDelta > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {job.profitDelta > 0 ? '+' : ''}{formatCurrency(job.profitDelta)}
+                        </div>
+                      )}
                     </td>
                     <td className="p-3 text-center">
                       {getMarginBadge(job.margin)}
+                      {isSimulated && job.marginDelta !== undefined && (
+                        <div className={`text-xs font-semibold mt-1 ${job.marginDelta > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {job.marginDelta > 0 ? '+' : ''}{job.marginDelta.toFixed(1)}%
+                        </div>
+                      )}
                     </td>
                     <td className="p-3 text-center">
                       <Tooltip>
