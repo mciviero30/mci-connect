@@ -124,6 +124,7 @@ import VerIncidente from './pages/VerIncidente';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
+import ProfitabilityDashboard from './pages/ProfitabilityDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -254,6 +255,7 @@ export const PAGES = {
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
+    "ProfitabilityDashboard": ProfitabilityDashboard,
 }
 
 export const pagesConfig = {
