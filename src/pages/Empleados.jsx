@@ -36,11 +36,42 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
         employment_status: employee?.id ? employee.employment_status : 'pending_invitation'
       };
 
+      let userRecord;
       if (employee?.id) {
-        return await base44.entities.User.update(employee.id, payload);
+        userRecord = await base44.entities.User.update(employee.id, payload);
       } else {
-        return await base44.entities.User.create(payload);
+        userRecord = await base44.entities.User.create(payload);
       }
+
+      // PHASE 4: Lifecycle Hardening - Sync to EmployeeDirectory
+      const directoryData = {
+        user_id: userRecord.id || employee?.id,
+        employee_email: userRecord.email || data.email,
+        full_name: fullName,
+        first_name: firstName,
+        last_name: lastName,
+        position: data.position || '',
+        department: data.department || '',
+        phone: data.phone || '',
+        team_id: data.team_id || '',
+        team_name: data.team_name || '',
+        status: userRecord.employment_status === 'active' ? 'active' : 'pending',
+        sync_source: 'user_direct',
+        last_synced_at: new Date().toISOString()
+      };
+
+      const existingDirectory = await base44.entities.EmployeeDirectory.list();
+      const directoryEntry = existingDirectory.find(d => 
+        d.employee_email?.toLowerCase().trim() === (userRecord.email || data.email).toLowerCase().trim()
+      );
+
+      if (directoryEntry) {
+        await base44.entities.EmployeeDirectory.update(directoryEntry.id, directoryData);
+      } else {
+        await base44.entities.EmployeeDirectory.create(directoryData);
+      }
+
+      return userRecord;
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['employees'] });
@@ -129,6 +160,17 @@ export default function Empleados() {
       // Fetch from EmployeeDirectory, then enrich with User data
       const directory = await base44.entities.EmployeeDirectory.list('-created_date');
       
+      // PHASE 5: Defensive Logging
+      if (import.meta.env?.DEV) {
+        const missingUserIds = directory.filter(d => !d.user_id && d.status === 'active');
+        if (missingUserIds.length > 0) {
+          console.warn('⚠️ SSOT WARNING: Active EmployeeDirectory records missing user_id', {
+            count: missingUserIds.length,
+            emails: missingUserIds.map(d => d.employee_email)
+          });
+        }
+      }
+      
       // Enrich with User entity data (for employment_status, role, etc.)
       const userIds = directory.filter(d => d.user_id).map(d => d.user_id);
       const users = await Promise.all(
@@ -138,6 +180,15 @@ export default function Empleados() {
       
       return directory.map(d => {
         const user = userMap[d.user_id];
+        
+        // PHASE 5: Defensive Logging
+        if (import.meta.env?.DEV && !d.user_id && d.status === 'active') {
+          console.error('❌ CRITICAL: Active employee missing user_id', { 
+            email: d.employee_email,
+            full_name: d.full_name 
+          });
+        }
+        
         return {
           id: d.user_id || d.id,
           email: d.employee_email,
@@ -215,6 +266,19 @@ export default function Empleados() {
         last_invitation_sent: new Date().toISOString(),
         invitation_count: (employee.invitation_count || 0) + 1
       });
+
+      // PHASE 4: Lifecycle Hardening - Sync status to EmployeeDirectory
+      const existingDirectory = await base44.entities.EmployeeDirectory.list();
+      const directoryEntry = existingDirectory.find(d => 
+        d.employee_email?.toLowerCase().trim() === employee.email.toLowerCase().trim()
+      );
+      
+      if (directoryEntry) {
+        await base44.entities.EmployeeDirectory.update(directoryEntry.id, {
+          status: 'invited',
+          last_synced_at: new Date().toISOString()
+        });
+      }
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['employees'] });

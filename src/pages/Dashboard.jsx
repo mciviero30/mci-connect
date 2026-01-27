@@ -253,6 +253,16 @@ export default function Dashboard() {
       // Fetch from EmployeeDirectory with active status
       const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name');
       
+      // PHASE 5: Defensive Logging
+      if (import.meta.env?.DEV) {
+        const missingUserIds = directory.filter(d => !d.user_id);
+        if (missingUserIds.length > 0) {
+          console.warn('⚠️ SSOT WARNING: EmployeeDirectory records missing user_id in Dashboard', {
+            count: missingUserIds.length
+          });
+        }
+      }
+      
       // Enrich with User data for employment_status and dob
       const userIds = directory.filter(d => d.user_id).map(d => d.user_id);
       const users = await Promise.all(

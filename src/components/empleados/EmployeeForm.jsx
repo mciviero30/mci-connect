@@ -50,11 +50,15 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
     initialData: [],
   });
 
+  // PHASE 3: Frontend Alignment - Use EmployeeDirectory for managers
   const { data: managers } = useQuery({
     queryKey: ['managers'],
     queryFn: async () => {
-      const users = await base44.entities.User.list();
-      return users.filter(u => ['CEO', 'manager', 'supervisor'].includes(u.position));
+      const directory = await base44.entities.EmployeeDirectory.list();
+      return directory.filter(d => 
+        ['CEO', 'manager', 'supervisor'].includes(d.position) && 
+        d.status === 'active'
+      );
     },
     initialData: [],
   });

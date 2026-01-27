@@ -24,21 +24,25 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
     initialData: [],
   });
 
+  // PHASE 3: Frontend Alignment - Use EmployeeDirectory for managers
   const { data: managers } = useQuery({
     queryKey: ['managers'],
     queryFn: async () => {
-      const users = await base44.entities.User.list();
-      return users.filter(u => ['CEO', 'manager', 'supervisor'].includes(u.position));
+      const directory = await base44.entities.EmployeeDirectory.list();
+      return directory.filter(d => 
+        ['CEO', 'manager', 'supervisor'].includes(d.position) && 
+        d.status === 'active'
+      );
     },
     initialData: [],
   });
 
   const { data: currentUser } = useQuery({ queryKey: ['currentUser'] });
 
-  // Query for all employees to check team capacity
+  // PHASE 3: Frontend Alignment - Use EmployeeDirectory for team capacity
   const { data: employees } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
     initialData: [],
   });
 
@@ -196,17 +200,25 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         }
       }
 
+      // PHASE 4: Lifecycle Hardening - Sync to EmployeeDirectory with user_id
       const existingDirectory = await base44.entities.EmployeeDirectory.list();
       const directoryEntry = existingDirectory.find(d => d.employee_email === employee.email);
       
       const directoryData = {
+        user_id: employee.id,
         employee_email: employee.email,
         full_name,
+        first_name: data.first_name || '',
+        last_name: data.last_name || '',
         position: data.position || '',
         department: data.department || '',
         phone: data.phone || '',
+        team_id: data.team_id || '',
+        team_name: data.team_name || '',
         profile_photo_url: employee.profile_photo_url || '',
-        status: 'active'
+        status: 'active',
+        sync_source: 'user_direct',
+        last_synced_at: new Date().toISOString()
       };
       
       if (directoryEntry) {
@@ -265,11 +277,14 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         console.error('Could not update User entity directly:', error);
       }
 
-      // Update directory status
+      // PHASE 4: Lifecycle Hardening - Update directory status
       const existingDirectory = await base44.entities.EmployeeDirectory.list();
       const directoryEntry = existingDirectory.find(d => d.employee_email === employee.email);
       if (directoryEntry) {
-        await base44.entities.EmployeeDirectory.update(directoryEntry.id, { status: 'inactive' });
+        await base44.entities.EmployeeDirectory.update(directoryEntry.id, { 
+          status: 'archived',
+          last_synced_at: new Date().toISOString()
+        });
       }
 
       return { email: employee.email, name: employee.full_name };

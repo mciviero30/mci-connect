@@ -15,9 +15,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'week_start and week_end required' }, { status: 400 });
     }
 
-    // Fetch all data in parallel (server-side)
-    const [employees, timeEntries, drivingLogs, expenses, weeklyPayrolls, bonusConfigs, jobs, invoices] = await Promise.all([
-      base44.entities.User.filter({ employment_status: 'active' }),
+    // PHASE 2: Backend Alignment - Use EmployeeDirectory as SSOT
+    const [directoryEmployees, timeEntries, drivingLogs, expenses, weeklyPayrolls, bonusConfigs, jobs, invoices] = await Promise.all([
+      base44.entities.EmployeeDirectory.filter({ status: 'active' }),
       base44.entities.TimeEntry.list(),
       base44.entities.DrivingLog.list(),
       base44.entities.Expense.list(),
@@ -26,6 +26,30 @@ Deno.serve(async (req) => {
       base44.entities.Job.list(),
       base44.entities.Invoice.list()
     ]);
+
+    // Enrich with User data for rates and settings
+    const userIds = directoryEmployees.filter(d => d.user_id).map(d => d.user_id);
+    const users = await Promise.all(
+      userIds.map(id => base44.entities.User.filter({ id }).catch(() => []))
+    );
+    const userMap = users.flat().reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+
+    // Map directory to employee shape
+    const employees = directoryEmployees.map(d => {
+      const user = userMap[d.user_id];
+      return {
+        id: d.user_id || d.id,
+        email: d.employee_email,
+        full_name: d.full_name,
+        position: d.position,
+        profile_photo_url: d.profile_photo_url,
+        avatar_image_url: user?.avatar_image_url,
+        preferred_profile_image: user?.preferred_profile_image,
+        hourly_rate: user?.hourly_rate || 25,
+        hourly_rate_overtime: user?.hourly_rate_overtime,
+        per_diem_amount: user?.per_diem_amount || 50
+      };
+    });
 
     const weekStartDate = new Date(week_start);
     const weekEndDate = new Date(week_end);
