@@ -84,6 +84,37 @@ Deno.serve(async (req) => {
       }
     });
 
+    // 6. Check intentional orphan quotes
+    const orphanedQuotesIntentional = orphanedQuotes.filter(q => 
+      q.job_link_intent === 'intentional' || q.job_link_method === 'intentionally_orphaned'
+    );
+
+    // 7. Compute readiness status
+    const blockers = [];
+    
+    if (invalidQuoteRefs.length > 0) {
+      blockers.push(`${invalidQuoteRefs.length} quote(s) with invalid job references`);
+    }
+    
+    if (invalidInvoiceRefs.length > 0) {
+      blockers.push(`${invalidInvoiceRefs.length} invoice(s) with invalid job references`);
+    }
+    
+    if (invalidTimeEntryRefs.length > 0) {
+      blockers.push(`${invalidTimeEntryRefs.length} time entry(ies) with invalid job references`);
+    }
+    
+    if (duplicateJobs.length > 0) {
+      blockers.push(`${duplicateJobs.length} duplicate job(s) detected`);
+    }
+    
+    const unintentionalOrphanQuotes = orphanedQuotes.length - orphanedQuotesIntentional.length;
+    if (unintentionalOrphanQuotes > 0) {
+      blockers.push(`${unintentionalOrphanQuotes} orphaned quote(s) not marked as intentional`);
+    }
+
+    const status = blockers.length === 0 ? 'READY_FOR_ENFORCEMENT' : 'NOT_READY';
+
     return Response.json({
       timestamp: new Date().toISOString(),
       jobs_audit: {
