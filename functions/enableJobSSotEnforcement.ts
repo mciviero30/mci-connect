@@ -66,7 +66,15 @@ Deno.serve(async (req) => {
     console.log('[enableJobSSotEnforcement] Checking for orphaned quotes without intentional marker...');
     
     const orphanedQuotes = allQuotes.filter(q => !q.job_id);
-    const quotesWithoutIntentionalMarker = orphanedQuotes.filter(q => q.job_link_intent !== 'intentional');
+    const quotesWithoutIntentionalMarker = orphanedQuotes.filter(q => 
+      q.job_link_method !== 'intentionally_orphaned'
+    );
+
+    // Defensive logging: show what fields are present on first orphaned quote
+    if (orphanedQuotes.length > 0) {
+      console.log('[enableJobSSotEnforcement] Sample orphaned quote fields:', Object.keys(orphanedQuotes[0]));
+      console.log('[enableJobSSotEnforcement] job_link_method =', orphanedQuotes[0].job_link_method);
+    }
 
     if (quotesWithoutIntentionalMarker.length > 0) {
       return Response.json({
@@ -76,7 +84,8 @@ Deno.serve(async (req) => {
         sample_quotes: quotesWithoutIntentionalMarker.slice(0, 5).map(q => ({
           quote_id: q.id,
           quote_number: q.quote_number,
-          customer_name: q.customer_name
+          customer_name: q.customer_name,
+          job_link_method: q.job_link_method || 'MISSING'
         })),
         timestamp: new Date().toISOString()
       }, { status: 400 });
