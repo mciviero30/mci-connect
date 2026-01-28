@@ -185,19 +185,33 @@ export function trackWriteStats(hasUserId, entityName) {
 
 /**
  * Toggle strict mode at runtime (for testing/rollback)
- * Usage: window.toggleStrictMode(false) to disable
+ * PHASE 7 FIX: Now audited via backend
  */
 if (typeof window !== 'undefined') {
-  window.toggleStrictMode = (enabled) => {
+  window.toggleStrictMode = async (enabled, reason) => {
     window.__STRICT_MODE_OVERRIDE = enabled;
     console.log(`[WRITE GUARD] STRICT MODE ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    
+    // PHASE 7: Audit this action
+    try {
+      const { base44 } = await import('@/api/base44Client');
+      await base44.functions.invoke('auditStrictModeToggle', {
+        enabled,
+        reason: reason || 'Manual toggle via console'
+      });
+      console.log('[WRITE GUARD] ✅ Audit logged');
+    } catch (error) {
+      console.error('[WRITE GUARD] ⚠️ Failed to log audit:', error.message);
+      // Don't block toggle on audit failure
+    }
   };
   
   window.getStrictModeStatus = () => {
     const status = isStrictModeEnabled();
     console.log(`[WRITE GUARD] STRICT MODE: ${status ? 'ON' : 'OFF'}`, {
       entities: Array.from(STRICT_MODE_ENTITIES),
-      canToggle: true
+      canToggle: true,
+      auditWarning: 'Disabling strict mode creates audit log and system alert'
     });
     return status;
   };

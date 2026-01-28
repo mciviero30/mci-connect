@@ -131,10 +131,24 @@ Deno.serve(async (req) => {
       const workDaysCount = workDaysSet.size;
       const perDiemAmount = workDaysCount * perDiemDaily;
 
-      // Reimbursements (personal payment, not per diem)
-      const reimbursements = empExpenses
-        .filter(exp => exp.payment_method === 'personal' && exp.category !== 'per_diem')
+      // PHASE 2 FIX: Separate approved and pending reimbursements for compliance
+      const approvedReimbursements = empExpenses
+        .filter(exp => 
+          exp.payment_method === 'personal' && 
+          exp.category !== 'per_diem' &&
+          exp.status === 'approved'
+        )
         .reduce((sum, exp) => sum + exp.amount, 0);
+
+      const pendingReimbursements = empExpenses
+        .filter(exp => 
+          exp.payment_method === 'personal' && 
+          exp.category !== 'per_diem' &&
+          exp.status === 'pending'
+        )
+        .reduce((sum, exp) => sum + exp.amount, 0);
+
+      const reimbursements = approvedReimbursements; // For backward compatibility
 
       // Bonuses (derived from jobs)
       let bonusAmount = 0;
@@ -186,7 +200,9 @@ Deno.serve(async (req) => {
         workDaysCount,
         workPay,
         drivingPay: totalDrivingPay,
-        reimbursements,
+        reimbursements, // Approved only (for payment)
+        approvedReimbursements, // PHASE 2: Explicit approved
+        pendingReimbursements, // PHASE 2: Separate pending for review
         bonusAmount,
         totalPay,
         hourlyRate,

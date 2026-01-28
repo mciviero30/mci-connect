@@ -94,6 +94,7 @@ export default function Nomina() {
     workPay: filteredPayrollData.reduce((sum, p) => sum + p.workPay, 0),
     drivingPay: filteredPayrollData.reduce((sum, p) => sum + p.drivingPay, 0),
     reimbursements: filteredPayrollData.reduce((sum, p) => sum + p.reimbursements, 0),
+    pendingReimbursements: filteredPayrollData.reduce((sum, p) => sum + (p.pendingReimbursements || 0), 0),
     totalPay: filteredPayrollData.reduce((sum, p) => sum + p.totalPay, 0)
   }), [filteredPayrollData]);
 
@@ -179,7 +180,7 @@ export default function Nomina() {
             { label: t('totalWorkPay'), value: `$${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Briefcase, subtitle: `${totals.normalHours.toFixed(1)}h + ${totals.overtimeHours.toFixed(1)}h OT` },
             { label: t('totalDrivingPay'), value: `$${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Car, subtitle: `${totals.drivingHours.toFixed(1)}h driving` },
             { label: t('perDiem'), value: `$${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: DollarSign },
-            { label: t('totalReimbursements'), value: `$${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Download },
+            { label: t('totalReimbursements'), value: `$${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Download, subtitle: totals.pendingReimbursements > 0 ? `⚠️ $${totals.pendingReimbursements.toFixed(2)} pending` : undefined },
             { label: language === 'es' ? 'Bonos' : 'Bonuses', value: `$${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Gift, subtitle: language === 'es' ? 'Trabajos completados' : 'Completed jobs' },
             { label: t('totalPayroll'), value: `$${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Banknote, gradient: 'soft-cyan-gradient' }
           ]}
