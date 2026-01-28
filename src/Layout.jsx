@@ -416,8 +416,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt },
         { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package },
         { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp },
-      ]
-    },
+        { title: 'T&M Invoice Builder', url: createPageUrl('TMInvoiceBuilder'), icon: Clock },
+        ]
+        },
     {
       section: 'WORKFORCE',
       icon: Users,
