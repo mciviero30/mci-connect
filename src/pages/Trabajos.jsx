@@ -47,7 +47,7 @@ export default function Trabajos() {
     refetchOnWindowFocus: false
   });
   
-  // Direct jobs list - ONLY authorized jobs
+  // Direct jobs list
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['jobs', statusFilter, teamFilter],
     queryFn: async () => {
@@ -55,16 +55,10 @@ export default function Trabajos() {
       if (statusFilter !== 'all') filters.status = statusFilter;
       if (teamFilter !== 'all') filters.team_id = teamFilter;
       
-      // FETCH ALL JOBS (including unauthorized)
-      let allJobs = [];
       if (Object.keys(filters).length > 0) {
-        allJobs = await base44.entities.Job.filter(filters, '-created_date');
-      } else {
-        allJobs = await base44.entities.Job.list('-created_date');
+        return base44.entities.Job.filter(filters, '-created_date');
       }
-      
-      // FILTER: Only show jobs with authorization_id (operational jobs)
-      return allJobs.filter(job => job.authorization_id);
+      return base44.entities.Job.list('-created_date');
     },
     enabled: !!user,
     staleTime: 5 * 60 * 1000,
