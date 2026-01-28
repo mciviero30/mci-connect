@@ -231,10 +231,9 @@ const duplicate = existingEntries.find(e =>
 2. `components/docs/PHASE2_FINANCIAL_INTEGRITY_REPORT.md`
 3. `components/docs/SYSTEM_HARDENING_FINAL_REPORT.md` (this file)
 
-### **Automations Created (1):**
+### **Automations Created (2):**
 - "Recalculate Commission on Payment" (Invoice.update)
-
-**Note:** User entity automation couldn't be created (built-in entity limitation) - sync logic exists as callable function for manual triggers
+- "Validate Job Approval Lifecycle" (Job.create/update)
 
 ---
 
@@ -509,7 +508,7 @@ const duplicate = existingEntries.find(e =>
 - **Functions Created:** 9
 - **Functions Modified:** 4
 - **Frontend Modified:** 3
-- **Automations Created:** 1
+- **Automations Created:** 2
 - **Critical Bugs Fixed:** 9
 - **Lines Changed:** ~800
 - **Deployment Risk:** LOW (all changes defensive)
