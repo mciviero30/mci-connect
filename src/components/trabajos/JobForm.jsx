@@ -14,6 +14,7 @@ import { MapPin, FolderPlus, ExternalLink, Loader } from "lucide-react";
 import { useToast } from "@/components/ui/toast";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 import { geocodeAddress } from "@/components/utils/geocoding";
+import AuthorizationSelector from "./AuthorizationSelector";
 
 export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
   const { t, language } = useLanguage();
@@ -65,6 +66,7 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
     description: job?.description || '',
     customer_id: job?.customer_id || '',
     customer_name: getCustomerDisplayName(job?.customer_id, job?.customer_name),
+    authorization_id: job?.authorization_id || '',
     address: job?.address || '',
     city: job?.city || '',
     state: job?.state || '',
@@ -159,6 +161,14 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
 
     if (!formData.customer_id) {
       toast.error(language === 'es' ? 'Por favor seleccione un cliente' : 'Please select a customer');
+      return;
+    }
+
+    // CRITICAL: Authorization required
+    if (!formData.authorization_id) {
+      toast.error(language === 'es' 
+        ? '⚠️ Autorización de trabajo requerida. El cliente debe aprobar antes de crear el Job.'
+        : '⚠️ Work authorization required. Client must approve before creating Job.');
       return;
     }
 
@@ -318,6 +328,16 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
             </SelectContent>
           </Select>
         </div>
+
+        {/* CRITICAL: Authorization Required */}
+        <AuthorizationSelector
+          customerId={formData.customer_id}
+          customerName={formData.customer_name}
+          value={formData.authorization_id}
+          onChange={(authId) => setFormData({...formData, authorization_id: authId})}
+          language={language}
+          required={true}
+        />
 
         <div>
           <Label className="text-slate-700 font-semibold flex items-center gap-2">

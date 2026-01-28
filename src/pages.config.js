@@ -176,6 +176,7 @@ import VerIncidente from './pages/VerIncidente';
 import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
+import WorkAuthorizations from './pages/WorkAuthorizations';
 import __Layout from './Layout.jsx';
 
 
@@ -309,6 +310,7 @@ export const PAGES = {
     "VerRFI": VerRFI,
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
+    "WorkAuthorizations": WorkAuthorizations,
 }
 
 export const pagesConfig = {
