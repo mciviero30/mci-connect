@@ -28,7 +28,7 @@ export default function TMInvoiceBuilder() {
       for (const job of allJobs) {
         if (job.authorization_id) {
           const auths = await base44.entities.WorkAuthorization.filter({ id: job.authorization_id });
-          if (auths[0]?.authorization_type === 'time_materials') {
+          if (auths[0]?.authorization_type === 'tm') {
             tmJobs.push(job);
           }
         }

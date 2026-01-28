@@ -34,9 +34,9 @@ Deno.serve(async (req) => {
     const auth = auths[0];
 
     // 3. ELIGIBILITY CHECK: Must be T&M authorization
-    if (auth.authorization_type !== 'time_materials') {
+    if (auth.authorization_type !== 'tm') {
       return Response.json({ 
-        error: 'T&M invoicing not allowed: Authorization type is not time_materials',
+        error: 'T&M invoicing not allowed: Authorization type must be "tm"',
         authorization_type: auth.authorization_type
       }, { status: 400 });
     }
@@ -128,15 +128,18 @@ Deno.serve(async (req) => {
       job_id: job.id,
       job_name: job.name,
       job_address: job.address,
+      authorization_id: job.authorization_id,
       invoice_date: new Date().toISOString().split('T')[0],
       due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      billing_type: 'tm',
+      period_start: start_date,
+      period_end: end_date,
       items: [...laborItems, ...expenseItems],
       subtotal,
       tax_rate,
       tax_amount,
       total,
       balance: total,
-      billing_type: 'time_materials',
       time_entries_summary: {
         total_hours: totalHours,
         total_labor_cost: laborTotal
