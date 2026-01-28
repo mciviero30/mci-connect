@@ -377,6 +377,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const shouldBlockForCEOSetup = ceoSetupIncomplete && !isCEOSetupRoute;
 
   // Navigation arrays - MUST be defined before useMemo
+  // Navigation arrays - MUST be defined before useMemo
   const adminNavigation = [
     {
       section: 'STRATEGY',
