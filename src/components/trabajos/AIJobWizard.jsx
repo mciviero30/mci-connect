@@ -31,7 +31,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { toast } from 'react-hot-toast'; // Assuming react-hot-toast is used for notifications
+import { toast } from 'react-hot-toast';
+import AuthorizationSelector from './AuthorizationSelector'; // Assuming react-hot-toast is used for notifications
 
 // Placeholder for CustomerForm. In a real application, this would be a separate file,
 // e.g., '@/components/CustomerForm'.
@@ -101,6 +102,8 @@ export default function AIJobWizard({ onComplete, onCancel, existingJob }) {
     description: '',
     address: '',
     customer_name: '',
+    customer_id: '',
+    authorization_id: '',
     contract_amount: 0,
     estimated_hours: 0,
     team_id: '',
@@ -235,6 +238,14 @@ ${language === 'es' ? 'Responde en español.' : 'Respond in English.'}
   };
 
   const handleComplete = () => {
+    // CRITICAL: Validate authorization before completing
+    if (!jobData.authorization_id) {
+      toast.error(language === 'es' 
+        ? '⚠️ Autorización requerida. No se puede crear Job sin aprobación del cliente.'
+        : '⚠️ Authorization required. Cannot create Job without client approval.');
+      return;
+    }
+    
     onComplete(jobData);
   };
 
@@ -315,7 +326,8 @@ ${language === 'es' ? 'Responde en español.' : 'Respond in English.'}
                         setJobData({
                           ...jobData,
                           customer_name: value,
-                          customer_id: customer?.id
+                          customer_id: customer?.id,
+                          authorization_id: '' // Reset authorization when customer changes
                         });
                       }}
                     >
@@ -336,13 +348,23 @@ ${language === 'es' ? 'Responde en español.' : 'Respond in English.'}
                       type="button"
                       onClick={() => setShowCustomerForm(true)}
                       className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                      size="sm" // Added size for better fit
+                      size="sm"
                     >
                       <Plus className="w-4 h-4 mr-1" />
                       {language === 'es' ? 'Nuevo' : 'New'}
                     </Button>
                   </div>
                 </div>
+
+                {/* CRITICAL: Authorization Required */}
+                <AuthorizationSelector
+                  customerId={jobData.customer_id}
+                  customerName={jobData.customer_name}
+                  value={jobData.authorization_id}
+                  onChange={(authId) => setJobData({...jobData, authorization_id: authId})}
+                  language={language}
+                  required={true}
+                />
 
                 <div className="space-y-2">
                   <Label className="text-slate-700">

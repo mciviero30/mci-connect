@@ -41,6 +41,7 @@ import FieldReentryPrompt from '@/components/field/FieldReentryPrompt';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { SkeletonFieldProject } from '@/components/shared/SkeletonComponents';
 import { ExitConfirmation, useExitConfirmation } from '@/components/feedback/ExitConfirmation';
+import AuthorizationSelector from '@/components/trabajos/AuthorizationSelector';
 
 export default function Field() {
   const { setIsFieldMode } = useUI();
@@ -742,7 +743,8 @@ export default function Field() {
                     setNewProject({
                       ...newProject,
                       customer_name: value,
-                      customer_id: customer?.id
+                      customer_id: customer?.id,
+                      authorization_id: '' // Reset authorization when customer changes
                     });
                   }}
                 >
@@ -767,6 +769,16 @@ export default function Field() {
                 </Button>
               </div>
             </div>
+            
+            {/* CRITICAL: Authorization Required */}
+            <AuthorizationSelector
+              customerId={newProject.customer_id}
+              customerName={newProject.customer_name}
+              value={newProject.authorization_id}
+              onChange={(authId) => setNewProject({...newProject, authorization_id: authId})}
+              language={language}
+              required={true}
+            />
             <div>
               <Label className="text-slate-600 dark:text-slate-300">Address</Label>
               <Input 
@@ -791,13 +803,15 @@ export default function Field() {
               </Button>
               <Button 
                 onClick={handleCreateProject}
-                disabled={!newProject.name || !newProject.customer_name || createJobMutation.isPending}
+                disabled={!newProject.name || !newProject.customer_name || !newProject.authorization_id || createJobMutation.isPending}
                 className="soft-amber-gradient disabled:opacity-70"
               >
                 {createJobMutation.isPending 
                   ? 'Creating...' 
                   : !newProject.name || !newProject.customer_name
                   ? 'Fill required fields'
+                  : !newProject.authorization_id
+                  ? (language === 'es' ? 'Autorización requerida' : 'Authorization required')
                   : 'Create Project'}
               </Button>
             </div>

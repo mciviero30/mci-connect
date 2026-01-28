@@ -49,6 +49,20 @@ Deno.serve(async (req) => {
       });
     }
 
+    // CRITICAL: AUTHORIZATION GATE - No auto-Job creation without WorkAuthorization
+    // If invoice has no linked authorization, SKIP job creation
+    // Admin must create WorkAuthorization first, then manually create Job
+    if (!invoice.authorization_id) {
+      console.log(`⏸️ Provisioning skipped: Invoice ${invoice_id} has no linked WorkAuthorization`);
+      return Response.json({
+        ok: false,
+        skipped: true,
+        reason: 'No WorkAuthorization linked to invoice',
+        message: 'Admin must create WorkAuthorization and link to invoice before job provisioning',
+        invoice_id
+      });
+    }
+
     let jobId = invoice.job_id;
     let job = null;
     const steps = {
@@ -114,6 +128,7 @@ Deno.serve(async (req) => {
           job = await base44.asServiceRole.entities.Job.create({
             name: invoice.job_name,
             job_number: job_number,
+            authorization_id: invoice.authorization_id, // REQUIRED: Link to WorkAuthorization
             address: invoice.job_address || '',
             customer_id: invoice.customer_id || '',
             customer_name: invoice.customer_name || '',
