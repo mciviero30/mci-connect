@@ -182,25 +182,26 @@ export default function Field() {
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: FIELD_QUERY_KEYS.JOBS(),
     queryFn: async () => {
+      let allJobs = [];
+      
       if (user?.role === 'admin' || user?.position === 'CEO' || user?.position === 'administrator') {
-        return await base44.entities.Job.list('-created_date');
-      }
-      
-      if (user?.position === 'manager') {
-        return base44.entities.Job.list('-created_date');
-      }
-      
-      if (user?.role === 'customer' || user?.role === 'field_worker') {
+        allJobs = await base44.entities.Job.list('-created_date');
+      } else if (user?.position === 'manager') {
+        allJobs = await base44.entities.Job.list('-created_date');
+      } else if (user?.role === 'customer' || user?.role === 'field_worker') {
         const assignedJobIds = [...new Set(userAssignments.map(a => a.job_id))];
         if (assignedJobIds.length === 0) return [];
         
         const assignedJobs = await Promise.all(
           assignedJobIds.map(jobId => base44.entities.Job.filter({ id: jobId }))
         );
-        return assignedJobs.flat();
+        allJobs = assignedJobs.flat();
+      } else {
+        allJobs = await base44.entities.Job.list('-created_date');
       }
       
-      return base44.entities.Job.list('-created_date');
+      // ENFORCEMENT: Only show authorized jobs in Field
+      return allJobs.filter(job => job.authorization_id);
     },
     enabled: !!user,
     ...FIELD_STABLE_QUERY_CONFIG,
