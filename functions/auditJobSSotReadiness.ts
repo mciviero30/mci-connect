@@ -9,6 +9,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized: Admin access required' }, { status: 403 });
     }
 
+    console.log('[auditJobSSotReadiness] Starting final readiness check...');
+
     // 1. Audit Job statuses
     const allJobs = await base44.entities.Job.list('-created_date', 100);
     const statusDistribution = {};
