@@ -145,9 +145,6 @@ Deno.serve(async (req) => {
 
     console.log('[enableJobSSotEnforcement] Enforcement activated successfully');
 
-    // CONFIRMATION: Re-read settings and return summary
-    const confirmedSettings = await base44.entities.CompanySettings.read(settings.id);
-
     return Response.json({
       status: 'success',
       message: 'Job SSOT enforcement activated',
