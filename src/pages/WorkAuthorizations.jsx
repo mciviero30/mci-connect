@@ -9,15 +9,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Plus, FileCheck, CheckCircle, XCircle, Calendar, User, FileText, AlertCircle } from 'lucide-react';
+import { Shield, Plus, FileCheck, CheckCircle, XCircle, Calendar, User, FileText, AlertCircle, Briefcase } from 'lucide-react';
 import PageHeader from '@/components/shared/PageHeader';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import { createPageUrl } from '@/utils';
 
 export default function WorkAuthorizations() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
+  const [showJobForm, setShowJobForm] = useState(false);
+  const [selectedAuth, setSelectedAuth] = useState(null);
+  const [jobFormData, setJobFormData] = useState({
+    name: '',
+    description: '',
+    address: '',
+    team_id: '',
+    status: 'active'
+  });
   const [formData, setFormData] = useState({
     customer_id: '',
     customer_name: '',
@@ -44,6 +56,12 @@ export default function WorkAuthorizations() {
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list('first_name'),
+    staleTime: 300000
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list('team_name'),
     staleTime: 300000
   });
 
@@ -79,6 +97,30 @@ export default function WorkAuthorizations() {
     }
   });
 
+  const createJobMutation = useMutation({
+    mutationFn: async (data) => {
+      const { generateJobNumber } = await import('@/functions/generateJobNumber');
+      const jobNumberResponse = await generateJobNumber({});
+      const jobNumber = jobNumberResponse.data.job_number;
+
+      return await base44.entities.Job.create({
+        ...data,
+        job_number: jobNumber
+      });
+    },
+    onSuccess: (newJob) => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      setShowJobForm(false);
+      setSelectedAuth(null);
+      resetJobForm();
+      toast.success(language === 'es' ? 'Job creado exitosamente' : 'Job created successfully');
+      navigate(createPageUrl('Trabajos'));
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
   const resetForm = () => {
     setFormData({
       customer_id: '',
@@ -90,6 +132,51 @@ export default function WorkAuthorizations() {
       approved_at: new Date().toISOString().split('T')[0],
       verification_notes: '',
       external_reference: ''
+    });
+  };
+
+  const resetJobForm = () => {
+    setJobFormData({
+      name: '',
+      description: '',
+      address: '',
+      team_id: '',
+      status: 'active'
+    });
+  };
+
+  const handleCreateJobFromAuth = (auth) => {
+    setSelectedAuth(auth);
+    setJobFormData({
+      name: '',
+      description: '',
+      address: '',
+      team_id: '',
+      status: 'active'
+    });
+    setShowJobForm(true);
+  };
+
+  const handleJobSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!jobFormData.name) {
+      toast.error(language === 'es' ? 'Nombre del trabajo requerido' : 'Job name required');
+      return;
+    }
+
+    createJobMutation.mutate({
+      name: jobFormData.name,
+      description: jobFormData.description,
+      address: jobFormData.address,
+      customer_id: selectedAuth.customer_id,
+      customer_name: selectedAuth.customer_name,
+      authorization_id: selectedAuth.id,
+      billing_type: selectedAuth.authorization_type,
+      contract_amount: selectedAuth.approved_amount || 0,
+      team_id: jobFormData.team_id,
+      team_name: teams.find(t => t.id === jobFormData.team_id)?.team_name || '',
+      status: jobFormData.status
     });
   };
 
@@ -225,7 +312,15 @@ export default function WorkAuthorizations() {
                 </div>
 
                 {isAdmin && auth.status === 'approved' && (
-                  <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+                  <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => handleCreateJobFromAuth(auth)}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                    >
+                      <Briefcase className="w-4 h-4 mr-2" />
+                      {language === 'es' ? 'Crear Job' : 'Create Job'}
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -263,6 +358,94 @@ export default function WorkAuthorizations() {
             </CardContent>
           </Card>
         )}
+
+        {/* Create Job from Authorization Dialog */}
+        <Dialog open={showJobForm} onOpenChange={setShowJobForm}>
+          <DialogContent className="max-w-2xl bg-white dark:bg-slate-900">
+            <DialogHeader>
+              <DialogTitle className="text-slate-900 dark:text-white">
+                {language === 'es' ? 'Crear Job desde Autorización' : 'Create Job from Authorization'}
+              </DialogTitle>
+            </DialogHeader>
+            {selectedAuth && (
+              <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-800 dark:text-blue-400 mb-2">
+                  <Shield className="w-4 h-4" />
+                  <span className="font-semibold">{selectedAuth.customer_name}</span>
+                </div>
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  {selectedAuth.authorization_number} • {selectedAuth.authorization_type}
+                </p>
+              </div>
+            )}
+            <form onSubmit={handleJobSubmit} className="space-y-4">
+              <div>
+                <Label>{language === 'es' ? 'Nombre del Job' : 'Job Name'} *</Label>
+                <Input
+                  value={jobFormData.name}
+                  onChange={(e) => setJobFormData({...jobFormData, name: e.target.value})}
+                  placeholder="Project name..."
+                  className="mt-1.5"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label>{language === 'es' ? 'Descripción' : 'Description'}</Label>
+                <Textarea
+                  value={jobFormData.description}
+                  onChange={(e) => setJobFormData({...jobFormData, description: e.target.value})}
+                  placeholder="Project scope..."
+                  className="mt-1.5 h-24"
+                />
+              </div>
+
+              <div>
+                <Label>{language === 'es' ? 'Dirección' : 'Address'}</Label>
+                <Input
+                  value={jobFormData.address}
+                  onChange={(e) => setJobFormData({...jobFormData, address: e.target.value})}
+                  placeholder="Project address..."
+                  className="mt-1.5"
+                />
+              </div>
+
+              <div>
+                <Label>{language === 'es' ? 'Equipo' : 'Team'}</Label>
+                <Select 
+                  value={jobFormData.team_id} 
+                  onValueChange={(val) => setJobFormData({...jobFormData, team_id: val})}
+                >
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue placeholder={language === 'es' ? 'Seleccionar equipo' : 'Select team'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teams.map(team => (
+                      <SelectItem key={team.id} value={team.id}>
+                        {team.team_name} - {team.location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button type="button" variant="outline" onClick={() => setShowJobForm(false)}>
+                  {language === 'es' ? 'Cancelar' : 'Cancel'}
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={createJobMutation.isPending}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500"
+                >
+                  {createJobMutation.isPending 
+                    ? (language === 'es' ? 'Creando...' : 'Creating...') 
+                    : (language === 'es' ? 'Crear Job' : 'Create Job')}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* Create Authorization Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>

@@ -470,6 +470,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
+        { title: 'Work Authorizations', url: createPageUrl("WorkAuthorizations"), icon: Shield },
         { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Review', url: createPageUrl("CommissionReview"), icon: TrendingUp },
