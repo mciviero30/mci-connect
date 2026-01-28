@@ -82,41 +82,62 @@ Deno.serve(async (req) => {
           }
         }
       } else if (invoice.job_name) {
-        // No job_id - create new job
-        if (import.meta.env?.DEV) {
-          console.log('📁 Creating new Job from invoice...');
-        }
-        
-        // Generate job number
-        const jobNumberResponse = await base44.asServiceRole.functions.invoke('generateJobNumber', {});
-        const job_number = jobNumberResponse?.data?.job_number || jobNumberResponse?.job_number;
-        
-        job = await base44.asServiceRole.entities.Job.create({
+        // PHASE 3 FIX: Check for duplicate BEFORE creating
+        const duplicateJobs = await base44.asServiceRole.entities.Job.filter({
           name: invoice.job_name,
-          job_number: job_number,
-          address: invoice.job_address || '',
-          customer_id: invoice.customer_id || '',
-          customer_name: invoice.customer_name || '',
-          contract_amount: invoice.total || 0,
-          team_id: invoice.team_id || '',
-          team_name: invoice.team_name || '',
-          status: 'active',
-          color: 'blue',
-          description: `Created from Invoice ${invoice.invoice_number}`,
-          provisioning_status: 'in_progress',
-          provisioning_attempts: 1,
-          provisioning_last_attempt_at: new Date().toISOString(),
-          provisioning_steps: { job: 'created', drive: 'unknown', field: 'unknown' }
+          customer_id: invoice.customer_id || ''
         });
-        
-        jobId = job.id;
-        steps.job = 'created';
-        
-        // Update invoice with job_id (atomic link)
-        await base44.asServiceRole.entities.Invoice.update(invoice_id, { job_id: jobId });
-        
-        if (import.meta.env?.DEV) {
-          console.log(`✅ Job created: ${jobId} ${job_number}`);
+
+        if (duplicateJobs.length > 0) {
+          // Duplicate found - link to existing instead of creating
+          job = duplicateJobs[0];
+          jobId = job.id;
+          steps.job = 'existing';
+          
+          // Link invoice to existing job
+          await base44.asServiceRole.entities.Invoice.update(invoice_id, { 
+            job_id: jobId,
+            job_link_method: 'duplicate_prevention'
+          });
+          
+          console.log(`✅ Linked to existing Job: ${job.id} ${job.job_number} (duplicate prevented)`);
+        } else {
+          // No duplicate - safe to create new job
+          if (import.meta.env?.DEV) {
+            console.log('📁 Creating new Job from invoice...');
+          }
+          
+          // Generate job number
+          const jobNumberResponse = await base44.asServiceRole.functions.invoke('generateJobNumber', {});
+          const job_number = jobNumberResponse?.data?.job_number || jobNumberResponse?.job_number;
+          
+          job = await base44.asServiceRole.entities.Job.create({
+            name: invoice.job_name,
+            job_number: job_number,
+            address: invoice.job_address || '',
+            customer_id: invoice.customer_id || '',
+            customer_name: invoice.customer_name || '',
+            contract_amount: invoice.total || 0,
+            team_id: invoice.team_id || '',
+            team_name: invoice.team_name || '',
+            status: 'active',
+            color: 'blue',
+            description: `Created from Invoice ${invoice.invoice_number}`,
+            provisioning_status: 'in_progress',
+            provisioning_attempts: 1,
+            provisioning_last_attempt_at: new Date().toISOString(),
+            provisioning_steps: { job: 'created', drive: 'unknown', field: 'unknown' }
+          });
+          
+          jobId = job.id;
+          steps.job = 'created';
+          
+          // Update invoice with job_id (atomic link)
+          await base44.asServiceRole.entities.Invoice.update(invoice_id, { job_id: jobId });
+          
+          if (import.meta.env?.DEV) {
+            console.log(`✅ Job created: ${jobId} ${job_number}`);
+          }
         }
       }
     } catch (error) {

@@ -1,8 +1,10 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * INTELLIGENT QUOTE NUMBER GENERATOR
- * Finds the smallest available number (reuses deleted numbers)
+ * ATOMIC QUOTE NUMBER GENERATOR - Thread-Safe
+ * 
+ * PHASE 2 FIX: Replaced gap-finding algorithm with atomic counter
+ * Prevents race conditions and duplicate numbers
  */
 Deno.serve(async (req) => {
   try {
@@ -13,26 +15,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all existing quotes (including deleted ones)
-    const allQuotes = await base44.asServiceRole.entities.Quote.list();
-    
-    // Extract numbers from quote_number field (EST-00001, EST-00002, etc.)
-    const usedNumbers = new Set();
-    allQuotes.forEach(quote => {
-      if (quote.quote_number) {
-        const match = quote.quote_number.match(/EST-(\d+)/);
-        if (match) {
-          usedNumbers.add(parseInt(match[1], 10));
-        }
-      }
+    // Use atomic counter for thread-safe number generation
+    const { data } = await base44.asServiceRole.functions.invoke('getNextCounter', {
+      counter_key: 'quote'
     });
-
-    // Find the smallest available number
-    let nextNumber = 1;
-    while (usedNumbers.has(nextNumber)) {
-      nextNumber++;
-    }
-
+    
+    const nextNumber = data.value;
     const formattedNumber = `EST-${String(nextNumber).padStart(5, '0')}`;
 
     // GUARDRAIL: Validate format before returning
@@ -40,7 +28,7 @@ Deno.serve(async (req) => {
       throw new Error(`Format validation failed: ${formattedNumber}`);
     }
 
-    console.log(`✅ Generated quote number: ${formattedNumber}`);
+    console.log(`✅ Generated quote number: ${formattedNumber} (atomic counter: ${nextNumber})`);
     
     return Response.json({ 
       quote_number: formattedNumber,

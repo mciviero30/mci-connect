@@ -505,39 +505,53 @@ export default function CrearFactura() {
 
       console.log('Final invoice data (normalized):', finalData);
       
-      // Step 4: Auto-create Job BEFORE creating invoice if needed
+      // PHASE 3 FIX: Check for duplicate BEFORE auto-creating
       let jobId = finalData.job_id;
       if (!jobId && finalData.job_name) {
-        console.log('🏗️ Auto-creating Job from invoice...');
-        try {
-          // Generate job number
-          const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
-          const job_number = jobNumberData.job_number;
-          
-          const newJob = await base44.entities.Job.create({
-            name: finalData.job_name,
-            job_number: job_number,
-            address: finalData.job_address || '',
-            city: finalData.job_address ? '' : '',
-            state: '',
-            zip: '',
-            customer_id: finalData.customer_id || '',
-            customer_name: finalData.customer_name || '',
-            contract_amount: finalData.total || 0,
-            estimated_cost: 0,
-            estimated_hours: 0,
-            status: 'active',
-            team_id: finalData.team_id || '',
-            team_name: finalData.team_name || '',
-            color: 'blue',
-            description: `Auto-created from Invoice ${invoice_number}`
-          });
-          
-          jobId = newJob.id;
-          finalData.job_id = newJob.id;
-          console.log('✅ Job auto-created:', newJob.id, newJob.name, job_number);
-        } catch (jobError) {
-          console.error('⚠️ Error auto-creating job:', jobError);
+        // Check if job already exists
+        const duplicateJobs = await base44.entities.Job.filter({
+          name: finalData.job_name,
+          customer_id: finalData.customer_id || ''
+        });
+
+        if (duplicateJobs.length > 0) {
+          // Use existing job
+          jobId = duplicateJobs[0].id;
+          finalData.job_id = jobId;
+          console.log('✅ Linked to existing Job:', jobId, duplicateJobs[0].job_number, '(duplicate prevented)');
+        } else {
+          // Safe to create new job
+          console.log('🏗️ Auto-creating Job from invoice...');
+          try {
+            // Generate job number
+            const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
+            const job_number = jobNumberData.job_number;
+            
+            const newJob = await base44.entities.Job.create({
+              name: finalData.job_name,
+              job_number: job_number,
+              address: finalData.job_address || '',
+              city: finalData.job_address ? '' : '',
+              state: '',
+              zip: '',
+              customer_id: finalData.customer_id || '',
+              customer_name: finalData.customer_name || '',
+              contract_amount: finalData.total || 0,
+              estimated_cost: 0,
+              estimated_hours: 0,
+              status: 'active',
+              team_id: finalData.team_id || '',
+              team_name: finalData.team_name || '',
+              color: 'blue',
+              description: `Auto-created from Invoice ${invoice_number}`
+            });
+            
+            jobId = newJob.id;
+            finalData.job_id = newJob.id;
+            console.log('✅ Job auto-created:', newJob.id, newJob.name, job_number);
+          } catch (jobError) {
+            console.error('⚠️ Error auto-creating job:', jobError);
+          }
         }
       }
       
@@ -763,39 +777,53 @@ export default function CrearFactura() {
         status: 'sent'
       };
 
-      // Auto-create Job if needed BEFORE saving invoice
+      // PHASE 3 FIX: Check for duplicate BEFORE auto-creating
       let jobId = invoiceData.job_id;
       if (!jobId && invoiceData.job_name) {
-        console.log('🏗️ Auto-creating Job from invoice (send flow)...');
-        try {
-          // Generate job number
-          const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
-          const job_number = jobNumberData.job_number;
-          
-          const newJob = await base44.entities.Job.create({
-            name: invoiceData.job_name,
-            job_number: job_number,
-            address: invoiceData.job_address || '',
-            city: '',
-            state: '',
-            zip: '',
-            customer_id: invoiceData.customer_id || '',
-            customer_name: invoiceData.customer_name || '',
-            contract_amount: invoiceData.total || 0,
-            estimated_cost: 0,
-            estimated_hours: 0,
-            status: 'active',
-            team_id: invoiceData.team_id || '',
-            team_name: invoiceData.team_name || '',
-            color: 'blue',
-            description: `Auto-created from Invoice ${invoice_number}`
-          });
-          
-          jobId = newJob.id;
-          invoiceData.job_id = newJob.id;
-          console.log('✅ Job auto-created (send):', newJob.id, newJob.name, job_number);
-        } catch (jobError) {
-          console.error('⚠️ Error auto-creating job:', jobError);
+        // Check if job already exists
+        const duplicateJobs = await base44.entities.Job.filter({
+          name: invoiceData.job_name,
+          customer_id: invoiceData.customer_id || ''
+        });
+
+        if (duplicateJobs.length > 0) {
+          // Use existing job
+          jobId = duplicateJobs[0].id;
+          invoiceData.job_id = jobId;
+          console.log('✅ Linked to existing Job:', jobId, duplicateJobs[0].job_number, '(duplicate prevented)');
+        } else {
+          // Safe to create new job
+          console.log('🏗️ Auto-creating Job from invoice (send flow)...');
+          try {
+            // Generate job number
+            const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
+            const job_number = jobNumberData.job_number;
+            
+            const newJob = await base44.entities.Job.create({
+              name: invoiceData.job_name,
+              job_number: job_number,
+              address: invoiceData.job_address || '',
+              city: '',
+              state: '',
+              zip: '',
+              customer_id: invoiceData.customer_id || '',
+              customer_name: invoiceData.customer_name || '',
+              contract_amount: invoiceData.total || 0,
+              estimated_cost: 0,
+              estimated_hours: 0,
+              status: 'active',
+              team_id: invoiceData.team_id || '',
+              team_name: invoiceData.team_name || '',
+              color: 'blue',
+              description: `Auto-created from Invoice ${invoice_number}`
+            });
+            
+            jobId = newJob.id;
+            invoiceData.job_id = newJob.id;
+            console.log('✅ Job auto-created (send):', newJob.id, newJob.name, job_number);
+          } catch (jobError) {
+            console.error('⚠️ Error auto-creating job:', jobError);
+          }
         }
       }
 

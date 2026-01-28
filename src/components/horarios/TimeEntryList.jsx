@@ -44,10 +44,28 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   });
   const [showDialog, setShowDialog] = useState(false); // To support `setShowDialog(false)` in createMutation
 
+  // EMPLOYEE SSOT: Use EmployeeDirectory as canonical source
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name'),
-    staleTime: 1800000, // 30 min - employee list rarely changes
+    queryFn: async () => {
+      const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name');
+      
+      // Enrich with User data for rates
+      const userIds = directory.filter(d => d.user_id).map(d => d.user_id);
+      const users = await Promise.all(
+        userIds.map(id => base44.entities.User.filter({ id }).catch(() => []))
+      );
+      const userMap = users.flat().reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+      
+      return directory.map(d => ({
+        id: d.user_id || d.id,
+        email: d.employee_email,
+        full_name: d.full_name,
+        position: d.position,
+        hourly_rate: userMap[d.user_id]?.hourly_rate
+      }));
+    },
+    staleTime: 1800000,
     gcTime: 3600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -421,22 +439,22 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     acc[key].totalHours += hours;
     
     // Calculate regular vs OT (assuming 40h/week threshold)
-    if (acc[empEmail].regularHours < 40) {
-      const regularToAdd = Math.min(hours, 40 - acc[empEmail].regularHours);
-      acc[empEmail].regularHours += regularToAdd;
-      acc[empEmail].overtimeHours += Math.max(0, hours - regularToAdd);
+    if (acc[key].regularHours < 40) {
+      const regularToAdd = Math.min(hours, 40 - acc[key].regularHours);
+      acc[key].regularHours += regularToAdd;
+      acc[key].overtimeHours += Math.max(0, hours - regularToAdd);
     } else {
-      acc[empEmail].overtimeHours += hours;
+      acc[key].overtimeHours += hours;
     }
     
     // Track by job
     const jobName = entry.job_name || 'Unknown';
-    if (!acc[empEmail].jobs[jobName]) {
-      acc[empEmail].jobs[jobName] = 0;
+    if (!acc[key].jobs[jobName]) {
+      acc[key].jobs[jobName] = 0;
     }
-    acc[empEmail].jobs[jobName] += hours;
+    acc[key].jobs[jobName] += hours;
     
-    acc[empEmail].entries.push(entry);
+    acc[key].entries.push(entry);
     return acc;
   }, {});
 
