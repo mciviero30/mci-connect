@@ -116,7 +116,16 @@ Deno.serve(async (req) => {
     const status = blockers.length === 0 ? 'READY_FOR_ENFORCEMENT' : 'NOT_READY';
 
     return Response.json({
+      status,
+      blockers,
       timestamp: new Date().toISOString(),
+      summary: {
+        total_jobs: allJobs.length,
+        orphan_quotes_total: orphanedQuotes.length,
+        orphan_quotes_intentional: orphanedQuotesIntentional.length,
+        invalid_references: invalidQuoteRefs.length + invalidInvoiceRefs.length + invalidTimeEntryRefs.length,
+        duplicate_jobs: duplicateJobs.length
+      },
       jobs_audit: {
         total_jobs: allJobs.length,
         status_distribution: statusDistribution,
@@ -130,6 +139,7 @@ Deno.serve(async (req) => {
         total_quotes: allQuotes.length,
         with_job_id: quotesWithValidJobRef.length,
         without_job_id: orphanedQuotes.length,
+        orphan_intentional: orphanedQuotesIntentional.length,
         percentage_linked: ((quotesWithValidJobRef.length / allQuotes.length) * 100).toFixed(1) + '%',
         invalid_references: invalidQuoteRefs.length
       },
