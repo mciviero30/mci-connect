@@ -150,9 +150,9 @@ Deno.serve(async (req) => {
       message: 'Job SSOT enforcement activated',
       activation_timestamp: new Date().toISOString(),
       enforcement_summary: {
-        job_ssot_enforced: confirmedSettings.job_ssot_enforced,
-        job_ssot_enforced_at: confirmedSettings.job_ssot_enforced_at,
-        job_ssot_version: confirmedSettings.job_ssot_version
+        job_ssot_enforced: settings.job_ssot_enforced,
+        job_ssot_enforced_at: settings.job_ssot_enforced_at,
+        job_ssot_version: settings.job_ssot_version
       },
       audit_results: {
         total_jobs: allJobs.length,
