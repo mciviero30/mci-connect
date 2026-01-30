@@ -110,6 +110,9 @@ Deno.serve(async (req) => {
         invoice_id: 'TEST_INVOICE_001'
       });
 
+      // Wait for automation to be registered
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Now try to edit it (should fail due to automation)
       try {
         await base44.entities.TimeEntry.update(testEntry.id, {
