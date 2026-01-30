@@ -52,8 +52,14 @@ Deno.serve(async (req) => {
         return Response.json({ success: true, message: 'Admin override: Unbilling record' });
       }
 
-      // Otherwise: BLOCK
-      throw new Error(`Billed records are immutable. This ${entity_name} was billed on ${new Date(record.billed_at).toLocaleDateString()}.`);
+      // Otherwise: BLOCK (return 403 to prevent the operation)
+      const errorMsg = `Billed records are immutable. This ${entity_name} was billed on ${new Date(record.billed_at).toLocaleDateString()}.`;
+      console.error('[preventBilledRecordEdit] BLOCKED:', errorMsg);
+      return Response.json({ 
+        error: errorMsg,
+        billed_at: record.billed_at,
+        invoice_id: record.invoice_id 
+      }, { status: 403 });
     }
 
     // Not billed: Allow
