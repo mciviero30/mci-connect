@@ -160,8 +160,8 @@ Deno.serve(async (req) => {
     console.log('🧪 TEST 3: MCI Field filters only authorized jobs...');
 
     try {
-      // Get all jobs
-      const allJobs = await base44.entities.Job.list();
+      // Get all jobs using service role
+      const allJobs = await base44.asServiceRole.entities.Job.list();
       
       // Filter jobs with authorization
       const authorizedJobs = allJobs.filter(j => j.authorization_id);
