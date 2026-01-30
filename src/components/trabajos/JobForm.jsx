@@ -357,14 +357,16 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
         </div>
 
         {/* CRITICAL: Authorization Required */}
-        <AuthorizationSelector
-          customerId={formData.customer_id}
-          customerName={formData.customer_name}
-          value={formData.authorization_id}
-          onChange={(authId) => setFormData({...formData, authorization_id: authId})}
-          language={language}
-          required={true}
-        />
+        <div data-authorization-selector>
+          <AuthorizationSelector
+            customerId={formData.customer_id}
+            customerName={formData.customer_name}
+            value={formData.authorization_id}
+            onChange={(authId) => setFormData({...formData, authorization_id: authId})}
+            language={language}
+            required={true}
+          />
+        </div>
 
         <div>
           <Label className="text-slate-700 font-semibold flex items-center gap-2">

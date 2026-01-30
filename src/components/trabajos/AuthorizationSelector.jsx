@@ -50,17 +50,28 @@ export default function AuthorizationSelector({
   });
 
   const createAuthMutation = useMutation({
-    mutationFn: (data) => base44.entities.WorkAuthorization.create({
-      ...data,
-      customer_id: customerId,
-      customer_name: customerName,
-      verified_by_user_id: user.id,
-      verified_by_email: user.email,
-      verified_by_name: user.full_name,
-      approved_at: new Date(data.approved_at).toISOString()
-    }),
+    mutationFn: (data) => {
+      // C1 FIX: Validate real customer_id before creating
+      if (!customerId || customerId.startsWith('TEST_')) {
+        throw new Error(language === 'es' 
+          ? 'ID de cliente inválido. Selecciona un cliente real.'
+          : 'Invalid customer ID. Select a real customer.');
+      }
+
+      return base44.entities.WorkAuthorization.create({
+        ...data,
+        customer_id: customerId, // CRITICAL: Real FK from Customer entity
+        customer_name: customerName,
+        verified_by_user_id: user.id,
+        verified_by_email: user.email,
+        verified_by_name: user.full_name,
+        approved_at: new Date(data.approved_at).toISOString(),
+        status: 'approved'
+      });
+    },
     onSuccess: (newAuth) => {
       queryClient.invalidateQueries({ queryKey: ['customer-authorizations', customerId] });
+      queryClient.invalidateQueries({ queryKey: ['work-authorizations'] });
       onChange(newAuth.id);
       setShowQuickCreate(false);
       resetQuickForm();
