@@ -20,6 +20,7 @@ import { canCreateTimeEntry } from "../trabajos/JobStatusValidator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/toast";
 import { resolveUser, resolveDisplayName } from "@/components/utils/userResolution";
+import { updateTimeEntrySafely } from "@/functions/updateTimeEntrySafely";
 
 export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEntry, isAdmin = false, loading }) {
   const { t, language } = useLanguage();
@@ -115,12 +116,21 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   });
 
   const approveMutation = useMutation({
-    mutationFn: (entry) => base44.entities.TimeEntry.update(entry.id, { 
-      status: 'approved',
-      approved_date: new Date().toISOString(),
-      is_locked: true,
-      ready_for_payment: true
-    }),
+    mutationFn: async (entry) => {
+      const response = await updateTimeEntrySafely({ 
+        entity_id: entry.id, 
+        update_data: { 
+          status: 'approved',
+          approved_date: new Date().toISOString(),
+          is_locked: true,
+          ready_for_payment: true
+        }
+      });
+      if (!response.data.success) {
+        throw new Error(response.data.error || 'Approval failed');
+      }
+      return response.data.data;
+    },
     onSuccess: async (_, entry) => {
       // SCOPED invalidation - only invalidate affected user's data
       queryClient.invalidateQueries({ queryKey: ['myTimeEntries', entry.employee_email] });
@@ -171,12 +181,20 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
         changes: updates
       };
       
-      // Update the time entry with correction log
-      return base44.entities.TimeEntry.update(entryId, {
-        ...updates,
-        manual_corrections: changeLog,
-        last_modified: new Date().toISOString()
+      // Update via safe function
+      const response = await updateTimeEntrySafely({ 
+        entity_id: entryId, 
+        update_data: {
+          ...updates,
+          manual_corrections: changeLog,
+          last_modified: new Date().toISOString()
+        }
       });
+      
+      if (!response.data.success) {
+        throw new Error(response.data.error || 'Update failed');
+      }
+      return response.data.data;
     },
     onSuccess: (_, { entryId }) => {
       // SCOPED invalidation - find entry to get employee_email
@@ -195,7 +213,16 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (entry) => base44.entities.TimeEntry.update(entry.id, { status: 'rejected' }),
+    mutationFn: async (entry) => {
+      const response = await updateTimeEntrySafely({ 
+        entity_id: entry.id, 
+        update_data: { status: 'rejected' }
+      });
+      if (!response.data.success) {
+        throw new Error(response.data.error || 'Rejection failed');
+      }
+      return response.data.data;
+    },
     onSuccess: async (_, entry) => {
       // SCOPED invalidation - only invalidate affected user's data
       queryClient.invalidateQueries({ queryKey: ['myTimeEntries', entry.employee_email] });
@@ -313,12 +340,21 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
       const affectedEmployees = new Set();
       
       for (const entry of pendingEntries) {
-        await base44.entities.TimeEntry.update(entry.id, { 
-          status: 'approved',
-          approved_date: new Date().toISOString(),
-          is_locked: true,
-          ready_for_payment: true
+        const response = await updateTimeEntrySafely({ 
+          entity_id: entry.id, 
+          update_data: { 
+            status: 'approved',
+            approved_date: new Date().toISOString(),
+            is_locked: true,
+            ready_for_payment: true
+          }
         });
+        
+        if (!response.data.success) {
+          console.error(`Failed to approve entry ${entry.id}:`, response.data.error);
+          continue;
+        }
+        
         affectedEmployees.add(entry.employee_email);
         try {
           await notifyTimesheetStatus(entry, 'approved', null);
