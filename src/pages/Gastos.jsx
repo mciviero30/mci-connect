@@ -17,6 +17,7 @@ import AIExpenseAnalyzer from "../components/gastos/AIExpenseAnalyzer";
 import SmartExpenseApproval from "../components/gastos/SmartExpenseApproval";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
+import { updateExpenseSafely } from "@/functions/updateExpenseSafely";
 
 export default function Gastos() {
   const { t } = useLanguage();
@@ -80,7 +81,16 @@ export default function Gastos() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status, notes }) => base44.entities.Expense.update(id, { status, notes }),
+    mutationFn: async ({ id, status, notes }) => {
+      const response = await updateExpenseSafely({ 
+        entity_id: id, 
+        update_data: { status, notes } 
+      });
+      if (!response.data.success) {
+        throw new Error(response.data.error || 'Update failed');
+      }
+      return response.data.data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
       toast({
