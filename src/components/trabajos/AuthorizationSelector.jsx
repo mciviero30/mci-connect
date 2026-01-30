@@ -22,7 +22,7 @@ export default function AuthorizationSelector({
   const queryClient = useQueryClient();
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [quickAuthData, setQuickAuthData] = useState({
-    authorization_type: 'fixed_price',
+    authorization_type: 'fixed',
     approval_source: 'email',
     authorization_number: '',
     approved_amount: 0,
@@ -73,7 +73,7 @@ export default function AuthorizationSelector({
 
   const resetQuickForm = () => {
     setQuickAuthData({
-      authorization_type: 'fixed_price',
+      authorization_type: 'fixed',
       approval_source: 'email',
       authorization_number: '',
       approved_amount: 0,
@@ -128,7 +128,7 @@ export default function AuthorizationSelector({
               <SelectItem key={auth.id} value={auth.id}>
                 <div className="flex items-center gap-2">
                   <Badge className="bg-green-100 text-green-800 text-xs">
-                    {auth.authorization_type === 'fixed_price' ? 'Fixed' : 'T&M'}
+                    {auth.authorization_type === 'fixed' ? 'Fixed' : 'T&M'}
                   </Badge>
                   {auth.authorization_number}
                   {auth.approved_amount > 0 && (
@@ -187,9 +187,8 @@ export default function AuthorizationSelector({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="fixed_price">Fixed Price</SelectItem>
-                    <SelectItem value="time_materials">T&M</SelectItem>
-                    <SelectItem value="not_to_exceed">Not to Exceed</SelectItem>
+                    <SelectItem value="fixed">Fixed Price</SelectItem>
+                    <SelectItem value="tm">Time & Materials</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

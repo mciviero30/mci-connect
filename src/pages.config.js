@@ -159,6 +159,7 @@ import Submittals from './pages/Submittals';
 import SystemHealthCheck from './pages/SystemHealthCheck';
 import SystemReadiness from './pages/SystemReadiness';
 import SystemTest from './pages/SystemTest';
+import TMInvoiceBuilder from './pages/TMInvoiceBuilder';
 import TaxOnboarding from './pages/TaxOnboarding';
 import TeamDetails from './pages/TeamDetails';
 import TeamGoals from './pages/TeamGoals';
@@ -177,7 +178,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import TMInvoiceBuilder from './pages/TMInvoiceBuilder';
 import __Layout from './Layout.jsx';
 
 
@@ -294,6 +294,7 @@ export const PAGES = {
     "SystemHealthCheck": SystemHealthCheck,
     "SystemReadiness": SystemReadiness,
     "SystemTest": SystemTest,
+    "TMInvoiceBuilder": TMInvoiceBuilder,
     "TaxOnboarding": TaxOnboarding,
     "TeamDetails": TeamDetails,
     "TeamGoals": TeamGoals,
@@ -312,7 +313,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "TMInvoiceBuilder": TMInvoiceBuilder,
 }
 
 export const pagesConfig = {
