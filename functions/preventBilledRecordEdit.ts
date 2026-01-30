@@ -1,8 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
- * GUARD: Prevent editing of billed TimeEntries and Expenses
- * Called before update operations on TimeEntry/Expense entities
+ * ENTITY AUTOMATION: Prevent editing of billed TimeEntries and Expenses
+ * Triggered on update/delete events
  */
 Deno.serve(async (req) => {
   try {
@@ -13,49 +13,51 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { entity_name, entity_id, update_data } = await req.json();
+    const payload = await req.json();
+    
+    // Entity automation payload format
+    const { event, data, old_data } = payload;
+    const entity_name = event?.entity_name;
+    const entity_id = event?.entity_id;
+    const event_type = event?.type;
 
-    if (!entity_name || !entity_id) {
-      return Response.json({ error: 'Missing entity_name or entity_id' }, { status: 400 });
+    if (!entity_name || !entity_id || !event_type) {
+      return Response.json({ error: 'Missing event data' }, { status: 400 });
     }
 
     // Only guard TimeEntry and Expense
     if (entity_name !== 'TimeEntry' && entity_name !== 'Expense') {
-      return Response.json({ 
-        allowed: true, 
-        message: 'Entity not guarded by billing lock' 
-      });
+      return Response.json({ success: true, message: 'Entity not guarded' });
     }
 
-    // Fetch current record
-    const records = await base44.asServiceRole.entities[entity_name].filter({ id: entity_id });
-    if (records.length === 0) {
-      return Response.json({ error: 'Record not found' }, { status: 404 });
+    // Only guard update and delete operations
+    if (event_type !== 'update' && event_type !== 'delete') {
+      return Response.json({ success: true, message: 'Event type not guarded' });
     }
 
-    const record = records[0];
+    // Use old_data for update events, or fetch for delete events
+    let record = old_data;
+    if (!record || event_type === 'delete') {
+      const records = await base44.asServiceRole.entities[entity_name].filter({ id: entity_id });
+      if (records.length === 0) {
+        return Response.json({ error: 'Record not found' }, { status: 404 });
+      }
+      record = records[0];
+    }
 
     // CHECK: Is it billed?
     if (record.billed_at) {
       // Admin override: Allow admins to unbill (remove billed_at/invoice_id)
-      if (user.role === 'admin' && update_data.billed_at === null && update_data.invoice_id === null) {
-        return Response.json({ 
-          allowed: true, 
-          message: 'Admin override: Unbilling record' 
-        });
+      if (user.role === 'admin' && event_type === 'update' && data?.billed_at === null) {
+        return Response.json({ success: true, message: 'Admin override: Unbilling record' });
       }
 
       // Otherwise: BLOCK
-      return Response.json({ 
-        allowed: false, 
-        error: 'Cannot edit billed record',
-        billed_at: record.billed_at,
-        invoice_id: record.invoice_id
-      }, { status: 403 });
+      throw new Error(`Billed records are immutable. This ${entity_name} was billed on ${new Date(record.billed_at).toLocaleDateString()}.`);
     }
 
     // Not billed: Allow
-    return Response.json({ allowed: true });
+    return Response.json({ success: true });
 
   } catch (error) {
     console.error('[preventBilledRecordEdit] Error:', error);
