@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
         invoice_id: 'TEST_INVOICE_001'
       });
 
-      // Now try to edit it (should fail)
+      // Now try to edit it (should fail due to automation)
       try {
         await base44.entities.TimeEntry.update(testEntry.id, {
           hours_worked: 10
@@ -124,20 +124,23 @@ Deno.serve(async (req) => {
           entry_id: testEntry.id
         });
       } catch (editError) {
+        console.error('[TEST 2] Edit error captured:', editError);
         // Expected to fail - this is GOOD
-        if (editError.message.includes('billed') || editError.status === 403) {
+        const errorStr = editError.message || String(editError);
+        if (errorStr.includes('billed') || errorStr.includes('immutable') || editError.status === 403) {
           results.tests.push({
             test: 'TEST 2: Lock Billed TimeEntry',
             status: 'PASSED ✅',
             reason: 'Billed time entry correctly blocked from editing',
-            error_message: editError.message
+            error_message: errorStr
           });
         } else {
           results.tests.push({
             test: 'TEST 2: Lock Billed TimeEntry',
             status: 'INCONCLUSIVE ⚠️',
             reason: 'Edit failed, but not due to billing lock',
-            error_message: editError.message
+            error_message: errorStr,
+            error_full: JSON.stringify(editError)
           });
         }
       }
