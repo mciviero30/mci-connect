@@ -164,11 +164,38 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
       return;
     }
 
-    // CRITICAL: Authorization required
+    // C3 FIX: Strict WorkAuth validation
     if (!formData.authorization_id) {
       toast.error(language === 'es' 
-        ? '⚠️ Autorización de trabajo requerida. El cliente debe aprobar antes de crear el Job.'
-        : '⚠️ Work authorization required. Client must approve before creating Job.');
+        ? '🚫 BLOQUEADO: Autorización de trabajo requerida.\n\n1. Ve a "Work Authorizations"\n2. Crea autorización con PO del cliente\n3. Regresa aquí y selecciona la autorización'
+        : '🚫 BLOCKED: Work authorization required.\n\n1. Go to "Work Authorizations"\n2. Create authorization with client PO\n3. Return here and select authorization');
+      
+      // Scroll to authorization selector
+      document.querySelector('[data-authorization-selector]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // C3 VALIDATION: Verify authorization exists and is approved
+    try {
+      const authCheck = await base44.entities.WorkAuthorization.filter({ id: formData.authorization_id });
+      if (authCheck.length === 0) {
+        toast.error(language === 'es' 
+          ? '❌ Error: Autorización no encontrada. Selecciona una autorización válida.'
+          : '❌ Error: Authorization not found. Select a valid authorization.');
+        return;
+      }
+      
+      const auth = authCheck[0];
+      if (auth.status !== 'approved') {
+        toast.error(language === 'es' 
+          ? `❌ Error: Autorización está "${auth.status}". Solo autorizaciones aprobadas pueden crear Jobs.`
+          : `❌ Error: Authorization is "${auth.status}". Only approved authorizations can create Jobs.`);
+        return;
+      }
+    } catch (error) {
+      toast.error(language === 'es' 
+        ? '❌ Error verificando autorización. Intenta de nuevo.'
+        : '❌ Error verifying authorization. Try again.');
       return;
     }
 

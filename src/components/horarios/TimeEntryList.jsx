@@ -236,7 +236,15 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     }
   };
 
-  const handleEdit = (entry) => {
+  const handleEdit = async (entry) => {
+    // C2 FIX: Check if entry is billed before allowing edit
+    if (entry.billed_at) {
+      toast.error(language === 'es' 
+        ? `🔒 No se puede editar. Esta entrada fue facturada el ${new Date(entry.billed_at).toLocaleDateString()}.`
+        : `🔒 Cannot edit. This entry was billed on ${new Date(entry.billed_at).toLocaleDateString()}.`);
+      return;
+    }
+
     setEditingEntry(entry);
     setEditFormData({
       check_in: entry.check_in || '',
@@ -247,9 +255,18 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     setEditDialogOpen(true);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editFormData.correction_reason.trim()) {
       toast.error(language === 'es' ? 'Por favor ingrese la razón de la corrección' : 'Please enter correction reason');
+      return;
+    }
+
+    // C2 VALIDATION: Double-check billed_at before mutation
+    if (editingEntry.billed_at) {
+      toast.error(language === 'es' 
+        ? '🔒 Esta entrada ya fue facturada y no puede modificarse'
+        : '🔒 This entry has been billed and cannot be modified');
+      setEditDialogOpen(false);
       return;
     }
 
