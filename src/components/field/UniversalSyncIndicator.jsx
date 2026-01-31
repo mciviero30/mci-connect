@@ -111,6 +111,7 @@ export default function UniversalSyncIndicator({ jobId }) {
     }
   }, [state, unsyncedCount]);
 
+  // STEP 2: Show indicator when conflicts, syncing, or has pending count
   // E2 FIX: NEVER hide if conflicts exist (CRITICAL)
   if (conflictCount > 0) {
     // Force conflict state - ALWAYS visible
@@ -138,6 +139,7 @@ export default function UniversalSyncIndicator({ jobId }) {
           <span className="text-[10px] font-bold text-white">⚠️{conflictCount}</span>
         </div>
       )}
+      {/* STEP 2: Always show pending count when syncing (real-time update) */}
       {unsyncedCount > 0 && state === 'syncing' && (
         <div className="w-5 h-5 rounded-full bg-blue-200 dark:bg-blue-700 flex items-center justify-center">
           <span className="text-[10px] font-bold text-blue-900 dark:text-blue-100">{unsyncedCount}</span>

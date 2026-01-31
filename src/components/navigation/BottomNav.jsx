@@ -7,7 +7,8 @@ import {
   Clock,
   Receipt,
   Users,
-  Menu
+  Menu,
+  Cloud
 } from 'lucide-react';
 import {
   Sheet,
@@ -19,10 +20,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useSyncQueue } from '@/components/pwa/SyncQueueManager';
 
 const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigation }) {
   const location = useLocation();
   const [sheetOpen, setSheetOpen] = React.useState(false);
+
+  // STEP 2: Track pending sync operations count
+  const { pendingCount } = useSyncQueue();
 
   // Memoize navigation items to prevent recreation
   const mainNavItems = React.useMemo(() => [
@@ -87,6 +92,21 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
               </Link>
             );
           })}
+
+          {/* STEP 2: Persistent Pending Actions Counter */}
+          {pendingCount > 0 && (
+            <div className="flex flex-col items-center justify-center gap-1 min-h-[60px] min-w-[60px] relative">
+              <div className="relative">
+                <Cloud className="w-6 h-6 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
+                <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1 text-[10px] bg-blue-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
+                  {pendingCount > 9 ? '9+' : pendingCount}
+                </Badge>
+              </div>
+              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 truncate max-w-full px-1 text-center">
+                Syncing
+              </span>
+            </div>
+          )}
 
           {/* More Menu */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
