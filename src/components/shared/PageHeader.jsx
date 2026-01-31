@@ -15,6 +15,11 @@ export default function PageHeader({
 }) {
   const navigate = useNavigate();
 
+  // Clean title from line breaks and extra whitespace
+  const cleanTitle = typeof title === 'string' 
+    ? title.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim() 
+    : title;
+
   return (
     <div className="mb-6 md:mb-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -36,7 +41,9 @@ export default function PageHeader({
                   <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
               )}
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-tight break-words">{title}</h1>
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 leading-tight" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                {cleanTitle}
+              </h1>
               {appBadge && (
                 <Badge className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md shadow-[#507DB4]/30 text-xs md:text-sm">
                   {appBadge}
