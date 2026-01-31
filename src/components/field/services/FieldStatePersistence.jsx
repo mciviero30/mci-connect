@@ -357,11 +357,11 @@ if (typeof window !== 'undefined') {
   
   // O3 FIX: Also cleanup completed operations and old conflicts on app init
   // This ensures long-term IndexedDB health
-  import('./FieldOperationQueue').then(({ clearCompletedOperations }) => {
+  import('../offline/FieldOperationQueue').then(({ clearCompletedOperations }) => {
     clearCompletedOperations().catch(console.error);
   }).catch(() => {});
   
-  import('./FieldConflictResolver').then(({ clearOldConflicts }) => {
+  import('../offline/FieldConflictResolver').then(({ clearOldConflicts }) => {
     clearOldConflicts(30).catch(console.error);
   }).catch(() => {});
 }
