@@ -753,8 +753,8 @@ export default function Dashboard() {
         {/* Header */}
         <div className="mb-4 sm:mb-6 md:mb-8">
           {/* Top row: Avatar, greeting, and badge */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
               <button
                 onClick={() => setShowPhotoManager(true)}
                 className="group relative hover:scale-105 transition-transform flex-shrink-0"
@@ -779,18 +779,20 @@ export default function Dashboard() {
               </button>
 
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white leading-tight flex items-center gap-2">
+                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white leading-tight truncate">
                  {user ? `${t('hello')}, ${getDisplayName(user)}!` : t('hello')}
                 </h1>
-                <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1">
+                <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1 truncate">
                   {isAdmin ? 'Welcome to the admin panel!' : 'Have a great day!'}
                 </p>
               </div>
             </div>
 
-            <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm self-start lg:self-center whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1">
-              <span className="hidden sm:inline">MCI Connect • </span>Customizable
-            </Badge>
+            <div className="flex-shrink-0">
+              <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1">
+                <span className="hidden sm:inline">MCI Connect • </span>Customizable
+              </Badge>
+            </div>
           </div>
 
           {/* Action buttons row */}

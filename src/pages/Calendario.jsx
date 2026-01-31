@@ -719,21 +719,21 @@ export default function Calendario() {
             </CardContent>
           </Card>
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-4 mb-3 md:mb-6">
-            <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto">
-              <Button variant="ghost" size="sm" onClick={handlePrevious} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10 h-9">
+          <div className="flex items-start justify-between gap-2 md:gap-4 mb-3 md:mb-6">
+            <div className="flex items-center gap-1 md:gap-2 flex-1 min-w-0">
+              <Button variant="ghost" size="sm" onClick={handlePrevious} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10 h-9 flex-shrink-0">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleToday} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10 h-9 font-semibold px-4">
+              <Button variant="ghost" size="sm" onClick={handleToday} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10 h-9 font-semibold px-4 flex-shrink-0">
                 {t('today')}
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleNext} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10 h-9">
+              <Button variant="ghost" size="sm" onClick={handleNext} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10 h-9 flex-shrink-0">
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              <h2 className="text-sm md:text-xl font-bold text-slate-900 ml-2 md:ml-4 truncate">{dateRangeLabel}</h2>
+              <h2 className="text-sm md:text-xl font-bold text-slate-900 ml-2 md:ml-4 truncate" title={dateRangeLabel}>{dateRangeLabel}</h2>
             </div>
 
-            <div className="flex items-center gap-1 md:gap-2 w-full md:w-auto justify-end">
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
               <Tabs value={view} onValueChange={setView}>
                 <TabsList className="bg-white shadow-sm border border-slate-200 h-9 rounded-xl">
                   <TabsTrigger value="day" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 text-xs md:text-sm px-3 md:px-4 h-7 rounded-lg">

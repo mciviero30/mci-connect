@@ -125,15 +125,17 @@ export default function MisProyectos() {
             myJobs.map(job => (
               <Card key={job.id} className="bg-white/90 shadow-lg border-slate-200 hover:shadow-xl transition-all">
                 <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-slate-900">{job.name}</CardTitle>
-                      <p className="text-sm text-slate-600 mt-1">{job.address}</p>
-                    </div>
-                    <Badge className={`${job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'}`}>
-                      {job.status}
-                    </Badge>
-                  </div>
+                 <div className="flex items-start justify-between gap-3">
+                   <div className="flex-1 min-w-0">
+                     <CardTitle className="text-slate-900 truncate" title={job.name}>{job.name}</CardTitle>
+                     <p className="text-sm text-slate-600 mt-1 truncate" title={job.address}>{job.address}</p>
+                   </div>
+                   <div className="flex-shrink-0">
+                     <Badge className={`${job.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-800'}`}>
+                       {job.status}
+                     </Badge>
+                   </div>
+                 </div>
                 </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-3 gap-4 mb-4">
