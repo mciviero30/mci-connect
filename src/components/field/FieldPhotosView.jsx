@@ -14,6 +14,7 @@ import PhotoComparisonView from './PhotoComparison.jsx';
 import MobilePhotoCapture from './MobilePhotoCapture.jsx';
 import BeforeAfterPhotoManager from './BeforeAfterPhotoManager.jsx';
 import { updateFieldQueryData } from './config/fieldQueryConfig';
+import { toast } from 'sonner';
 
 export default function FieldPhotosView({ jobId, plans = [] }) {
   const [showUpload, setShowUpload] = useState(false);
@@ -39,6 +40,14 @@ export default function FieldPhotosView({ jobId, plans = [] }) {
       queryClient.invalidateQueries({ queryKey: ['field-photos', jobId] });
       setShowUpload(false);
       setNewPhoto({ file_url: '', caption: '', location: '' });
+      toast.success('✓ Photo saved successfully');
+    },
+    // STEP 3: Human-friendly error - what happened, file safe, what next
+    onError: (error) => {
+      const errorMsg = error.message?.includes('permission')
+        ? 'You don\'t have permission to add photos. Contact your supervisor.'
+        : 'Couldn\'t save photo right now. Your uploaded file is safe — try saving again when connection improves.';
+      toast.error(errorMsg, { duration: 4000 });
     },
   });
 
@@ -50,7 +59,10 @@ export default function FieldPhotosView({ jobId, plans = [] }) {
         old ? old.filter(p => p.id !== variables) : old
       );
       setSelectedPhoto(null);
+      toast.success('✓ Photo deleted');
     },
+    // STEP 3: Human-friendly error - what happened, suggest retry
+    onError: () => toast.error('Couldn\'t delete photo. Check your connection and try again.', { duration: 3000 }),
   });
 
   const updatePhotoMutation = useMutation({
@@ -63,7 +75,10 @@ export default function FieldPhotosView({ jobId, plans = [] }) {
       setPinningPhoto(null);
       setSelectedPlanForPin(null);
       setSelectedPhoto(null);
+      toast.success('✓ Photo pinned to plan');
     },
+    // STEP 3: Human-friendly error - what happened, data safe, what next
+    onError: () => toast.error('Couldn\'t pin photo to plan. Photo is still in gallery — try again when connection is better.', { duration: 4000 }),
   });
 
   // Stable upload handler
@@ -77,6 +92,14 @@ export default function FieldPhotosView({ jobId, plans = [] }) {
       setNewPhoto(prev => ({ ...prev, file_url }));
     } catch (error) {
       console.error('Upload error:', error);
+      // STEP 3: Human-friendly upload error - what happened, file safe, what next
+      const errorMsg = error.message?.includes('size') 
+        ? 'Photo file is too large. Try compressing it or use a different photo.'
+        : error.message?.includes('network')
+        ? 'Couldn\'t upload photo — check your connection and try again. Your photo is still on your device.'
+        : 'Couldn\'t upload photo right now. Check your connection and try again. Your photo is safe on your device.';
+      
+      toast.error(errorMsg, { duration: 4000 });
     }
     setUploading(false);
   }, []);
