@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 export default function CreateJobFromInvoiceDialog({
   open,
@@ -15,9 +15,20 @@ export default function CreateJobFromInvoiceDialog({
   onSubmit
 }) {
   const [formData, setFormData] = useState({
-    authorization_type: 'fixed',
+    // Job fields
+    job_name: invoice?.job_name || '',
+    customer_id: invoice?.customer_id || '',
+    customer_name: invoice?.customer_name || '',
+    
+    // Work Authorization fields (auto-created)
+    authorization_type: invoice?.billing_type === 'tm' ? 'tm' : 'fixed',
     approval_source: 'signed_quote',
+    authorization_number: invoice?.invoice_number || '',
     approved_amount: invoice?.total || 0,
+    verified_by_user_id: user?.id || '',
+    verified_by_email: user?.email || '',
+    verified_by_name: user?.full_name || '',
+    verification_notes: `Auto-created from Invoice ${invoice?.invoice_number}`,
   });
 
   const handleSubmit = (e) => {
