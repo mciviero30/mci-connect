@@ -175,29 +175,29 @@ export default function CreateJobFromInvoiceDialog({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                'Create Job'
-              )}
-            </Button>
+          <div className="flex gap-3 pt-6 border-t">
+           <Button
+             type="button"
+             variant="outline"
+             onClick={() => onOpenChange(false)}
+             className="flex-1"
+           >
+             Cancel
+           </Button>
+           <Button
+             type="submit"
+             disabled={isLoading}
+             className="flex-1 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white"
+           >
+             {isLoading ? (
+               <>
+                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                 Creating...
+               </>
+             ) : (
+               '✓ Create Job & Authorization'
+             )}
+           </Button>
           </div>
         </form>
       </DialogContent>
