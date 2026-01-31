@@ -347,14 +347,39 @@ export default function WorkAuthorizations() {
           <Card className="border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
               <Shield className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              
+              {/* WA1 — Educational Empty State */}
               <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                {language === 'es' ? 'No hay autorizaciones' : 'No authorizations'}
+                {language === 'es' ? 'No hay autorizaciones de trabajo' : 'No Work Authorizations'}
               </h3>
-              <p className="text-slate-500 dark:text-slate-400">
+              
+              <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-4">
                 {language === 'es' 
-                  ? 'Crea una autorización para habilitar trabajos'
-                  : 'Create an authorization to enable jobs'}
+                  ? 'Las autorizaciones de trabajo prueban la aprobación del cliente (PO, email, contrato). Son REQUERIDAS antes de crear Jobs.'
+                  : 'Work Authorizations prove client approval (PO, email, contract). They are REQUIRED before creating Jobs.'}
               </p>
+              
+              <div className="bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 p-4 rounded-lg max-w-sm mx-auto mb-6">
+                <p className="font-bold text-amber-900 dark:text-amber-300 mb-2 flex items-center gap-2 justify-center">
+                  <AlertCircle className="w-4 h-4" />
+                  {language === 'es' ? 'Sin autorización = Sin trabajo' : 'No Authorization = No Job'}
+                </p>
+                <p className="text-sm text-amber-800 dark:text-amber-400">
+                  {language === 'es' 
+                    ? 'Los Jobs no se pueden crear sin una autorización aprobada del cliente.'
+                    : 'Jobs cannot be created without approved client authorization.'}
+                </p>
+              </div>
+              
+              {isAdmin && (
+                <Button
+                  onClick={() => setShowForm(true)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Crear Primera Autorización' : 'Create First Authorization'}
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}

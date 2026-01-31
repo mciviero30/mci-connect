@@ -259,6 +259,33 @@ export default function TimeTracking() {
           )}
         </div>
 
+        {/* TF1 — Time vs Field Separation Banner */}
+        <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-600 shadow-lg mb-6">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-green-900 dark:text-green-300 text-base mb-1">
+                  {language === 'es' ? '⏱️ Time Tracking = Horas y Pago' : '⏱️ Time Tracking = Hours & Payroll'}
+                </p>
+                <p className="text-sm text-green-800 dark:text-green-400">
+                  {language === 'es' 
+                    ? 'Usa Time Tracking para registrar entrada/salida, pausas y generar nómina.'
+                    : 'Use Time Tracking to clock in/out, track breaks, and generate payroll.'}
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-500 mt-2 flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  {language === 'es' 
+                    ? 'Para trabajo en sitio (tareas, fotos, mediciones), usa "MCI Field".'
+                    : 'For jobsite work (tasks, photos, measurements), use "MCI Field".'}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Live Time Tracker with Geofencing */}
         <LiveTimeTracker 
           trackingType="work"

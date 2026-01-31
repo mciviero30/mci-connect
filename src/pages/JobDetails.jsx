@@ -661,15 +661,15 @@ export default function JobDetails() {
 
           {/* Hours Tab */}
           <TabsContent value="hours">
-            {/* Generate Invoice from Hours Button - For ANY job with approved hours */}
-            {timeEntries.filter(e => e.status === 'approved').length > 0 && (
+            {/* I1 — T&M Invoice Button Filter: ONLY show for T&M jobs */}
+            {job?.billing_type === 'time_materials' && timeEntries.filter(e => e.status === 'approved').length > 0 && (
               <Card className="bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-300 mb-6">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="font-bold text-emerald-900 text-lg mb-1 flex items-center gap-2">
                        <DollarSign className="w-5 h-5" />
-                       {language === 'es' ? 'Facturar Trabajo Adicional por Horas (T&M)' : 'Bill Additional T&M Work'}
+                       {language === 'es' ? 'Facturar Trabajo por Horas (T&M)' : 'Bill T&M Work'}
                       </h3>
                       <p className="text-sm text-emerald-700">
                         {language === 'es' 
@@ -679,14 +679,6 @@ export default function JobDetails() {
                       <p className="text-xs text-emerald-600 mt-1">
                         {timeEntries.filter(e => e.status === 'approved').length} {language === 'es' ? 'horas aprobadas listas para facturar' : 'approved hours ready to bill'}
                       </p>
-                      {job?.billing_type === 'fixed_price' && (
-                        <p className="text-xs text-amber-700 mt-2 font-semibold flex items-center gap-1">
-                         <AlertTriangle className="w-3.5 h-3.5" />
-                         {language === 'es' 
-                           ? 'Trabajo original fue precio fijo. Esta factura es por trabajo ADICIONAL por horas.'
-                           : 'Original job was fixed price. This invoice is for ADDITIONAL hourly work.'}
-                        </p>
-                      )}
                     </div>
                     <Link to={createPageUrl(`CrearFactura?job_id=${jobId}&billing_type=time_materials`)}>
                       <Button className="bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg">
@@ -694,6 +686,32 @@ export default function JobDetails() {
                         {language === 'es' ? 'Generar Factura T&M' : 'Generate T&M Invoice'}
                       </Button>
                     </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            {/* Informational banner for Fixed Price jobs with hours */}
+            {job?.billing_type === 'fixed_price' && timeEntries.filter(e => e.status === 'approved').length > 0 && (
+              <Card className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 mb-6">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-2">
+                    <FileCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-semibold text-blue-900 dark:text-blue-300 mb-1">
+                        {language === 'es' ? 'Trabajo de Precio Fijo' : 'Fixed Price Job'}
+                      </p>
+                      <p className="text-sm text-blue-800 dark:text-blue-400">
+                        {language === 'es' 
+                          ? 'Las horas se rastrean solo para análisis interno, no para facturación por hora.'
+                          : 'Hours are tracked for internal analysis only, not for hourly billing.'}
+                      </p>
+                      <p className="text-xs text-blue-700 dark:text-blue-500 mt-2">
+                        {language === 'es' 
+                          ? 'Para facturar trabajo adicional por horas, crea una nueva autorización T&M primero.'
+                          : 'To bill additional hourly work, create a new T&M authorization first.'}
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

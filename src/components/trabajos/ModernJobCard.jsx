@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, Eye, Users, Calendar, TrendingUp, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { MapPin, DollarSign, Eye, Users, Calendar, TrendingUp, MoreVertical, Edit, Trash2, CheckCircle, AlertTriangle, Clock } from "lucide-react";
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
@@ -133,6 +133,29 @@ export default function ModernJobCard({ job, onEdit }) {
           <Badge className={`${statusColors[job.status]} px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center`}>
             {statusLabels[job.status] || job.status}
           </Badge>
+          
+          {/* J2 — Authorization Status Badge */}
+          {job.authorization_id ? (
+            <Badge className="bg-green-100 text-green-800 border-green-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center">
+              <CheckCircle className="w-3 h-3 mr-1" />
+              {language === 'es' ? 'Autorizado' : 'Authorized'}
+            </Badge>
+          ) : (
+            <Badge className="bg-red-100 text-red-800 border-red-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center">
+              <AlertTriangle className="w-3 h-3 mr-1" />
+              {language === 'es' ? 'Sin Autorización' : 'No Auth'}
+            </Badge>
+          )}
+          
+          {/* J1 — Billing Type Badge */}
+          <Badge className={job.billing_type === 'time_materials' 
+            ? 'bg-purple-100 text-purple-800 border-purple-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center'
+            : 'bg-blue-100 text-blue-800 border-blue-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center'
+          }>
+            <Clock className="w-3 h-3 mr-1" />
+            {job.billing_type === 'time_materials' ? 'T&M' : 'Fixed'}
+          </Badge>
+          
           {job.team_name && (
             <Badge 
               variant="outline" 

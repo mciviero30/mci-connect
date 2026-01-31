@@ -94,8 +94,15 @@ export default function TMInvoiceBuilder() {
       });
       return result;
     },
-    onSuccess: () => {
-      toast({ title: 'T&M Invoice created successfully' });
+    onSuccess: (result) => {
+      // I4 — Post-Invoice Lock Confirmation
+      const lockedCount = (preview?.time_entries?.length || 0) + (preview?.expenses?.length || 0);
+      toast({ 
+        title: '✅ T&M Invoice Created', 
+        description: `${lockedCount} records are now locked and cannot be modified.`,
+        variant: 'success',
+        duration: 8000
+      });
       queryClient.invalidateQueries(['invoices']);
       queryClient.invalidateQueries(['time-entries']);
       queryClient.invalidateQueries(['expenses']);
@@ -231,9 +238,27 @@ export default function TMInvoiceBuilder() {
                   <span>No unbilled items in this date range</span>
                 </div>
               ) : (
-                <Button onClick={handleCreate} disabled={createMutation.isPending} className="w-full">
-                  {createMutation.isPending ? 'Creating...' : 'Create Invoice'}
-                </Button>
+                <>
+                  {/* I3 — Pre-Invoice Lock Warning */}
+                  <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-lg mb-4">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-amber-700 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-bold text-amber-900 dark:text-amber-300 mb-1">
+                          ⚠️ Important: Invoice Locks Records
+                        </p>
+                        <p className="text-sm text-amber-800 dark:text-amber-400">
+                          Creating this invoice will <strong>permanently lock</strong> {preview.time_entries.length} time entries 
+                          and {preview.expenses.length} expenses. They cannot be edited or deleted after billing.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button onClick={handleCreate} disabled={createMutation.isPending} className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg">
+                    {createMutation.isPending ? 'Creating...' : 'Create Invoice (Lock Records)'}
+                  </Button>
+                </>
               )}
             </CardContent>
           </Card>
@@ -241,11 +266,32 @@ export default function TMInvoiceBuilder() {
 
         {!loadingJobs && jobs.length === 0 && (
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-                <AlertCircle className="w-5 h-5" />
-                <span>No Time & Materials jobs found. Only jobs with T&M authorization can be invoiced here.</span>
+            <CardContent className="p-12 text-center">
+              {/* I2 — Educational Empty State */}
+              <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                No Time & Materials Jobs
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-4">
+                T&M Invoice Builder works only with jobs that have 
+                <strong> Time & Materials authorization</strong>.
+              </p>
+              
+              <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 p-4 rounded-lg max-w-md mx-auto">
+                <p className="text-sm text-blue-900 dark:text-blue-300 font-semibold mb-2">
+                  To bill hourly work:
+                </p>
+                <ol className="text-sm text-blue-800 dark:text-blue-400 text-left space-y-1">
+                  <li>1. Create WorkAuthorization (type: <strong>T&M</strong>)</li>
+                  <li>2. Create Job from that authorization</li>
+                  <li>3. Employees log hours on that job</li>
+                  <li>4. Return here to bill approved hours</li>
+                </ol>
               </div>
+              
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-4">
+                Fixed Price jobs cannot use this builder.
+              </p>
             </CardContent>
           </Card>
         )}
