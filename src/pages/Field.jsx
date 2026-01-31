@@ -16,7 +16,9 @@ import {
   MoreVertical,
   Copy,
   Trash2,
-  Archive
+  Archive,
+  Clock,
+  AlertTriangle
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
@@ -28,6 +30,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -487,6 +490,33 @@ export default function Field() {
           {language === 'es' ? 'Iniciar Trabajo de Field' : 'Start Field Work'}
         </Button>
       ) : null}
+
+      {/* F2 — Field Purpose Banner */}
+      <Card className="mb-6 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border-2 border-blue-500/50 shadow-xl backdrop-blur-sm">
+        <CardContent className="p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+              <MapPin className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className="font-bold text-blue-200 text-base mb-1">
+                {language === 'es' ? '📍 MCI Field = Gestión en Sitio' : '📍 MCI Field = Jobsite Management'}
+              </p>
+              <p className="text-sm text-blue-300">
+                {language === 'es' 
+                  ? 'Usa Field para: tareas, fotos, mediciones, progreso del proyecto.'
+                  : 'Use Field for: tasks, photos, measurements, project progress.'}
+              </p>
+              <p className="text-sm text-blue-400 mt-2 flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                {language === 'es' 
+                  ? 'Para registrar horas y pago, usa "Time Tracking" desde el menú principal.'
+                  : 'For clock in/out and payroll, use "Time Tracking" from main menu.'}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* NAV BAR - Sticky Section Selector */}
       <div className="mb-6">
