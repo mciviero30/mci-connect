@@ -7,6 +7,7 @@ export default function UniversalSyncIndicator({ jobId }) {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [unsyncedCount, setUnsyncedCount] = useState(0);
   const [conflictCount, setConflictCount] = useState(0);
+  const [savedConfirmVisible, setSavedConfirmVisible] = useState(false); // QW3 control
 
   // Monitor online status
   useEffect(() => {
@@ -99,27 +100,44 @@ export default function UniversalSyncIndicator({ jobId }) {
   const config = stateConfig[state];
   const Icon = config.icon;
 
-  // Auto-hide "synced" after 2 seconds
+  // QW3 FIX: Keep "synced" visible 5s (not 2s) for user confirmation
   useEffect(() => {
-    if (state === 'synced') {
+    if (state === 'synced' && unsyncedCount === 0) {
+      setSavedConfirmVisible(true);
       const timer = setTimeout(() => {
-        // Component will naturally hide when next check runs
-      }, 2000);
+        setSavedConfirmVisible(false);
+      }, 5000); // Extended from 2s to 5s
       return () => clearTimeout(timer);
     }
-  }, [state]);
+  }, [state, unsyncedCount]);
 
-  // Hide synced state to reduce visual noise
-  if (state === 'synced' && unsyncedCount === 0) return null;
+  // E2 FIX: NEVER hide if conflicts exist (CRITICAL)
+  if (conflictCount > 0) {
+    // Force conflict state - ALWAYS visible
+  } else if (state === 'synced' && unsyncedCount === 0 && !savedConfirmVisible) {
+    return null; // Only hide after 5s delay
+  }
 
   return (
     <div 
-      className={`fixed bottom-20 md:bottom-4 right-4 z-50 ${config.bgColor} ${config.borderColor} border-2 radius-md shadow-enterprise-md flex items-center gap-2 px-3 py-2 backdrop-blur-sm`}
+      className={`fixed bottom-20 md:bottom-4 right-4 z-50 ${config.bgColor} ${config.borderColor} border-2 radius-md shadow-enterprise-md flex items-center gap-2 px-3 py-2 backdrop-blur-sm ${
+        conflictCount > 0 ? 'animate-pulse' : ''
+      }`}
+      onClick={conflictCount > 0 ? () => {
+        // E2 FIX: Tap to open conflict resolution
+        alert(`${conflictCount} data conflict${conflictCount > 1 ? 's' : ''} detected. Sync engine will resolve automatically, but review recommended.`);
+      } : undefined}
     >
       <Icon className={`w-4 h-4 ${config.color} ${config.spin ? 'animate-spin' : ''}`} strokeWidth={2.5} />
       <span className={`text-xs font-bold ${config.color}`}>
         {config.userMessage}
       </span>
+      {/* E2 FIX: Show conflict count prominently */}
+      {conflictCount > 0 && (
+        <div className="w-6 h-6 rounded-full bg-red-600 flex items-center justify-center animate-pulse">
+          <span className="text-[10px] font-bold text-white">⚠️{conflictCount}</span>
+        </div>
+      )}
       {unsyncedCount > 0 && state === 'syncing' && (
         <div className="w-5 h-5 rounded-full bg-blue-200 dark:bg-blue-700 flex items-center justify-center">
           <span className="text-[10px] font-bold text-blue-900 dark:text-blue-100">{unsyncedCount}</span>
