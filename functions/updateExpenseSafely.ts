@@ -35,12 +35,15 @@ Deno.serve(async (req) => {
         return Response.json({ success: true, data: updated });
       }
 
-      // Otherwise: BLOCK
+      // Otherwise: BLOCK (improved messaging)
       const billedDate = new Date(existingRecord.billed_at).toLocaleDateString();
       return Response.json({ 
-        error: `Billed records are immutable. This expense was billed on ${billedDate}.`,
+        error: `This expense was billed on ${billedDate}${existingRecord.invoice_id ? ` (Invoice #${existingRecord.invoice_id})` : ''}. ` +
+               `Billed records are locked to preserve invoice integrity. ` +
+               `To make changes, create a credit note or contact accounting.`,
         billed_at: existingRecord.billed_at,
-        invoice_id: existingRecord.invoice_id
+        invoice_id: existingRecord.invoice_id,
+        billed: true
       }, { status: 403 });
     }
 

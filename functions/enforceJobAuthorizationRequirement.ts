@@ -30,13 +30,17 @@ Deno.serve(async (req) => {
         customer_name: job.customer_name
       });
 
-      // BLOCK job creation/update
+      // BLOCK job creation/update (improved messaging)
       return Response.json({
         success: false,
         error: 'AUTHORIZATION_REQUIRED',
-        message: 'Jobs require WorkAuthorization. Create authorization first.',
+        message: 'Jobs require WorkAuthorization to proceed. ' +
+                 'Client approval must be verified before creating jobs. ' +
+                 'Go to: Compliance > Work Authorizations > New Authorization',
         job_id: job.id,
-        job_name: job.name
+        job_name: job.name,
+        missing_authorization: true,
+        action: 'create_work_authorization'
       }, { status: 400 });
     }
 
