@@ -23,6 +23,7 @@ import InvoicePDFImporter from "../components/invoices/InvoicePDFImporter";
 import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
 import { useNavigate } from "react-router-dom";
+import CreateJobFromInvoiceDialog from "../components/trabajos/CreateJobFromInvoiceDialog";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
