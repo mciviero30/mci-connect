@@ -215,6 +215,7 @@ export default function Dashboard() {
     gcTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    initialData: [], // FIX: Ensure jobs is always an array
   });
 
   const { data: assignments = [] } = useQuery({
@@ -510,7 +511,7 @@ export default function Dashboard() {
       case 'active-jobs':
         return (
           <Link to={createPageUrl('Trabajos')}>
-            <StatsWidget value={jobs.length} label={t('jobs')} icon={Briefcase} color="green" />
+            <StatsWidget value={Array.isArray(jobs) ? jobs.length : 0} label={t('jobs')} icon={Briefcase} color="green" />
           </Link>
         );
       
@@ -629,7 +630,7 @@ export default function Dashboard() {
             items={assignments}
             emptyMessage="You have no jobs assigned this week"
             renderItem={(assignment) => {
-              const job = jobs.find(j => j.id === assignment.job_id);
+              const job = Array.isArray(jobs) ? jobs.find(j => j.id === assignment.job_id) : null;
               return (
                 <Link to={createPageUrl(`JobDetails?id=${assignment.job_id}`)}>
                   <div className="p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700/50 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all cursor-pointer">
