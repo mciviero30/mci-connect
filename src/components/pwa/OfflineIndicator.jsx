@@ -43,12 +43,23 @@ export default function OfflineIndicator() {
     };
   }, [pendingCount]);
 
-  // Auto-hide when sync completes
+  // QW3: Keep "all synced" visible for 5 seconds (was 2.5s)
+  useEffect(() => {
+    if (justSynced) {
+      const timer = setTimeout(() => {
+        setJustSynced(false);
+        setShowIndicator(false);
+      }, 5000); // EXTENDED: 5 seconds for worker confidence
+      return () => clearTimeout(timer);
+    }
+  }, [justSynced]);
+
+  // Auto-hide when sync completes (non-justSynced case)
   useEffect(() => {
     if (isOnline && !isSyncing && pendingCount === 0 && showIndicator && !justSynced) {
       const timer = setTimeout(() => {
         setShowIndicator(false);
-      }, 2000);
+      }, 5000); // EXTENDED: 5 seconds
       return () => clearTimeout(timer);
     }
   }, [isOnline, isSyncing, pendingCount, showIndicator, justSynced]);
@@ -56,7 +67,11 @@ export default function OfflineIndicator() {
   // Show conflicts button if any
   const hasConflicts = conflicts && conflicts.length > 0;
 
-  if (!showIndicator && isOnline && pendingCount === 0 && !hasConflicts) {
+  // QW1: CRITICAL - ALWAYS show when offline (not just when pending)
+  // Worker MUST know they are offline immediately
+  const shouldShow = !isOnline || showIndicator || hasConflicts;
+
+  if (!shouldShow && isOnline && pendingCount === 0) {
     return null;
   }
 
@@ -124,10 +139,10 @@ export default function OfflineIndicator() {
                     {justSynced
                       ? (language === 'es' ? '✓ Todo guardado' : '✓ All saved')
                       : isOnline && pendingCount === 0
-                      ? (language === 'es' ? 'Sincronizado' : 'Synced')
+                      ? (language === 'es' ? '✓ Sincronizado' : '✓ Synced')
                       : isOnline && pendingCount > 0
                       ? (language === 'es' ? `Guardando ${pendingCount}` : `Saving ${pendingCount}`)
-                      : (language === 'es' ? 'Modo offline' : 'Offline mode')
+                      : (language === 'es' ? '⚠️ Trabajando offline' : '⚠️ Working offline')
                     }
                   </span>
                 </div>

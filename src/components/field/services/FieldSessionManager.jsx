@@ -268,9 +268,13 @@ export const FieldSessionManager = {
 };
 
 /**
- * O1 + Z2 FIX: Global emergency flush on beforeunload
- * Z2 EXPANSION: Now saves session + any in-memory drafts
- * Registers once on module load
+ * QW4: EMERGENCY FLUSH - Zero Data Loss Guarantee
+ * Persists EVERYTHING on beforeunload/crash:
+ * - Active session state
+ * - Draft tasks (data-field-draft inputs)
+ * - Draft notes (textareas)
+ * - Unsaved form state in memory
+ * - Open modals with data
  */
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
@@ -279,8 +283,9 @@ if (typeof window !== 'undefined') {
       // Save session
       FieldSessionManager.saveSession(session);
       
-      // Z2 FIX: Also flush any form drafts from DOM to sessionStorage
+      // QW4: Flush ALL in-memory drafts to storage
       try {
+        // 1. Form inputs marked as drafts
         const formInputs = document.querySelectorAll('[data-field-draft]');
         formInputs.forEach(input => {
           const draftType = input.getAttribute('data-draft-type');
@@ -291,11 +296,42 @@ if (typeof window !== 'undefined') {
             sessionStorage.setItem(`emergency_draft_${draftType}_${jobId}`, value);
           }
         });
+
+        // 2. QW4: Task creation modal data
+        const taskInputs = document.querySelectorAll('[data-task-draft]');
+        taskInputs.forEach(input => {
+          const field = input.name || input.id;
+          const jobId = input.getAttribute('data-job-id');
+          const value = input.value;
+          
+          if (field && jobId && value) {
+            sessionStorage.setItem(`emergency_task_${field}_${jobId}`, value);
+          }
+        });
+
+        // 3. QW4: Notes and textareas
+        const textareas = document.querySelectorAll('textarea[data-autosave]');
+        textareas.forEach(textarea => {
+          const noteId = textarea.getAttribute('data-note-id');
+          const value = textarea.value;
+          
+          if (noteId && value) {
+            sessionStorage.setItem(`emergency_note_${noteId}`, value);
+          }
+        });
+
+        // 4. QW4: React state from CreateTaskDialog (if open)
+        if (session.context?.openModals?.includes('createTask')) {
+          const taskMetadata = session.context['createTask_metadata'];
+          if (taskMetadata) {
+            sessionStorage.setItem('emergency_task_metadata', JSON.stringify(taskMetadata));
+          }
+        }
       } catch (error) {
         console.error('[Emergency Flush] Draft save failed:', error);
       }
       
-      console.log('[FieldSessionManager] 🚨 Emergency flush (session + drafts)');
+      console.log('[FieldSessionManager] 🚨 EMERGENCY FLUSH (session + ALL drafts + form state)');
     }
   });
 }

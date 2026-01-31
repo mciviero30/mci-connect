@@ -45,6 +45,8 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { SkeletonFieldProject } from '@/components/shared/SkeletonComponents';
 import { ExitConfirmation, useExitConfirmation } from '@/components/feedback/ExitConfirmation';
 import AuthorizationSelector from '@/components/trabajos/AuthorizationSelector';
+import ConflictAlertBanner from '@/components/field/ConflictAlertBanner';
+import { useSyncQueue } from '@/components/pwa/SyncQueueManager';
 
 export default function Field() {
   const { setIsFieldMode } = useUI();
@@ -53,6 +55,10 @@ export default function Field() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showReentryPrompt, setShowReentryPrompt] = useState(false);
   const [previousSession, setPreviousSession] = useState(null);
+  
+  // QW6: Conflict detection state
+  const { conflicts } = useSyncQueue();
+  const [showConflictDialog, setShowConflictDialog] = useState(false);
   
   // Persistent filter state
   const [filter, setFilter, clearFilter] = usePersistentState('field_filter', 'active', { expiryHours: 48 });
@@ -182,6 +188,9 @@ export default function Field() {
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
+  // QW5: Add loading state tracking for initial load feedback
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+
   const { data: jobsData = { authorized: [], unauthorized: [] }, isLoading } = useQuery({
     queryKey: FIELD_QUERY_KEYS.JOBS(),
     queryFn: async () => {
@@ -212,6 +221,13 @@ export default function Field() {
     enabled: !!user,
     ...FIELD_STABLE_QUERY_CONFIG,
   });
+
+  // QW5: Mark initial load as complete
+  useEffect(() => {
+    if (!isLoading && jobsData) {
+      setInitialLoadComplete(true);
+    }
+  }, [isLoading, jobsData]);
 
   // Extract authorized jobs for rendering
   const jobs = jobsData.authorized || [];
@@ -391,8 +407,36 @@ export default function Field() {
     }
   };
 
+  // QW5: Show loading skeleton on initial Field entry
+  if (isLoading && !initialLoadComplete) {
+    return (
+      <FieldErrorBoundary>
+        <div data-field-mode="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 pb-20 md:pb-0 overflow-y-auto dark">
+          <div className="px-3 sm:px-4 md:px-6 pt-0 pb-3 sm:py-4 md:py-6">
+            {/* QW5: Loading skeleton - prevents blank screen appearance */}
+            <SkeletonFieldProject />
+            <div className="text-center mt-8">
+              <div className="inline-flex items-center gap-3 px-4 py-2 bg-slate-800 rounded-full border border-slate-700">
+                <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm text-slate-300 font-medium">
+                  {language === 'es' ? 'Cargando trabajos...' : 'Loading jobs...'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </FieldErrorBoundary>
+    );
+  }
+
   return (
     <FieldErrorBoundary>
+      {/* QW6: CRITICAL - Conflict Alert Banner (always on top, never silent) */}
+      <ConflictAlertBanner 
+        conflictCount={conflicts?.length || 0}
+        onReview={() => setShowConflictDialog(true)}
+      />
+
       {/* Re-entry Prompt - Smart Session Restoration */}
       {showReentryPrompt && previousSession && (
         <FieldReentryPrompt

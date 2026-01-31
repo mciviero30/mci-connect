@@ -8,7 +8,8 @@ export default function SaveIndicator({ isSaving, lastSaved, isOnline }) {
   useEffect(() => {
     if (lastSaved) {
       setShowSaved(true);
-      const timer = setTimeout(() => setShowSaved(false), 2000);
+      // QW3: Extended visibility to 5 seconds for worker confidence
+      const timer = setTimeout(() => setShowSaved(false), 5000);
       return () => clearTimeout(timer);
     }
   }, [lastSaved]);
@@ -25,17 +26,19 @@ export default function SaveIndicator({ isSaving, lastSaved, isOnline }) {
           {isSaving ? (
             <>
               <Loader2 className="w-3 h-3 animate-spin text-blue-500" />
-              <span className="text-slate-400">Saving...</span>
+              <span className="text-slate-400">
+                {!isOnline ? 'Saving locally...' : 'Saving...'}
+              </span>
             </>
           ) : showSaved ? (
             <>
               <Check className="w-3 h-3 text-green-500" />
-              <span className="text-green-500">Saved</span>
+              {/* QW2: EXPLICIT offline save confirmation */}
+              <span className="text-green-500 font-semibold">
+                {!isOnline ? 'Saved locally — will sync when online' : 'Saved'}
+              </span>
               {!isOnline && (
-                <>
-                  <WifiOff className="w-3 h-3 text-amber-500" />
-                  <span className="text-amber-500">Offline</span>
-                </>
+                <WifiOff className="w-3 h-3 text-amber-500" />
               )}
             </>
           ) : null}

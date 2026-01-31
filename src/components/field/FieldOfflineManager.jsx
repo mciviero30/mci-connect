@@ -252,13 +252,15 @@ export function FieldOfflineProvider({ children, jobId }) {
   );
 }
 
-// Offline Status Indicator Component
-// O1 FIX: ALWAYS show when offline (not just when pending)
+// QW1: CRITICAL - Offline Status Badge ALWAYS visible when offline
+// Worker MUST know offline status immediately, regardless of pending count
 export function OfflineStatusBadge() {
   const { isOnline, pendingCount, syncNow, isSyncing } = useOffline();
 
-  // CRITICAL: Show badge ALWAYS when offline (worker must know)
-  if (isOnline && pendingCount === 0) {
+  // QW1: REMOVED HIDE LOGIC - Always render when offline or when syncing
+  const shouldShow = !isOnline || pendingCount > 0 || isSyncing;
+
+  if (!shouldShow) {
     return null;
   }
 
@@ -267,7 +269,7 @@ export function OfflineStatusBadge() {
       <div className={`flex items-center gap-2 px-3 py-2 rounded-full shadow-lg ${
         isOnline 
           ? 'bg-amber-500 text-white' 
-          : 'bg-red-500 text-white animate-pulse'
+          : 'bg-red-600 text-white animate-pulse'
       }`}>
         {isOnline ? (
           <>
@@ -289,10 +291,11 @@ export function OfflineStatusBadge() {
           </>
         ) : (
           <>
-            <WifiOff className="w-4 h-4" />
-            <span className="text-sm font-medium">Offline Mode</span>
+            {/* QW1: Enhanced offline indicator - ALWAYS visible, high contrast */}
+            <WifiOff className="w-4 h-4" strokeWidth={2.5} />
+            <span className="text-sm font-bold">Working Offline</span>
             {pendingCount > 0 && (
-              <Badge className="bg-white/20 text-white text-xs">
+              <Badge className="bg-white/30 text-white text-xs font-bold border border-white/50">
                 {pendingCount}
               </Badge>
             )}

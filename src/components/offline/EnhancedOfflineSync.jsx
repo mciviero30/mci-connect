@@ -284,11 +284,19 @@ export default function EnhancedOfflineSync() {
     return () => clearInterval(interval);
   }, []);
 
-  if (queueSize === 0 && isOnline) return null;
+  // QW6: CRITICAL - Show failed operations prominently, never hide
+  const hasFailed = failedCount > 0;
+  
+  // QW1: Always show when offline OR syncing OR has queue OR has failures
+  if (queueSize === 0 && isOnline && !hasFailed) return null;
 
   return (
     <div className="fixed bottom-20 md:bottom-4 right-4 z-50">
-      <Card className="p-4 bg-white dark:bg-slate-800 shadow-xl border-2 border-slate-200 dark:border-slate-700 max-w-sm">
+      <Card className={`p-4 shadow-xl border-2 max-w-sm ${
+        hasFailed 
+          ? 'bg-red-50 dark:bg-red-950 border-red-400 dark:border-red-800'
+          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+      }`}>
         <div className="flex items-center gap-3">
           {isOnline ? (
             <Wifi className="w-5 h-5 text-green-500" />
@@ -304,10 +312,11 @@ export default function EnhancedOfflineSync() {
                 <p className="text-xs text-slate-600 dark:text-slate-400">
                   {queueSize} operaciones pendientes
                 </p>
+                {/* QW6: PROMINENT failed operations badge - NEVER hide */}
                 {failedCount > 0 && (
-                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 text-xs">
+                  <Badge variant="outline" className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-400 dark:border-red-700 text-xs font-bold animate-pulse">
                     <AlertCircle className="w-3 h-3 mr-1" />
-                    {failedCount} error{failedCount > 1 ? 'es' : ''}
+                    {failedCount} failed
                   </Badge>
                 )}
               </div>
@@ -325,6 +334,15 @@ export default function EnhancedOfflineSync() {
             </Button>
           )}
         </div>
+        
+        {/* QW6: CRITICAL - Failed operations detail */}
+        {hasFailed && (
+          <div className="mt-3 pt-3 border-t border-red-300 dark:border-red-800">
+            <p className="text-xs text-red-700 dark:text-red-300 font-semibold">
+              ⚠️ Some operations failed to sync. They will retry automatically when online.
+            </p>
+          </div>
+        )}
       </Card>
     </div>
   );
