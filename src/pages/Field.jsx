@@ -759,7 +759,7 @@ export default function Field() {
 
 
       {/* All Jobs Link - Secondary Access */}
-      {(activeTab === 'jobs' || activeTab === 'installation') && filteredJobs.length > 3 && (
+      {activeTab === 'jobs' && filteredJobs.length > 3 && (
         <div className="text-center mb-6">
           <Button
             onClick={() => setShowQuickSearch(true)}
