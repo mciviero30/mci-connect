@@ -45,6 +45,7 @@ import { downloadInvoicePDF } from "../components/pdf/generateInvoicePDF";
 import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 import RetryProvisioningButton from "../components/invoices/RetryProvisioningButton";
 import { useUI } from "@/components/contexts/FieldModeContext";
+import CreateJobFromInvoiceDialog from "../components/trabajos/CreateJobFromInvoiceDialog";
 
 export default function VerFactura() {
   const { t, language } = useLanguage();
@@ -65,6 +66,7 @@ export default function VerFactura() {
 
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [showCreateJobDialog, setShowCreateJobDialog] = useState(false);
 
   const { data: rawInvoice, isLoading } = useQuery({
     queryKey: ['invoice', invoiceId],
@@ -238,30 +240,20 @@ export default function VerFactura() {
   });
 
   const createJobMutation = useMutation({
-    mutationFn: async () => {
-      // CRITICAL: Check if invoice has authorization_id, create one if missing
-      let authId = invoice.authorization_id;
-      
-      if (!authId) {
-        // Auto-create authorization from invoice
-        const newAuth = await base44.entities.WorkAuthorization.create({
-          customer_id: invoice.customer_id || '',
-          customer_name: invoice.customer_name,
-          authorization_type: 'fixed',
-          approval_source: 'signed_quote',
-          approved_amount: invoice.total,
-          approved_at: new Date().toISOString(),
-          verified_by_user_id: user.id,
-          verified_by_email: user.email,
-          verified_by_name: user.full_name,
-          verification_notes: `Auto-generated from Invoice ${invoice.invoice_number}`,
-          status: 'approved'
-        });
-        authId = newAuth.id;
-        
-        // Update invoice with authorization_id
-        await base44.entities.Invoice.update(invoiceId, { authorization_id: authId });
-      }
+    mutationFn: async (authFormData) => {
+      // Create WorkAuthorization with user-provided data
+      const newAuth = await base44.entities.WorkAuthorization.create({
+        customer_id: invoice.customer_id || '',
+        customer_name: invoice.customer_name,
+        authorization_type: authFormData.authorization_type,
+        approval_source: authFormData.approval_source,
+        approved_amount: authFormData.approved_amount,
+        approved_at: new Date().toISOString(),
+        verified_by_user_id: user.id,
+        verified_by_email: user.email,
+        verified_by_name: user.full_name,
+        status: 'approved'
+      });
 
       // Create job from invoice data
       const jobData = {
@@ -275,15 +267,16 @@ export default function VerFactura() {
         team_name: invoice.team_name || '',
         status: 'active',
         color: 'blue',
-        authorization_id: authId,
+        authorization_id: newAuth.id,
       };
 
       const newJob = await base44.entities.Job.create(jobData);
 
-      // Update invoice with job_id
+      // Update invoice with job_id and authorization_id
       await base44.entities.Invoice.update(invoiceId, { 
         job_id: newJob.id,
-        job_name: newJob.name 
+        job_name: newJob.name,
+        authorization_id: newAuth.id
       });
 
       // Sync to MCI Field
@@ -299,6 +292,7 @@ export default function VerFactura() {
       queryClient.invalidateQueries({ queryKey: ['invoice', invoiceId] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      setShowCreateJobDialog(false);
       toast({
         title: 'Job created and linked to invoice',
         variant: 'success'
@@ -495,9 +489,8 @@ export default function VerFactura() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => createJobMutation.mutate()}
-                disabled={createJobMutation.isPending}
-                className="bg-blue-600 border-blue-700 text-white hover:bg-blue-700 disabled:opacity-50 text-xs px-3 h-9"
+                onClick={() => setShowCreateJobDialog(true)}
+                className="bg-blue-600 border-blue-700 text-white hover:bg-blue-700 text-xs px-3 h-9"
               >
                 <Briefcase className="w-3.5 h-3.5 mr-1.5" />
                 {language === 'es' ? 'Crear Job' : 'Create Job'}
@@ -617,7 +610,15 @@ export default function VerFactura() {
         </DialogContent>
       </Dialog>
 
-
+      {/* Create Job Dialog */}
+      <CreateJobFromInvoiceDialog
+        open={showCreateJobDialog}
+        onOpenChange={setShowCreateJobDialog}
+        invoice={invoice}
+        user={user}
+        isLoading={createJobMutation.isPending}
+        onSubmit={(formData) => createJobMutation.mutate(formData)}
+      />
 
       <style>{`
         @media print {
