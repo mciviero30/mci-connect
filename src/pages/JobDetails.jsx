@@ -277,40 +277,45 @@ export default function JobDetails() {
               <div className="flex gap-2 flex-wrap">
                 {user?.role === 'admin' && (
                   <>
-                    {!job?.field_project_id ? (
+                    {/* Accept & Send to Field - for pending_acceptance status */}
+                    {job?.status === 'active' && !job?.field_project_id && (
                       <Button 
                         onClick={() => {
                           if (window.confirm(
                             language === 'es'
-                              ? '¿Provisionar este trabajo a MCI Field?\n\nEsto creará un proyecto de campo para gestión móvil.'
-                              : 'Provision this job to MCI Field?\n\nThis will create a field project for mobile management.'
+                              ? '¿Aceptar este trabajo y enviarlo a MCI Field?\n\nEl trabajo estará disponible para el equipo de campo.'
+                              : 'Accept this job and send to MCI Field?\n\nThe job will be available to the field team.'
                           )) {
                             provisionToFieldMutation.mutate();
                           }
                         }}
                         disabled={provisionToFieldMutation.isPending}
-                        className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg"
+                        className="bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg"
                       >
                         {provisionToFieldMutation.isPending ? (
                           <>
                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            {language === 'es' ? 'Provisionando...' : 'Provisioning...'}
+                            {language === 'es' ? 'Enviando...' : 'Sending...'}
                           </>
                         ) : (
                           <>
-                            <Zap className="w-4 h-4 mr-2" />
-                            {language === 'es' ? 'Provisionar a MCI Field' : 'Provision to MCI Field'}
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            {language === 'es' ? 'Aceptar y enviar a Field' : 'Accept & Send to Field'}
                           </>
                         )}
                       </Button>
-                    ) : (
-                      <Button 
-                        disabled
-                        className="bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg opacity-75"
-                      >
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        {language === 'es' ? 'Ya en MCI Field' : 'Already in MCI Field'}
-                      </Button>
+                    )}
+                    
+                    {!job?.field_project_id && job?.status !== 'active' ? null : (
+                      job?.field_project_id ? (
+                        <Button 
+                          disabled
+                          className="bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg opacity-75"
+                        >
+                          <CheckCircle2 className="w-4 h-4 mr-2" />
+                          {language === 'es' ? 'Ya en MCI Field' : 'Already in MCI Field'}
+                        </Button>
+                      ) : null
                     )}
                     <Button 
                       onClick={() => setShowClientInvitation(true)}
