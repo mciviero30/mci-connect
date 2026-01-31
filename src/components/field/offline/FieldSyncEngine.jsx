@@ -76,6 +76,30 @@ export async function startSync(base44Client, user) {
       });
     }
     
+    // O3 FIX: Cleanup completed operations to prevent IndexedDB bloat
+    try {
+      const { clearCompletedOperations } = await import('./FieldOperationQueue');
+      await clearCompletedOperations();
+      
+      if (import.meta.env?.DEV) {
+        console.log('[Sync] 🗑️ Cleaned up completed operations');
+      }
+    } catch (error) {
+      console.error('[Sync] Failed to cleanup operations:', error);
+    }
+    
+    // O3 FIX: Cleanup old conflicts (30-day TTL)
+    try {
+      const { clearOldConflicts } = await import('./FieldConflictResolver');
+      await clearOldConflicts(30);
+      
+      if (import.meta.env?.DEV) {
+        console.log('[Sync] 🗑️ Cleaned up old conflicts');
+      }
+    } catch (error) {
+      console.error('[Sync] Failed to cleanup conflicts:', error);
+    }
+    
     updateSyncStatus(SYNC_STATUS.IDLE);
     
     return {

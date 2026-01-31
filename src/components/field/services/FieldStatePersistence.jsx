@@ -351,7 +351,17 @@ class FieldStatePersistence {
 // Singleton instance
 export const fieldPersistence = new FieldStatePersistence();
 
-// Initialize and clean on app load
+// Initialize and clean on app load (O3 FIX: expanded cleanup)
 if (typeof window !== 'undefined') {
   fieldPersistence.cleanExpired().catch(console.error);
+  
+  // O3 FIX: Also cleanup completed operations and old conflicts on app init
+  // This ensures long-term IndexedDB health
+  import('./FieldOperationQueue').then(({ clearCompletedOperations }) => {
+    clearCompletedOperations().catch(console.error);
+  }).catch(() => {});
+  
+  import('./FieldConflictResolver').then(({ clearOldConflicts }) => {
+    clearOldConflicts(30).catch(console.error);
+  }).catch(() => {});
 }

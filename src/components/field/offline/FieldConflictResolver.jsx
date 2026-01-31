@@ -228,3 +228,50 @@ export async function getConflictHistory() {
     request.onerror = () => reject(request.error);
   });
 }
+
+/**
+ * Clear old conflicts (O3 FIX)
+ * Purges conflict logs older than specified days
+ * Prevents IndexedDB bloat on high-conflict scenarios
+ */
+export async function clearOldConflicts(maxAgeDays = 30) {
+  try {
+    const db = await openConflictLog();
+    const cutoffTime = Date.now() - (maxAgeDays * 24 * 60 * 60 * 1000);
+    
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['conflicts'], 'readwrite');
+      const store = transaction.objectStore('conflicts');
+      const index = store.index('timestamp');
+      const request = index.openCursor();
+      
+      let deletedCount = 0;
+      
+      request.onsuccess = (event) => {
+        const cursor = event.target.result;
+        if (cursor) {
+          const conflict = cursor.value;
+          
+          // Delete if older than cutoff
+          if (conflict.timestamp < cutoffTime) {
+            store.delete(cursor.primaryKey);
+            deletedCount++;
+          }
+          
+          cursor.continue();
+        } else {
+          // Done iterating
+          if (import.meta.env?.DEV && deletedCount > 0) {
+            console.log(`[ConflictCleanup] 🗑️ Purged ${deletedCount} conflicts older than ${maxAgeDays} days`);
+          }
+          resolve(deletedCount);
+        }
+      };
+      
+      request.onerror = () => reject(request.error);
+    });
+  } catch (error) {
+    console.error('[ConflictCleanup] Failed to clear old conflicts:', error);
+    return 0;
+  }
+}
