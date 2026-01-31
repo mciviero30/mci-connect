@@ -41,7 +41,7 @@ export default function PageHeader({
                   <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
               )}
-              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 leading-tight" style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 max-w-full">
                 {cleanTitle}
               </h1>
               {appBadge && (
