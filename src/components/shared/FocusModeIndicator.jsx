@@ -34,13 +34,13 @@ const FocusModeIndicator = React.memo(function FocusModeIndicator({ isActive, on
       exit={{ opacity: 0 }}
       className="fixed top-2 right-2 z-40 pointer-events-none"
     >
-        {/* Ultra-compact indicator */}
+        {/* Mini indicator */}
         <button
           onClick={onExit}
-          className="w-7 h-7 bg-purple-600/80 hover:bg-purple-700 backdrop-blur-sm rounded-md shadow-md border border-purple-400/30 flex items-center justify-center transition-all pointer-events-auto"
+          className="w-6 h-6 bg-purple-600/70 hover:bg-purple-700 backdrop-blur-sm rounded-md shadow-sm border border-purple-400/20 flex items-center justify-center transition-all pointer-events-auto"
           title="Exit Focus Mode (ESC)"
         >
-          <Maximize2 className="w-3 h-3 text-white" />
+          <X className="w-3 h-3 text-white" />
         </button>
     </motion.div>
   );
