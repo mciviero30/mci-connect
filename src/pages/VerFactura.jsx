@@ -279,13 +279,6 @@ export default function VerFactura() {
         authorization_id: newAuth.id
       });
 
-      // Sync to MCI Field
-      try {
-        await base44.functions.invoke('syncJobToMCIField', { jobData: newJob });
-      } catch (err) {
-        console.log('Field sync failed (non-critical):', err);
-      }
-
       return newJob;
     },
     onSuccess: (newJob) => {
