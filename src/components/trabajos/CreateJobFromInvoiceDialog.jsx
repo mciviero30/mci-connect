@@ -33,29 +33,59 @@ export default function CreateJobFromInvoiceDialog({
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.job_name) {
+      alert('Job name is required');
+      return;
+    }
     onSubmit(formData);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+      <DialogContent className="max-w-2xl bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl text-slate-900 dark:text-white">
-            Create Job Authorization
+            Create Job & Authorization
           </DialogTitle>
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-2">
+            Both will be created together. Job will be "Pending Acceptance" until you approve it.
+          </p>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Customer Info - Read Only */}
-          <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg">
-            <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">Customer</Label>
-            <p className="text-sm font-semibold text-slate-900 dark:text-white">{invoice?.customer_name}</p>
+          {/* Info Banner */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex gap-3">
+            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-900 dark:text-blue-200">
+              Job will be created with status <strong>"Pending Acceptance"</strong>. Click "Accept & Send to Field" in Jobs to make it live.
+            </p>
           </div>
 
-          {/* Job Info - Read Only */}
-          <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg">
-            <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">Job</Label>
-            <p className="text-sm font-semibold text-slate-900 dark:text-white">{invoice?.job_name}</p>
+          {/* Customer & Job - Read Only */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg">
+              <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">Customer</Label>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{invoice?.customer_name}</p>
+            </div>
+
+            <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-900/30 rounded-lg">
+              <Label className="text-xs font-bold text-slate-600 dark:text-slate-400">Invoice</Label>
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{invoice?.invoice_number}</p>
+            </div>
+          </div>
+
+          {/* Job Name */}
+          <div className="space-y-2">
+            <Label htmlFor="job-name" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Job Name *
+            </Label>
+            <Input
+              id="job-name"
+              value={formData.job_name}
+              onChange={(e) => setFormData({...formData, job_name: e.target.value})}
+              className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+              placeholder="e.g., Hilton Hotel - Wall Installation"
+            />
           </div>
 
           {/* Authorization Type */}
