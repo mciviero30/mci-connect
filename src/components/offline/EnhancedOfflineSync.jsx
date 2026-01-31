@@ -134,7 +134,8 @@ export function useEnhancedOfflineSync() {
     localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
     setQueueSize(queue.length);
     
-    toast.info('Operación guardada - Se sincronizará cuando haya conexión');
+    // STEP 3: Human-friendly queue message - data safe, auto-sync
+    toast.info('✓ Saved locally. Will sync automatically when you\'re back online.');
   }, [toast]);
 
   // Sync queue with exponential backoff & idempotency
@@ -223,14 +224,17 @@ export function useEnhancedOfflineSync() {
     queryClient.invalidateQueries();
 
     if (successCount > 0) {
-      toast.success(`${successCount} operaciones sincronizadas`);
+      // STEP 3: Human-friendly success - what completed, data safe
+      toast.success(`✓ ${successCount} change${successCount > 1 ? 's' : ''} synced successfully. All your work is saved to the cloud.`);
     }
     if (failedQueue.length > 0) {
       const permanentFails = failedQueue.filter(i => i.status === 'failed_permanent').length;
       if (permanentFails > 0) {
-        toast.error(`${permanentFails} operaciones fallaron permanentemente`);
+        // STEP 3: Human-friendly permanent failure - what happened, data safe, contact support
+        toast.error(`⚠️ ${permanentFails} change${permanentFails > 1 ? 's' : ''} couldn't sync after multiple attempts. Your data is safe locally. Contact your manager for help.`, { duration: 6000 });
       } else {
-        toast.warning(`${failedQueue.length} operaciones reintentarán pronto`);
+        // STEP 3: Human-friendly retry - what happening, data safe, auto-retry
+        toast.warning(`${failedQueue.length} change${failedQueue.length > 1 ? 's' : ''} will retry automatically. Your work is saved locally and safe.`, { duration: 3000 });
       }
     }
 

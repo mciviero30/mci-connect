@@ -125,8 +125,8 @@ export default function UniversalSyncIndicator({ jobId }) {
         conflictCount > 0 ? 'animate-pulse' : ''
       }`}
       onClick={conflictCount > 0 ? () => {
-        // E2 FIX: Tap to open conflict resolution
-        alert(`${conflictCount} data conflict${conflictCount > 1 ? 's' : ''} detected. Sync engine will resolve automatically, but review recommended.`);
+        // STEP 3: Human-friendly conflict message - what happened, data safe, what to do
+        alert(`⚠️ ${conflictCount} change${conflictCount > 1 ? 's' : ''} conflict${conflictCount > 1 ? '' : 's'} with server data.\n\nYour work is safe. The app will try to merge changes automatically.\n\nIf you see this message again, contact your manager.`);
       } : undefined}
     >
       <Icon className={`w-4 h-4 ${config.color} ${config.spin ? 'animate-spin' : ''}`} strokeWidth={2.5} />

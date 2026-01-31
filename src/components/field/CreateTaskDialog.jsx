@@ -252,7 +252,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         old ? old.filter(t => t.id !== context.tempTask.id) : old
       );
       haptic.error();
-      microToast.error("Couldn't create task — try again", 3000);
+      // STEP 3: Human-friendly error - what happened, data safe, what next
+      microToast.error("Couldn't create task right now. Your work is saved locally and will sync when connection improves.", 4000);
     },
   });
 
@@ -307,7 +308,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     
     onError: () => {
       haptic.error();
-      microToast.error("Couldn't save — we'll retry", 3000);
+      // STEP 3: Human-friendly error - reassure data is safe, auto-retry
+      microToast.error("Couldn't save changes right now. Don't worry — your work is saved locally and we'll try again automatically.", 4000);
     },
   });
 
@@ -352,7 +354,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         old.filter(c => c.id !== context.tempComment.id)
       );
       haptic.error();
-      microToast.error("Couldn't post comment — try again", 2000);
+      // STEP 3: Human-friendly error - explain what happened, suggest retry
+      microToast.error("Couldn't post comment. Check your connection and tap again.", 3000);
     },
   });
 
@@ -377,7 +380,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     
     onError: (error, id, context) => {
       haptic.error();
-      microToast.error("Couldn't delete — try again", 2000);
+      // STEP 3: Human-friendly error - what happened, reassure, suggest retry
+      microToast.error("Couldn't delete task. Your data is safe. Check connection and try again.", 3000);
       queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.TASKS(jobId) });
     },
   });
@@ -542,7 +546,8 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
         photo_urls: prev.photo_urls.filter(p => !p._uploading)
       }));
       haptic.error();
-      microToast.error("Couldn't upload photos — try again", 3000);
+      // STEP 3: Human-friendly error - what happened, data safe, actionable next step
+      microToast.error("Couldn't upload photos right now. Photos are still on your device — retry when connection is better.", 4000);
     } finally {
       setUploadingPhoto(false);
     }

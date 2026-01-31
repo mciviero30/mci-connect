@@ -25,11 +25,15 @@ export default function ConflictAlertBanner({ conflictCount, onReview }) {
             <AlertTriangle className="w-5 h-5 animate-pulse" strokeWidth={2.5} />
           </div>
           <div className="flex-1 min-w-0">
+            {/* STEP 3: Human-friendly conflict - what happened, data safe, what next */}
             <p className="font-bold text-base mb-1">
-              ⚠️ {conflictCount} Conflict{conflictCount > 1 ? 's' : ''} Detected
+              ⚠️ {conflictCount} Data Conflict{conflictCount > 1 ? 's' : ''} Detected
             </p>
-            <p className="text-xs text-red-100 mb-3">
-              Changes made offline conflict with server data. Review required.
+            <p className="text-xs text-red-100 mb-1">
+              Your offline changes conflict with updates made by others.
+            </p>
+            <p className="text-xs text-red-100 mb-3 font-semibold">
+              ✓ Your work is safe. Review needed to choose which version to keep.
             </p>
             <Button
               onClick={onReview}
@@ -37,7 +41,7 @@ export default function ConflictAlertBanner({ conflictCount, onReview }) {
               className="bg-white text-red-600 hover:bg-red-50 font-bold"
             >
               <Eye className="w-4 h-4 mr-2" />
-              Review Conflicts Now
+              Review Now
             </Button>
           </div>
         </div>

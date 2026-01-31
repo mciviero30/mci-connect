@@ -271,18 +271,11 @@ export default function Field() {
       });
       setShowQuickCustomer(false);
       setQuickCustomer({ first_name: '', last_name: '', company: '', email: '', phone: '' });
-      toast({
-        title: 'Customer created',
-        description: 'Customer created successfully',
-        variant: 'success'
-      });
+      toast.success('✓ Customer created and ready to use');
     },
     onError: (error) => {
-      toast({
-        title: 'Error creating customer',
-        description: error.message,
-        variant: 'destructive'
-      });
+      // STEP 3: Human-friendly error - what happened, what to do
+      toast.error(`Couldn't create customer. ${error.message?.includes('duplicate') ? 'This customer may already exist.' : 'Check your connection and try again.'}`);
     }
   });
 
@@ -320,9 +313,10 @@ export default function Field() {
     mutationFn: (id) => base44.entities.Job.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
-      toast.success('Project deleted');
+      toast.success('✓ Project deleted successfully');
     },
-    onError: () => toast.error('Failed to delete project'),
+    // STEP 3: Human-friendly error - what happened, might have data, contact help
+    onError: () => toast.error('Couldn\'t delete project. It may have linked data (tasks, photos). Contact your manager for help.', { duration: 4000 }),
   });
 
   const duplicateJobMutation = useMutation({
@@ -337,18 +331,20 @@ export default function Field() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
-      toast.success('Project duplicated');
+      toast.success('✓ Project duplicated successfully');
     },
-    onError: () => toast.error('Failed to duplicate project'),
+    // STEP 3: Human-friendly error - what happened, suggest retry
+    onError: () => toast.error('Couldn\'t duplicate project. Check your connection and try again.', { duration: 3000 }),
   });
 
   const archiveJobMutation = useMutation({
     mutationFn: (id) => base44.entities.Job.update(id, { status: 'archived' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
-      toast.success('Project archived');
+      toast.success('✓ Project archived successfully');
     },
-    onError: () => toast.error('Failed to archive project'),
+    // STEP 3: Human-friendly error - what happened, suggest retry
+    onError: () => toast.error('Couldn\'t archive project. Check your connection and try again.', { duration: 3000 }),
   });
 
   // Filter jobs
@@ -373,16 +369,21 @@ export default function Field() {
 
   const handleCreateProject = async () => {
     if (!newProject.name || !newProject.customer_name) {
-      toast.error('Some info is missing — add project name and customer', { duration: 2500 });
+      // STEP 3: Human-friendly validation - what's missing, what to do
+      toast.error(language === 'es' 
+        ? 'Necesitas completar: nombre del proyecto y cliente'
+        : 'Missing required info: project name and customer', 
+        { duration: 2500 });
       return;
     }
     
     // CRITICAL: Block if no authorization
     if (!newProject.authorization_id) {
+      // STEP 3: Human-friendly validation - why blocked, what to do
       toast.error(language === 'es' 
-        ? '⚠️ Autorización requerida. No se pueden crear Jobs sin aprobación del cliente.'
-        : '⚠️ Authorization required. Cannot create Jobs without client approval.', 
-        { duration: 3500 });
+        ? '⚠️ Autorización requerida. No se pueden crear Jobs sin aprobación del cliente. Ve a Work Authorizations primero.'
+        : '⚠️ Authorization required. Cannot create Jobs without client approval. Go to Work Authorizations first.', 
+        { duration: 4000 });
       return;
     }
     
@@ -403,7 +404,11 @@ export default function Field() {
       // Clear form - CONTINUITY IS CONFIRMATION
       setNewProject({ name: '', description: '', address: '', customer_name: '', customer_id: '', authorization_id: '' });
     } catch (error) {
-      toast.error("Couldn't create project — try again", { duration: 2500 });
+      // STEP 3: Human-friendly error - what happened, data status, what next
+      toast.error(language === 'es'
+        ? "No se pudo crear el proyecto. Revisa tu conexión e intenta nuevamente. Tu información quedó guardada en el formulario."
+        : "Couldn't create project right now. Check your connection and try again. Your info is saved in the form.", 
+        { duration: 4000 });
     }
   };
 
