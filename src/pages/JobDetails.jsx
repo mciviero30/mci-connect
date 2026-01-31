@@ -94,18 +94,20 @@ export default function JobDetails() {
 
   const provisionToFieldMutation = useMutation({
     mutationFn: async () => {
-      // Placeholder: Update field_project_id to mark as provisioned
-      // Actual MCI Field sync logic comes later
+      // Set field_project_id to mark as sent to Field
+      // This makes it visible in MCI Field (Field filters by field_project_id)
       await base44.entities.Job.update(jobId, {
-        field_project_id: `field_${jobId}` // Temporary marker
+        field_project_id: `field_${jobId}`
       });
       return { success: true };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['job', jobId] });
+      // Invalidate Field jobs query to refresh
+      queryClient.invalidateQueries({ queryKey: ['field-jobs'] });
       toast.success(language === 'es' 
-        ? '✅ Trabajo provisionado a MCI Field exitosamente' 
-        : '✅ Job provisioned to MCI Field successfully');
+        ? '✅ Trabajo enviado a MCI Field exitosamente' 
+        : '✅ Job sent to MCI Field successfully');
     },
     onError: (error) => {
       toast.error(`Error: ${error.message}`);
