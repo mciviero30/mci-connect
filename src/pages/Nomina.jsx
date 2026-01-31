@@ -141,7 +141,7 @@ export default function Nomina() {
           title={t('payroll')}
           icon={Banknote}
           actions={
-            <div className="flex gap-2 w-full sm:w-auto">
+            <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
               <Button onClick={handleExport} variant="outline" className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 min-h-[44px] flex-1 sm:flex-none">
                 <Download className="w-4 h-4 sm:mr-2" />
                 <span className="hidden sm:inline">{t('export')}</span>

@@ -391,28 +391,32 @@ export default function Empleados() {
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
       <div className="max-w-7xl mx-auto p-3 sm:p-4 md:p-6 lg:p-8">
         <div className="mb-4 sm:mb-6 md:mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
-            <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2 sm:gap-3">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 mb-2">
                 <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-xl sm:rounded-2xl shadow-md">
                   <Users className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 text-white" />
                 </div>
-                <span className="hidden sm:inline">Employee Management</span>
-                <span className="sm:hidden">Employees</span>
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400 mt-1 sm:mt-2 text-xs sm:text-sm ml-0 sm:ml-[48px] md:ml-[60px]">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
+                  <span className="hidden sm:inline">Employee Management</span>
+                  <span className="sm:hidden">Employees</span>
+                </h1>
+              </div>
+              <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm ml-0 sm:ml-[48px] md:ml-[60px]">
                 Manage your team members
               </p>
             </div>
             
-            <Button 
-              onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
-              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] text-xs sm:text-sm px-3 sm:px-4"
-            >
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Add Employee</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
+            <div className="flex-shrink-0">
+              <Button 
+                onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
+                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] text-xs sm:text-sm px-3 sm:px-4"
+              >
+                <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Add Employee</span>
+                <span className="sm:hidden">Add</span>
+              </Button>
+            </div>
           </div>
         </div>
 

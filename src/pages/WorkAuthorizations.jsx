@@ -227,13 +227,16 @@ export default function WorkAuthorizations() {
           icon={Shield}
           actions={
             isAdmin && (
-              <Button
-                onClick={() => setShowForm(true)}
-                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-lg"
-              >
-                <Plus className="w-5 h-5 mr-2" />
-                {language === 'es' ? 'Nueva Autorización' : 'New Authorization'}
-              </Button>
+              <div className="flex-shrink-0">
+                <Button
+                  onClick={() => setShowForm(true)}
+                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-lg min-h-[44px]"
+                >
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                  <span className="hidden sm:inline">{language === 'es' ? 'Nueva Autorización' : 'New Authorization'}</span>
+                  <span className="sm:hidden">{language === 'es' ? 'Nueva' : 'New'}</span>
+                </Button>
+              </div>
             )
           }
         />

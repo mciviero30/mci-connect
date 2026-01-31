@@ -64,6 +64,7 @@ export default function Horarios() {
               ? 'Auditoría y Aprobación de Horas Trabajadas para Nómina' 
               : 'Audit and Approval of Worked Hours for Payroll'}
             icon={Clock}
+            actions={null}
           />
 
           <StatsSummaryGrid 

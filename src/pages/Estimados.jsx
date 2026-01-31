@@ -262,7 +262,7 @@ export default function Estimados() {
           icon={FileText}
           actions={
             isAdmin && (
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"

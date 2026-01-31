@@ -222,10 +222,13 @@ export default function Teams() {
           description={`${activeTeams.length} active teams`}
           icon={MapPin}
           actions={
-            <Button onClick={handleOpenDialog} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
-              <Plus className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
-              <span className="hidden sm:inline">New Team</span>
-            </Button>
+            <div className="flex-shrink-0">
+              <Button onClick={handleOpenDialog} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
+                <Plus className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                <span className="hidden sm:inline">New Team</span>
+                <span className="sm:hidden">New</span>
+              </Button>
+            </div>
           }
         />
 

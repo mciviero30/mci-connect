@@ -25,7 +25,7 @@ import {
 
 
 export default function Clientes() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -196,10 +196,13 @@ export default function Clientes() {
           icon={Users}
           actions={
             isAdmin && (
-              <Button onClick={() => setShowForm(true)} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-                <Plus className="w-5 h-5 mr-2" />
-                {t('newCustomer')}
-              </Button>
+              <div className="flex-shrink-0">
+                <Button onClick={() => setShowForm(true)} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                  <span className="hidden sm:inline">{t('newCustomer')}</span>
+                  <span className="sm:hidden">{language === 'es' ? 'Nuevo' : 'New'}</span>
+                </Button>
+              </div>
             )
           }
         />
