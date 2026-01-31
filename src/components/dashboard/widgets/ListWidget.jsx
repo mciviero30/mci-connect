@@ -5,17 +5,20 @@ import { format } from "date-fns";
 import { ChevronRight } from "lucide-react";
 
 export default function ListWidget({ items, emptyMessage, renderItem }) {
-  if (!items || items.length === 0) {
+  // FIX: Ensure items is always an array
+  const safeItems = Array.isArray(items) ? items : [];
+  
+  if (safeItems.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-slate-500 text-sm">{emptyMessage}</p>
+        <p className="text-slate-500 text-sm">{emptyMessage || 'No items'}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-2 max-h-64 overflow-y-auto">
-      {items.map((item, index) => (
+      {safeItems.map((item, index) => (
         <div key={index}>
           {renderItem ? renderItem(item) : (
             <div className="flex items-center justify-between p-3 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 hover:border-blue-400 hover:shadow-md transition-all">
