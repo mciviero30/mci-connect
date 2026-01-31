@@ -97,6 +97,7 @@ import EmployeeDirectoryGuard from "@/components/security/EmployeeDirectoryGuard
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
+import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -1058,7 +1059,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                   <Settings className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />
                 </Link>
                 <button
-                  onClick={() => base44.auth.logout()}
+                  onClick={async () => {
+                    // B1 FIX: Clear all Field data before logout (user isolation)
+                    await clearAllFieldData();
+                    base44.auth.logout();
+                  }}
                   className="p-2 rounded-xl transition-all hover:bg-red-50 dark:hover:bg-red-900/20 hover:scale-110"
                   title={t('logout')}
                 >
