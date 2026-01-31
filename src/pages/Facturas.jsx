@@ -44,6 +44,64 @@ export default function Facturas() {
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });
+
+  // Mutation: Create Job + Work Authorization
+  const createJobFromInvoiceMutation = useMutation({
+    mutationFn: async (formData) => {
+      // 1. Create Work Authorization
+      const workAuth = await base44.entities.WorkAuthorization.create({
+        customer_id: formData.customer_id,
+        customer_name: formData.customer_name,
+        authorization_type: formData.authorization_type,
+        approval_source: formData.approval_source,
+        authorization_number: formData.authorization_number || '',
+        approved_amount: formData.approved_amount,
+        approved_at: new Date().toISOString(),
+        verified_by_user_id: formData.verified_by_user_id,
+        verified_by_email: formData.verified_by_email,
+        verified_by_name: formData.verified_by_name,
+        verification_notes: formData.verification_notes,
+        status: 'approved',
+      });
+
+      // 2. Create Job (pending acceptance)
+      const job = await base44.entities.Job.create({
+        name: formData.job_name,
+        customer_id: formData.customer_id,
+        customer_name: formData.customer_name,
+        authorization_id: workAuth.id,
+        contract_amount: formData.approved_amount,
+        billing_type: formData.authorization_type === 'tm' ? 'time_materials' : 'fixed_price',
+        status: 'active', // Active but not yet in Field
+        approval_status: 'approved',
+        approved_by: user?.email,
+        approved_at: new Date().toISOString(),
+      });
+
+      return { workAuth, job };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      toast({
+        title: language === 'es' ? '✅ Trabajo creado (Pendiente de aceptación)' : '✅ Job created (Pending acceptance)',
+        description: language === 'es' 
+          ? 'El trabajo está listo. Haz clic en "Aceptar y enviar a Field" para activarlo.'
+          : 'Job is ready. Click "Accept & Send to Field" to activate it.',
+        variant: 'success'
+      });
+      setCreateJobDialogOpen(false);
+      setSelectedInvoiceForJob(null);
+    },
+    onError: (error) => {
+      console.error('Error creating job:', error);
+      toast({
+        title: 'Error',
+        description: safeErrorMessage(error, language === 'es' ? 'Error al crear trabajo' : 'Failed to create job'),
+        variant: 'destructive'
+      });
+    }
+  });
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ['invoices', statusFilter, teamFilter],
     queryFn: async () => {
