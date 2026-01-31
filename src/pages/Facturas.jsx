@@ -36,6 +36,8 @@ export default function Facturas() {
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   const [paymentInvoice, setPaymentInvoice] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState("");
+  const [createJobDialogOpen, setCreateJobDialogOpen] = useState(false);
+  const [selectedInvoiceForJob, setSelectedInvoiceForJob] = useState(null);
 
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
