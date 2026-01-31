@@ -36,7 +36,7 @@ export default function PageHeader({
                   <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                 </div>
               )}
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{title}</h1>
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-tight break-words">{title}</h1>
               {appBadge && (
                 <Badge className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md shadow-[#507DB4]/30 text-xs md:text-sm">
                   {appBadge}
