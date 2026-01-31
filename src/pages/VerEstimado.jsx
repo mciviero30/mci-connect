@@ -451,34 +451,46 @@ Lawrenceville, Georgia 30043, U.S.A`
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Action Bar */}
-      <div className="no-print border-b shadow-sm px-6 py-4" style={{background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      {/* Top Action Bar - Reorganized */}
+      <div className="no-print border-b shadow-sm px-4 py-3" style={{background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(createPageUrl('Estimados'))}
               className="text-slate-300 hover:text-white hover:bg-slate-800"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('back')}
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold text-white">{quote.quote_number}</h1>
-              <Badge className={quote.status === 'converted_to_invoice' ? "bg-slate-900 text-white mt-1" : `${statusMeta.badgeClass} mt-1`}>{statusMeta.label}</Badge>
+              <h1 className="text-lg font-bold text-white">{quote.quote_number}</h1>
+              <Badge className={quote.status === 'converted_to_invoice' ? "bg-slate-900 text-white text-[10px] px-2 py-0.5" : `${statusMeta.badgeClass} text-[10px] px-2 py-0.5`}>{statusMeta.label}</Badge>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {/* Primary Actions - Compact */}
+            {quote.status !== 'converted_to_invoice' && (
+              <Button
+                size="sm"
+                onClick={() => convertToInvoiceMutation.mutate()}
+                disabled={convertToInvoiceMutation.isPending}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-xs px-3 h-9"
+              >
+                <FileCheck className="w-3.5 h-3.5 mr-1.5" />
+                {language === 'es' ? 'A Factura' : 'To Invoice'}
+              </Button>
+            )}
+
             {canEdit && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => navigate(createPageUrl(`CrearEstimado?id=${quote.id}`))}
-                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
+                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs px-3 h-9"
               >
-                <Edit className="w-4 h-4 mr-2" />
+                <Edit className="w-3.5 h-3.5 mr-1.5" />
                 {t('edit')}
               </Button>
             )}
@@ -489,9 +501,9 @@ Lawrenceville, Georgia 30043, U.S.A`
                 size="sm"
                 onClick={() => updateStatusMutation.mutate('draft')}
                 disabled={updateStatusMutation.isPending}
-                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
+                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs px-3 h-9"
               >
-                <Edit className="w-4 h-4 mr-2" />
+                <Edit className="w-3.5 h-3.5 mr-1.5" />
                 {language === 'es' ? 'Re-abrir' : 'Reopen'}
               </Button>
             )}
@@ -501,43 +513,30 @@ Lawrenceville, Georgia 30043, U.S.A`
               size="sm"
               onClick={() => updateStatusMutation.mutate('sent')}
               disabled={quote.status !== 'draft' || updateStatusMutation.isPending}
-              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white disabled:opacity-50"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 disabled:opacity-50 text-xs px-3 h-9"
             >
-              <Mail className="w-4 h-4 mr-2" />
-              {updateStatusMutation.isPending ? t('sending') : t('sendToCustomer')}
+              <Mail className="w-3.5 h-3.5 mr-1.5" />
+              {language === 'es' ? 'Enviar' : 'Send'}
             </Button>
 
             <PDFDownloadButton 
               data={quote} 
               type="quote" 
               variant="outline"
-              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs px-3 h-9"
             >
-              {language === 'es' ? 'PDF' : 'PDF'}
+              PDF
             </PDFDownloadButton>
 
-            {quote.status !== 'converted_to_invoice' && (
-              <Button
-                size="sm"
-                onClick={() => convertToInvoiceMutation.mutate()}
-                disabled={convertToInvoiceMutation.isPending}
-                className="soft-cyan-gradient shadow-lg"
-              >
-                <FileCheck className="w-4 h-4 mr-2" />
-                {convertToInvoiceMutation.isPending ? t('converting') : t('convertToInvoice')}
-              </Button>
-            )}
-
-            {/* New action buttons */}
             {quote.status === 'sent' && <QuoteReminder quote={quote} />}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                <Button variant="outline" size="sm" className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 px-2 h-9">
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-800">
+              <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-800">
                 <DropdownMenuItem onClick={handlePrint} className="cursor-pointer text-white hover:bg-slate-800">
                   <Printer className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Imprimir' : 'Print'}

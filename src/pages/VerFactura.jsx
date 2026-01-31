@@ -391,55 +391,34 @@ export default function VerFactura() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Top Action Bar */}
-      <div className="no-print border-b shadow-sm px-6 py-4" style={{background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      {/* Top Action Bar - Reorganized */}
+      <div className="no-print border-b shadow-sm px-4 py-3" style={{background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(createPageUrl('Facturas'))}
               className="text-slate-300 hover:text-white hover:bg-slate-800"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              {t('back')}
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-xl font-bold text-white">{invoice.invoice_number}</h1>
-              <Badge className={`${statusMeta.badgeClass} mt-1`}>{statusMeta.label}</Badge>
+              <h1 className="text-lg font-bold text-white">{invoice.invoice_number}</h1>
+              <Badge className={`${statusMeta.badgeClass} text-[10px] px-2 py-0.5`}>{statusMeta.label}</Badge>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Pay Now Button - STRIPE PAYMENTS */}
-            {invoice.balance > 0 && invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {/* Primary Actions - More Compact */}
+            {canRecordPayment && (
               <Button
                 size="sm"
-                onClick={async () => {
-                  try {
-                    if (window.self !== window.top) {
-                      alert('Payments only work in published app. Please open the app in a new browser tab.');
-                      return;
-                    }
-                    const response = await base44.functions.invoke('stripe-checkout', { invoiceId: invoice.id });
-                    if (response?.data?.url) {
-                      window.location.href = response.data.url;
-                    } else {
-                      throw new Error('No checkout URL returned');
-                    }
-                  } catch (error) {
-                    console.error('Payment error:', error);
-                    toast({
-                      title: 'Error',
-                      description: error.message || 'Failed to start payment',
-                      variant: 'destructive'
-                    });
-                  }
-                }}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg"
+                onClick={() => setPaymentDialog(true)}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs px-3 h-9"
               >
-                <CreditCard className="w-4 h-4 mr-2" />
-                Pay ${invoice.balance?.toLocaleString() || '0'}
+                <DollarSign className="w-3.5 h-3.5 mr-1.5" />
+                ${invoice.balance?.toLocaleString() || '0'}
               </Button>
             )}
 
@@ -448,9 +427,9 @@ export default function VerFactura() {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate(createPageUrl(`CrearFactura?id=${invoice.id}`))}
-                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
+                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs px-3 h-9"
               >
-                <Edit className="w-4 h-4 mr-2" />
+                <Edit className="w-3.5 h-3.5 mr-1.5" />
                 {t('edit')}
               </Button>
             )}
@@ -460,20 +439,20 @@ export default function VerFactura() {
               size="sm"
               onClick={() => sendInvoiceMutation.mutate()}
               disabled={sendInvoiceMutation.isPending}
-              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white disabled:opacity-50"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 disabled:opacity-50 text-xs px-3 h-9"
             >
-              <Mail className="w-4 h-4 mr-2" />
-              {sendInvoiceMutation.isPending ? t('sending') : t('sendToCustomer')}
+              <Mail className="w-3.5 h-3.5 mr-1.5" />
+              {language === 'es' ? 'Enviar' : 'Send'}
             </Button>
 
             <Button
               variant="outline"
               size="sm"
               onClick={() => downloadInvoicePDF(invoice)}
-              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 hover:text-white"
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs px-3 h-9"
             >
-              <Download className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'PDF' : 'PDF'}
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              PDF
             </Button>
 
             {!invoice.job_id && (
@@ -482,60 +461,11 @@ export default function VerFactura() {
                 size="sm"
                 onClick={() => createJobMutation.mutate()}
                 disabled={createJobMutation.isPending}
-                className="bg-blue-800 border-blue-700 text-white hover:bg-blue-700 hover:text-white disabled:opacity-50"
+                className="bg-blue-600 border-blue-700 text-white hover:bg-blue-700 disabled:opacity-50 text-xs px-3 h-9"
               >
-                <Briefcase className="w-4 h-4 mr-2" />
-                {createJobMutation.isPending ? (language === 'es' ? 'Creando...' : 'Creating...') : (language === 'es' ? 'Crear Job' : 'Create Job')}
+                <Briefcase className="w-3.5 h-3.5 mr-1.5" />
+                {language === 'es' ? 'Crear Job' : 'Create Job'}
               </Button>
-            )}
-
-            {/* Provisioning Status Badge */}
-            {job && (
-              <div className="flex items-center gap-2">
-                {job.provisioning_status === 'completed' && job.drive_folder_url && job.field_project_id && (
-                  <Badge className="bg-green-500 text-white">
-                    ✓ {language === 'es' ? 'Provisionado' : 'Provisioned'}
-                  </Badge>
-                )}
-                {job.provisioning_status === 'partial' && (
-                  <Badge className="bg-amber-500 text-white">
-                    ⚠ {language === 'es' ? 'Parcial' : 'Partial'}
-                  </Badge>
-                )}
-                {job.provisioning_status === 'error' && (
-                  <Badge className="bg-red-500 text-white">
-                    ✗ {language === 'es' ? 'Error' : 'Error'}
-                  </Badge>
-                )}
-                {(!job.provisioning_status || job.provisioning_status === 'not_started' || job.provisioning_status === 'pending') && (
-                  <Badge className="bg-slate-500 text-white">
-                    {language === 'es' ? 'Pendiente' : 'Pending'}
-                  </Badge>
-                )}
-              </div>
-            )}
-
-            {canRecordPayment && (
-              <>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleStripePayment}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg"
-                >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Pagar Ahora' : 'Pay Now'}
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => setPaymentDialog(true)}
-                  className="soft-green-gradient shadow-lg"
-                >
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  {t('recordPayment')}
-                </Button>
-              </>
             )}
 
             <RetryProvisioningButton 
@@ -549,11 +479,11 @@ export default function VerFactura() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                <Button variant="outline" size="sm" className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 px-2 h-9">
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 bg-slate-900 border-slate-800">
+              <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-800">
                 <DropdownMenuItem onClick={handlePrint} className="cursor-pointer text-white hover:bg-slate-800">
                   <Printer className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Imprimir' : 'Print'}
