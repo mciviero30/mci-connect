@@ -243,6 +243,8 @@ export default function VerFactura() {
         team_name: invoice.team_name || '',
         status: 'active',
         color: 'blue',
+        // FIX: Include authorization_id from invoice (required for Job visibility)
+        authorization_id: invoice.authorization_id || '',
       };
 
       const newJob = await base44.entities.Job.create(jobData);
