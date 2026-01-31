@@ -250,6 +250,30 @@ export default function JobDetails() {
               {language === 'es' ? 'Volver a Trabajos' : 'Back to Jobs'}
             </Button>
           </Link>
+          
+          {/* J5 — Archived Job Warning */}
+          {job.status === 'archived' && (
+            <Card className="mb-6 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-amber-500 rounded-full">
+                    <Archive className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-amber-900 dark:text-amber-300">
+                      {language === 'es' ? 'Trabajo Archivado (Solo Lectura)' : 'Archived Job (Read-Only)'}
+                    </p>
+                    <p className="text-sm text-amber-800 dark:text-amber-400">
+                      {language === 'es' 
+                        ? 'Este trabajo está archivado. No se pueden agregar horas, gastos ni modificaciones.'
+                        : 'This job is archived. Cannot add hours, expenses, or modifications.'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           <PageHeader
             title={job.name}
             description={job.description || `${t('customer')}: ${job.customer_name || 'N/A'}`}

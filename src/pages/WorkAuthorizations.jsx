@@ -53,6 +53,14 @@ export default function WorkAuthorizations() {
     staleTime: 60000
   });
 
+  // WA4 — Query to check if Jobs exist for each authorization
+  const { data: allJobs = [] } = useQuery({
+    queryKey: ['all-jobs-for-auth-check'],
+    queryFn: () => base44.entities.Job.list('job_number'),
+    staleTime: 60000,
+    enabled: authorizations.length > 0
+  });
+
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list('first_name'),
@@ -276,8 +284,16 @@ export default function WorkAuthorizations() {
                 <div className="grid md:grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-slate-500 dark:text-slate-400 text-xs mb-1">Type</p>
+                    {/* WA2 — Clearer Type Labels with descriptions */}
                     <p className="font-semibold text-slate-900 dark:text-white">
-                      {auth.authorization_type === 'fixed_price' ? 'Fixed Price' : 'T&M'}
+                      {auth.authorization_type === 'fixed_price' || auth.authorization_type === 'fixed' ? '💼 Fixed Price' : 
+                       auth.authorization_type === 'tm' || auth.authorization_type === 'time_materials' ? '⏱️ Time & Materials' :
+                       '🛡️ Not to Exceed'}
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      {auth.authorization_type === 'fixed_price' || auth.authorization_type === 'fixed' ? '(set contract total)' : 
+                       auth.authorization_type === 'tm' || auth.authorization_type === 'time_materials' ? '(hourly billing)' :
+                       '(capped hourly)'}
                     </p>
                   </div>
                   <div>
@@ -311,17 +327,33 @@ export default function WorkAuthorizations() {
                   </div>
                 </div>
 
-                {isAdmin && auth.status === 'approved' && (
-                  <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleCreateJobFromAuth(auth)}
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-                    >
-                      <Briefcase className="w-4 h-4 mr-2" />
-                      {language === 'es' ? 'Crear Job' : 'Create Job'}
-                    </Button>
-                    <Button
+                {isAdmin && auth.status === 'approved' && (() => {
+                  // WA4 — Check if job already exists for this authorization
+                  const existingJob = allJobs.find(j => j.authorization_id === auth.id);
+                  
+                  return (
+                    <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex gap-2">
+                      {existingJob ? (
+                        <Button
+                          size="sm"
+                          disabled
+                          variant="outline"
+                          className="border-green-300 dark:border-green-600 text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20"
+                        >
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          {language === 'es' ? 'Job Ya Existe' : 'Job Already Exists'}
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          onClick={() => handleCreateJobFromAuth(auth)}
+                          className="bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                        >
+                          <Briefcase className="w-4 h-4 mr-2" />
+                          {language === 'es' ? 'Crear Job' : 'Create Job'}
+                        </Button>
+                      )}
+                      <Button
                       variant="outline"
                       size="sm"
                       onClick={() => {
@@ -336,8 +368,9 @@ export default function WorkAuthorizations() {
                       <XCircle className="w-4 h-4 mr-2" />
                       {language === 'es' ? 'Revocar' : 'Revoke'}
                     </Button>
-                  </div>
-                )}
+                    </div>
+                  );
+                })()}
               </CardContent>
             </Card>
           ))}
@@ -537,11 +570,17 @@ export default function WorkAuthorizations() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label>{language === 'es' ? 'Número de Autorización' : 'Authorization Number'} *</Label>
+                  {/* WA3 — Helper Text for Authorization Number */}
+                  <Label>
+                    {language === 'es' ? 'Número de Autorización' : 'Authorization Number'} * 
+                    <span className="text-xs font-normal text-slate-500 ml-2">
+                      {language === 'es' ? '(PO, ref email, o ID contrato)' : '(PO number, email ref, or contract ID)'}
+                    </span>
+                  </Label>
                   <Input
                     value={formData.authorization_number}
                     onChange={(e) => setFormData({...formData, authorization_number: e.target.value})}
-                    placeholder="PO-12345 or Email-Ref"
+                    placeholder={language === 'es' ? 'ej: PO-12345, Email-2024-01-15' : 'e.g., PO-12345, Email-2024-01-15, Contract-ABC'}
                     className="mt-1.5"
                   />
                 </div>

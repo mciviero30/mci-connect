@@ -58,11 +58,12 @@ export default function ModernJobCard({ job, onEdit }) {
     return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   };
 
+  // J4 — Stronger Status Colors (more differentiated)
   const statusColors = {
-    active: "soft-green-gradient",
-    completed: "soft-blue-gradient",
-    archived: "soft-slate-gradient",
-    on_hold: "soft-amber-gradient"
+    active: "bg-green-500 text-white border-green-600",
+    completed: "bg-blue-600 text-white border-blue-700",
+    archived: "bg-slate-400 text-white border-slate-500",
+    on_hold: "bg-amber-500 text-white border-amber-600"
   };
 
   const statusLabels = {
@@ -155,6 +156,14 @@ export default function ModernJobCard({ job, onEdit }) {
             <Clock className="w-3 h-3 mr-1" />
             {job.billing_type === 'time_materials' ? 'T&M' : 'Fixed'}
           </Badge>
+          
+          {/* J3 — Field Provisioned Badge */}
+          {job.field_project_id && (
+            <Badge className="bg-orange-100 text-orange-800 border-orange-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center">
+              <MapPin className="w-3 h-3 mr-1" />
+              {language === 'es' ? 'En Field' : 'In Field'}
+            </Badge>
+          )}
           
           {job.team_name && (
             <Badge 

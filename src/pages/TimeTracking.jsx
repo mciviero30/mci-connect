@@ -243,9 +243,14 @@ export default function TimeTracking() {
               <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
                 {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
               </h1>
+              {/* TF2 — Geofencing Explanation */}
               <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mt-0.5 md:mt-1 font-medium flex items-center gap-1.5">
                 <Shield className="w-3 h-3 md:w-4 md:h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="truncate">{language === 'es' ? 'Con geofencing' : 'With geofencing'}</span>
+                <span className="truncate">
+                  {language === 'es' 
+                    ? 'GPS valida ubicación del job para compliance y precisión de payroll'
+                    : 'GPS validates job location for compliance and payroll accuracy'}
+                </span>
               </p>
             </div>
           </div>

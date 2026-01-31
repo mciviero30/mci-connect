@@ -546,6 +546,18 @@ export default function Field() {
           </div>
         </div>
       )}
+      
+      {/* F3 — Role-Based Job Filtering Indicator (for non-admin users) */}
+      {user?.role !== 'admin' && user?.position !== 'manager' && user?.position !== 'CEO' && filteredJobs.length > 0 && (
+        <div className="mb-4 bg-blue-900/30 border border-blue-500/40 rounded-xl p-3 flex items-center gap-2">
+          <Users className="w-4 h-4 text-blue-300 flex-shrink-0" />
+          <p className="text-sm text-blue-200 font-medium">
+            {language === 'es' 
+              ? 'Mostrando solo tus trabajos asignados'
+              : 'Showing only your assigned jobs'}
+          </p>
+        </div>
+      )}
 
       {/* SMART EMPTY STATE - Only show when no jobs visible (FASE 2A.1) */}
       {activeTab === 'jobs' && filteredJobs.length === 0 && (
