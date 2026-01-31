@@ -8,7 +8,7 @@ export default function SaveIndicator({ isSaving, lastSaved, isOnline }) {
   useEffect(() => {
     if (lastSaved) {
       setShowSaved(true);
-      // QW3: Extended visibility to 5 seconds for worker confidence
+      // STEP 4: Extended visibility to 5 seconds for clear confirmation
       const timer = setTimeout(() => setShowSaved(false), 5000);
       return () => clearTimeout(timer);
     }
@@ -32,13 +32,13 @@ export default function SaveIndicator({ isSaving, lastSaved, isOnline }) {
             </>
           ) : showSaved ? (
             <>
-              <Check className="w-3 h-3 text-green-500" />
-              {/* QW2: EXPLICIT offline save confirmation */}
-              <span className="text-green-500 font-semibold">
-                {!isOnline ? 'Saved locally — will sync when online' : 'Saved'}
+              <Check className="w-4 h-4 text-green-500" />
+              {/* STEP 4: Larger, clearer success message with explicit completion */}
+              <span className="text-green-600 dark:text-green-400 font-bold text-sm">
+                {!isOnline ? '✓ Saved locally — will sync when online' : '✓ Saved to cloud'}
               </span>
               {!isOnline && (
-                <WifiOff className="w-3 h-3 text-amber-500" />
+                <WifiOff className="w-4 h-4 text-amber-500" />
               )}
             </>
           ) : null}

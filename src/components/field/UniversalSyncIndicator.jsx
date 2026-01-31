@@ -77,7 +77,8 @@ export default function UniversalSyncIndicator({ jobId }) {
       bgColor: 'bg-green-50 dark:bg-green-900/30',
       borderColor: 'border-green-200 dark:border-green-700',
       label: 'Saved',
-      userMessage: 'All saved'
+      // STEP 4: Clarity - explicit "All changes synced" not just "All saved"
+      userMessage: '✓ All changes synced'
     },
     error: {
       icon: CloudOff,
@@ -121,16 +122,17 @@ export default function UniversalSyncIndicator({ jobId }) {
 
   return (
     <div 
-      className={`fixed bottom-20 md:bottom-4 right-4 z-50 ${config.bgColor} ${config.borderColor} border-2 radius-md shadow-enterprise-md flex items-center gap-2 px-3 py-2 backdrop-blur-sm ${
+      className={`fixed bottom-20 md:bottom-4 right-4 z-50 ${config.bgColor} ${config.borderColor} border-2 radius-md shadow-enterprise-md flex items-center gap-2 px-4 py-2.5 backdrop-blur-sm ${
         conflictCount > 0 ? 'animate-pulse' : ''
-      }`}
+      } ${state === 'synced' ? 'shadow-enterprise-lg' : ''}`}
       onClick={conflictCount > 0 ? () => {
         // STEP 3: Human-friendly conflict message - what happened, data safe, what to do
         alert(`⚠️ ${conflictCount} change${conflictCount > 1 ? 's' : ''} conflict${conflictCount > 1 ? '' : 's'} with server data.\n\nYour work is safe. The app will try to merge changes automatically.\n\nIf you see this message again, contact your manager.`);
       } : undefined}
     >
-      <Icon className={`w-4 h-4 ${config.color} ${config.spin ? 'animate-spin' : ''}`} strokeWidth={2.5} />
-      <span className={`text-xs font-bold ${config.color}`}>
+      <Icon className={`w-5 h-5 ${config.color} ${config.spin ? 'animate-spin' : ''}`} strokeWidth={2.5} />
+      {/* STEP 4: Larger, bolder text for readability */}
+      <span className={`text-sm font-bold ${config.color}`}>
         {config.userMessage}
       </span>
       {/* E2 FIX: Show conflict count prominently */}

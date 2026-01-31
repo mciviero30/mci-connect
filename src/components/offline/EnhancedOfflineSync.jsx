@@ -224,8 +224,10 @@ export function useEnhancedOfflineSync() {
     queryClient.invalidateQueries();
 
     if (successCount > 0) {
-      // STEP 3: Human-friendly success - what completed, data safe
-      toast.success(`✓ ${successCount} change${successCount > 1 ? 's' : ''} synced successfully. All your work is saved to the cloud.`);
+      // STEP 4: Extended visibility (5s) + clear completion message
+      toast.success(`✓ All changes synced (${successCount} item${successCount > 1 ? 's' : ''}). Your work is saved to the cloud.`, { 
+        duration: 5000  // Extended from default 3s to 5s for clear confirmation
+      });
     }
     if (failedQueue.length > 0) {
       const permanentFails = failedQueue.filter(i => i.status === 'failed_permanent').length;
