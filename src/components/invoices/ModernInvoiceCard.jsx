@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, Copy, Trash2, DollarSign, AlertCircle, Download, MoreVertical, Eye, Edit3 } from "lucide-react";
+import { MapPin, Users, Copy, Trash2, DollarSign, AlertCircle, Download, MoreVertical, Eye, Edit3, Briefcase } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -98,16 +98,30 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
                 {language === 'es' ? 'Ver' : 'View'}
               </DropdownMenuItem>
               {isAdmin && (
-                <DropdownMenuItem 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(createPageUrl(`CrearFactura?id=${invoice.id}`));
-                  }}
-                  className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
-                >
-                  <Edit3 className="w-3.5 h-3.5 mr-2" />
-                  {language === 'es' ? 'Editar' : 'Edit'}
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuItem 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(createPageUrl(`CrearFactura?id=${invoice.id}`));
+                    }}
+                    className="cursor-pointer text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
+                  >
+                    <Edit3 className="w-3.5 h-3.5 mr-2" />
+                    {language === 'es' ? 'Editar' : 'Edit'}
+                  </DropdownMenuItem>
+                  {!invoice.job_id && (
+                    <DropdownMenuItem 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(createPageUrl(`Trabajos?createFromInvoice=${invoice.id}`));
+                      }}
+                      className="cursor-pointer text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-semibold"
+                    >
+                      <Briefcase className="w-3.5 h-3.5 mr-2" />
+                      {language === 'es' ? 'Crear Trabajo' : 'Create Job'}
+                    </DropdownMenuItem>
+                  )}
+                </>
               )}
               <DropdownMenuItem 
                 onClick={async (e) => {
