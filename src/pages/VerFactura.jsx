@@ -43,6 +43,7 @@ import InvoiceDocument from "../components/documentos/InvoiceDocument";
 import { downloadInvoicePDF } from "../components/pdf/generateInvoicePDF";
 import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 import RetryProvisioningButton from "../components/invoices/RetryProvisioningButton";
+import { useUI } from "@/components/contexts/FieldModeContext";
 
 export default function VerFactura() {
   const { t, language } = useLanguage();
@@ -51,6 +52,7 @@ export default function VerFactura() {
   const toast = useToast();
   const urlParams = new URLSearchParams(window.location.search);
   const invoiceId = urlParams.get('id');
+  const { toggleFocusMode } = useUI();
 
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -484,6 +486,11 @@ export default function VerFactura() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-800">
+                <DropdownMenuItem onClick={toggleFocusMode} className="cursor-pointer text-white hover:bg-slate-800">
+                  <Maximize2 className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Modo Enfoque' : 'Focus Mode'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-800" />
                 <DropdownMenuItem onClick={handlePrint} className="cursor-pointer text-white hover:bg-slate-800">
                   <Printer className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Imprimir' : 'Print'}

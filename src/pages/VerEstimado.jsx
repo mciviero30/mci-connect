@@ -45,6 +45,8 @@ import QuoteCompare from "@/components/quotes/QuoteCompare";
 import { SaveAsTemplateButton } from "@/components/quotes/QuoteTemplates";
 import PDFDownloadButton from "@/components/pdf/PDFDownloadButton";
 import { getQuoteStatusMeta } from "../components/core/statusConfig";
+import { useUI } from "@/components/contexts/FieldModeContext";
+import { Maximize2 } from "lucide-react";
 
 export default function VerEstimado() {
   const { t, language } = useLanguage();
@@ -53,6 +55,7 @@ export default function VerEstimado() {
   const toast = useToast();
   const urlParams = new URLSearchParams(window.location.search);
   const quoteId = urlParams.get('id');
+  const { toggleFocusMode } = useUI();
 
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -537,6 +540,11 @@ Lawrenceville, Georgia 30043, U.S.A`
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-800">
+                <DropdownMenuItem onClick={toggleFocusMode} className="cursor-pointer text-white hover:bg-slate-800">
+                  <Maximize2 className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Modo Enfoque' : 'Focus Mode'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-800" />
                 <DropdownMenuItem onClick={handlePrint} className="cursor-pointer text-white hover:bg-slate-800">
                   <Printer className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Imprimir' : 'Print'}
