@@ -28,27 +28,35 @@ export default function QuickSearchDialog({ open, onOpenChange }) {
     queryKey: ['field-jobs'],
     queryFn: () => base44.entities.Job.list('-created_date', 50),
     enabled: open,
+    initialData: [], // FIX: Ensure jobs is always an array
   });
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['all-field-tasks'],
     queryFn: () => base44.entities.Task.list('-created_date', 100),
     enabled: open,
+    initialData: [], // FIX: Ensure tasks is always an array
   });
 
   const { data: plans = [] } = useQuery({
     queryKey: ['all-field-plans'],
     queryFn: () => base44.entities.Plan.list('-created_date', 50),
     enabled: open,
+    initialData: [], // FIX: Ensure plans is always an array
   });
 
   // Filter results based on query
   const filteredResults = React.useMemo(() => {
+    // FIX: Ensure arrays before using slice/forEach
+    const safeJobs = Array.isArray(jobs) ? jobs : [];
+    const safeTasks = Array.isArray(tasks) ? tasks : [];
+    const safePlans = Array.isArray(plans) ? plans : [];
+    
     if (!query.trim()) {
       // Show recent items when no query
       return [
-        ...jobs.slice(0, 3).map(j => ({ type: 'project', item: j })),
-        ...tasks.slice(0, 3).map(t => ({ type: 'task', item: t })),
+        ...safeJobs.slice(0, 3).map(j => ({ type: 'project', item: j })),
+        ...safeTasks.slice(0, 3).map(t => ({ type: 'task', item: t })),
       ];
     }
 
@@ -56,7 +64,7 @@ export default function QuickSearchDialog({ open, onOpenChange }) {
     const results = [];
 
     // Search projects
-    jobs.forEach(job => {
+    safeJobs.forEach(job => {
       if (job.name?.toLowerCase().includes(q) || 
           job.address?.toLowerCase().includes(q) ||
           job.client_name_field?.toLowerCase().includes(q)) {
@@ -65,7 +73,7 @@ export default function QuickSearchDialog({ open, onOpenChange }) {
     });
 
     // Search tasks
-    tasks.forEach(task => {
+    safeTasks.forEach(task => {
       if (task.title?.toLowerCase().includes(q) ||
           task.description?.toLowerCase().includes(q)) {
         results.push({ type: 'task', item: task });
@@ -73,7 +81,7 @@ export default function QuickSearchDialog({ open, onOpenChange }) {
     });
 
     // Search plans
-    plans.forEach(plan => {
+    safePlans.forEach(plan => {
       if (plan.name?.toLowerCase().includes(q)) {
         results.push({ type: 'plan', item: plan });
       }
