@@ -55,6 +55,14 @@ export default function VerFactura() {
   const invoiceId = urlParams.get('id');
   const { toggleFocusMode } = useUI();
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
+  });
+
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
 
@@ -231,6 +239,30 @@ export default function VerFactura() {
 
   const createJobMutation = useMutation({
     mutationFn: async () => {
+      // CRITICAL: Check if invoice has authorization_id, create one if missing
+      let authId = invoice.authorization_id;
+      
+      if (!authId) {
+        // Auto-create authorization from invoice
+        const newAuth = await base44.entities.WorkAuthorization.create({
+          customer_id: invoice.customer_id || '',
+          customer_name: invoice.customer_name,
+          authorization_type: 'fixed',
+          approval_source: 'signed_quote',
+          approved_amount: invoice.total,
+          approved_at: new Date().toISOString(),
+          verified_by_user_id: user.id,
+          verified_by_email: user.email,
+          verified_by_name: user.full_name,
+          verification_notes: `Auto-generated from Invoice ${invoice.invoice_number}`,
+          status: 'approved'
+        });
+        authId = newAuth.id;
+        
+        // Update invoice with authorization_id
+        await base44.entities.Invoice.update(invoiceId, { authorization_id: authId });
+      }
+
       // Create job from invoice data
       const jobData = {
         name: invoice.job_name,
@@ -243,8 +275,7 @@ export default function VerFactura() {
         team_name: invoice.team_name || '',
         status: 'active',
         color: 'blue',
-        // FIX: Include authorization_id from invoice (required for Job visibility)
-        authorization_id: invoice.authorization_id || '',
+        authorization_id: authId,
       };
 
       const newJob = await base44.entities.Job.create(jobData);
