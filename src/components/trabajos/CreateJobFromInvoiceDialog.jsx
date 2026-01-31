@@ -88,54 +88,90 @@ export default function CreateJobFromInvoiceDialog({
             />
           </div>
 
-          {/* Authorization Type */}
-          <div className="space-y-2">
-            <Label htmlFor="auth-type" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Authorization Type *
-            </Label>
-            <Select value={formData.authorization_type} onValueChange={(value) => setFormData({...formData, authorization_type: value})}>
-              <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="fixed">Fixed Price</SelectItem>
-                <SelectItem value="tm">Time & Materials</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Work Authorization Section */}
+          <div className="border-t pt-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <h4 className="font-semibold text-slate-900 dark:text-white">Work Authorization Details</h4>
+            </div>
 
-          {/* Approval Source */}
-          <div className="space-y-2">
-            <Label htmlFor="source" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              How was it approved? *
-            </Label>
-            <Select value={formData.approval_source} onValueChange={(value) => setFormData({...formData, approval_source: value})}>
-              <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="email">Email</SelectItem>
-                <SelectItem value="po">Purchase Order (PO)</SelectItem>
-                <SelectItem value="verbal">Verbal Agreement</SelectItem>
-                <SelectItem value="signed_quote">Signed Quote</SelectItem>
-                <SelectItem value="contract">Contract</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            {/* Authorization Type */}
+            <div className="space-y-2">
+              <Label htmlFor="auth-type" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Authorization Type *
+              </Label>
+              <Select value={formData.authorization_type} onValueChange={(value) => setFormData({...formData, authorization_type: value})}>
+                <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fixed">Fixed Price</SelectItem>
+                  <SelectItem value="tm">Time & Materials</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* Amount */}
-          <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              Approved Amount ($) *
-            </Label>
-            <Input
-              id="amount"
-              type="number"
-              value={formData.approved_amount}
-              onChange={(e) => setFormData({...formData, approved_amount: parseFloat(e.target.value) || 0})}
-              className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
-              placeholder="Enter amount"
-            />
+            {/* Approval Source */}
+            <div className="space-y-2">
+              <Label htmlFor="source" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                How was it approved? *
+              </Label>
+              <Select value={formData.approval_source} onValueChange={(value) => setFormData({...formData, approval_source: value})}>
+                <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="email">Email</SelectItem>
+                  <SelectItem value="po">Purchase Order (PO)</SelectItem>
+                  <SelectItem value="verbal">Verbal Agreement</SelectItem>
+                  <SelectItem value="signed_quote">Signed Quote</SelectItem>
+                  <SelectItem value="contract">Contract</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Authorization Number (PO) */}
+            <div className="space-y-2">
+              <Label htmlFor="po-number" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                PO Number or Reference *
+              </Label>
+              <Input
+                id="po-number"
+                value={formData.authorization_number}
+                onChange={(e) => setFormData({...formData, authorization_number: e.target.value})}
+                className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                placeholder="e.g., PO-2026-001 or Contract-ABC-123"
+              />
+            </div>
+
+            {/* Amount */}
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Approved Amount ($) *
+              </Label>
+              <Input
+                id="amount"
+                type="number"
+                value={formData.approved_amount}
+                onChange={(e) => setFormData({...formData, approved_amount: parseFloat(e.target.value) || 0})}
+                className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                placeholder="Enter amount"
+              />
+            </div>
+
+            {/* Verification Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="notes" className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Notes (Optional)
+              </Label>
+              <Input
+                id="notes"
+                value={formData.verification_notes}
+                onChange={(e) => setFormData({...formData, verification_notes: e.target.value})}
+                className="bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-600"
+                placeholder="e.g., Client email received 1/31/2026"
+              />
+            </div>
           </div>
 
           {/* Action Buttons */}
