@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 
 export default function FieldNav({ activeTab, onTabChange, language, onNewTask }) {
   const tabs = [
-    { id: 'jobs', label: language === 'es' ? 'Trabajos' : 'Installation', icon: MapPin, color: 'text-orange-400' },
+    { id: 'jobs', label: language === 'es' ? 'Trabajos' : 'Jobs', icon: MapPin, color: 'text-orange-400' },
     { id: 'measurements', label: language === 'es' ? 'Mediciones' : 'Measurements', icon: Ruler, color: 'text-purple-400' },
     { id: 'checklists', label: language === 'es' ? 'Listas' : 'Checklists', icon: ClipboardCheck, color: 'text-green-400' },
     { id: 'search', label: language === 'es' ? 'Buscar' : 'Search', icon: Search, color: 'text-blue-400' },
