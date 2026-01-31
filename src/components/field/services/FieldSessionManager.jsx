@@ -268,15 +268,34 @@ export const FieldSessionManager = {
 };
 
 /**
- * O1 FIX: Global emergency flush on beforeunload
+ * O1 + Z2 FIX: Global emergency flush on beforeunload
+ * Z2 EXPANSION: Now saves session + any in-memory drafts
  * Registers once on module load
  */
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
     const session = FieldSessionManager.getSession();
     if (session) {
-      console.log('[FieldSessionManager] 🚨 Emergency flush on beforeunload');
+      // Save session
       FieldSessionManager.saveSession(session);
+      
+      // Z2 FIX: Also flush any form drafts from DOM to sessionStorage
+      try {
+        const formInputs = document.querySelectorAll('[data-field-draft]');
+        formInputs.forEach(input => {
+          const draftType = input.getAttribute('data-draft-type');
+          const jobId = input.getAttribute('data-job-id');
+          const value = input.value;
+          
+          if (draftType && jobId && value) {
+            sessionStorage.setItem(`emergency_draft_${draftType}_${jobId}`, value);
+          }
+        });
+      } catch (error) {
+        console.error('[Emergency Flush] Draft save failed:', error);
+      }
+      
+      console.log('[FieldSessionManager] 🚨 Emergency flush (session + drafts)');
     }
   });
 }
