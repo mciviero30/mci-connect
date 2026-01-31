@@ -122,7 +122,7 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
                     <DropdownMenuItem 
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(createPageUrl(`Trabajos?createFromInvoice=${invoice.id}`));
+                        onCreateJob?.(invoice);
                       }}
                       className="cursor-pointer text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-xs font-semibold"
                     >
