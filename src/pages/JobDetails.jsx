@@ -275,7 +275,7 @@ export default function JobDetails() {
           )}
           
           <PageHeader
-            title={job.name}
+            title={job.name?.replace(/[\r\n]+/g, ' ').trim() || job.name}
             description={job.description || `${t('customer')}: ${job.customer_name || 'N/A'}`}
             icon={ClipboardList}
             actions={
