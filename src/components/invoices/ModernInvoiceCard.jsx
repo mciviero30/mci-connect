@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRegisterPayment, isAdmin }) {
+export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRegisterPayment, onCreateJob, isAdmin }) {
   const navigate = useNavigate();
   const { language } = useLanguage();
 
