@@ -75,6 +75,15 @@ export default function ModernJobCard({ job, onEdit }) {
 
   const colorIndicator = job.color || 'blue';
 
+  // Normalize job name (remove line breaks, extra spaces)
+  const normalizeJobName = (name) => {
+    if (!name) return '';
+    return String(name)
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  };
+
   return (
     <SwipeableListItem
       id={job.id}
@@ -88,8 +97,8 @@ export default function ModernJobCard({ job, onEdit }) {
         {/* Header Section */}
         <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm sm:text-base md:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 line-clamp-2">
-              {job.name}
+            <h3 className="text-sm sm:text-base md:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 line-clamp-2" title={normalizeJobName(job.name)}>
+              {normalizeJobName(job.name)}
             </h3>
             {job.customer_name && (
               <div className="flex items-center gap-1 mt-1">

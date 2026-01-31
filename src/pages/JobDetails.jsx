@@ -275,11 +275,11 @@ export default function JobDetails() {
           )}
           
           <PageHeader
-            title={job.name?.replace(/[\r\n]+/g, ' ').trim() || job.name}
+            title={job.name}
             description={job.description || `${t('customer')}: ${job.customer_name || 'N/A'}`}
             icon={ClipboardList}
             actions={
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-2 flex-wrap">
                 {user?.role === 'admin' && (
                   <>
                     {!job?.field_project_id ? (

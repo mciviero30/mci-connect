@@ -22,9 +22,18 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
   const navigate = useNavigate();
   const { language } = useLanguage();
 
+  // Normalize text helper
+  const normalizeText = (text) => {
+    if (!text) return '';
+    return String(text)
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  };
+
   // Defensive guards - never trust invoice data
   const invoiceNumber = invoice?.invoice_number || 'DRAFT';
-  const customer = invoice?.customer_name || 'N/A';
+  const customer = normalizeText(invoice?.customer_name) || 'N/A';
   const total = Number(invoice?.total) || 0;
   const status = invoice?.status || 'draft';
   const itemsCount = Array.isArray(invoice?.items) ? invoice.items.length : 0;
@@ -62,14 +71,14 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-base sm:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 line-clamp-2">
+            <h3 className="text-base sm:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 line-clamp-2" title={customer}>
               {customer}
             </h3>
             {invoice?.job_name && (
               <div className="flex items-center gap-1.5 mt-1.5">
                 <Users className="w-3.5 h-3.5 text-[#666666] dark:text-slate-400" />
-                <p className="text-xs sm:text-[11px] text-[#666666] dark:text-slate-400 leading-tight truncate">
-                  {invoice.job_name}
+                <p className="text-xs sm:text-[11px] text-[#666666] dark:text-slate-400 leading-tight truncate" title={normalizeText(invoice.job_name)}>
+                  {normalizeText(invoice.job_name)}
                 </p>
               </div>
             )}

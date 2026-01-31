@@ -233,36 +233,27 @@ export default function TimeTracking() {
     >
       <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
         <div className="max-w-7xl mx-auto p-3 md:p-6 space-y-4 md:space-y-6">
-        {/* Header - Mobile Optimized */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
-              <Clock className="w-5 h-5 md:w-7 md:h-7 text-white" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl md:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
-              </h1>
-              {/* TF2 — Geofencing Explanation */}
-              <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mt-0.5 md:mt-1 font-medium flex items-center gap-1.5">
-                <Shield className="w-3 h-3 md:w-4 md:h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <span className="truncate">
-                  {language === 'es' 
-                    ? 'GPS valida ubicación del job para compliance y precisión de payroll'
-                    : 'GPS validates job location for compliance and payroll accuracy'}
-                </span>
-              </p>
-            </div>
-          </div>
-
-          {isManager && (
-            <Button onClick={() => setActiveTab('approvals')} variant="outline" className="h-10 md:h-12 px-3 md:px-6 rounded-xl font-bold shadow-md w-full md:w-auto min-h-[44px]">
-              <Users className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
-              <span className="hidden sm:inline">{language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}</span>
-              <span className="sm:hidden">{language === 'es' ? 'Aprobar' : 'Approve'}</span>
-            </Button>
-          )}
-        </div>
+        <PageHeader
+          title={language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
+          description={
+            <span className="flex items-center gap-1.5">
+              <Shield className="w-3 h-3 md:w-4 md:h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+              {language === 'es' 
+                ? 'GPS valida ubicación del job para compliance y precisión de payroll'
+                : 'GPS validates job location for compliance and payroll accuracy'}
+            </span>
+          }
+          icon={Clock}
+          actions={
+            isManager && (
+              <Button onClick={() => setActiveTab('approvals')} variant="outline" className="h-10 md:h-12 px-3 md:px-6 rounded-xl font-bold shadow-md w-full md:w-auto min-h-[44px]">
+                <Users className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                <span className="hidden sm:inline">{language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}</span>
+                <span className="sm:hidden">{language === 'es' ? 'Aprobar' : 'Approve'}</span>
+              </Button>
+            )
+          }
+        />
 
         {/* TF1 — Time vs Field Separation Banner */}
         <Card className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-600 shadow-lg mb-6">

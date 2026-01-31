@@ -21,6 +21,15 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
   const navigate = useNavigate();
   const { language } = useLanguage();
 
+  // Normalize text helper
+  const normalizeText = (text) => {
+    if (!text) return '';
+    return String(text)
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  };
+
   const formatCurrency = (value) => {
     if (value === null || value === undefined) return '$0';
     return `$${value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
@@ -36,14 +45,14 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1 min-w-0">
-            <h3 className="text-base sm:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 line-clamp-2">
-              {quote.customer_name}
+            <h3 className="text-base sm:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 line-clamp-2" title={normalizeText(quote.customer_name)}>
+              {normalizeText(quote.customer_name)}
             </h3>
             {quote.job_name && (
               <div className="flex items-center gap-1.5 mt-1.5">
                 <Users className="w-3.5 h-3.5 text-[#666666] dark:text-slate-400" />
-                <p className="text-xs sm:text-[11px] text-[#666666] dark:text-slate-400 leading-tight truncate">
-                  {quote.job_name}
+                <p className="text-xs sm:text-[11px] text-[#666666] dark:text-slate-400 leading-tight truncate" title={normalizeText(quote.job_name)}>
+                  {normalizeText(quote.job_name)}
                 </p>
               </div>
             )}
