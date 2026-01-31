@@ -266,3 +266,17 @@ export const FieldSessionManager = {
     };
   },
 };
+
+/**
+ * O1 FIX: Global emergency flush on beforeunload
+ * Registers once on module load
+ */
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    const session = FieldSessionManager.getSession();
+    if (session) {
+      console.log('[FieldSessionManager] 🚨 Emergency flush on beforeunload');
+      FieldSessionManager.saveSession(session);
+    }
+  });
+}

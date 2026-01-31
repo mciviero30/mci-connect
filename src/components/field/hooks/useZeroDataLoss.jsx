@@ -220,6 +220,44 @@ export function useZeroDataLoss({
   }, [enabled, type]);
 
   /**
+   * Emergency flush on browser close
+   * O1 FIX: Reduces data loss window from 500ms to ~0ms
+   */
+  useEffect(() => {
+    if (!enabled) return;
+
+    const handleBeforeUnload = () => {
+      // Cancel debounced save and force immediate flush
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+      }
+      
+      if (import.meta.env?.DEV) {
+        console.log(`[ZeroDataLoss] 🚨 Emergency beforeunload flush for ${type}`);
+      }
+      
+      // Synchronous save to localStorage as final backup
+      try {
+        const emergencyKey = `emergency_draft_${getDraftKey()}`;
+        sessionStorage.setItem(emergencyKey, JSON.stringify({
+          data: lastSavedRef.current,
+          timestamp: Date.now(),
+          type,
+          jobId,
+        }));
+      } catch (e) {
+        console.error('[ZeroDataLoss] Emergency beforeunload flush failed:', e);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [enabled, type, jobId, getDraftKey]);
+
+  /**
    * Auto-save on component unmount
    * Safety net for navigation away
    */

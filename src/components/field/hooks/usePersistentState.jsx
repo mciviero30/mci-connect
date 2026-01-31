@@ -111,16 +111,23 @@ export function usePersistentState(key, initialValue, options = {}) {
       persistState();
     };
 
+    const handleBeforeUnload = () => {
+      console.log(`[PersistentState] Emergency flush ${key} on beforeunload`);
+      persistState();
+    };
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('freeze', handleFreeze);
     window.addEventListener('blur', handleBlur);
     document.addEventListener('pagehide', handlePageHide);
+    window.addEventListener('beforeunload', handleBeforeUnload);
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('freeze', handleFreeze);
       window.removeEventListener('blur', handleBlur);
       document.removeEventListener('pagehide', handlePageHide);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [key, state, persist, expiryHours]);
 
