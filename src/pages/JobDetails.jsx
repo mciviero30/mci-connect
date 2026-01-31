@@ -94,17 +94,12 @@ export default function JobDetails() {
 
   const provisionToFieldMutation = useMutation({
     mutationFn: async () => {
-      const result = await base44.functions.invoke('syncJobToMCIField', { jobData: job });
-      
-      if (result?.data?.success && result?.data?.mci_field_job_id) {
-        // Update job with field project id
-        await base44.entities.Job.update(jobId, {
-          field_project_id: result.data.mci_field_job_id
-        });
-        return result.data;
-      } else {
-        throw new Error(result?.data?.error || 'Failed to sync to MCI Field');
-      }
+      // Placeholder: Update field_project_id to mark as provisioned
+      // Actual MCI Field sync logic comes later
+      await base44.entities.Job.update(jobId, {
+        field_project_id: `field_${jobId}` // Temporary marker
+      });
+      return { success: true };
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['job', jobId] });
