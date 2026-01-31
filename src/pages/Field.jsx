@@ -179,7 +179,7 @@ export default function Field() {
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
-  const { data: jobs = [], isLoading } = useQuery({
+  const { data: jobsData = { authorized: [], unauthorized: [] }, isLoading } = useQuery({
     queryKey: FIELD_QUERY_KEYS.JOBS(),
     queryFn: async () => {
       let allJobs = [];
@@ -190,7 +190,7 @@ export default function Field() {
         allJobs = await base44.entities.Job.list('-created_date');
       } else if (user?.role === 'customer' || user?.role === 'field_worker') {
         const assignedJobIds = [...new Set(userAssignments.map(a => a.job_id))];
-        if (assignedJobIds.length === 0) return [];
+        if (assignedJobIds.length === 0) return { authorized: [], unauthorized: [] };
         
         const assignedJobs = await Promise.all(
           assignedJobIds.map(jobId => base44.entities.Job.filter({ id: jobId }))
@@ -200,12 +200,19 @@ export default function Field() {
         allJobs = await base44.entities.Job.list('-created_date');
       }
       
-      // ENFORCEMENT: Only show authorized jobs in Field
-      return allJobs.filter(job => job.authorization_id);
+      // ENFORCEMENT: Separate authorized vs unauthorized for transparency (FASE 2A.1)
+      const authorized = allJobs.filter(job => job.authorization_id);
+      const unauthorized = allJobs.filter(job => !job.authorization_id);
+      
+      return { authorized, unauthorized };
     },
     enabled: !!user,
     ...FIELD_STABLE_QUERY_CONFIG,
   });
+
+  // Extract authorized jobs for rendering
+  const jobs = jobsData.authorized || [];
+  const unauthorizedJobsCount = jobsData.unauthorized?.length || 0;
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['field-all-tasks', jobs.map(j => j.id).join(',')],
@@ -332,7 +339,11 @@ export default function Field() {
     const matchesFilter = filter === 'all' || 
                          (filter === 'active' && job.status === 'active') ||
                          (filter === 'completed' && job.status === 'completed');
-    return matchesSearch && matchesFilter;
+    
+    // HARDENING: Field NEVER shows archived or on-hold jobs (FASE 2A.1)
+    const isExecutableStatus = job.status !== 'archived' && job.status !== 'on_hold';
+    
+    return matchesSearch && matchesFilter && isExecutableStatus;
   });
 
   // Calculate stats
@@ -486,6 +497,39 @@ export default function Field() {
           onNewTask={() => setShowNewProject(true)}
         />
       </div>
+
+      {/* ADMIN TRANSPARENCY - Warn about hidden unauthorized jobs (FASE 2A.1) */}
+      {(user?.role === 'admin' || user?.position === 'manager') && unauthorizedJobsCount > 0 && (
+        <div className="mb-4 bg-amber-900/20 border border-amber-600/40 rounded-xl p-3 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-amber-200 font-semibold">
+              {language === 'es' 
+                ? `⚠️ ${unauthorizedJobsCount} trabajo${unauthorizedJobsCount > 1 ? 's ocultos' : ' oculto'} (sin autorización)`
+                : `⚠️ ${unauthorizedJobsCount} job${unauthorizedJobsCount > 1 ? 's' : ''} hidden (no authorization)`}
+            </p>
+            <p className="text-xs text-amber-300/80 mt-0.5">
+              {language === 'es' 
+                ? 'Ir a Work Authorizations para aprobarlos'
+                : 'Go to Work Authorizations to approve them'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* SMART EMPTY STATE - Only show when no jobs visible (FASE 2A.1) */}
+      {activeTab === 'jobs' && filteredJobs.length === 0 && (
+        <EmptyState
+          reason={jobs.length === 0 ? 'none' : 'filtered'}
+          isAdmin={user?.role === 'admin' || user?.position === 'manager'}
+          hiddenByFilter={jobs.filter(j => 
+            (filter === 'active' && j.status !== 'active') ||
+            (filter === 'completed' && j.status !== 'completed')
+          ).length}
+          unauthorizedCount={unauthorizedJobsCount}
+          language={language}
+        />
+      )}
 
       {/* CONTENT AREA - Based on Active Tab */}
       {activeTab === 'jobs' && filteredJobs.slice(0, 3).length > 0 && (
@@ -828,18 +872,60 @@ export default function Field() {
 
 
 
-function EmptyState({ onCreateProject, language }) {
+function EmptyState({ reason, isAdmin, hiddenByFilter, unauthorizedCount, language }) {
+  // Diagnostic-aware messaging (FASE 2A.1)
+  const getMessage = () => {
+    if (unauthorizedCount > 0 && isAdmin) {
+      return {
+        title: language === 'es' ? 'Sin trabajos autorizados' : 'No authorized projects',
+        description: language === 'es' 
+          ? `${unauthorizedCount} trabajo${unauthorizedCount > 1 ? 's' : ''} oculto${unauthorizedCount > 1 ? 's' : ''} por falta de autorización del cliente`
+          : `${unauthorizedCount} job${unauthorizedCount > 1 ? 's' : ''} hidden due to missing client authorization`,
+        action: language === 'es' ? 'Ir a Work Authorizations para aprobar' : 'Go to Work Authorizations to approve'
+      };
+    }
+    
+    if (hiddenByFilter > 0) {
+      return {
+        title: language === 'es' ? 'Sin trabajos activos' : 'No active jobs',
+        description: language === 'es' 
+          ? `${hiddenByFilter} trabajo${hiddenByFilter > 1 ? 's' : ''} completado${hiddenByFilter > 1 ? 's' : ''} disponible${hiddenByFilter > 1 ? 's' : ''}`
+          : `${hiddenByFilter} completed job${hiddenByFilter > 1 ? 's' : ''} available`,
+        action: language === 'es' ? 'Cambia el filtro a "Completados"' : 'Change filter to "Completed"'
+      };
+    }
+    
+    if (!isAdmin) {
+      return {
+        title: language === 'es' ? 'Sin trabajos asignados' : 'No jobs assigned',
+        description: language === 'es' 
+          ? 'No tienes trabajos asignados hoy'
+          : 'You have no jobs assigned today',
+        action: language === 'es' ? 'Contacta a tu manager' : 'Contact your manager'
+      };
+    }
+    
+    return {
+      title: language === 'es' ? 'No hay proyectos' : 'No projects',
+      description: language === 'es' 
+        ? 'Todos los trabajos requieren autorización del cliente antes de aparecer en Field'
+        : 'All jobs require client authorization before appearing in Field',
+      action: isAdmin ? (language === 'es' ? 'Crear autorización primero' : 'Create authorization first') : ''
+    };
+  };
+
+  const { title, description, action } = getMessage();
+
   return (
     <div className="bg-slate-800 border border-slate-700 rounded-xl p-8 text-center shadow-md">
       <div className="w-16 h-16 bg-gradient-to-br from-orange-500/20 to-yellow-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
         <Briefcase className="w-8 h-8 text-orange-400" />
       </div>
-      <h3 className="text-lg font-bold text-white mb-2">
-        {language === 'es' ? 'No hay proyectos hoy' : 'No projects today'}
-      </h3>
-      <p className="text-sm text-slate-400 mb-4">
-        {language === 'es' ? 'Comienza creando tu primer proyecto' : 'Get started by creating your first project'}
-      </p>
+      <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
+      <p className="text-sm text-slate-400 mb-2">{description}</p>
+      {action && (
+        <p className="text-xs text-orange-400 font-semibold">{action}</p>
+      )}
     </div>
   );
 }
