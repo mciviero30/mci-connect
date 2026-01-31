@@ -456,23 +456,23 @@ Lawrenceville, Georgia 30043, U.S.A`
     <div className="min-h-screen bg-gray-50">
       {/* Top Action Bar - Reorganized */}
       <div className="no-print border-b shadow-sm px-4 py-3" style={{background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
+        <div className="max-w-6xl mx-auto flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate(createPageUrl('Estimados'))}
-              className="text-slate-300 hover:text-white hover:bg-slate-800"
+              className="text-slate-300 hover:text-white hover:bg-slate-800 flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <div>
-              <h1 className="text-lg font-bold text-white">{quote.quote_number}</h1>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg font-bold text-white truncate">{quote.quote_number}</h1>
               <Badge className={quote.status === 'converted_to_invoice' ? "bg-slate-900 text-white text-[10px] px-2 py-0.5" : `${statusMeta.badgeClass} text-[10px] px-2 py-0.5`}>{statusMeta.label}</Badge>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap justify-end">
+          <div className="flex items-center gap-2 flex-wrap justify-end flex-shrink-0">
             {/* Primary Actions - Compact */}
             {quote.status !== 'converted_to_invoice' && (
               <Button

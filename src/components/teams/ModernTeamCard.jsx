@@ -9,6 +9,15 @@ import { useNavigate } from "react-router-dom";
 export default function ModernTeamCard({ team, stats, onViewDetails }) {
   const navigate = useNavigate();
 
+  // Normalize text helper
+  const normalizeText = (text) => {
+    if (!text) return '';
+    return String(text)
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  };
+
   const maxHeadcount = team.maximum_headcount || 10;
   const capacityPercentage = (stats.employees / maxHeadcount) * 100;
 
@@ -23,12 +32,12 @@ export default function ModernTeamCard({ team, stats, onViewDetails }) {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-tight mb-0.5">
-                {team.team_name}
+              <h3 className="text-[16px] font-bold text-[#1A1A1A] leading-tight mb-0.5 truncate" title={normalizeText(team.team_name)}>
+                {normalizeText(team.team_name)}
               </h3>
-              <p className="text-[11px] text-[#666666] leading-tight flex items-center gap-1">
-                <MapPin className="w-[11px] h-[11px]" />
-                {team.location}, {team.state}
+              <p className="text-[11px] text-[#666666] leading-tight flex items-center gap-1 truncate" title={`${team.location}, ${team.state}`}>
+                <MapPin className="w-[11px] h-[11px] flex-shrink-0" />
+                {normalizeText(team.location)}, {team.state}
               </p>
             </div>
           </div>

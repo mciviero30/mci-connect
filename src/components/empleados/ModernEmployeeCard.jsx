@@ -55,7 +55,16 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
   const hasOSHA30 = certifications.some(c => c.certification_type === 'osha_30' && c.status === 'active');
   const hasExpiredCerts = certifications.some(c => c.status === 'expired');
 
-  const displayName = (() => {
+  // Normalize text helper
+  const normalizeText = (text) => {
+    if (!text) return '';
+    return String(text)
+      .replace(/[\r\n\t]+/g, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  };
+
+  const displayName = normalizeText((() => {
     if (employee.first_name && employee.last_name) {
       return `${employee.first_name} ${employee.last_name}`.trim();
     }
@@ -65,7 +74,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
     return employee.email.split('@')[0].split('.').map(p => 
       p.charAt(0).toUpperCase() + p.slice(1)
     ).join(' ');
-  })();
+  })());
 
   // Load team name if team_id exists but team_name is missing
   const { data: teams = [] } = useQuery({
@@ -114,11 +123,11 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
             )}
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm sm:text-base md:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5">
+              <h3 className="text-sm sm:text-base md:text-[16px] font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5 truncate" title={displayName}>
                 {displayName}
               </h3>
-              <p className="text-[10px] sm:text-[11px] text-[#666666] dark:text-slate-400 leading-tight">
-                {formatPosition(employee.position)}
+              <p className="text-[10px] sm:text-[11px] text-[#666666] dark:text-slate-400 leading-tight truncate" title={formatPosition(employee.position)}>
+                {normalizeText(formatPosition(employee.position))}
               </p>
             </div>
           </div>
