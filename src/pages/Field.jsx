@@ -609,7 +609,7 @@ export default function Field() {
       )}
 
       {/* SMART EMPTY STATE - Only show when no jobs visible (FASE 2A.1) */}
-      {(activeTab === 'jobs' || activeTab === 'installation') && filteredJobs.length === 0 && (
+      {activeTab === 'jobs' && filteredJobs.length === 0 && (
         <EmptyState
           reason={jobs.length === 0 ? 'none' : 'filtered'}
           isAdmin={user?.role === 'admin' || user?.position === 'manager'}
