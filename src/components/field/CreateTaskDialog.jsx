@@ -23,6 +23,8 @@ import { microToast } from '@/components/feedback/MicroToast';
 import { humanize } from '@/components/feedback/HumanStates';
 import { NavigationBlocker } from '@/components/validation/NavigationBlocker';
 import SaveConfirmation from './SaveConfirmation';
+import { useFieldDraftPersistence } from './hooks/useFieldDraftPersistence';
+import { FieldSessionManager } from './services/FieldSessionManager';
 
 // Predefined checklist templates
 const CHECKLIST_TEMPLATES = {
@@ -91,6 +93,26 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     enabled: open && !existingTask && !pinPosition,
     debounceMs: 2000
   });
+
+  // QW4: Draft persistence for crash recovery
+  const { saveDraft: saveTaskDraft, clearDraft: clearTaskDraft } = useFieldDraftPersistence(
+    'task_create',
+    task,
+    setTask,
+    { enabled: open && !existingTask && !pinPosition, jobId }
+  );
+
+  // QW4: Register modal metadata in session for emergency flush
+  useEffect(() => {
+    if (open && task.title) {
+      FieldSessionManager.registerOpenModal('createTask', { 
+        formData: task,
+        timestamp: Date.now()
+      });
+    } else {
+      FieldSessionManager.unregisterModal('createTask');
+    }
+  }, [open, task]);
 
   // Fetch current user
   const { data: currentUser } = useQuery({
@@ -642,6 +664,9 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               placeholder="Wall 101"
               className="mt-1.5 text-lg font-bold min-h-[52px]"
               disabled={!canEdit || detectingWallNumber}
+              data-task-draft
+              data-job-id={jobId}
+              name="title"
             />
           </div>
 
