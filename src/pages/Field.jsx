@@ -623,7 +623,7 @@ export default function Field() {
       )}
 
       {/* CONTENT AREA - Based on Active Tab */}
-      {activeTab === 'jobs' && filteredJobs.slice(0, 3).length > 0 && (
+      {(activeTab === 'jobs' || activeTab === 'installation') && filteredJobs.slice(0, 3).length > 0 && (
         <div className="mb-6">
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">
             {language === 'es' ? 'Trabajos de hoy' : "Today's Jobs"}
