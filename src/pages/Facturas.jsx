@@ -395,6 +395,10 @@ export default function Facturas() {
                   setPaymentAmount(((inv.balance || inv.total) > 0 ? (inv.balance || inv.total) : 0).toFixed(2));
                   setPaymentDialogOpen(true);
                 }}
+                onCreateJob={(inv) => {
+                  setSelectedInvoiceForJob(inv);
+                  setCreateJobDialogOpen(true);
+                }}
                 isAdmin={isAdmin}
               />
             ))
