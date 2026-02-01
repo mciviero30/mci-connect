@@ -88,6 +88,21 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
   const { workUnits, updateMutation: workUnitUpdate } = useWorkUnits(jobId, { type: 'task' });
   // ONLY use backend tasks - never demo/mock data in production
   const tasks = legacyTasks?.length > 0 ? legacyTasks : workUnits;
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Monitor connectivity for UI indicators
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
   
   // Debug mode: allow demo tasks only for admins with ?debug=true
   const isDebugMode = import.meta.env.DEV && currentUser?.role === 'admin' && new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '').get('debug') === 'true';
