@@ -289,7 +289,7 @@ Deno.serve(async (req) => {
         quote_id: testQuote.id,
         authorization_id: authorization.id,
         invoice_id: invoice.id,
-        job_id: provisioningResult.job_id
+        job_id: job.id
       }
     });
 
