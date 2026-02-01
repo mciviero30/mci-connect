@@ -10,6 +10,7 @@ import { format, startOfMonth, endOfMonth } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import { buildUserQuery } from "@/components/utils/userResolution";
+import ExcelExporter, { transformTimeEntriesForExport } from "@/components/shared/ExcelExporter";
 
 export default function TimeReportsView({ user }) {
   const { language } = useLanguage();
@@ -98,9 +99,17 @@ export default function TimeReportsView({ user }) {
             <Button onClick={() => refetch()} variant="outline" className="flex-1">
               {language === 'es' ? 'Actualizar' : 'Refresh'}
             </Button>
-            <Button onClick={exportToCSV} className="flex-1" disabled={entries.length === 0}>
+            <ExcelExporter
+              data={entries}
+              filename={`time-entries-${startDate}-${endDate}`}
+              sheetName="Time Entries"
+              transformData={transformTimeEntriesForExport}
+              buttonText={language === 'es' ? 'Excel' : 'Excel'}
+              className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+            />
+            <Button onClick={exportToCSV} variant="outline" className="flex-1" disabled={entries.length === 0}>
               <Download className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Exportar CSV' : 'Export CSV'}
+              CSV
             </Button>
           </div>
         </CardContent>
