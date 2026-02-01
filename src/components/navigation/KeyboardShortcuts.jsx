@@ -4,7 +4,7 @@ import { createPageUrl } from '@/utils';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Command, Search, Plus, Calendar, Users, Briefcase, FileText } from 'lucide-react';
+import { Command, Search, Plus, Calendar, Users, Briefcase, FileText, FileCheck } from 'lucide-react';
 
 /**
  * Keyboard Shortcuts Manager
