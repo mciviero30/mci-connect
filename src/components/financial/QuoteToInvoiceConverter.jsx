@@ -70,6 +70,7 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
         const newJob = await base44.entities.Job.create({
           name: quote.job_name,
           job_number: job_number,
+          authorization_id: authorization.id,
           address: quote.job_address || '',
           city: '',
           state: '',
