@@ -377,13 +377,13 @@ export default function FieldDimensionsView({ jobId, jobName }) {
         onSave={handleSaveDimension}
       />
 
-      {/* Production Confirmation */}
-      <ProductionConfirmationDialog
-        open={showProductionConfirm}
-        onOpenChange={setShowProductionConfirm}
+      {/* Measurement Export Dialog */}
+      <MeasurementExportDialog
+        open={showExportDialog}
+        onOpenChange={setShowExportDialog}
+        jobName={jobName}
         dimensions={dimensions}
         unitSystem={projectUnitSystem}
-        onConfirm={handleConfirmProduction}
       />
 
       {/* Upload Plan Dialog */}
