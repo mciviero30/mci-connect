@@ -22,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import ExcelExporter, { transformCustomersForExport } from "@/components/shared/ExcelExporter";
 
 
 export default function Clientes() {
@@ -196,7 +197,17 @@ export default function Clientes() {
           icon={Users}
           actions={
             isAdmin && (
-              <div className="flex-shrink-0">
+              <div className="flex gap-2 flex-shrink-0">
+                <ExcelExporter
+                  data={sortedCustomers}
+                  filename="customers"
+                  sheetName="Customers"
+                  transformData={transformCustomersForExport}
+                  buttonText={language === 'es' ? 'Excel' : 'Excel'}
+                  variant="outline"
+                  size="sm"
+                  className="border-green-200 text-green-600 hover:bg-green-50"
+                />
                 <Button onClick={() => setShowForm(true)} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
                   <span className="hidden sm:inline">{t('newCustomer')}</span>
