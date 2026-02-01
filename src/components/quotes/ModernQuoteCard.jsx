@@ -215,9 +215,9 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
 
         {/* Address - Better spacing */}
         {quote.job_address && (
-          <div className="flex items-start gap-2 text-[#666666] dark:text-slate-400 mb-4">
+          <div className="flex items-start gap-2 mb-4">
             <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <span className="text-xs line-clamp-2 leading-relaxed">
+            <span className="text-xs text-[#666666] dark:text-slate-400 line-clamp-2 leading-relaxed">
               {quote.job_address}
             </span>
           </div>

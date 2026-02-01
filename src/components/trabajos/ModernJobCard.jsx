@@ -194,9 +194,9 @@ export default function ModernJobCard({ job, onEdit }) {
 
         {/* Address - Better spacing */}
         {(job.address || job.city) && (
-          <div className="flex items-start gap-2 text-[#666666] dark:text-slate-400 mb-4">
+          <div className="flex items-start gap-2 mb-4">
             <MapPin className="w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5" strokeWidth={2} />
-            <span className="text-xs line-clamp-2">
+            <span className="text-xs text-[#666666] dark:text-slate-400 line-clamp-2">
               {job.address}
               {job.city && `, ${job.city}`}
               {job.state && `, ${job.state}`}
@@ -225,7 +225,7 @@ export default function ModernJobCard({ job, onEdit }) {
                     {language === 'es' ? 'Margen' : 'Margin'}
                   </span>
                 </div>
-                <span className={`text-base font-bold ${getProfitMarginColor(profitMargin)}`}>
+                <span className={`text-base font-bold ${getProfitMarginColor(profitMargin)} dark:text-${profitMargin >= 30 ? 'green' : profitMargin >= 15 ? 'amber' : 'red'}-400`}>
                   {profitMargin.toFixed(1)}%
                 </span>
               </div>

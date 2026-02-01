@@ -269,8 +269,8 @@ export default function ModernInvoiceCard({ invoice, onDuplicate, onDelete, onRe
 
         {/* Address */}
         {invoice.job_address && (
-          <div className="flex items-start gap-1.5 text-[#666666] mb-3">
-            <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
+          <div className="flex items-start gap-1.5 text-[#666666] dark:text-slate-400 mb-3">
+            <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 flex-shrink-0 mt-0.5" strokeWidth={1.5} />
             <span className="text-[10px] line-clamp-2">
               {invoice.job_address}
             </span>

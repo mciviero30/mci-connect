@@ -96,14 +96,14 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
         {/* Contact Info */}
         <div className="space-y-1.5 mb-0 mt-auto">
           {customer.email && (
-            <div className="flex items-center gap-1.5 text-[#666666]">
-              <Mail className="w-[13px] h-[13px] text-slate-400 flex-shrink-0" strokeWidth={1.5} />
+            <div className="flex items-center gap-1.5 text-[#666666] dark:text-slate-400">
+              <Mail className="w-[13px] h-[13px] text-slate-400 dark:text-slate-500 flex-shrink-0" strokeWidth={1.5} />
               <span className="text-[10px] truncate">{customer.email}</span>
             </div>
           )}
           {customer.phone && (
-            <div className="flex items-center gap-1.5 text-[#666666]">
-              <Phone className="w-[13px] h-[13px] text-slate-400 flex-shrink-0" strokeWidth={1.5} />
+            <div className="flex items-center gap-1.5 text-[#666666] dark:text-slate-400">
+              <Phone className="w-[13px] h-[13px] text-slate-400 dark:text-slate-500 flex-shrink-0" strokeWidth={1.5} />
               <span className="text-[10px]">{customer.phone}</span>
             </div>
           )}
