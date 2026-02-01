@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   MapPin, 
   Ruler, 
@@ -9,8 +9,11 @@ import {
   Plus 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import GestureHandler, { useGestureHandler } from './GestureHandler';
+import GestureHelpTooltip from './GestureHelpTooltip';
 
-export default function FieldNav({ activeTab, onTabChange, language, onNewTask }) {
+export default function FieldNav({ activeTab, onTabChange, language, onNewTask, onClosePanel }) {
+  const [showGestureHelp, setShowGestureHelp] = useState(false);
   const tabs = [
     { id: 'jobs', label: language === 'es' ? 'Trabajos' : 'Jobs', icon: MapPin, color: 'text-orange-400' },
     { id: 'measurements', label: language === 'es' ? 'Mediciones' : 'Measurements', icon: Ruler, color: 'text-purple-400' },
