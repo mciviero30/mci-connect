@@ -64,7 +64,7 @@ export default function Facturas() {
         status: 'approved',
       });
 
-      // 2. Create Job (pending acceptance)
+      // 2. Create Job (with field_project_id to make it visible in Field immediately)
       const job = await base44.entities.Job.create({
         name: formData.job_name,
         customer_id: formData.customer_id,
@@ -72,7 +72,8 @@ export default function Facturas() {
         authorization_id: workAuth.id,
         contract_amount: formData.approved_amount,
         billing_type: formData.authorization_type === 'tm' ? 'time_materials' : 'fixed_price',
-        status: 'active', // Active but not yet in Field
+        status: 'active',
+        field_project_id: `field_${Date.now()}`, // Make visible in Field immediately
         approval_status: 'approved',
         approved_by: user?.email,
         approved_at: new Date().toISOString(),
@@ -81,13 +82,16 @@ export default function Facturas() {
       return { workAuth, job };
     },
     onSuccess: (data) => {
+      // Invalidate all job-related queries including Field
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['field-jobs'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      
       toast({
-        title: language === 'es' ? '✅ Trabajo creado (Pendiente de aceptación)' : '✅ Job created (Pending acceptance)',
+        title: language === 'es' ? '✅ Trabajo creado y enviado a Field' : '✅ Job created and sent to Field',
         description: language === 'es' 
-          ? 'El trabajo está listo. Haz clic en "Aceptar y enviar a Field" para activarlo.'
-          : 'Job is ready. Click "Accept & Send to Field" to activate it.',
+          ? 'El trabajo ya está disponible en MCI Field.'
+          : 'Job is now available in MCI Field.',
         variant: 'success'
       });
       setCreateJobDialogOpen(false);
