@@ -249,10 +249,15 @@ export default function FieldDimensionsView({ jobId, jobName }) {
                 {imageOptions.map(opt => (
                   <SelectItem 
                     key={opt.value} 
-                    value={opt.value} 
-                    className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700 py-3 px-4 cursor-pointer min-h-[48px]"
+                    value={opt.value}
+                    disabled={opt.isPDF}
+                    className={`py-3 px-4 cursor-pointer min-h-[48px] ${
+                      opt.isPDF 
+                        ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60' 
+                        : 'text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
                   >
-                    {opt.type === 'plan' ? '📐' : '📷'} {opt.label}
+                    {opt.isPDF ? '📄 (view-only)' : (opt.type === 'plan' ? '🖼️' : '📷')} {opt.label}
                   </SelectItem>
                 ))}
               </div>
