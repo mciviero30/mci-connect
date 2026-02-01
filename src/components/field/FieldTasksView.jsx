@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, memo } from 'react';
+import React, { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Filter, LayoutGrid, List, Search, User, Trash2 } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CreateTaskDialog from './CreateTaskDialog.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
+import TaskOfflineQueue from './components/TaskOfflineQueue.jsx';
 import { useWorkUnits } from './hooks/useWorkUnits';
 import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
@@ -19,6 +20,7 @@ import { useRenderOptimization } from './performance/useRenderOptimization';
 import { haptic } from '@/components/feedback/HapticFeedback';
 import { microToast } from '@/components/feedback/MicroToast';
 import { useDoubleSubmitPrevention } from '@/components/validation/useDoubleSubmitPrevention';
+import { getTaskOfflineSync } from './services/TaskOfflineSync';
 import { toast } from 'sonner';
 
 // Memoized TaskCard to prevent re-renders
