@@ -1,3 +1,4 @@
+
 /**
  * Centralized query keys for React Query
  * Prevents key inconsistencies across the app
@@ -19,7 +20,7 @@ export const INVOICES_STATS_QUERY_KEY = (customerIds) =>
 export const CUSTOMERS_QUERY_KEY = 'customers';
 export const JOBS_QUERY_KEY = 'activeJobs';
 export const TEAMS_QUERY_KEY = 'teams';
-export const EXPENSES_QUERY_KEY = 'expenses';
+export const EXPENSES_QUERY_QUERY_KEY = 'expenses';
 export const TIME_ENTRIES_QUERY_KEY = 'timeEntries';
 export const DRIVING_LOGS_QUERY_KEY = 'drivingLogs';
 export const EMPLOYEES_QUERY_KEY = 'employees';
@@ -34,3 +35,6 @@ export const MY_DRIVING_LOGS_QUERY_KEY = (email) => ['myDrivingLogs', email];
 export const MY_ASSIGNMENTS_QUERY_KEY = (email) => ['myAssignments', email];
 export const PENDING_TIME_ENTRIES_QUERY_KEY = 'pendingTimeEntries';
 export const PENDING_EXPENSES_COUNT_QUERY_KEY = (email) => ['pendingExpensesCount', email];
+
+// Onboarding queries
+export const ONBOARDING_FORMS_QUERY_KEY = (email) => ['onboardingForms', email];
