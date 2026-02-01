@@ -40,7 +40,6 @@ export default function Estimados() {
   const [teamFilter, setTeamFilter] = useState("all");
   const [showAIWizard, setShowAIWizard] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
-  const [viewMode, setViewMode] = useState('grid');
 
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
@@ -145,7 +144,6 @@ export default function Estimados() {
       });
     },
     onError: (error) => {
-      console.error('Duplicate error:', error);
       toast({
         title: language === 'es' ? 'Error al duplicar' : 'Failed to duplicate',
         description: error.message,
@@ -203,7 +201,7 @@ export default function Estimados() {
           mode: 'convert'
         });
       } catch (provisionError) {
-        console.warn('Provisioning failed (non-critical):', provisionError);
+        // Provisioning failed - non-critical
       }
 
       return newInvoice;
