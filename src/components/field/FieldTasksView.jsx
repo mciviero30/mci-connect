@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import CreateTaskDialog from './CreateTaskDialog.jsx';
 import TaskDetailPanel from './TaskDetailPanel.jsx';
-import TaskOfflineQueue from './components/TaskOfflineQueue.jsx';
+import TaskOfflineQueue from './TaskOfflineQueue';
 import { useWorkUnits } from './hooks/useWorkUnits';
 import TaskVisibilityToggle from './TaskVisibilityToggle.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
