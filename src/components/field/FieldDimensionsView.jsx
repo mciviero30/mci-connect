@@ -369,6 +369,20 @@ export default function FieldDimensionsView({ jobId, jobName }) {
             <DialogTitle>Upload Drawing</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
+            {creditError && (
+              <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 rounded-lg p-4">
+                <h4 className="font-bold text-red-900 dark:text-red-100 mb-1">Uploads Temporarily Unavailable</h4>
+                <p className="text-sm text-red-800 dark:text-red-200">
+                  Your integration credits are exhausted. Your data is safe. Please contact your admin or wait for your plan's monthly reset to continue uploading.
+                </p>
+                <button
+                  onClick={() => setCreditError(null)}
+                  className="text-xs text-red-600 dark:text-red-400 hover:underline mt-2"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
             <div>
               <Label className="text-slate-600 dark:text-slate-300">Drawing Name</Label>
               <Input 
