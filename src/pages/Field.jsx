@@ -217,9 +217,12 @@ export default function Field() {
       }
       
       // ENFORCEMENT: Separate authorized vs unauthorized for transparency (FASE 2A.1)
-      const authorized = allJobs.filter(job => job.authorization_id && job.field_accepted_at);
-      const pending = allJobs.filter(job => job.authorization_id && job.field_project_id && !job.field_accepted_at);
-      const unauthorized = allJobs.filter(job => !job.authorization_id);
+      // Filter out soft-deleted jobs
+      const activeJobs = allJobs.filter(job => !job.deleted_at);
+      
+      const authorized = activeJobs.filter(job => job.authorization_id && job.field_accepted_at);
+      const pending = activeJobs.filter(job => job.authorization_id && job.field_project_id && !job.field_accepted_at);
+      const unauthorized = activeJobs.filter(job => !job.authorization_id);
       
       return { authorized, unauthorized, pending };
     },
