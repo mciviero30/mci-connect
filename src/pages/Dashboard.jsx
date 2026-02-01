@@ -256,35 +256,16 @@ export default function Dashboard() {
       // Fetch from EmployeeDirectory with active status
       const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name');
       
-      // PHASE 5: Defensive Logging
-      if (import.meta.env?.DEV) {
-        const missingUserIds = directory.filter(d => !d.user_id);
-        if (missingUserIds.length > 0) {
-          console.warn('⚠️ SSOT WARNING: EmployeeDirectory records missing user_id in Dashboard', {
-            count: missingUserIds.length
-          });
-        }
-      }
-      
-      // Enrich with User data for employment_status and dob
-      const userIds = directory.filter(d => d.user_id).map(d => d.user_id);
-      const users = await Promise.all(
-        userIds.map(id => base44.entities.User.filter({ id }).catch(() => []))
-      );
-      const userMap = users.flat().reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
-      
-      return directory.map(d => {
-        const user = userMap[d.user_id];
-        return {
-          id: d.user_id || d.id,
-          email: d.employee_email,
-          full_name: d.full_name,
-          position: d.position,
-          department: d.department,
-          employment_status: user?.employment_status || 'active',
-          dob: user?.dob
-        };
-      });
+      // Map to standardized format
+      return directory.map(d => ({
+        id: d.user_id || d.id,
+        email: d.employee_email,
+        full_name: d.full_name,
+        position: d.position,
+        department: d.department,
+        employment_status: 'active',
+        dob: null
+      }));
     },
     enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
     staleTime: 1800000,
@@ -398,10 +379,9 @@ export default function Dashboard() {
       drivingPayThisWeek = weekDriving.reduce((sum, log) => sum + ((log.hours || 0) * hourlyRate), 0);
     }
 
-    // Admin/CEO see ALL employees. Regular users don't see owner.
-    const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
+    // Admin/CEO see ALL employees. Regular users see filtered list.
     const activeEmployees = allEmployees.filter(e =>
-      (isAdmin || e.email !== OWNER_EMAIL) && (
+      (
         e.employment_status === 'active' ||
         e.employment_status === 'pending_registration' ||
         !e.employment_status
