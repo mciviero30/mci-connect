@@ -98,6 +98,8 @@ import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
 import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
+import GlobalSearch from "@/components/search/GlobalSearch";
+import KeyboardShortcuts from "@/components/navigation/KeyboardShortcuts";
 
 const ThemeToggle = () => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
@@ -307,6 +309,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const { language, changeLanguage, t } = useLanguage();
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
   
 
 
@@ -1135,6 +1138,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           {!shouldHideSidebar && (
             <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
           )}
+
+          {/* Global Search & Keyboard Shortcuts */}
+          <GlobalSearch open={globalSearchOpen} onOpenChange={setGlobalSearchOpen} />
+          <KeyboardShortcuts onOpenGlobalSearch={() => setGlobalSearchOpen(true)} />
           </main>
           </div>
           </SyncQueueProvider>
