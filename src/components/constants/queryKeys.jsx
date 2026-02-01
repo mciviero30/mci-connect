@@ -38,3 +38,7 @@ export const PENDING_EXPENSES_COUNT_QUERY_KEY = (email) => ['pendingExpensesCoun
 
 // Onboarding queries
 export const ONBOARDING_FORMS_QUERY_KEY = (email) => ['onboardingForms', email];
+
+// Agreements & Tax
+export const AGREEMENT_SIGNATURES_QUERY_KEY = (email) => ['agreementSignatures', email];
+export const TAX_PROFILE_QUERY_KEY = (email) => ['taxProfile', email];
