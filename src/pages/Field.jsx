@@ -356,7 +356,7 @@ export default function Field() {
   const acceptJobMutation = useMutation({
     mutationFn: (id) => base44.entities.Job.update(id, { field_accepted_at: new Date().toISOString() }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
+      queryClient.invalidateQueries({ queryKey: ['field-jobs-v2', user?.email] });
       toast.success('✓ Job activated in Field');
     },
     onError: () => toast.error('Couldn\'t activate job. Try again.', { duration: 3000 }),
@@ -365,7 +365,7 @@ export default function Field() {
   const rejectJobMutation = useMutation({
     mutationFn: (id) => base44.entities.Job.update(id, { field_project_id: null }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
+      queryClient.invalidateQueries({ queryKey: ['field-jobs-v2', user?.email] });
       toast.success('✓ Job removed from Field');
     },
     onError: () => toast.error('Couldn\'t remove job. Try again.', { duration: 3000 }),
