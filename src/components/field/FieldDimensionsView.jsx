@@ -13,6 +13,7 @@ import DimensionCanvas from './dimensions/DimensionCanvas';
 import DimensionDialog from './dimensions/DimensionDialog';
 import DimensionLegend from './dimensions/DimensionLegend';
 import ProductionConfirmationDialog from './dimensions/ProductionConfirmationDialog';
+import MeasurementExportDialog from './MeasurementExportDialog';
 import { validateDimension } from './dimensions/DimensionValidation';
 import { FIELD_STABLE_QUERY_CONFIG } from './config/fieldQueryConfig';
 import { format } from 'date-fns';
