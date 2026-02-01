@@ -157,8 +157,18 @@ export default function FieldDimensionsView({ jobId, jobName }) {
   };
 
   const imageOptions = [
-    ...plans.map(p => ({ value: `plan_${p.id}`, label: `Plan: ${p.name}`, url: p.image_url, type: 'plan' })),
-    ...photos.map(p => ({ value: `photo_${p.id}`, label: `Photo: ${p.caption || 'Untitled'}`, url: p.photo_url, type: 'photo' })),
+    ...plans.map(p => {
+      const isPDF = p.file_url?.toLowerCase?.().endsWith('.pdf');
+      return {
+        value: `plan_${p.id}`,
+        label: `Plan: ${p.name}`,
+        url: isPDF ? p.file_url : (p.image_url || p.file_url),
+        type: 'plan',
+        fileType: isPDF ? 'pdf' : 'image',
+        isPDF,
+      };
+    }),
+    ...photos.map(p => ({ value: `photo_${p.id}`, label: `Photo: ${p.caption || 'Untitled'}`, url: p.photo_url, type: 'photo', fileType: 'image', isPDF: false })),
   ];
 
   const filteredDimensions = selectedImage 
