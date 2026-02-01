@@ -491,15 +491,15 @@ export default function FieldDimensionsView({ jobId, jobName }) {
                      image_url: newPlan.file,
                    });
                  }}
-                disabled={!newPlan.file || !newPlan.name || uploading || createPlanMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white min-h-[48px]"
+                disabled={!newPlan.file || !newPlan.name || uploading || createPlanMutation.isPending || !!creditError}
+                className="bg-blue-600 hover:bg-blue-700 text-white min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {createPlanMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Saving Drawing...
                   </>
-                ) : 'Save Drawing'}
+                ) : creditError ? '❌ Uploads Disabled' : 'Save Drawing'}
               </Button>
             </div>
           </div>
