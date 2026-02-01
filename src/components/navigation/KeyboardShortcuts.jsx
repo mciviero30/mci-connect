@@ -94,7 +94,7 @@ export default function KeyboardShortcuts({ onOpenGlobalSearch }) {
     };
   }, [navigate, onOpenGlobalSearch]);
 
-  const shortcuts = [
+  const shortcuts = React.useMemo(() => [
     { 
       keys: ['⌘ K', 'Ctrl K'], 
       description: language === 'es' ? 'Búsqueda Global' : 'Global Search',
@@ -133,7 +133,7 @@ export default function KeyboardShortcuts({ onOpenGlobalSearch }) {
       keys: ['Esc'], 
       description: language === 'es' ? 'Cerrar Modal' : 'Close Modal'
     }
-  ];
+  ], [language]);
 
   return (
     <Dialog open={showHelp} onOpenChange={setShowHelp}>
