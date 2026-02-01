@@ -154,15 +154,15 @@ export default function KeyboardShortcuts({ onOpenGlobalSearch }) {
                 </span>
               </div>
               <div className="flex gap-1">
-                {shortcut.keys.map((key, i) => (
-                  <div key={i} className="flex items-center gap-1">
-                    {i > 0 && <span className="text-slate-400 mx-1">then</span>}
-                    <Badge variant="outline" className="px-2 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-800">
-                      {key}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
+                 {shortcut.keys.map((key, i) => (
+                   <div key={i} className="flex items-center gap-1">
+                     {i > 0 && <span className="text-slate-400 mx-1">then</span>}
+                     <Badge variant="outline" className="px-2 py-1 text-xs font-mono bg-slate-100 dark:bg-slate-800">
+                       {key}
+                     </Badge>
+                   </div>
+                 ))}
+               </div>
             </div>
           ))}
         </div>
