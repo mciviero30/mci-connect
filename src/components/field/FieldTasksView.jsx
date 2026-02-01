@@ -244,6 +244,9 @@ export default function FieldTasksView({ jobId, tasks: legacyTasks, plans, curre
 
   return (
     <div className="p-6 flex flex-col h-full">
+      {/* Offline Queue Indicator */}
+      {!isOnline && <TaskOfflineQueue />}
+
       {/* Header - Primary actions removed (moved to bottom rail) */}
       <div className="flex flex-col gap-4 mb-6">
         <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl shadow-lg w-fit">
