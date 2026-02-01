@@ -82,15 +82,22 @@ export default function FieldDimensionsView({ jobId, jobName }) {
   });
 
   const createPlanMutation = useMutation({
-    mutationFn: (data) => base44.entities.Plan.create(data),
+    mutationFn: async (data) => {
+      console.log('[createPlanMutation] Saving plan:', data);
+      const result = await base44.entities.Plan.create(data);
+      console.log('[createPlanMutation] Success:', result);
+      return result;
+    },
     onSuccess: () => {
+      console.log('[createPlanMutation] onSuccess triggered');
       queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
       setShowUploadPlan(false);
       setNewPlan({ name: '', file: null });
       toast.success('Plan uploaded successfully');
     },
     onError: (error) => {
-      toast.error('Failed to upload plan: ' + error.message);
+      console.error('[createPlanMutation] onError:', error);
+      toast.error('Failed to upload plan: ' + (error.message || 'Unknown error'));
     },
   });
 
