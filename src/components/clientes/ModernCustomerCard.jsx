@@ -6,6 +6,7 @@ import { Mail, Phone, Building2, Plus, MessageSquare, Copy, FileCheck } from "lu
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { getCustomerDisplayName } from "@/components/utils/nameHelpers";
+import { normalizeText } from "@/components/utils/textNormalization";
 import FavoriteButton from "@/components/shared/FavoriteButton";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
@@ -14,16 +15,6 @@ export default function ModernCustomerCard({ customer, customerStats }) {
   const { data: user } = useCurrentUser();
   
   const stats = customerStats || { quotes: 0, invoices: 0, totalRevenue: 0 };
-
-  // Normalize text helper
-  const normalizeText = (text) => {
-    if (!text) return '';
-    return String(text)
-      .replace(/[\r\n\t]+/g, ' ')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-  };
-
   const displayName = normalizeText(getCustomerDisplayName(customer));
   const companyName = normalizeText(customer.company) || 'No Company';
 

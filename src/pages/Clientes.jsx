@@ -64,6 +64,34 @@ export default function Clientes() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // Batch fetch customer stats (quotes, invoices, revenue)
+  const { data: allStats = {} } = useQuery({
+    queryKey: ['customerStats', customers.map(c => c.id).join(',')],
+    queryFn: async () => {
+      if (customers.length === 0) return {};
+      
+      const quotes = await base44.entities.Quote.list('', 1000);
+      const invoices = await base44.entities.Invoice.list('', 1000);
+      
+      const stats = {};
+      customers.forEach(customer => {
+        const customerQuotes = quotes.filter(q => q.customer_id === customer.id);
+        const customerInvoices = invoices.filter(inv => inv.customer_id === customer.id);
+        const totalRevenue = customerInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+        
+        stats[customer.id] = {
+          quotes: customerQuotes.length,
+          invoices: customerInvoices.length,
+          totalRevenue
+        };
+      });
+      
+      return stats;
+    },
+    enabled: customers.length > 0,
+    staleTime: 10 * 60 * 1000,
+  });
+
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Customer.create(data),
     onSuccess: () => {
