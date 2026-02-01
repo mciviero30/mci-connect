@@ -51,6 +51,7 @@ import QuickActions from "../components/dashboard/QuickActions";
 import { useUIVisibility, DebugUI, AdminOnlyUI } from "@/components/policies/UIVisibilityWrapper";
 import FieldWorkIndicator from "@/components/dashboard/FieldWorkIndicator";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
+import QuickStatsWidgets from "../components/dashboard/QuickStatsWidgets";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -867,6 +868,11 @@ export default function Dashboard() {
 
         {/* Field Work Indicator - Non-Intrusive */}
         <FieldWorkIndicator />
+
+        {/* Quick Stats Widgets */}
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <QuickStatsWidgets user={user} />
+        </div>
 
         {/* Quick Actions for Employees - Mobile-First */}
         {!isAdmin && (
