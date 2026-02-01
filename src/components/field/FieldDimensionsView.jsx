@@ -124,38 +124,12 @@ export default function FieldDimensionsView({ jobId, jobName }) {
     createDimensionMutation.mutate(data);
   };
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = () => {
     if (dimensions.length === 0) {
       toast.error('No dimensions to export');
       return;
     }
-
-    // Show production confirmation
-    setShowProductionConfirm(true);
-  };
-
-  const handleConfirmProduction = async () => {
-    try {
-      setShowProductionConfirm(false);
-      toast.info('Generating production PDF...');
-      
-      const response = await base44.functions.invoke('exportDimensionsPDF', {
-        jobId,
-        jobName,
-        dimensions,
-        unitSystem: projectUnitSystem,
-      });
-      
-      // Download PDF
-      const link = document.createElement('a');
-      link.href = response.data.pdf_url;
-      link.download = `dimensions_${jobName}_${Date.now()}.pdf`;
-      link.click();
-      
-      toast.success('Production PDF generated successfully');
-    } catch (error) {
-      toast.error('Failed to export PDF', { description: error.message });
-    }
+    setShowExportDialog(true);
   };
 
   const imageOptions = [
