@@ -27,8 +27,8 @@ Deno.serve(async (req) => {
     testResults.phase = 'Creating test quote';
     console.log('📝 Step 1: Creating test quote...');
     
-    const { data: quoteNumberData } = await base44.asServiceRole.functions.invoke('generateQuoteNumber', {});
-    const quote_number = quoteNumberData.quote_number;
+    const quoteNumberResponse = await base44.asServiceRole.functions.invoke('generateQuoteNumber', {});
+    const quote_number = quoteNumberResponse?.data?.quote_number || quoteNumberResponse?.quote_number || 'EST-TEST';
     
     const testQuote = await base44.asServiceRole.entities.Quote.create({
       quote_number,
