@@ -147,6 +147,25 @@ Lawrenceville, Georgia 30043, U.S.A`
         status: 'converted_to_invoice'
       });
       
+      // AUTO-CREATE WorkAuthorization for approved quotes
+      console.log('🔐 Auto-creating WorkAuthorization...');
+      const authorization = await base44.entities.WorkAuthorization.create({
+        customer_id: quote.customer_id,
+        customer_name: quote.customer_name,
+        authorization_type: 'fixed',
+        approval_source: 'signed_quote',
+        authorization_number: quote.quote_number,
+        approved_amount: quote.total,
+        approved_at: new Date().toISOString(),
+        verified_by_user_id: user?.id,
+        verified_by_email: user?.email,
+        verified_by_name: user?.full_name,
+        verification_notes: `Auto-generated from Quote ${quote.quote_number}`,
+        linked_quote_id: quote.id,
+        status: 'approved'
+      });
+      console.log('✅ WorkAuthorization created:', authorization.id);
+      
       let jobId = quote.job_id;
       let wasJobCreated = false;
       let mciFieldSyncSuccess = false;
@@ -215,6 +234,7 @@ Lawrenceville, Georgia 30043, U.S.A`
       const invoiceData = {
         invoice_number,
         quote_id: quote.id,
+        authorization_id: authorization.id,
         customer_id: quote.customer_id,
         customer_name: quote.customer_name,
         customer_email: quote.customer_email,
@@ -235,7 +255,8 @@ Lawrenceville, Georgia 30043, U.S.A`
         balance: quote.total,
         notes: quote.notes,
         terms: quote.terms,
-        status: 'draft'
+        status: 'draft',
+        approval_status: 'approved'
       };
 
       console.log('Creating invoice with data:', invoiceData);

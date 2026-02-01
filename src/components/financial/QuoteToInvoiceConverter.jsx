@@ -19,10 +19,32 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
 
   const convertMutation = useMutation({
     mutationFn: async () => {
+      // Get current user
+      const user = await base44.auth.me();
+      
       // CRITICAL: Immediately mark as converting to prevent double-clicks
       await base44.entities.Quote.update(quote.id, { 
         status: 'converted_to_invoice'
       });
+      
+      // AUTO-CREATE WorkAuthorization
+      console.log('🔐 Auto-creating WorkAuthorization...');
+      const authorization = await base44.entities.WorkAuthorization.create({
+        customer_id: quote.customer_id,
+        customer_name: quote.customer_name,
+        authorization_type: 'fixed',
+        approval_source: 'signed_quote',
+        authorization_number: quote.quote_number,
+        approved_amount: quote.total,
+        approved_at: new Date().toISOString(),
+        verified_by_user_id: user?.id,
+        verified_by_email: user?.email,
+        verified_by_name: user?.full_name,
+        verification_notes: `Auto-generated from Quote ${quote.quote_number}`,
+        linked_quote_id: quote.id,
+        status: 'approved'
+      });
+      console.log('✅ WorkAuthorization created:', authorization.id);
       
       // Generate invoice number
       const { data: invoiceNumberData } = await base44.functions.invoke('generateInvoiceNumber', {});
@@ -70,6 +92,7 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
       const invoice = {
         invoice_number: invoiceNumber,
         quote_id: quote.id,
+        authorization_id: authorization.id,
         customer_id: quote.customer_id,
         customer_name: quote.customer_name,
         customer_email: quote.customer_email,
@@ -101,6 +124,12 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
         invoice_id: newInvoice.id,
         job_id: jobId
       });
+      
+      // Trigger provisioning in background (creates Job, Drive, etc.)
+      base44.functions.invoke('provisionJobFromInvoice', {
+        invoice_id: newInvoice.id,
+        mode: 'convert'
+      }).catch(err => console.warn('Background provisioning failed:', err));
 
       // Send email to customer if requested
       if (sendEmail && quote.customer_email) {
