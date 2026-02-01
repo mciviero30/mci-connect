@@ -469,6 +469,8 @@ export default function FieldDimensionsView({ jobId, jobName }) {
                            toast.success('Drawing uploaded successfully');
                          } catch (error) {
                            console.error('[FieldDimensionsView] Upload error:', error);
+                           // Clear preview on any error
+                           setNewPlan({ name: '', file: null });
                            if (!creditError) {
                              toast.error(error.message || 'Upload failed');
                            }
