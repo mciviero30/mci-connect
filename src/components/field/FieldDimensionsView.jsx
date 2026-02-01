@@ -280,15 +280,31 @@ export default function FieldDimensionsView({ jobId, jobName }) {
 
       {/* Canvas Area */}
       <div className="flex-1 min-h-0 p-4">
-        {selectedImage ? (
-          <DimensionCanvas
-            imageUrl={imageOptions.find(o => o.value === selectedImage)?.url}
-            dimensions={filteredDimensions}
-            activeDimension={activeDimension}
-            onDimensionPlace={handleDimensionPlace}
-            unitSystem={projectUnitSystem}
-          />
-        ) : (
+        {selectedImage ? (() => {
+          const selectedOption = imageOptions.find(o => o.value === selectedImage);
+          
+          if (selectedOption?.isPDF) {
+            return (
+              <div className="h-full flex items-center justify-center bg-slate-800 rounded-xl">
+                <div className="text-center">
+                  <FileText className="w-16 h-16 text-amber-500 mx-auto mb-4" />
+                  <p className="text-slate-300 font-medium">PDF plans cannot be dimensioned</p>
+                  <p className="text-slate-400 text-sm mt-2">Upload an image (JPG/PNG) to add dimensions</p>
+                </div>
+              </div>
+            );
+          }
+          
+          return (
+            <DimensionCanvas
+              imageUrl={selectedOption?.url}
+              dimensions={filteredDimensions}
+              activeDimension={activeDimension}
+              onDimensionPlace={handleDimensionPlace}
+              unitSystem={projectUnitSystem}
+            />
+          );
+        })() : (
           <div className="h-full flex items-center justify-center bg-slate-800 rounded-xl">
             <div className="text-center">
               <ImageIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
