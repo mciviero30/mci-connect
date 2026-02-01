@@ -196,7 +196,7 @@ export default function Field() {
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const { data: jobsData = { authorized: [], unauthorized: [], pending: [] }, isLoading } = useQuery({
-    queryKey: FIELD_QUERY_KEYS.JOBS(),
+    queryKey: ['field-jobs-v2', user?.email],
     queryFn: async () => {
       let allJobs = [];
       
