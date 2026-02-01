@@ -23,6 +23,7 @@ import AIJobWizard from "../components/trabajos/AIJobWizard";
 import ModernJobCard from "../components/trabajos/ModernJobCard";
 import FilterBar from "../components/shared/FilterBar";
 import { useJobClosureValidation } from "../components/trabajos/JobStatusValidator";
+import ExcelExporter, { transformJobsForExport } from "@/components/shared/ExcelExporter";
 
 
 
@@ -278,6 +279,16 @@ export default function Trabajos() {
           actions={
             isAdmin && (
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                <ExcelExporter
+                  data={filteredJobs}
+                  filename="jobs"
+                  sheetName="Jobs"
+                  transformData={transformJobsForExport}
+                  buttonText={language === 'es' ? 'Excel' : 'Excel'}
+                  variant="outline"
+                  size="sm"
+                  className="border-green-200 text-green-600 hover:bg-green-50 min-h-[44px]"
+                />
                 <Button
                   onClick={() => setShowAIWizard(true)}
                   className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md min-h-[44px] sm:min-h-[48px] text-sm sm:text-base px-4 sm:px-5"
