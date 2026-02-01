@@ -146,10 +146,6 @@ export default function ModernCustomerCard({ customer, customerStats }) {
 
       {/* Bottom Border Line */}
       <div className="h-[3px] bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
-      </div>
-
-      {/* Bottom Border Line */}
-      <div className="h-[3px] bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
     </Card>
   );
 }
