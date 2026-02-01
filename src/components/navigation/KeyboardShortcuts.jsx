@@ -17,6 +17,8 @@ export default function KeyboardShortcuts({ onOpenGlobalSearch }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { language } = useLanguage();
+  const lastKeyRef = useRef('');
+  const timeoutRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -47,48 +49,49 @@ export default function KeyboardShortcuts({ onOpenGlobalSearch }) {
       // Quick navigation shortcuts (only when not typing)
       if (!isTyping) {
         // g+d: Go to Dashboard
-        if (e.key === 'd' && lastKey === 'g') {
+        if (e.key === 'd' && lastKeyRef.current === 'g') {
           e.preventDefault();
           navigate(createPageUrl('Dashboard'));
-          resetLastKey();
+          lastKeyRef.current = '';
         }
         // g+q: Go to Quotes
-        else if (e.key === 'q' && lastKey === 'g') {
+        else if (e.key === 'q' && lastKeyRef.current === 'g') {
           e.preventDefault();
           navigate(createPageUrl('Estimados'));
-          resetLastKey();
+          lastKeyRef.current = '';
         }
         // g+i: Go to Invoices
-        else if (e.key === 'i' && lastKey === 'g') {
+        else if (e.key === 'i' && lastKeyRef.current === 'g') {
           e.preventDefault();
           navigate(createPageUrl('Facturas'));
-          resetLastKey();
+          lastKeyRef.current = '';
         }
         // g+j: Go to Jobs
-        else if (e.key === 'j' && lastKey === 'g') {
+        else if (e.key === 'j' && lastKeyRef.current === 'g') {
           e.preventDefault();
           navigate(createPageUrl('Trabajos'));
-          resetLastKey();
+          lastKeyRef.current = '';
         }
         // g+c: Go to Customers
-        else if (e.key === 'c' && lastKey === 'g') {
+        else if (e.key === 'c' && lastKeyRef.current === 'g') {
           e.preventDefault();
           navigate(createPageUrl('Clientes'));
-          resetLastKey();
+          lastKeyRef.current = '';
         }
         // Track 'g' key for sequences
         else if (e.key === 'g') {
-          lastKey = 'g';
-          setTimeout(resetLastKey, 1000);
+          lastKeyRef.current = 'g';
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          timeoutRef.current = setTimeout(() => { lastKeyRef.current = ''; }, 1000);
         }
       }
     };
 
-    let lastKey = '';
-    const resetLastKey = () => { lastKey = ''; };
-
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, [navigate, onOpenGlobalSearch]);
 
   const shortcuts = [
