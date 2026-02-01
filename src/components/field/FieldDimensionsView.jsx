@@ -29,6 +29,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
   const [uploading, setUploading] = useState(false);
   const [newPlan, setNewPlan] = useState({ name: '', file: null });
   const [creditError, setCreditError] = useState(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
 
   const queryClient = useQueryClient();
 
