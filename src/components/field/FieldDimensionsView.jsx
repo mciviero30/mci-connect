@@ -489,10 +489,19 @@ export default function FieldDimensionsView({ jobId, jobName }) {
               </Button>
               <Button 
                 onClick={() => {
+                   // HARD BLOCK: Validate file_url is valid HTTPS URL
                    if (!newPlan.file || !newPlan.name) {
                      toast.error('Please enter name and select file');
                      return;
                    }
+
+                   if (typeof newPlan.file !== 'string' || !newPlan.file.startsWith('https://')) {
+                     console.error('[FieldDimensionsView] Invalid file_url:', newPlan.file);
+                     toast.error('Invalid file URL - upload may have failed. Try again.');
+                     setNewPlan({ name: '', file: null });
+                     return;
+                   }
+
                    createPlanMutation.mutate({
                      job_id: jobId,
                      name: newPlan.name,
