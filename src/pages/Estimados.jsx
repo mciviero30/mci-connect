@@ -23,6 +23,7 @@ import QuotePDFImporter from "../components/quotes/QuotePDFImporter";
 import { getQuoteStatusMeta } from "../components/core/statusConfig";
 import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
 import { useNavigate } from "react-router-dom";
+import ExcelExporter, { transformQuotesForExport } from "@/components/shared/ExcelExporter";
 
 
 export default function Estimados() {
@@ -263,6 +264,16 @@ export default function Estimados() {
           actions={
             isAdmin && (
               <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+                <ExcelExporter
+                  data={filteredQuotes}
+                  filename="quotes"
+                  sheetName="Quotes"
+                  transformData={transformQuotesForExport}
+                  buttonText={language === 'es' ? 'Excel' : 'Excel'}
+                  variant="outline"
+                  size="sm"
+                  className="border-green-200 text-green-600 hover:bg-green-50"
+                />
                 <Button
                   variant="outline"
                   size="sm"

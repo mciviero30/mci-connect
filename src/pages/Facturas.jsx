@@ -337,6 +337,16 @@ export default function Facturas() {
           actions={
             isAdmin && (
               <div className="flex gap-2 flex-shrink-0 w-full sm:w-auto">
+                <ExcelExporter
+                  data={filteredInvoices}
+                  filename="invoices"
+                  sheetName="Invoices"
+                  transformData={transformInvoicesForExport}
+                  buttonText={language === 'es' ? 'Excel' : 'Excel'}
+                  variant="outline"
+                  size="sm"
+                  className="border-green-200 text-green-600 hover:bg-green-50"
+                />
                 <Button
                   variant="outline"
                   size="sm"
