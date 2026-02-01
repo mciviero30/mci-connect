@@ -56,26 +56,7 @@ export default function ModernCustomerCard({ customer, customerStats }) {
               entityName={displayName}
               user={user}
             />
-            {showSelectButton && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleSelect?.();
-                }}
-                style={{ width: '18px', height: '18px', minWidth: '18px', minHeight: '18px', maxWidth: '18px', maxHeight: '18px' }}
-                className={`rounded flex items-center justify-center transition-all ${
-                  isSelected
-                    ? 'bg-[#FFB800] text-white'
-                    : 'bg-white border border-slate-300 hover:border-[#FFB800]'
-                }`}
-              >
-                {isSelected && (
-                  <svg style={{ width: '12px', height: '12px' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </button>
-            )}
+
           </div>
         </div>
 
