@@ -1108,6 +1108,26 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                       <Maximize2 className="w-5 h-5 text-[#1E3A8A]" />
                     </button>
                   )}
+                  <button
+                    onClick={() => {
+                      const newTheme = theme === 'light' ? 'dark' : 'light';
+                      setTheme(newTheme);
+                      if (newTheme === 'dark') {
+                        document.documentElement.classList.add('dark');
+                      } else {
+                        document.documentElement.classList.remove('dark');
+                      }
+                      localStorage.setItem('theme', newTheme);
+                    }}
+                    className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[40px] min-h-[40px]"
+                    title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                  >
+                    {theme === 'light' ? (
+                      <Moon className="w-5 h-5 text-[#1E3A8A]" />
+                    ) : (
+                      <Sun className="w-5 h-5 text-yellow-400" />
+                    )}
+                  </button>
                   <NotificationBell user={user} />
                 </div>
               </div>
