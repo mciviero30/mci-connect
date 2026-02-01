@@ -427,29 +427,39 @@ export default function FieldDimensionsView({ jobId, jobName }) {
                        type="file" 
                        accept="image/*,.pdf"
                        onChange={async (e) => {
-                         const file = e.target.files[0];
-                         if (!file) return;
+                          const file = e.target.files[0];
+                          if (!file) return;
 
-                         setUploading(true);
-                         setCreditError(null);
-                         try {
-                           const response = await base44.integrations.Core.UploadFile({ file });
+                          setUploading(true);
+                          setCreditError(null);
+                          try {
+                            const response = await base44.integrations.Core.UploadFile({ file });
 
-                           if (!response || response.error) {
-                             const errorMsg = response?.error?.message || response?.error || 'Upload failed';
-                             const isCreditError = errorMsg.includes('402') || errorMsg.includes('limit') || errorMsg.includes('credit');
+                            if (!response) {
+                              throw new Error('No response from server');
+                            }
 
-                             if (isCreditError) {
-                               setCreditError('integration_credits_limit_reached');
-                               throw new Error('Integration credits exhausted');
-                             }
-                             throw new Error(errorMsg);
-                           }
+                            // HANDLE STRUCTURED ERROR OBJECTS
+                            if (response.error) {
+                              console.log('[UploadFile] Error response:', response.error);
 
-                           const fileUrl = response.file_url || response.url;
-                           if (!fileUrl) {
-                             throw new Error('No file URL returned from upload');
-                           }
+                              const errorCode = response.error?.code || response.error?.status;
+                              const errorMsg = response.error?.message || String(response.error);
+
+                              // Explicit credit-limit detection
+                              if (errorCode === 402 || errorMsg.includes('credit')) {
+                                setCreditError('integration_credits_limit_reached');
+                                throw new Error('Integration credits exhausted');
+                              }
+
+                              throw new Error(errorMsg);
+                            }
+
+                            // ONLY CONTINUE IF FILE WAS ACTUALLY STORED
+                            const fileUrl = response.file_url;
+                            if (!fileUrl) {
+                              throw new Error('No file URL returned (file not stored)');
+                            }
 
                            setNewPlan({
                              ...newPlan,
