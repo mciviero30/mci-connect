@@ -417,13 +417,17 @@ export default function FieldDimensionsView({ jobId, jobName }) {
                          if (!file) return;
 
                          setUploading(true);
+                         setCreditError(null);
                          try {
                            const response = await base44.integrations.Core.UploadFile({ file });
 
                            if (!response || response.error) {
                              const errorMsg = response?.error?.message || response?.error || 'Upload failed';
-                             if (errorMsg.includes('402') || errorMsg.includes('limit') || errorMsg.includes('credit')) {
-                               throw new Error('❌ No integration credits available. Please upgrade your plan or wait for monthly reset.');
+                             const isCreditError = errorMsg.includes('402') || errorMsg.includes('limit') || errorMsg.includes('credit');
+
+                             if (isCreditError) {
+                               setCreditError('integration_credits_limit_reached');
+                               throw new Error('Integration credits exhausted');
                              }
                              throw new Error(errorMsg);
                            }
@@ -441,7 +445,9 @@ export default function FieldDimensionsView({ jobId, jobName }) {
                            toast.success('Drawing uploaded successfully');
                          } catch (error) {
                            console.error('[FieldDimensionsView] Upload error:', error);
-                           toast.error(error.message || 'Upload failed');
+                           if (!creditError) {
+                             toast.error(error.message || 'Upload failed');
+                           }
                          } finally {
                            setUploading(false);
                          }
