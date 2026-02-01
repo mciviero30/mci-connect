@@ -23,9 +23,18 @@ export default function FieldNav({ activeTab, onTabChange, language, onNewTask, 
     { id: 'notifications', label: language === 'es' ? 'Notif.' : 'Notif.', icon: Bell, color: 'text-yellow-400' },
   ];
 
+  const gestureContainerRef = useGestureHandler({
+    onLeftEdgeSwipe: () => onTabChange('search'), // Open search on left edge swipe
+    onRightEdgeSwipe: onClosePanel, // Close panel on right edge swipe
+    onTwoFingerTap: () => setShowGestureHelp(true), // Show help on two-finger tap
+    canGestureClose: !!onClosePanel, // Only enable close if callback exists
+  });
+
   return (
-    <div className="flex-shrink-0 bg-slate-800 border-b border-slate-700 sticky top-0 z-40">
-      <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
+    <>
+      <GestureHelpTooltip isVisible={showGestureHelp} onDismiss={() => setShowGestureHelp(false)} />
+      <div ref={gestureContainerRef} className="flex-shrink-0 bg-slate-800 border-b border-slate-700 sticky top-0 z-40">
+        <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto scrollbar-hide">
         {/* Tabs */}
         <div className="flex gap-2">
           {tabs.map(tab => {
