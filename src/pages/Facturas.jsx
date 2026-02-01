@@ -48,7 +48,10 @@ export default function Facturas() {
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    gcTime: Infinity
   });
 
   // Mutation: Create Job + Work Authorization
@@ -131,10 +134,11 @@ export default function Facturas() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const user = await base44.auth.me();
+      // Use cached user instead of re-fetching
+      const currentUser = user || await base44.auth.me();
       await base44.entities.Invoice.update(id, {
         deleted_at: new Date().toISOString(),
-        deleted_by: user?.email
+        deleted_by: currentUser?.email
       });
     },
     onSuccess: () => {

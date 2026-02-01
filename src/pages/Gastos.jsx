@@ -18,6 +18,7 @@ import SmartExpenseApproval from "../components/gastos/SmartExpenseApproval";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import { updateExpenseSafely } from "@/functions/updateExpenseSafely";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function Gastos() {
   const { t } = useLanguage();
@@ -26,9 +27,11 @@ export default function Gastos() {
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
 

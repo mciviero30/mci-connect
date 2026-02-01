@@ -46,7 +46,8 @@ export default function Estimados() {
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    gcTime: Infinity
   });
   const { data: quotes = [], isLoading } = useQuery({
     queryKey: ['quotes', statusFilter, teamFilter],

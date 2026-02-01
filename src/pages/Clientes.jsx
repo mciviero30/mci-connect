@@ -45,7 +45,8 @@ export default function Clientes() {
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    gcTime: Infinity
   });
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers'],
