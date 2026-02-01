@@ -25,6 +25,10 @@ import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
 import { useNavigate } from "react-router-dom";
 import CreateJobFromInvoiceDialog from "../components/trabajos/CreateJobFromInvoiceDialog";
 import ExcelExporter, { transformInvoicesForExport } from "@/components/shared/ExcelExporter";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import ViewModeToggle from "@/components/shared/ViewModeToggle";
+import SavedFilters from "@/components/shared/SavedFilters";
+import CompactListView from "@/components/shared/CompactListView";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
@@ -39,9 +43,10 @@ export default function Facturas() {
   const [paymentAmount, setPaymentAmount] = useState("");
   const [createJobDialogOpen, setCreateJobDialogOpen] = useState(false);
   const [selectedInvoiceForJob, setSelectedInvoiceForJob] = useState(null);
+  const [viewMode, setViewMode] = useState('grid');
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });
@@ -99,7 +104,6 @@ export default function Facturas() {
       setSelectedInvoiceForJob(null);
     },
     onError: (error) => {
-      console.error('Error creating job:', error);
       toast({
         title: 'Error',
         description: safeErrorMessage(error, language === 'es' ? 'Error al crear trabajo' : 'Failed to create job'),
@@ -141,7 +145,6 @@ export default function Facturas() {
       });
     },
     onError: (error) => {
-      console.error('Error deleting invoice:', error);
       toast({
         title: 'Error',
         description: safeErrorMessage(error, 'Failed to delete invoice'),
@@ -185,7 +188,6 @@ export default function Facturas() {
       });
     },
     onError: (error) => {
-      console.error('Error duplicating invoice:', error);
       toast({
         title: 'Error',
         description: safeErrorMessage(error, 'Failed to duplicate invoice'),
@@ -234,7 +236,6 @@ export default function Facturas() {
       setPaymentAmount("");
     },
     onError: (error) => {
-      console.error('Error recording payment:', error);
       toast({
         title: 'Error',
         description: safeErrorMessage(error, 'Failed to record payment'),
@@ -370,36 +371,55 @@ export default function Facturas() {
           }
         />
 
-        {/* Filter Bar */}
-        <FilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          statusOptions={[
-            { value: 'draft', label: getInvoiceStatusMeta('draft', language).label, dotClass: getInvoiceStatusMeta('draft', language).dotClass },
-            { value: 'sent', label: getInvoiceStatusMeta('sent', language).label, dotClass: getInvoiceStatusMeta('sent', language).dotClass },
-            { value: 'paid', label: getInvoiceStatusMeta('paid', language).label, dotClass: getInvoiceStatusMeta('paid', language).dotClass },
-            { value: 'partial', label: getInvoiceStatusMeta('partial', language).label, dotClass: getInvoiceStatusMeta('partial', language).dotClass },
-            { value: 'overdue', label: getInvoiceStatusMeta('overdue', language).label, dotClass: getInvoiceStatusMeta('overdue', language).dotClass }
-          ]}
-          teamFilter={teamFilter}
-          onTeamChange={setTeamFilter}
-          teams={teams}
-          onClearFilters={() => {
-            setSearchTerm('');
-            setStatusFilter('all');
-            setTeamFilter('all');
-          }}
-          language={language}
-        />
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex-1">
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              statusOptions={[
+                { value: 'draft', label: getInvoiceStatusMeta('draft', language).label, dotClass: getInvoiceStatusMeta('draft', language).dotClass },
+                { value: 'sent', label: getInvoiceStatusMeta('sent', language).label, dotClass: getInvoiceStatusMeta('sent', language).dotClass },
+                { value: 'paid', label: getInvoiceStatusMeta('paid', language).label, dotClass: getInvoiceStatusMeta('paid', language).dotClass },
+                { value: 'partial', label: getInvoiceStatusMeta('partial', language).label, dotClass: getInvoiceStatusMeta('partial', language).dotClass },
+                { value: 'overdue', label: getInvoiceStatusMeta('overdue', language).label, dotClass: getInvoiceStatusMeta('overdue', language).dotClass }
+              ]}
+              teamFilter={teamFilter}
+              onTeamChange={setTeamFilter}
+              teams={teams}
+              onClearFilters={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setTeamFilter('all');
+              }}
+              language={language}
+            />
+          </div>
+          <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+        </div>
 
-        {/* Invoices Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-          {isLoading ? (
+        <div className="mb-4">
+          <SavedFilters
+            page="invoices"
+            currentFilters={{ searchTerm, statusFilter, teamFilter }}
+            onApplyFilter={(filters) => {
+              if (filters.searchTerm) setSearchTerm(filters.searchTerm);
+              if (filters.statusFilter) setStatusFilter(filters.statusFilter);
+              if (filters.teamFilter) setTeamFilter(filters.teamFilter);
+            }}
+            user={user}
+          />
+        </div>
+
+        {/* Invoices Grid/List */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             <SkeletonDocumentList count={6} />
-          ) : (
-            filteredInvoices.map(invoice => (
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            {filteredInvoices.map(invoice => (
               <ModernInvoiceCard
                 key={invoice.id}
                 invoice={invoice}
@@ -416,9 +436,29 @@ export default function Facturas() {
                 }}
                 isAdmin={isAdmin}
               />
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <CompactListView
+            items={filteredInvoices}
+            entityType="invoice"
+            user={user}
+            getTitle={(invoice) => invoice.customer_name}
+            getSubtitle={(invoice) => `${invoice.invoice_number} • ${invoice.job_name}`}
+            getBadges={(invoice) => (
+              <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                invoice.status === 'paid' ? 'bg-green-50 text-green-700 border border-green-200' :
+                invoice.status === 'sent' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                invoice.status === 'overdue' ? 'bg-red-50 text-red-700 border border-red-200' :
+                'bg-slate-50 text-slate-700 border border-slate-200'
+              }`}>
+                {getInvoiceStatusMeta(invoice.status, language).label}
+              </span>
+            )}
+            getAmount={(invoice) => `$${invoice.total?.toLocaleString() || 0}`}
+            onItemClick={(invoice) => navigate(createPageUrl(`VerFactura?id=${invoice.id}`))}
+          />
+        )}
 
         {filteredInvoices.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">

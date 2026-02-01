@@ -24,6 +24,10 @@ import ModernJobCard from "../components/trabajos/ModernJobCard";
 import FilterBar from "../components/shared/FilterBar";
 import { useJobClosureValidation } from "../components/trabajos/JobStatusValidator";
 import ExcelExporter, { transformJobsForExport } from "@/components/shared/ExcelExporter";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import ViewModeToggle from "@/components/shared/ViewModeToggle";
+import SavedFilters from "@/components/shared/SavedFilters";
+import CompactListView from "@/components/shared/CompactListView";
 
 
 
@@ -39,9 +43,10 @@ export default function Trabajos() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [teamFilter, setTeamFilter] = useState('all');
+  const [viewMode, setViewMode] = useState('grid');
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
@@ -94,12 +99,10 @@ export default function Trabajos() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('Creating job:', data);
       const createdJob = await base44.entities.Job.create(data);
       return createdJob;
     },
     onSuccess: (createdJob) => {
-      console.log('Job created successfully:', createdJob.id);
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       setShowForm(false);
       setShowAIWizard(false);
@@ -110,7 +113,6 @@ export default function Trabajos() {
       });
     },
     onError: (error) => {
-      console.error('Error creating job:', error);
       toast({
         title: 'Error',
         description: error.message,
@@ -135,11 +137,9 @@ export default function Trabajos() {
         }
       }
 
-      console.log('Updating job:', id, data);
       return base44.entities.Job.update(id, data);
     },
     onSuccess: () => {
-      console.log('Job updated successfully');
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       setShowForm(false); // Changed from setShowDialog to setShowForm for consistency
       setEditingJob(null);
@@ -158,12 +158,8 @@ export default function Trabajos() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => {
-      console.log('Deleting job:', id);
-      return base44.entities.Job.delete(id);
-    },
+    mutationFn: (id) => base44.entities.Job.delete(id),
     onSuccess: () => {
-      console.log('Job deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       toast({
         title: language === 'es' ? 'Trabajo eliminado' : 'Job deleted',
@@ -171,7 +167,6 @@ export default function Trabajos() {
       });
     },
     onError: (error) => {
-      console.error('Error deleting job:', error);
       toast({
         title: 'Error',
         description: error.message,
@@ -182,13 +177,11 @@ export default function Trabajos() {
 
   const archiveMutation = useMutation({
     mutationFn: (id) => {
-      console.log('Archiving job:', id);
       // For archive, we could also implement similar validation if needed,
       // but for now, the prompt only specified it for the general updateMutation.
       return base44.entities.Job.update(id, { status: 'archived' });
     },
     onSuccess: () => {
-      console.log('Job archived successfully');
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
       toast({
         title: language === 'es' ? 'Trabajo archivado' : 'Job archived',
@@ -196,7 +189,6 @@ export default function Trabajos() {
       });
     },
     onError: (error) => {
-      console.error('Error archiving job:', error);
       toast({
         title: 'Error',
         description: error.message,
@@ -310,33 +302,71 @@ export default function Trabajos() {
           }
         />
 
-        {/* Filter Bar */}
-        <FilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          statusOptions={[
-            { value: 'active', label: t('active'), dotClass: 'bg-blue-500' },
-            { value: 'completed', label: t('completed'), dotClass: 'bg-green-500' },
-            { value: 'archived', label: t('archived'), dotClass: 'bg-slate-500' }
-          ]}
-          teamFilter={teamFilter}
-          onTeamChange={setTeamFilter}
-          teams={teams}
-          onClearFilters={() => {
-            setSearchTerm('');
-            setStatusFilter('all');
-            setTeamFilter('all');
-          }}
-          language={language}
-        />
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-          {filteredJobs.map(job => (
-            <ModernJobCard key={job.id} job={job} onEdit={handleEdit} />
-          ))}
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex-1">
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              statusOptions={[
+                { value: 'active', label: t('active'), dotClass: 'bg-blue-500' },
+                { value: 'completed', label: t('completed'), dotClass: 'bg-green-500' },
+                { value: 'archived', label: t('archived'), dotClass: 'bg-slate-500' }
+              ]}
+              teamFilter={teamFilter}
+              onTeamChange={setTeamFilter}
+              teams={teams}
+              onClearFilters={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setTeamFilter('all');
+              }}
+              language={language}
+            />
+          </div>
+          <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
         </div>
+
+        <div className="mb-4">
+          <SavedFilters
+            page="jobs"
+            currentFilters={{ searchTerm, statusFilter, teamFilter }}
+            onApplyFilter={(filters) => {
+              if (filters.searchTerm) setSearchTerm(filters.searchTerm);
+              if (filters.statusFilter) setStatusFilter(filters.statusFilter);
+              if (filters.teamFilter) setTeamFilter(filters.teamFilter);
+            }}
+            user={user}
+          />
+        </div>
+
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+            {filteredJobs.map(job => (
+              <ModernJobCard key={job.id} job={job} onEdit={handleEdit} />
+            ))}
+          </div>
+        ) : (
+          <CompactListView
+            items={filteredJobs}
+            entityType="job"
+            user={user}
+            getTitle={(job) => job.name || job.job_name_field}
+            getSubtitle={(job) => job.customer_name}
+            getBadges={(job) => (
+              <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                job.status === 'active' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                job.status === 'completed' ? 'bg-green-50 text-green-700 border border-green-200' :
+                'bg-slate-50 text-slate-700 border border-slate-200'
+              }`}>
+                {job.status}
+              </span>
+            )}
+            getAmount={(job) => job.contract_amount ? `$${job.contract_amount.toLocaleString()}` : null}
+            onItemClick={(job) => navigate(createPageUrl(`JobDetails?id=${job.id}`))}
+          />
+        )}
 
         {filteredJobs.length === 0 && !isLoading && (
           <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">

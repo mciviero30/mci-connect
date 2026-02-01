@@ -11,7 +11,6 @@ export const PermissionsProvider = ({ children }) => {
   
   // Safely get user from cache (no additional query)
   const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
-  console.log('[PermissionsContext] USER:', user);
 
   // Fetch role only if custom_role_id exists - hook always called
   const { data: userRole } = useQuery({
@@ -29,7 +28,6 @@ export const PermissionsProvider = ({ children }) => {
 
   // Build permissions object - stable dependencies
   const permissions = useMemo(() => {
-    console.log('[PermissionsContext useMemo] user:', user);
     // If admin, grant all permissions
     if (user?.role === 'admin') {
       return {

@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay } from "date-fns";
 import LiveClock from "../components/dashboard/LiveClock";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Badge } from "@/components/ui/badge";
@@ -79,7 +80,7 @@ export default function Dashboard() {
   const [showKudosDialog, setShowKudosDialog] = useState(false);
 
   const { data: user, isLoading: userLoading } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: Infinity,
     gcTime: Infinity,

@@ -24,6 +24,10 @@ import { getQuoteStatusMeta } from "../components/core/statusConfig";
 import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
 import { useNavigate } from "react-router-dom";
 import ExcelExporter, { transformQuotesForExport } from "@/components/shared/ExcelExporter";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import ViewModeToggle from "@/components/shared/ViewModeToggle";
+import SavedFilters from "@/components/shared/SavedFilters";
+import CompactListView from "@/components/shared/CompactListView";
 
 
 export default function Estimados() {
@@ -35,9 +39,11 @@ export default function Estimados() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("all");
   const [showAIWizard, setShowAIWizard] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('grid');
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
@@ -306,33 +312,50 @@ export default function Estimados() {
           }
         />
 
-        {/* Filter Bar */}
-        <FilterBar
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          statusFilter={statusFilter}
-          onStatusChange={setStatusFilter}
-          statusOptions={[
-            { value: 'draft', label: getQuoteStatusMeta('draft', language).label, dotClass: getQuoteStatusMeta('draft', language).dotClass },
-            { value: 'sent', label: getQuoteStatusMeta('sent', language).label, dotClass: getQuoteStatusMeta('sent', language).dotClass },
-            { value: 'approved', label: getQuoteStatusMeta('approved', language).label, dotClass: getQuoteStatusMeta('approved', language).dotClass },
-            { value: 'converted_to_invoice', label: getQuoteStatusMeta('converted_to_invoice', language).label, dotClass: getQuoteStatusMeta('converted_to_invoice', language).dotClass }
-          ]}
-          teamFilter={teamFilter}
-          onTeamChange={setTeamFilter}
-          teams={teams}
-          onClearFilters={() => {
-            setSearchTerm('');
-            setStatusFilter('all');
-            setTeamFilter('all');
-          }}
-          language={language}
-        />
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex-1">
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              statusOptions={[
+                { value: 'draft', label: getQuoteStatusMeta('draft', language).label, dotClass: getQuoteStatusMeta('draft', language).dotClass },
+                { value: 'sent', label: getQuoteStatusMeta('sent', language).label, dotClass: getQuoteStatusMeta('sent', language).dotClass },
+                { value: 'approved', label: getQuoteStatusMeta('approved', language).label, dotClass: getQuoteStatusMeta('approved', language).dotClass },
+                { value: 'converted_to_invoice', label: getQuoteStatusMeta('converted_to_invoice', language).label, dotClass: getQuoteStatusMeta('converted_to_invoice', language).dotClass }
+              ]}
+              teamFilter={teamFilter}
+              onTeamChange={setTeamFilter}
+              teams={teams}
+              onClearFilters={() => {
+                setSearchTerm('');
+                setStatusFilter('all');
+                setTeamFilter('all');
+              }}
+              language={language}
+            />
+          </div>
+          <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+        </div>
 
-        {/* Quotes Grid */}
+        <div className="mb-4">
+          <SavedFilters
+            page="quotes"
+            currentFilters={{ searchTerm, statusFilter, teamFilter }}
+            onApplyFilter={(filters) => {
+              if (filters.searchTerm) setSearchTerm(filters.searchTerm);
+              if (filters.statusFilter) setStatusFilter(filters.statusFilter);
+              if (filters.teamFilter) setTeamFilter(filters.teamFilter);
+            }}
+            user={user}
+          />
+        </div>
+
+        {/* Quotes Grid/List */}
         {isLoading ? (
           <SkeletonDocumentList count={6} />
-        ) : (
+        ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             {filteredQuotes.length > 0 && filteredQuotes.map(quote => (
               <ModernQuoteCard
@@ -346,6 +369,26 @@ export default function Estimados() {
               />
             ))}
           </div>
+        ) : (
+          <CompactListView
+            items={filteredQuotes}
+            entityType="quote"
+            user={user}
+            getTitle={(quote) => quote.customer_name}
+            getSubtitle={(quote) => `${quote.quote_number} • ${quote.job_name}`}
+            getBadges={(quote) => (
+              <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                quote.status === 'draft' ? 'bg-slate-50 text-slate-700 border border-slate-200' :
+                quote.status === 'sent' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                quote.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' :
+                'bg-purple-50 text-purple-700 border border-purple-200'
+              }`}>
+                {getQuoteStatusMeta(quote.status, language).label}
+              </span>
+            )}
+            getAmount={(quote) => `$${quote.total?.toLocaleString() || 0}`}
+            onItemClick={(quote) => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
+          />
         )}
 
         {filteredQuotes.length === 0 && !isLoading && (

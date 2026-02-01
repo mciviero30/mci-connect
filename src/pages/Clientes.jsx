@@ -12,6 +12,10 @@ import CustomerForm from "../components/clientes/CustomerForm";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import ViewModeToggle from "@/components/shared/ViewModeToggle";
+import SavedFilters from "@/components/shared/SavedFilters";
+import CompactListView from "@/components/shared/CompactListView";
 import { createPageUrl } from "@/utils";
 import ModernCustomerCard from "@/components/clientes/ModernCustomerCard";
 import InvitationModal from "@/components/field/InvitationModal";
@@ -32,11 +36,12 @@ export default function Clientes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [showInvitationModal, setShowInvitationModal] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
   const queryClient = useQueryClient();
   const toast = useToast();
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
@@ -60,12 +65,8 @@ export default function Clientes() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => {
-      console.log('Creating customer:', data);
-      return base44.entities.Customer.create(data);
-    },
+    mutationFn: (data) => base44.entities.Customer.create(data),
     onSuccess: () => {
-      console.log('Customer created successfully');
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
       setEditingCustomer(null);
@@ -75,7 +76,6 @@ export default function Clientes() {
       });
     },
     onError: (error) => {
-      console.error('Error creating customer:', error);
       toast({
         title: 'Error',
         description: error.message,
@@ -85,12 +85,8 @@ export default function Clientes() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => {
-      console.log('Updating customer:', id, data);
-      return base44.entities.Customer.update(id, data);
-    },
+    mutationFn: ({ id, data }) => base44.entities.Customer.update(id, data),
     onSuccess: () => {
-      console.log('Customer updated successfully');
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
       setEditingCustomer(null);
@@ -100,7 +96,6 @@ export default function Clientes() {
       });
     },
     onError: (error) => {
-      console.error('Error updating customer:', error);
       toast({
         title: 'Error',
         description: error.message,
@@ -110,12 +105,8 @@ export default function Clientes() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => {
-      console.log('Deleting customer:', id);
-      return base44.entities.Customer.delete(id);
-    },
+    mutationFn: (id) => base44.entities.Customer.delete(id),
     onSuccess: () => {
-      console.log('Customer deleted successfully');
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       toast({
         title: t('customerDeleted'),
@@ -123,7 +114,6 @@ export default function Clientes() {
       });
     },
     onError: (error) => {
-      console.error('Error deleting customer:', error);
       toast({
         title: 'Error',
         description: error.message,
@@ -219,15 +209,27 @@ export default function Clientes() {
         />
 
         <div className="mb-6 space-y-4">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
-            <Input
-              placeholder={t('search')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
-            />
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 dark:text-slate-400" />
+              <Input
+                placeholder={t('search')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 h-12 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+              />
+            </div>
+            <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
           </div>
+
+          <SavedFilters
+            page="customers"
+            currentFilters={{ searchTerm, statusFilter: 'all' }}
+            onApplyFilter={(filters) => {
+              if (filters.searchTerm) setSearchTerm(filters.searchTerm);
+            }}
+            user={user}
+          />
 
           {/* Bulk Actions Bar */}
           {isAdmin && sortedCustomers.length > 0 && (
@@ -268,21 +270,37 @@ export default function Clientes() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sortedCustomers.map(customer => {
-            const isSelected = selectedCustomers.some(c => c.email === customer.email);
-            return (
-              <ModernCustomerCard
-                key={customer.id}
-                customer={customer}
-                onViewDetails={isAdmin ? handleEdit : () => {}}
-                isSelected={isSelected}
-                onToggleSelect={() => toggleCustomerSelection(customer)}
-                showSelectButton={isAdmin}
-              />
-            );
-          })}
-        </div>
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sortedCustomers.map(customer => {
+              const isSelected = selectedCustomers.some(c => c.email === customer.email);
+              return (
+                <ModernCustomerCard
+                  key={customer.id}
+                  customer={customer}
+                  onViewDetails={isAdmin ? handleEdit : () => {}}
+                  isSelected={isSelected}
+                  onToggleSelect={() => toggleCustomerSelection(customer)}
+                  showSelectButton={isAdmin}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <CompactListView
+            items={sortedCustomers}
+            entityType="customer"
+            user={user}
+            getTitle={(customer) => `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || customer.name || customer.email}
+            getSubtitle={(customer) => customer.company || customer.email}
+            getBadges={(customer) => customer.status && (
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200">
+                {customer.status}
+              </span>
+            )}
+            onItemClick={(customer) => isAdmin && handleEdit(customer)}
+          />
+        )}
 
         {/* Invitation Modal */}
         <InvitationModal
