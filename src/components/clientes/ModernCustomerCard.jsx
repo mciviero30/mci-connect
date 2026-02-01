@@ -7,29 +7,13 @@ import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { getCustomerDisplayName } from "@/components/utils/nameHelpers";
 import FavoriteButton from "@/components/shared/FavoriteButton";
-import { useQuery } from "@tanstack/react-query";
-import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
-import { base44 } from "@/api/base44Client";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
-export default function ModernCustomerCard({ customer, onViewDetails, isSelected, onToggleSelect, showSelectButton }) {
+export default function ModernCustomerCard({ customer, customerStats }) {
   const navigate = useNavigate();
+  const { data: user } = useCurrentUser();
   
-  const { data: user } = useQuery({
-    queryKey: CURRENT_USER_QUERY_KEY,
-    queryFn: () => base44.auth.me(),
-  });
-
-  // Fetch stats - total quotes & invoices
-  const { data: customerStats = { quotes: 0, invoices: 0, totalRevenue: 0 } } = useQuery({
-    queryKey: ['customerStats', customer.id],
-    queryFn: async () => {
-      const quotes = await base44.entities.Quote.filter({ customer_id: customer.id }, '', 100);
-      const invoices = await base44.entities.Invoice.filter({ customer_id: customer.id }, '', 100);
-      const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + (i.total || 0), 0);
-      return { quotes: quotes.length, invoices: invoices.length, totalRevenue };
-    },
-    staleTime: 600000,
-  });
+  const stats = customerStats || { quotes: 0, invoices: 0, totalRevenue: 0 };
 
   // Normalize text helper
   const normalizeText = (text) => {
@@ -123,15 +107,15 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
         {/* Stats Row - NEW */}
         <div className="flex gap-2 mb-3 text-[10px]">
           <div className="flex-1 bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2 text-center">
-            <p className="font-bold text-slate-900 dark:text-white">{customerStats.quotes}</p>
+            <p className="font-bold text-slate-900 dark:text-white">{stats.quotes}</p>
             <p className="text-[9px] text-slate-600 dark:text-slate-400">Quotes</p>
           </div>
           <div className="flex-1 bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2 text-center">
-            <p className="font-bold text-slate-900 dark:text-white">{customerStats.invoices}</p>
+            <p className="font-bold text-slate-900 dark:text-white">{stats.invoices}</p>
             <p className="text-[9px] text-slate-600 dark:text-slate-400">Invoices</p>
           </div>
           <div className="flex-1 bg-green-50 dark:bg-green-900/20 rounded-lg p-2 text-center">
-            <p className="font-bold text-green-600 dark:text-green-400">${(customerStats.totalRevenue / 1000).toFixed(1)}k</p>
+            <p className="font-bold text-green-600 dark:text-green-400">${(stats.totalRevenue / 1000).toFixed(1)}k</p>
             <p className="text-[9px] text-green-600 dark:text-green-400">Revenue</p>
           </div>
         </div>
@@ -177,6 +161,10 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
             <FileCheck className="w-3 h-3" />
           </Button>
         </div>
+      </div>
+
+      {/* Bottom Border Line */}
+      <div className="h-[3px] bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]" />
       </div>
 
       {/* Bottom Border Line */}

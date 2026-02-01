@@ -278,10 +278,7 @@ export default function Clientes() {
                 <ModernCustomerCard
                   key={customer.id}
                   customer={customer}
-                  onViewDetails={isAdmin ? handleEdit : () => {}}
-                  isSelected={isSelected}
-                  onToggleSelect={() => toggleCustomerSelection(customer)}
-                  showSelectButton={isAdmin}
+                  customerStats={allStats[customer.id]}
                 />
               );
             })}

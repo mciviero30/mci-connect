@@ -14,10 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { base44 } from "@/api/base44Client";
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
 import FavoriteButton from "@/components/shared/FavoriteButton";
-import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { useCurrentUser } from "@/components/hooks/useCurrentUser";
 
 export default function ModernJobCard({ job, onEdit }) {
   const navigate = useNavigate();
@@ -25,10 +25,7 @@ export default function ModernJobCard({ job, onEdit }) {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  const { data: user } = useQuery({
-    queryKey: CURRENT_USER_QUERY_KEY,
-    queryFn: () => base44.auth.me(),
-  });
+  const { data: user } = useCurrentUser();
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Job.delete(id),
@@ -159,11 +156,11 @@ export default function ModernJobCard({ job, onEdit }) {
             {statusLabels[job.status] || job.status}
           </Badge>
           
-          {/* J2 — Authorization Status Badge */}
+          {/* Authorization Status Badge */}
           {job.authorization_id ? (
             <Badge className="bg-green-100 text-green-800 border-green-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center">
               <CheckCircle className="w-3 h-3 mr-1" />
-              {language === 'es' ? 'Autorizado' : 'Authorized'}
+              {language === 'es' ? 'Autorizado' : 'Auth'}
             </Badge>
           ) : (
             <Badge className="bg-red-100 text-red-800 border-red-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center">
@@ -172,7 +169,7 @@ export default function ModernJobCard({ job, onEdit }) {
             </Badge>
           )}
           
-          {/* J1 — Billing Type Badge */}
+          {/* Billing Type Badge */}
           <Badge className={job.billing_type === 'time_materials' 
             ? 'bg-purple-100 text-purple-800 border-purple-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center'
             : 'bg-blue-100 text-blue-800 border-blue-300 px-3 py-1 rounded-full text-xs font-bold h-6 flex items-center'
@@ -240,7 +237,7 @@ export default function ModernJobCard({ job, onEdit }) {
                     {language === 'es' ? 'Margen' : 'Margin'}
                   </span>
                 </div>
-                <span className={`text-base font-bold ${getProfitMarginColor(profitMargin)} dark:text-${profitMargin >= 30 ? 'green' : profitMargin >= 15 ? 'amber' : 'red'}-400`}>
+                <span className={`text-base font-bold ${getProfitMarginColor(profitMargin)}`}>
                   {profitMargin.toFixed(1)}%
                 </span>
               </div>
