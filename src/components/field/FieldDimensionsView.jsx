@@ -451,22 +451,27 @@ export default function FieldDimensionsView({ jobId, jobName }) {
               </Button>
               <Button 
                 onClick={() => {
-                  if (!newPlan.file || !newPlan.name) {
-                    toast.error('Please enter name and select file');
-                    return;
-                  }
-                  createPlanMutation.mutate({
-                    job_id: jobId,
-                    name: newPlan.name,
-                    file_url: newPlan.file,
-                    order: plans.length,
-                    image_url: newPlan.file,
-                  });
-                }}
+                   if (!newPlan.file || !newPlan.name) {
+                     toast.error('Please enter name and select file');
+                     return;
+                   }
+                   createPlanMutation.mutate({
+                     job_id: jobId,
+                     name: newPlan.name,
+                     file_url: newPlan.file,
+                     order: plans.length,
+                     image_url: newPlan.file,
+                   });
+                 }}
                 disabled={!newPlan.file || !newPlan.name || uploading || createPlanMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-blue-600 hover:bg-blue-700 text-white min-h-[48px]"
               >
-                {createPlanMutation.isPending ? 'Saving...' : 'Save Drawing'}
+                {createPlanMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving Drawing...
+                  </>
+                ) : 'Save Drawing'}
               </Button>
             </div>
           </div>
