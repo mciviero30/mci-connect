@@ -108,6 +108,7 @@ export default function Estimados() {
     onError: (error) => {
       toast({
         title: language === 'es' ? 'Error al eliminar' : 'Delete failed',
+        description: error?.message,
         variant: 'destructive'
       });
     }
@@ -216,6 +217,13 @@ export default function Estimados() {
       });
       window.open(createPageUrl(`VerFactura?id=${newInvoice.id}`), '_blank');
     },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: error?.message || 'Failed to convert quote',
+        variant: 'destructive'
+      });
+    }
   });
 
   // GUARDRAIL 2️⃣: Defensive normalization for quotes
