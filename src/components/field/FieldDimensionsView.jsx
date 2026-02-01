@@ -279,18 +279,35 @@ export default function FieldDimensionsView({ jobId, jobName }) {
       </div>
 
       {/* Canvas Area */}
-      <div className="flex-1 min-h-0 p-4">
+      <div className="flex-1 min-h-0 p-4 flex flex-col">
         {selectedImage ? (() => {
           const selectedOption = imageOptions.find(o => o.value === selectedImage);
           
           if (selectedOption?.isPDF) {
             return (
-              <div className="h-full flex items-center justify-center bg-slate-800 rounded-xl">
-                <div className="text-center">
-                  <FileText className="w-16 h-16 text-amber-500 mx-auto mb-4" />
-                  <p className="text-slate-300 font-medium">PDF plans cannot be dimensioned</p>
-                  <p className="text-slate-400 text-sm mt-2">Upload an image (JPG/PNG) to add dimensions</p>
+              <div className="flex-1 min-h-0 flex flex-col bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden">
+                {/* PDF Viewer Header */}
+                <div className="flex-shrink-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-amber-500" />
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                        {selectedOption.label}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        📄 View Only – Measurements Disabled
+                      </p>
+                    </div>
+                  </div>
                 </div>
+                
+                {/* PDF Iframe */}
+                <iframe
+                  src={`${selectedOption.url}#toolbar=1&navpanes=0&scrollbar=1`}
+                  className="flex-1 min-h-0 w-full border-none"
+                  title={selectedOption.label}
+                  allow="fullscreen"
+                />
               </div>
             );
           }
