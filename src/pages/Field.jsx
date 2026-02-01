@@ -18,7 +18,8 @@ import {
   Trash2,
   Archive,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Users
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
@@ -62,6 +63,9 @@ export default function Field() {
   
   // Persistent filter state
   const [filter, setFilter, clearFilter] = usePersistentState('field_filter', 'active', { expiryHours: 48 });
+  
+  // Field acceptance tracking
+  const [showPendingJobs, setShowPendingJobs] = useState(false);
 
   // CRITICAL: Set Field Mode on mount, clear on unmount
   useEffect(() => {
@@ -191,7 +195,7 @@ export default function Field() {
   // QW5: Add loading state tracking for initial load feedback
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-  const { data: jobsData = { authorized: [], unauthorized: [] }, isLoading } = useQuery({
+  const { data: jobsData = { authorized: [], unauthorized: [], pending: [] }, isLoading } = useQuery({
     queryKey: FIELD_QUERY_KEYS.JOBS(),
     queryFn: async () => {
       let allJobs = [];
@@ -202,7 +206,7 @@ export default function Field() {
         allJobs = await base44.entities.Job.list('-created_date');
       } else if (user?.role === 'customer' || user?.role === 'field_worker') {
         const assignedJobIds = [...new Set(userAssignments.map(a => a.job_id))];
-        if (assignedJobIds.length === 0) return { authorized: [], unauthorized: [] };
+        if (assignedJobIds.length === 0) return { authorized: [], unauthorized: [], pending: [] };
         
         const assignedJobs = await Promise.all(
           assignedJobIds.map(jobId => base44.entities.Job.filter({ id: jobId }))
@@ -213,10 +217,11 @@ export default function Field() {
       }
       
       // ENFORCEMENT: Separate authorized vs unauthorized for transparency (FASE 2A.1)
-      const authorized = allJobs.filter(job => job.authorization_id);
+      const authorized = allJobs.filter(job => job.authorization_id && job.field_accepted_at);
+      const pending = allJobs.filter(job => job.authorization_id && job.field_project_id && !job.field_accepted_at);
       const unauthorized = allJobs.filter(job => !job.authorization_id);
       
-      return { authorized, unauthorized };
+      return { authorized, unauthorized, pending };
     },
     enabled: !!user,
     ...FIELD_STABLE_QUERY_CONFIG,
@@ -229,8 +234,9 @@ export default function Field() {
     }
   }, [isLoading, jobsData]);
 
-  // Extract authorized jobs for rendering
+  // Extract jobs for rendering
   const jobs = jobsData.authorized || [];
+  const pendingJobs = jobsData.pending || [];
   const unauthorizedJobsCount = jobsData.unauthorized?.length || 0;
 
   const { data: tasks = [] } = useQuery({
@@ -345,6 +351,24 @@ export default function Field() {
     },
     // STEP 3: Human-friendly error - what happened, suggest retry
     onError: () => toast.error('Couldn\'t archive project. Check your connection and try again.', { duration: 3000 }),
+  });
+
+  const acceptJobMutation = useMutation({
+    mutationFn: (id) => base44.entities.Job.update(id, { field_accepted_at: new Date().toISOString() }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
+      toast.success('✓ Job activated in Field');
+    },
+    onError: () => toast.error('Couldn\'t activate job. Try again.', { duration: 3000 }),
+  });
+
+  const rejectJobMutation = useMutation({
+    mutationFn: (id) => base44.entities.Job.update(id, { field_project_id: null }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: FIELD_QUERY_KEYS.JOBS() });
+      toast.success('✓ Job removed from Field');
+    },
+    onError: () => toast.error('Couldn\'t remove job. Try again.', { duration: 3000 }),
   });
 
   // Filter jobs
@@ -577,17 +601,82 @@ export default function Field() {
         />
       </div>
 
+      {/* PENDING JOBS - Jobs awaiting Field acceptance */}
+      {pendingJobs.length > 0 && (
+        <div className="mb-6">
+          <Button
+            onClick={() => setShowPendingJobs(!showPendingJobs)}
+            className="w-full bg-amber-900/20 border border-amber-600/40 hover:bg-amber-900/30 text-white mb-3 min-h-[48px] rounded-xl"
+          >
+            <AlertTriangle className="w-5 h-5 text-amber-400 mr-2" />
+            {language === 'es' 
+              ? `${pendingJobs.length} trabajo${pendingJobs.length > 1 ? 's' : ''} pendiente${pendingJobs.length > 1 ? 's' : ''} de activación`
+              : `${pendingJobs.length} job${pendingJobs.length > 1 ? 's' : ''} pending activation`}
+          </Button>
+
+          {showPendingJobs && (
+            <div className="space-y-3 mb-4">
+              {pendingJobs.map((job) => (
+                <div key={job.id} className="bg-amber-900/10 border border-amber-600/30 rounded-xl p-4 shadow-md">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-white mb-1">
+                        {job.name || job.job_name_field}
+                      </h3>
+                      <p className="text-xs text-slate-400 mb-2">
+                        {job.customer_name || job.client_name_field}
+                      </p>
+                      {job.address && (
+                        <p className="text-xs text-slate-500 truncate">
+                          📍 {job.address}
+                        </p>
+                      )}
+                    </div>
+                    <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 border px-2.5 py-1 rounded-full text-[10px] font-bold flex-shrink-0">
+                      PENDING
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      onClick={() => acceptJobMutation.mutate(job.id)}
+                      disabled={acceptJobMutation.isPending}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white min-h-[40px] rounded-lg"
+                    >
+                      {language === 'es' ? '✓ Activar' : '✓ Activate'}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        if (window.confirm(language === 'es' 
+                          ? '¿Rechazar este trabajo? No aparecerá en Field.'
+                          : 'Reject this job? It won\'t appear in Field.')) {
+                          rejectJobMutation.mutate(job.id);
+                        }
+                      }}
+                      disabled={rejectJobMutation.isPending}
+                      variant="outline"
+                      className="flex-1 bg-slate-700 border-slate-600 hover:bg-slate-600 text-white min-h-[40px] rounded-lg"
+                    >
+                      {language === 'es' ? '✕ Rechazar' : '✕ Reject'}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ADMIN TRANSPARENCY - Warn about hidden unauthorized jobs (FASE 2A.1) */}
       {(user?.role === 'admin' || user?.position === 'manager') && unauthorizedJobsCount > 0 && (
-        <div className="mb-4 bg-amber-900/20 border border-amber-600/40 rounded-xl p-3 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+        <div className="mb-4 bg-red-900/20 border border-red-600/40 rounded-xl p-3 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm text-amber-200 font-semibold">
+            <p className="text-sm text-red-200 font-semibold">
               {language === 'es' 
                 ? `⚠️ ${unauthorizedJobsCount} trabajo${unauthorizedJobsCount > 1 ? 's ocultos' : ' oculto'} (sin autorización)`
                 : `⚠️ ${unauthorizedJobsCount} job${unauthorizedJobsCount > 1 ? 's' : ''} hidden (no authorization)`}
             </p>
-            <p className="text-xs text-amber-300/80 mt-0.5">
+            <p className="text-xs text-red-300/80 mt-0.5">
               {language === 'es' 
                 ? 'Ir a Work Authorizations para aprobarlos'
                 : 'Go to Work Authorizations to approve them'}
