@@ -202,7 +202,7 @@ Deno.serve(async (req) => {
     // Reload entities to verify links
     const [finalQuote] = await base44.asServiceRole.entities.Quote.filter({ id: testQuote.id });
     const [finalInvoice] = await base44.asServiceRole.entities.Invoice.filter({ id: invoice.id });
-    const [finalJob] = await base44.asServiceRole.entities.Job.filter({ id: provisioningResult.job_id });
+    const [finalJob] = await base44.asServiceRole.entities.Job.filter({ id: job.id });
     const [finalAuth] = await base44.asServiceRole.entities.WorkAuthorization.filter({ id: authorization.id });
     
     // Validate chain integrity
@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
       validations.push('✅ Invoice → WorkAuthorization link OK');
     }
     
-    if (!finalInvoice.job_id || finalInvoice.job_id !== provisioningResult.job_id) {
+    if (!finalInvoice.job_id || finalInvoice.job_id !== job.id) {
       validations.push('❌ Invoice not linked to Job');
     } else {
       validations.push('✅ Invoice → Job link OK');
