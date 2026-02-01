@@ -402,28 +402,37 @@ export default function FieldDimensionsView({ jobId, jobName }) {
                       </>
                     )}
                     <input 
-                      type="file" 
-                      accept="image/*,.pdf"
-                      onChange={async (e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        
-                        setUploading(true);
-                        try {
-                          const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                          setNewPlan({
-                            ...newPlan,
-                            file: file_url,
-                            name: newPlan.name || file.name.split('.')[0]
-                          });
-                        } catch (error) {
-                          toast.error('Upload failed: ' + error.message);
-                        }
-                        setUploading(false);
-                      }}
-                      className="hidden"
-                      disabled={uploading}
-                    />
+                       type="file" 
+                       accept="image/*,.pdf"
+                       onChange={async (e) => {
+                         const file = e.target.files[0];
+                         if (!file) return;
+
+                         setUploading(true);
+                         try {
+                           const response = await base44.integrations.Core.UploadFile({ file });
+                           const fileUrl = response.file_url || response.url;
+
+                           if (!fileUrl) {
+                             throw new Error('No file URL returned from upload');
+                           }
+
+                           setNewPlan({
+                             ...newPlan,
+                             file: fileUrl,
+                             name: newPlan.name || file.name.split('.')[0]
+                           });
+                           toast.success('Drawing uploaded successfully');
+                         } catch (error) {
+                           console.error('[FieldDimensionsView] Upload error:', error);
+                           toast.error('Upload failed: ' + (error.message || 'Unknown error'));
+                         } finally {
+                           setUploading(false);
+                         }
+                       }}
+                       className="hidden"
+                       disabled={uploading}
+                     />
                   </label>
                 )}
               </div>
