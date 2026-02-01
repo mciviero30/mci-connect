@@ -24,6 +24,7 @@ import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
 import { useNavigate } from "react-router-dom";
 import CreateJobFromInvoiceDialog from "../components/trabajos/CreateJobFromInvoiceDialog";
+import ExcelExporter, { transformInvoicesForExport } from "@/components/shared/ExcelExporter";
 
 export default function Facturas() {
   const { t, language } = useLanguage();
