@@ -66,7 +66,8 @@ Deno.serve(async (req) => {
       total: 1000,
       status: 'approved',
       approval_status: 'approved',
-      assigned_to_user_id: user.id
+      assigned_to_user_id: user.id,
+      created_by_user_id: user.id
     });
     
     testResults.steps.push(`✅ Quote created: ${quote_number}`);
@@ -182,18 +183,15 @@ Deno.serve(async (req) => {
       provisioning_status: 'completed'
     });
     
-    // Update invoice with job_id
+    // Update invoice with job_id AND quote with invoice_id + job_id
     await base44.asServiceRole.entities.Invoice.update(invoice.id, { job_id: job.id });
+    await base44.asServiceRole.entities.Quote.update(testQuote.id, { 
+      invoice_id: invoice.id,
+      job_id: job.id
+    });
     
-    const provisioningResult = { ok: true, job_id: job.id };
-    
-    if (!provisioningResult.ok) {
-      testResults.errors.push(`Provisioning failed: ${provisioningResult.reason || provisioningResult.error}`);
-      throw new Error('Provisioning failed');
-    }
-    
-    testResults.steps.push(`✅ Job provisioned: ${provisioningResult.job_id}`);
-    testResults.data.job_id = provisioningResult.job_id;
+    testResults.steps.push(`✅ Job created: ${job_number}`);
+    testResults.data.job_id = job.id;
 
     // ========================================
     // STEP 5: Verify complete chain
