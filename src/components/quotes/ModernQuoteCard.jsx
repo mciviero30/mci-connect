@@ -16,10 +16,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import FavoriteButton from "@/components/shared/FavoriteButton";
+import { useQuery } from "@tanstack/react-query";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConvert, isAdmin, onSend }) {
   const navigate = useNavigate();
   const { language } = useLanguage();
+
+  const { data: user } = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: () => base44.auth.me(),
+  });
 
   // Normalize text helper
   const normalizeText = (text) => {
@@ -58,17 +66,24 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
             )}
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => e.stopPropagation()}
-                className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-2 py-1.5 rounded-lg min-h-[36px] flex-shrink-0 touch-manipulation active:scale-95 transition-transform"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
+          <div className="flex items-center gap-1">
+            <FavoriteButton
+              entityType="quote"
+              entityId={quote.id}
+              entityName={quote.customer_name}
+              user={user}
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-2 py-1.5 rounded-lg min-h-[36px] flex-shrink-0 touch-manipulation active:scale-95 transition-transform"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
               <DropdownMenuItem 
                 onClick={(e) => {
@@ -180,7 +195,8 @@ export default function ModernQuoteCard({ quote, onDuplicate, onDelete, onConver
                 </>
               )}
             </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Status Badges - Enhanced sizing */}

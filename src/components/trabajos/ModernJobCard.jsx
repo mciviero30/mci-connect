@@ -14,14 +14,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { base44 } from "@/api/base44Client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
+import FavoriteButton from "@/components/shared/FavoriteButton";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function ModernJobCard({ job, onEdit }) {
   const navigate = useNavigate();
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
+
+  const { data: user } = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: () => base44.auth.me(),
+  });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Job.delete(id),
@@ -110,17 +117,24 @@ export default function ModernJobCard({ job, onEdit }) {
             )}
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => e.stopPropagation()}
-                className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-2 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </Button>
-            </DropdownMenuTrigger>
+          <div className="flex items-center gap-1">
+            <FavoriteButton
+              entityType="job"
+              entityId={job.id}
+              entityName={normalizeJobName(job.name)}
+              user={user}
+            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-[#F5F5F5] dark:bg-slate-700 hover:bg-[#E8E8E8] dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-2 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
               <DropdownMenuItem onClick={() => navigate(createPageUrl(`JobDetails?id=${job.id}`))}>
                 <Eye className="w-4 h-4 mr-2" />
@@ -135,7 +149,8 @@ export default function ModernJobCard({ job, onEdit }) {
                 {language === 'es' ? 'Eliminar' : 'Delete'}
               </DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+            </DropdownMenu>
+          </div>
         </div>
 
         {/* Status Badges - Enhanced sizing */}

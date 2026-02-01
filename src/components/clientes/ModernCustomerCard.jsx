@@ -6,9 +6,18 @@ import { Mail, Phone, Building2, Plus } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { getCustomerDisplayName } from "@/components/utils/nameHelpers";
+import FavoriteButton from "@/components/shared/FavoriteButton";
+import { useQuery } from "@tanstack/react-query";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { base44 } from "@/api/base44Client";
 
 export default function ModernCustomerCard({ customer, onViewDetails, isSelected, onToggleSelect, showSelectButton }) {
   const navigate = useNavigate();
+  
+  const { data: user } = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: () => base44.auth.me(),
+  });
 
   // Normalize text helper
   const normalizeText = (text) => {
@@ -45,6 +54,12 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
           </div>
 
           <div className="flex flex-col items-end gap-2">
+            <FavoriteButton
+              entityType="customer"
+              entityId={customer.id}
+              entityName={displayName}
+              user={user}
+            />
             {showSelectButton && (
               <button
                 onClick={(e) => {
