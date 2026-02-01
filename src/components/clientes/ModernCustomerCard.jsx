@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, Building2, Plus } from "lucide-react";
+import { Mail, Phone, Building2, Plus, MessageSquare, Copy, FileCheck } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
 import { getCustomerDisplayName } from "@/components/utils/nameHelpers";
@@ -17,6 +17,18 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
   const { data: user } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
+  });
+
+  // Fetch stats - total quotes & invoices
+  const { data: customerStats = { quotes: 0, invoices: 0, totalRevenue: 0 } } = useQuery({
+    queryKey: ['customerStats', customer.id],
+    queryFn: async () => {
+      const quotes = await base44.entities.Quote.filter({ customer_id: customer.id }, '', 100);
+      const invoices = await base44.entities.Invoice.filter({ customer_id: customer.id }, '', 100);
+      const totalRevenue = invoices.filter(i => i.status === 'paid').reduce((sum, i) => sum + (i.total || 0), 0);
+      return { quotes: quotes.length, invoices: invoices.length, totalRevenue };
+    },
+    staleTime: 600000,
   });
 
   // Normalize text helper
@@ -108,8 +120,24 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
           )}
         </div>
 
+        {/* Stats Row - NEW */}
+        <div className="flex gap-2 mb-3 text-[10px]">
+          <div className="flex-1 bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2 text-center">
+            <p className="font-bold text-slate-900 dark:text-white">{customerStats.quotes}</p>
+            <p className="text-[9px] text-slate-600 dark:text-slate-400">Quotes</p>
+          </div>
+          <div className="flex-1 bg-slate-50 dark:bg-slate-700/30 rounded-lg p-2 text-center">
+            <p className="font-bold text-slate-900 dark:text-white">{customerStats.invoices}</p>
+            <p className="text-[9px] text-slate-600 dark:text-slate-400">Invoices</p>
+          </div>
+          <div className="flex-1 bg-green-50 dark:bg-green-900/20 rounded-lg p-2 text-center">
+            <p className="font-bold text-green-600 dark:text-green-400">${(customerStats.totalRevenue / 1000).toFixed(1)}k</p>
+            <p className="text-[9px] text-green-600 dark:text-green-400">Revenue</p>
+          </div>
+        </div>
+
         {/* Contact Info */}
-        <div className="space-y-1.5 mb-0 mt-auto">
+        <div className="space-y-1.5 mb-3 mt-auto">
           {customer.email && (
             <div className="flex items-center gap-1.5 text-[#666666] dark:text-slate-400">
               <Mail className="w-[13px] h-[13px] text-slate-400 dark:text-slate-500 flex-shrink-0" strokeWidth={1.5} />
@@ -122,6 +150,32 @@ export default function ModernCustomerCard({ customer, onViewDetails, isSelected
               <span className="text-[10px]">{customer.phone}</span>
             </div>
           )}
+        </div>
+
+        {/* Quick Actions - NEW */}
+        <div className="flex gap-1.5 pt-3 border-t border-slate-100 dark:border-slate-700">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(createPageUrl(`CrearEstimado?customerId=${customer.id}`));
+            }}
+            className="flex-1 h-8 text-[11px] border-slate-300 dark:border-slate-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+          >
+            <Plus className="w-3 h-3" />
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(createPageUrl(`CrearFactura?customerId=${customer.id}`));
+            }}
+            className="flex-1 h-8 text-[11px] border-slate-300 dark:border-slate-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+          >
+            <FileCheck className="w-3 h-3" />
+          </Button>
         </div>
       </div>
 
