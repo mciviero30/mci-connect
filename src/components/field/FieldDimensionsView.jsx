@@ -271,16 +271,6 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
     }
   }, []);
 
-  // FASE 5 PERF: Handle PDF conversion when selected image changes
-  useEffect(() => {
-    if (selectedImage && !pdfCanvas) {
-      const selectedOption = imageOptions.find(o => o.value === selectedImage);
-      if (selectedOption?.isPDF) {
-        loadPdfWithPdfJs(selectedOption.url);
-      }
-    }
-  }, [selectedImage, imageOptions, pdfCanvas]);
-
   // FASE 5 PERF: Memoized image options to prevent recreation
   const imageOptions = React.useMemo(() => [
     ...plans.map(p => {
@@ -304,6 +294,16 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
       isPDF: false 
     })),
   ], [plans, photos]);
+
+  // FASE 5 PERF: Handle PDF conversion when selected image changes
+  useEffect(() => {
+    if (selectedImage && !pdfCanvas) {
+      const selectedOption = imageOptions.find(o => o.value === selectedImage);
+      if (selectedOption?.isPDF) {
+        loadPdfWithPdfJs(selectedOption.url);
+      }
+    }
+  }, [selectedImage, imageOptions, pdfCanvas]);
 
   // FASE 5 PERF: Memoized dimension filtering
   const filteredDimensions = React.useMemo(() => {
