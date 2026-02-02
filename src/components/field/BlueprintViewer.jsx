@@ -72,6 +72,56 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   // FASE A2.4: Navigation state
   const [currentChangeIndex, setCurrentChangeIndex] = useState(0);
   
+  // CRITICAL: State that affects hooks MUST be declared BEFORE hooks
+  // Measurement overlay state
+  const [layers, setLayers] = useState({
+    tasks: true,
+    horizontal: true,
+    vertical: true,
+    benchmarks: true,
+    photos: false,
+    incidents: false
+  });
+  const [selectedMeasurement, setSelectedMeasurement] = useState(null);
+  const [selectedMeasurementType, setSelectedMeasurementType] = useState(null);
+  
+  // Scale calibration state
+  const [showScaleDialog, setShowScaleDialog] = useState(false);
+  const [isCalibrating, setIsCalibrating] = useState(false);
+  const [calibrationPoints, setCalibrationPoints] = useState([]);
+  
+  // Loading states
+  const [loadingState, setLoadingState] = useState('loading');
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+  
+  // Toolbar state
+  const [activeTool, setActiveTool] = useState('select');
+  const [showPins, setShowPins] = useState(true);
+  const [showMiniMap, setShowMiniMap] = useState(true);
+  const [showFilters, setShowFilters] = useState(false);
+  const [taskFilters, setTaskFilters] = useState({ status: [], priority: [], category: [] });
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+  
+  const containerRef = useRef(null);
+  const imageRef = useRef(null);
+  const timeoutRef = useRef(null);
+  
+  // Touch handling for mobile
+  const [touchStart, setTouchStart] = useState(null);
+  const [lastTouchDistance, setLastTouchDistance] = useState(null);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+  // PDF rendering state
+  const [pdfCanvas, setPdfCanvas] = useState(null);
+  const [pdfPage, setPdfPage] = useState(1);
+  const [pdfTotalPages, setPdfTotalPages] = useState(1);
+  const [pdfDoc, setPdfDoc] = useState(null);
+  const canvasRef = useRef(null);
+  
   // FASE A2.3: Use diff overlay hook
   const { changeRegions, isProcessing: isDiffProcessing, changeCount } = useBlueprintDiffOverlay(
     isComparing && showChangeMarkers,
@@ -163,48 +213,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
       setIsExporting(false);
     }
   };
-  
-  // Measurement overlay state
-  const [layers, setLayers] = useState({
-    tasks: true,
-    horizontal: true,
-    vertical: true,
-    benchmarks: true,
-    photos: false,
-    incidents: false
-  });
-  const [selectedMeasurement, setSelectedMeasurement] = useState(null);
-  const [selectedMeasurementType, setSelectedMeasurementType] = useState(null);
-  
-  // Scale calibration state
-  const [showScaleDialog, setShowScaleDialog] = useState(false);
-  const [isCalibrating, setIsCalibrating] = useState(false);
-  const [calibrationPoints, setCalibrationPoints] = useState([]);
-  
-  // Loading states
-  const [loadingState, setLoadingState] = useState('loading'); // 'loading' | 'success' | 'error'
-  const [loadProgress, setLoadProgress] = useState(0);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [retryCount, setRetryCount] = useState(0);
-  const [isRetrying, setIsRetrying] = useState(false);
-  
-  // Toolbar state
-  const [activeTool, setActiveTool] = useState('select'); // select | pin | link | pencil | text | eraser
-  const [showPins, setShowPins] = useState(true);
-  const [showMiniMap, setShowMiniMap] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
-  const [taskFilters, setTaskFilters] = useState({ status: [], priority: [], category: [] });
-  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-  
-  const containerRef = useRef(null);
-  const imageRef = useRef(null);
-  const timeoutRef = useRef(null);
-  
-  // Touch handling for mobile
-  const [touchStart, setTouchStart] = useState(null);
-  const [lastTouchDistance, setLastTouchDistance] = useState(null);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   // FASE A2.1: Fetch all plan versions for this job
   const { data: allPlans = [] } = useQuery({
@@ -215,7 +223,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     gcTime: Infinity
   });
 
-  // Fetch measurements data
+  // Fetch measurements data (BEFORE filteredTasks calculation)
   const { data: horizontalMeasurements = [] } = useQuery({
     queryKey: FIELD_QUERY_KEYS.FIELD_DIMENSIONS(jobId),
     queryFn: () => base44.entities.FieldDimension.filter({ project_id: jobId }),
@@ -240,7 +248,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     gcTime: Infinity
   });
 
-  // Validate file type
+  // Utility functions (no hooks)
   const isValidFileType = (url) => {
     if (!url) return false;
     const extension = url.split('.').pop()?.toLowerCase().split('?')[0];
@@ -254,14 +262,7 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     return extension === 'pdf';
   };
 
-  // PDF rendering state
-  const [pdfCanvas, setPdfCanvas] = useState(null);
-  const [pdfPage, setPdfPage] = useState(1);
-  const [pdfTotalPages, setPdfTotalPages] = useState(1);
-  const [pdfDoc, setPdfDoc] = useState(null);
-  const canvasRef = useRef(null);
-
-  // Get specific error message
+  // Utility functions for error messages
   const getErrorMessage = (error, type) => {
     if (type === 'timeout') {
       return 'Plan loading timed out. The file may be too large.';
