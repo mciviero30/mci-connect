@@ -5,7 +5,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Wand2, Trash2, MoreVertical } from 'lucide-react';
 import EditPlanDialog from './EditPlanDialog';
 
-export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, setAnalyzePlan, deletePlanMutation }) {
+export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, setAnalyzePlan, deletePlanMutation, jobId }) {
+  const [editingPlan, setEditingPlan] = useState(null);
+
   // Group plans by section > folder
   const grouped = plans.reduce((acc, plan) => {
     const section = plan.section || 'Unassigned';
