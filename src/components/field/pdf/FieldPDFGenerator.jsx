@@ -307,6 +307,7 @@ function renderBenchmarksPage(doc, data, pageNum) {
   const { enrichBenchmarksWithUsage, formatBenchmarkRow } = require('./FieldPDFLayoutEngine');
   
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   let y = 100;
   
   // Page header
