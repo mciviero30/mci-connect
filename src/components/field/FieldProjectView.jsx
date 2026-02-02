@@ -284,8 +284,17 @@ const FieldProjectViewMemoized = React.memo(function FieldProjectView({
           </Button>
         </div>
       </div>
-      
-
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if job, tasks, plans, or jobId changes
+  return (
+    prevProps.job?.id === nextProps.job?.id &&
+    prevProps.tasks?.length === nextProps.tasks?.length &&
+    prevProps.plans?.length === nextProps.plans?.length &&
+    prevProps.jobId === nextProps.jobId &&
+    prevProps.isLoading === nextProps.isLoading
+  );
+});
+
+export default FieldProjectViewMemoized;
