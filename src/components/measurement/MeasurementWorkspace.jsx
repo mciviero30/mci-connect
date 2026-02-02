@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Plus, Ruler, Download, Trash2, CheckCircle2, AlertTriangle, Upload, Loader2, X } from 'lucide-react';
+import { Plus, Ruler, Download, Trash2, CheckCircle2, AlertTriangle, Upload, Loader2, X, Lock, LockOpen } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
