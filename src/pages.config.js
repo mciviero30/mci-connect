@@ -124,6 +124,7 @@ import LiveGPSTracking from './pages/LiveGPSTracking';
 import ManagerDashboard from './pages/ManagerDashboard';
 import Manejo from './pages/Manejo';
 import MarginCommissionAnalyzer from './pages/MarginCommissionAnalyzer';
+import Measurement from './pages/Measurement';
 import MeasurementPackage from './pages/MeasurementPackage';
 import MiScorecard from './pages/MiScorecard';
 import MileageApproval from './pages/MileageApproval';
@@ -179,7 +180,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import Measurement from './pages/Measurement';
 import __Layout from './Layout.jsx';
 
 
@@ -261,6 +261,7 @@ export const PAGES = {
     "ManagerDashboard": ManagerDashboard,
     "Manejo": Manejo,
     "MarginCommissionAnalyzer": MarginCommissionAnalyzer,
+    "Measurement": Measurement,
     "MeasurementPackage": MeasurementPackage,
     "MiScorecard": MiScorecard,
     "MileageApproval": MileageApproval,
@@ -316,7 +317,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "Measurement": Measurement,
 }
 
 export const pagesConfig = {

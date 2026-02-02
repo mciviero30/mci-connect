@@ -517,6 +517,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       items: [
         { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
         { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
+        { title: 'Measurement', url: createPageUrl("Measurement"), icon: Ruler },
         { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
         { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
       ]
