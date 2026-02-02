@@ -82,6 +82,16 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                                   <DropdownMenuItem
                                     onClick={(e) => {
                                       e.stopPropagation();
+                                      setEditingPlan(plan);
+                                    }}
+                                    className="text-white hover:bg-blue-500/20 cursor-pointer"
+                                  >
+                                    <Edit2 className="w-4 h-4 mr-2 text-blue-400" />
+                                    Edit
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       setAnalyzePlan(plan);
                                     }}
                                     className="text-white hover:bg-orange-500/20 cursor-pointer"
