@@ -23,7 +23,8 @@ import {
   Save,
   X as XIcon,
   Trophy,
-  Download
+  Download,
+  Ruler
 } from "lucide-react";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay } from "date-fns";
 import LiveClock from "../components/dashboard/LiveClock";
