@@ -128,7 +128,7 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                     )}
 
                     {/* Plans grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
                       {folderPlans.map((plan) => {
                         const isPdf = plan.file_url?.toLowerCase().includes('.pdf');
                         const taskCount = tasks.filter(t => t.blueprint_id === plan.id).length;
@@ -137,14 +137,14 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                         return (
                            <div
                              key={plan.id}
-                             className={`bg-slate-800 border rounded-xl overflow-hidden transition-all group cursor-pointer active:scale-95 relative ${
+                             className={`bg-slate-800 border rounded-lg overflow-hidden transition-all group cursor-pointer active:scale-95 relative text-xs ${
                                isSelected 
-                                 ? 'border-red-500 shadow-xl shadow-red-500/30' 
-                                 : 'border-slate-700 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/30'
+                                 ? 'border-red-500 shadow-lg shadow-red-500/30' 
+                                 : 'border-slate-700 hover:border-orange-500 hover:shadow-lg hover:shadow-orange-500/30'
                              }`}
                            >
                              {/* Checkbox overlay */}
-                             <div className="absolute top-2 left-2 z-30">
+                             <div className="absolute top-1 left-1 z-30">
                                <input
                                  type="checkbox"
                                  checked={isSelected}
@@ -158,102 +158,102 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                                    }
                                    setSelectedForDelete(newSet);
                                  }}
-                                 className="w-5 h-5 cursor-pointer accent-orange-500"
+                                 className="w-4 h-4 cursor-pointer accent-orange-500"
                                  onClick={(e) => e.stopPropagation()}
                                />
                              </div>
 
                              {/* Action menu */}
-                             <div className="absolute top-2 right-2 z-30">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <button
-                                    onClick={(e) => e.stopPropagation()}
-                                    className="p-2.5 bg-black/70 backdrop-blur-md rounded-lg hover:bg-black/90 transition-all shadow-lg min-h-[44px] min-w-[44px] active:scale-95"
-                                    title="Opciones"
-                                  >
-                                    <MoreVertical className="w-4 h-4 text-white" />
-                                  </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="bg-slate-900 border-slate-700">
-                                  <DropdownMenuItem
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditingPlan(plan);
-                                    }}
-                                    className="text-white hover:bg-blue-500/20 cursor-pointer"
-                                  >
-                                    <Edit2 className="w-4 h-4 mr-2 text-blue-400" />
-                                    Edit
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setAnalyzePlan(plan);
-                                    }}
-                                    className="text-white hover:bg-orange-500/20 cursor-pointer"
-                                  >
-                                    <Wand2 className="w-4 h-4 mr-2 text-orange-400" />
-                                    Analyze
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (window.confirm('Delete this plan?')) {
-                                        deletePlanMutation.mutate(plan.id);
-                                      }
-                                    }}
-                                    className="text-red-400 hover:bg-red-500/20 cursor-pointer"
-                                  >
-                                    <Trash2 className="w-4 h-4 mr-2" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
+                             <div className="absolute top-1 right-1 z-30">
+                               <DropdownMenu>
+                                 <DropdownMenuTrigger asChild>
+                                   <button
+                                     onClick={(e) => e.stopPropagation()}
+                                     className="p-1 bg-black/70 backdrop-blur-md rounded hover:bg-black/90 transition-all shadow-md min-h-[32px] min-w-[32px] active:scale-95"
+                                     title="Opciones"
+                                   >
+                                     <MoreVertical className="w-3 h-3 text-white" />
+                                   </button>
+                                 </DropdownMenuTrigger>
+                                 <DropdownMenuContent className="bg-slate-900 border-slate-700 text-xs">
+                                   <DropdownMenuItem
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       setEditingPlan(plan);
+                                     }}
+                                     className="text-white hover:bg-blue-500/20 cursor-pointer text-xs"
+                                   >
+                                     <Edit2 className="w-3 h-3 mr-1 text-blue-400" />
+                                     Edit
+                                   </DropdownMenuItem>
+                                   <DropdownMenuItem
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       setAnalyzePlan(plan);
+                                     }}
+                                     className="text-white hover:bg-orange-500/20 cursor-pointer text-xs"
+                                   >
+                                     <Wand2 className="w-3 h-3 mr-1 text-orange-400" />
+                                     Analyze
+                                   </DropdownMenuItem>
+                                   <DropdownMenuItem
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       if (window.confirm('Delete this plan?')) {
+                                         deletePlanMutation.mutate(plan.id);
+                                       }
+                                     }}
+                                     className="text-red-400 hover:bg-red-500/20 cursor-pointer text-xs"
+                                   >
+                                     <Trash2 className="w-3 h-3 mr-1" />
+                                     Delete
+                                   </DropdownMenuItem>
+                                 </DropdownMenuContent>
+                               </DropdownMenu>
+                             </div>
 
-                            <div onClick={() => setSelectedPlan(plan)}>
-                              {/* Image */}
-                              <div className="aspect-video bg-slate-950 flex items-center justify-center relative overflow-hidden">
-                                {isPdf ? (
-                                  <div className="text-center">
-                                    <div className="text-4xl mb-2">📄</div>
-                                    <p className="text-slate-400 text-xs">PDF</p>
-                                  </div>
-                                ) : (
-                                  <img
-                                    src={plan.file_url}
-                                    alt={plan.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                    onError={(e) => {
-                                      e.target.src = '';
-                                      e.target.parentElement.innerHTML = '<div class="text-center"><div class="text-2xl mb-1">🖼️</div><p class="text-xs text-slate-400">No preview</p></div>';
-                                    }}
-                                  />
-                                )}
-                                
-                                {/* Overlay + Task count */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
-                                {taskCount > 0 && (
-                                  <div className="absolute top-2 right-2 bg-orange-500 text-black text-xs font-bold px-2.5 py-1 rounded-full shadow-lg">
-                                    {taskCount} tasks
-                                  </div>
-                                )}
-                              </div>
+                             <div onClick={() => setSelectedPlan(plan)}>
+                               {/* Image */}
+                               <div className="aspect-square bg-slate-950 flex items-center justify-center relative overflow-hidden">
+                                 {isPdf ? (
+                                   <div className="text-center">
+                                     <div className="text-2xl mb-1">📄</div>
+                                     <p className="text-slate-400 text-[10px]">PDF</p>
+                                   </div>
+                                 ) : (
+                                   <img
+                                     src={plan.file_url}
+                                     alt={plan.name}
+                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                     onError={(e) => {
+                                       e.target.src = '';
+                                       e.target.parentElement.innerHTML = '<div class="text-center"><div class="text-lg mb-0.5">🖼️</div><p class="text-[10px] text-slate-400">No preview</p></div>';
+                                     }}
+                                   />
+                                 )}
 
-                              {/* Info */}
-                              <div className="p-3 bg-slate-800/80">
-                                <h3 className="font-bold text-white text-sm group-hover:text-orange-400 transition-colors truncate">
-                                  {plan.name}
-                                </h3>
-                                {plan.is_locked && (
-                                  <p className="text-xs text-red-400 mt-1">🔒 Locked</p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                                 {/* Overlay + Task count */}
+                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+                                 {taskCount > 0 && (
+                                   <div className="absolute top-1 right-1 bg-orange-500 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-lg">
+                                     {taskCount}
+                                   </div>
+                                 )}
+                               </div>
+
+                               {/* Info */}
+                               <div className="p-1.5 bg-slate-800/80">
+                                 <h3 className="font-bold text-white text-xs group-hover:text-orange-400 transition-colors truncate leading-tight">
+                                   {plan.name}
+                                 </h3>
+                                 {plan.is_locked && (
+                                   <p className="text-[9px] text-red-400 mt-0.5">🔒 Locked</p>
+                                 )}
+                               </div>
+                             </div>
+                           </div>
+                         );
+                       })}
                     </div>
                   </div>
                 );
