@@ -271,6 +271,16 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
     }
   }, []);
 
+  // FASE 5 PERF: Handle PDF conversion when selected image changes
+  useEffect(() => {
+    if (selectedImage) {
+      const selectedOption = imageOptions.find(o => o.value === selectedImage);
+      if (selectedOption?.isPDF && !pdfCanvas) {
+        loadPdfWithPdfJs(selectedOption.url);
+      }
+    }
+  }, [selectedImage, imageOptions, pdfCanvas, loadPdfWithPdfJs]);
+
   // FASE 5 PERF: Memoized image options to prevent recreation
   const imageOptions = React.useMemo(() => [
     ...plans.map(p => {
