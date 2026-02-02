@@ -121,11 +121,11 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
-  // Fetch task comments
+  // Fetch task comments - only for real tasks, not temp IDs
   const { data: comments = [] } = useQuery({
     queryKey: ['task-comments', task.id],
     queryFn: () => base44.entities.TaskComment.filter({ task_id: task.id }, '-created_date'),
-    enabled: !!task.id,
+    enabled: !!task.id && !task.id?.startsWith('temp_'),
   });
 
   // Fetch plan details if blueprintId is provided
