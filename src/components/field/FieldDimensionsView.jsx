@@ -21,8 +21,9 @@ import { FieldContextProvider } from './FieldContextProvider';
 import { FieldSessionManager } from './services/FieldSessionManager';
 import { useEffect } from 'react';
 
-export default function FieldDimensionsView({ jobId, jobName }) {
-  // FASE 3C-4: Generate measurement session ID on mount to isolate measurement state
+// FASE 5 PERF: Memoized for stable rendering
+const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, jobName }) {
+  // FASE 3C-4: Generate measurement session ID on mount
   const [measurementSessionId] = useState(() => {
     const existing = FieldSessionManager.getMeasurementSession();
     if (existing?.job_id === jobId && existing?.isActive) {
@@ -31,7 +32,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
     return FieldSessionManager.startMeasurementSession(jobId);
   });
 
-  // FASE 3C-4: Clear measurement session on unmount
+  // FASE 5 PERF: Guaranteed cleanup on unmount
   useEffect(() => {
     return () => {
       FieldSessionManager.clearMeasurementSession();
@@ -133,35 +134,37 @@ export default function FieldDimensionsView({ jobId, jobName }) {
     },
   });
 
-  const handleStartDimension = (type) => {
+  // FASE 5 PERF: Stable callbacks to prevent child re-renders
+  const handleStartDimension = React.useCallback((type) => {
     setActiveDimension({
       dimension_type: type,
       measurement_type: type === 'horizontal' ? 'FF-FF' : 'BM-C',
       unit_system: projectUnitSystem,
     });
-  };
+  }, [projectUnitSystem]);
 
-  const handleDimensionPlace = (canvasData) => {
-    setEditingDimension({
+  const handleDimensionPlace = React.useCallback((canvasData) => {
+    setEditingDimension(prev => ({
       ...activeDimension,
       canvas_data: canvasData,
-    });
+    }));
     setShowDimensionDialog(true);
-  };
+  }, [activeDimension]);
 
-  const handleSaveDimension = (data) => {
+  const handleSaveDimension = React.useCallback((data) => {
     createDimensionMutation.mutate(data);
-  };
+  }, [createDimensionMutation]);
 
-  const handleExportPDF = () => {
+  const handleExportPDF = React.useCallback(() => {
     if (dimensions.length === 0) {
       toast.error('No dimensions to export');
       return;
     }
     setShowExportDialog(true);
-  };
+  }, [dimensions.length]);
 
-  const imageOptions = [
+  // FASE 5 PERF: Memoized image options to prevent recreation
+  const imageOptions = React.useMemo(() => [
     ...plans.map(p => {
       const isPDF = p.file_url?.toLowerCase?.().endsWith('.pdf');
       return {
@@ -173,15 +176,25 @@ export default function FieldDimensionsView({ jobId, jobName }) {
         isPDF,
       };
     }),
-    ...photos.map(p => ({ value: `photo_${p.id}`, label: `Photo: ${p.caption || 'Untitled'}`, url: p.photo_url, type: 'photo', fileType: 'image', isPDF: false })),
-  ];
+    ...photos.map(p => ({ 
+      value: `photo_${p.id}`, 
+      label: `Photo: ${p.caption || 'Untitled'}`, 
+      url: p.photo_url, 
+      type: 'photo', 
+      fileType: 'image', 
+      isPDF: false 
+    })),
+  ], [plans, photos]);
 
-  const filteredDimensions = selectedImage 
-    ? dimensions.filter(d => {
-        const [type, id] = selectedImage.split('_');
-        return (type === 'plan' && d.blueprint_id === id) || (type === 'photo' && d.photo_id === id);
-      })
-    : dimensions;
+  // FASE 5 PERF: Memoized dimension filtering
+  const filteredDimensions = React.useMemo(() => {
+    if (!selectedImage) return dimensions;
+    const [type, id] = selectedImage.split('_');
+    return dimensions.filter(d => 
+      (type === 'plan' && d.blueprint_id === id) || 
+      (type === 'photo' && d.photo_id === id)
+    );
+  }, [selectedImage, dimensions]);
 
   // FASE 3C-4: Wrap in FieldContextProvider with measurement_session_id
   return (
@@ -583,8 +596,9 @@ export default function FieldDimensionsView({ jobId, jobName }) {
     </div>
     </FieldContextProvider>
   );
-}
+});
 
+// FASE 5 PERF: Utility function outside component (no recreation)
 function formatDimensionValue(dim) {
   if (dim.unit_system === 'imperial') {
     const ft = dim.value_feet || 0;
@@ -600,3 +614,5 @@ function formatDimensionValue(dim) {
     return `${dim.value_mm || 0}mm`;
   }
 }
+
+export default FieldDimensionsView;

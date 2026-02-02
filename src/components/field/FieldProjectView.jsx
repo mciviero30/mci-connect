@@ -50,6 +50,7 @@ export default function FieldProjectView({
   const [showCreateTask, setShowCreateTask] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
   const [showDebugDrawer, setShowDebugDrawer] = React.useState(false);
+  const [language] = React.useState('en'); // FASE 5 PERF: Default language
   
   // Debug mode detection - MUST BE BEFORE EARLY RETURNS
   const isDebugMode = useFieldDebugMode(currentUser);
@@ -64,11 +65,13 @@ export default function FieldProjectView({
     setActivePanel('plans');
   };
 
-  // Monitor online status
+  // FASE 5 PERF: Stable online status monitoring
   React.useEffect(() => {
     const updateOnlineStatus = () => setIsOnline(navigator.onLine);
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
+    
+    // Cleanup guaranteed
     return () => {
       window.removeEventListener('online', updateOnlineStatus);
       window.removeEventListener('offline', updateOnlineStatus);
@@ -131,26 +134,22 @@ export default function FieldProjectView({
     return <AccessDenied />;
   }
 
-  // FASE 4 (UX): Render active panel - Simplified 3-panel structure
-  const renderActivePanel = () => {
+  // FASE 5 PERF: Memoized panel rendering - prevents unnecessary re-renders
+  const renderActivePanel = React.useMemo(() => {
     switch (activePanel) {
       case 'plans':
-        // FASE 4: Plans is now the DEFAULT view (no back button needed)
         return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
       
       case 'measurements':
-        // FASE 4: Dedicated measurement workspace
         return <FieldDimensionsView jobId={jobId} jobName={job?.name || job?.job_name_field} />;
       
       case 'capture':
-        // FASE 4: Unified capture section (photos + reports + incidents)
         return <FieldCaptureView jobId={jobId} jobName={job?.name || job?.job_name_field} plans={plans} />;
       
       default:
-        // Fallback to Plans
         return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
     }
-  };
+  }, [activePanel, jobId, plans, tasks, job]);
 
   // Work mode only - no debug panels in this view
   // Debug panels are accessed via FieldDebugDrawer
@@ -208,7 +207,7 @@ export default function FieldProjectView({
 
       {/* FASE 4 POLISH: Content with proper spacing for bottom nav */}
       <div className="flex-1 overflow-y-auto pb-24" style={{ WebkitOverflowScrolling: 'touch' }}>
-        {renderActivePanel()}
+        {renderActivePanel}
       </div>
 
       {/* FASE 4 (UX): Persistent status indicators - Moved to header area */}

@@ -73,4 +73,6 @@ export default function FieldNav({ activeTab, onTabChange, language, onNewTask, 
       </div>
     </>
   );
-}
+});
+
+export default FieldNav;

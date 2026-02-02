@@ -20,7 +20,8 @@ import { Badge } from '@/components/ui/badge';
 const MAX_FILE_SIZE_MB = 100;
 const WARNING_FILE_SIZE_MB = 50;
 
-export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks = [] }) {
+// FASE 5 PERF: Memoized component for better performance
+const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansFromProp = [], tasks = [] }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -42,8 +43,8 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
     enabled: !!jobId,
   });
 
-  // Use filtered plans instead of prop
-  const plans = jobFinalPlans;
+  // FASE 5 PERF: Stable plans reference
+  const plans = React.useMemo(() => jobFinalPlans, [jobFinalPlans]);
 
   const createPlanMutation = useMutation({
     mutationFn: (data) => base44.entities.Plan.create({
@@ -75,7 +76,8 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
     },
   });
 
-  const validateFile = (file) => {
+  // FASE 5 PERF: Stable validation callback
+  const validateFile = React.useCallback((file) => {
     const fileSizeMB = file.size / (1024 * 1024);
     const validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'pdf'];
     const extension = file.name.split('.').pop()?.toLowerCase();
@@ -86,24 +88,25 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
 
     // Validate extension
     if (!validExtensions.includes(extension)) {
-      setFileError('Tipo de archivo no válido. Solo se permiten: JPG, PNG, GIF, WebP, SVG, PDF');
+      setFileError('Invalid file type. Only JPG, PNG, GIF, WebP, SVG, PDF allowed');
       return false;
     }
 
     // Check file size
     if (fileSizeMB > MAX_FILE_SIZE_MB) {
-      setFileError(`El archivo excede el límite de ${MAX_FILE_SIZE_MB}MB. Por favor, comprime el archivo antes de subirlo.`);
+      setFileError(`File exceeds ${MAX_FILE_SIZE_MB}MB limit. Please compress before uploading.`);
       return false;
     }
 
     if (fileSizeMB > WARNING_FILE_SIZE_MB) {
-      setFileSizeWarning(`⚠️ Archivo grande (${fileSizeMB.toFixed(1)}MB). Considera comprimir el archivo para una carga más rápida.`);
+      setFileSizeWarning(`⚠️ Large file (${fileSizeMB.toFixed(1)}MB). Consider compressing for faster upload.`);
     }
 
     return true;
-  };
+  }, []);
 
-  const handleFileUpload = async (e) => {
+  // FASE 5 PERF: Stable file upload handler
+  const handleFileUpload = React.useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -170,9 +173,10 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
       setFileError('Error uploading file. Please try again.');
     }
     setUploading(false);
-  };
+  }, [jobId, plans.length, newPlan.name, queryClient, validateFile]);
 
-  const handleCreatePlan = () => {
+  // FASE 5 PERF: Stable create handler
+  const handleCreatePlan = React.useCallback(() => {
     if (!newPlan.file || !newPlan.name) return;
     createPlanMutation.mutate({
       job_id: jobId,
@@ -180,11 +184,13 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
       file_url: newPlan.file,
       order: plans.length,
     });
-  };
+  }, [newPlan, jobId, plans.length, createPlanMutation]);
 
-  const planTasks = selectedPlan 
-    ? tasks.filter(t => t.blueprint_id === selectedPlan.id)
-    : [];
+  // FASE 5 PERF: Memoized task filtering
+  const planTasks = React.useMemo(() => 
+    selectedPlan ? tasks.filter(t => t.blueprint_id === selectedPlan.id) : [],
+    [selectedPlan, tasks]
+  );
 
   if (selectedPlan) {
     return (
@@ -247,9 +253,9 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
         </div>
       ) : (
         <>
-          {/* FASE 3B-I5: Group plans by section */}
-          {(() => {
-            // Group plans by section (null = "Unassigned")
+          {/* FASE 5 PERF: Memoized section grouping */}
+          {React.useMemo(() => {
+            // Group plans by section
             const grouped = plans.reduce((acc, plan) => {
               const key = plan.section || 'Unassigned';
               if (!acc[key]) acc[key] = [];
@@ -258,13 +264,24 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
             }, {});
 
             const sections = Object.keys(grouped).sort((a, b) => {
-              // "Unassigned" always at the end
               if (a === 'Unassigned') return 1;
               if (b === 'Unassigned') return -1;
               return a.localeCompare(b);
             });
 
-            return sections.map(section => (
+            return sections.map(section => {
+              // FASE 5 PERF: Inline task count calculation per plan
+              const sectionPlans = grouped[section].map(plan => ({
+                ...plan,
+                taskCount: tasks.filter(t => t.blueprint_id === plan.id).length,
+                clientPunchCount: tasks.filter(t => 
+                  t.blueprint_id === plan.id && 
+                  t.created_by_client && 
+                  t.punch_status === 'client_submitted'
+                ).length
+              }));
+              
+              return (
               <div key={section} className="mb-6">
                 {/* FASE 4 POLISH: Cleaner section headers */}
                 {sections.length > 1 && (
@@ -276,10 +293,9 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
                   </div>
                 )}
 
-                {/* FASE 4 POLISH: Better grid spacing, stronger tap affordance */}
+                {/* FASE 4 POLISH: Better grid spacing */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {grouped[section].map((plan) => {
-            const taskCount = tasks.filter(t => t.blueprint_id === plan.id).length;
+                  {sectionPlans.map((plan) => {
             const isPdf = plan.file_url?.toLowerCase().includes('.pdf');
             return (
               <div 
@@ -353,11 +369,11 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
                     {/* FASE 4 POLISH: Darker overlay for better text contrast */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
                     
-                    {/* FASE 4 POLISH: Larger, clearer badges */}
-                    {taskCount > 0 && (
+                    {/* FASE 5 PERF: Pre-calculated task count */}
+                    {plan.taskCount > 0 && (
                       <div className="absolute top-3 right-3">
                         <div className="bg-gradient-to-r from-orange-600 to-yellow-500 text-black text-sm font-bold px-4 py-2 rounded-full shadow-2xl">
-                          {taskCount}
+                          {plan.taskCount}
                         </div>
                       </div>
                     )}
@@ -402,8 +418,9 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
           })}
                 </div>
               </div>
-            ));
-          })()}
+            );
+            });
+          }, [plans, tasks])}
         </>
       )}
 
@@ -575,4 +592,6 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
       />
     </div>
   );
-}
+});
+
+export default FieldPlansView;

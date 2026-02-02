@@ -45,7 +45,8 @@ import DailyReportGenerator from './DailyReportGenerator';
  * Rationale: All "evidence capture" shares same mental model.
  * Default: Camera ready for instant access.
  */
-export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
+// FASE 5 PERF: Memoized component
+const FieldCaptureView = React.memo(function FieldCaptureView({ jobId, jobName, plans = [] }) {
   const [activeTab, setActiveTab] = useState('camera');
   const [showMobileCapture, setShowMobileCapture] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
@@ -57,7 +58,12 @@ export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
   const [showDailyReport, setShowDailyReport] = useState(false);
 
   const queryClient = useQueryClient();
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  
+  // FASE 5 PERF: Stable mobile detection
+  const isMobile = React.useMemo(() => 
+    typeof window !== 'undefined' && window.innerWidth < 768, 
+    []
+  );
 
   const { data: photos = [], isLoading } = useQuery({
     queryKey: FIELD_QUERY_KEYS.PHOTOS(jobId),
@@ -84,7 +90,8 @@ export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
     },
   });
 
-  const handleFileUpload = useCallback(async (e) => {
+  // FASE 5 PERF: Stable callbacks (already optimized)
+  const handleFileUpload = React.useCallback(async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
@@ -98,7 +105,7 @@ export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
     setUploading(false);
   }, []);
 
-  const handleCreatePhoto = useCallback(() => {
+  const handleCreatePhoto = React.useCallback(() => {
     if (!newPhoto.file_url) return;
     createPhotoMutation.mutate({
       job_id: jobId,
@@ -108,13 +115,13 @@ export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
     });
   }, [jobId, newPhoto, createPhotoMutation]);
 
-  // Quick Actions (always visible)
-  const quickActions = [
+  // FASE 5 PERF: Memoized quick actions (stable reference)
+  const quickActions = React.useMemo(() => [
     { id: 'camera', label: 'Take Photo', icon: Camera, action: () => isMobile ? setShowMobileCapture(true) : setShowUpload(true) },
     { id: 'report', label: 'Daily Report', icon: FileText, action: () => setShowDailyReport(true) },
     { id: 'incident', label: 'Incident', icon: AlertTriangle, action: () => setShowIncident(true) },
     { id: 'voice', label: 'Voice Note', icon: Mic, action: () => setShowVoiceNote(true) },
-  ];
+  ], [isMobile]);
 
   return (
     <div className="h-full flex flex-col bg-slate-900">
@@ -447,4 +454,6 @@ export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
       )}
     </div>
   );
-}
+});
+
+export default FieldCaptureView;
