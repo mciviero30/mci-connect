@@ -18,6 +18,7 @@ import BatchPlanUploadDialog from './BatchPlanUploadDialog.jsx';
 import { Badge } from '@/components/ui/badge';
 import PlanGridSection from './PlanGridSection.jsx';
 import PlanSectionAccordion from './PlanSectionAccordion.jsx';
+import PendingPlansAlert from './PendingPlansAlert.jsx';
 
 const MAX_FILE_SIZE_MB = 100;
 const WARNING_FILE_SIZE_MB = 50;
