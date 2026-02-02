@@ -123,17 +123,40 @@ export default function DimensionCanvas({
 
   const drawActiveLine = (ctx, points) => {
     if (points.length < 2) return;
-    
+
     ctx.save();
     ctx.strokeStyle = '#FFB800';
-    ctx.lineWidth = 3;
-    ctx.setLineDash([5, 5]);
-    
+    ctx.lineWidth = 4;
+    ctx.setLineDash([]);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    // Solid highlighted line
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
     ctx.lineTo(points[1].x, points[1].y);
     ctx.stroke();
-    
+
+    // Draw pulsing points
+    drawPulsingPoint(ctx, points[0].x, points[0].y);
+    drawPulsingPoint(ctx, points[1].x, points[1].y);
+
+    ctx.restore();
+  };
+
+  const drawPulsingPoint = (ctx, x, y) => {
+    ctx.save();
+    const pulseRadius = 8;
+    ctx.fillStyle = '#FFB800';
+    ctx.beginPath();
+    ctx.arc(x, y, pulseRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, pulseRadius + 3, 0, Math.PI * 2);
+    ctx.stroke();
     ctx.restore();
   };
 
