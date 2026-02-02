@@ -651,8 +651,9 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
                 Cancel
               </Button>
               <Button 
-                onClick={() => {
-                   console.log('[Save Drawing] Button clicked');
+                 type="button"
+                 onClick={() => {
+                    console.log('[Save Drawing] Button clicked');
                    // HARD BLOCK: Validate file_url is valid HTTPS URL
                    if (!newPlan.file || !newPlan.name) {
                      console.log('[Save Drawing] Validation failed: missing file or name', { file: !!newPlan.file, name: !!newPlan.name });
