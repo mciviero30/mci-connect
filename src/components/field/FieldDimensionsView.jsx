@@ -307,7 +307,7 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
         loadPdfWithPdfJs(selectedOption.url);
       }
     }
-  }, [selectedImage, imageOptions, pdfCanvas]);
+  }, [selectedImage, imageOptions, pdfCanvas, loadPdfWithPdfJs]);
 
   // FASE 5 PERF: Memoized dimension filtering
   const filteredDimensions = React.useMemo(() => {
