@@ -598,6 +598,44 @@ export default function JobDetails() {
                       <p className="font-semibold text-slate-900">{job.team_name}</p>
                     </div>
                   )}
+                  {/* Lead/Supervisor */}
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-slate-600 font-semibold">{language === 'es' ? 'Supervisor/Lead' : 'Lead/Supervisor'}</p>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setShowEditLead(true)}
+                        className="h-6 px-2 text-xs"
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <p className="font-semibold text-slate-900">{job.lead_name || 'Not assigned'}</p>
+                    {job.lead_phone && (
+                      <p className="text-sm text-slate-600">📞 {job.lead_phone}</p>
+                    )}
+                  </div>
+
+                  {/* Dates */}
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-sm text-slate-600 font-semibold">{language === 'es' ? 'Fechas' : 'Project Dates'}</p>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setShowEditDates(true)}
+                        className="h-6 px-2 text-xs"
+                      >
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                    </div>
+                    <p className="text-sm">
+                      📅 {job.start_date_field ? format(new Date(job.start_date_field), 'MMM dd, yyyy') : 'No start'} 
+                      {' → '}
+                      {job.end_date_field ? format(new Date(job.end_date_field), 'MMM dd, yyyy') : 'No end'}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 
