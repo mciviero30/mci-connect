@@ -918,12 +918,12 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   {task.checklist.map((item, idx) => (
                        <div 
                         key={idx} 
-                        className={`flex items-center gap-1 text-[10px] font-medium cursor-pointer px-1.5 py-0.5 rounded-sm border min-h-[20px] touch-manipulation transition-all relative overflow-hidden ${
+                        className={`flex items-center gap-1.5 text-[11px] font-medium cursor-pointer px-2 py-1 rounded-md min-h-[22px] touch-manipulation transition-all relative overflow-hidden ${
                           item.status === 'completed' 
-                            ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-slate-700 dark:text-slate-200'
+                            ? 'bg-green-50 dark:bg-green-900/20 text-slate-700 dark:text-slate-200'
                             : item.status === 'in_progress'
-                            ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-slate-900 dark:text-white'
-                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100'
+                            ? 'bg-orange-50 dark:bg-orange-900/20 text-slate-900 dark:text-white'
+                            : 'bg-slate-100 dark:bg-slate-700/30 text-slate-900 dark:text-slate-100'
                          } active:scale-[0.98]`}
                          onClick={(e) => {
                            e.preventDefault();
@@ -931,7 +931,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                            toggleChecklistItemStatus(idx);
                          }}
                         >
-                          <div className="w-3 h-3 flex items-center justify-center flex-shrink-0 scale-60">
+                          <div className="w-3.5 h-3.5 flex items-center justify-center flex-shrink-0 scale-70">
                             {getChecklistIcon(item.status)}
                           </div>
                           <span className="flex-1 truncate">{item.text}</span>
