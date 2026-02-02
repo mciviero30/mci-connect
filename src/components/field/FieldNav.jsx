@@ -68,6 +68,7 @@ export default function FieldNav({ activeTab, onTabChange, language, onNewTask, 
           <Plus className="w-4 h-4 mr-1.5" />
           <span className="hidden sm:inline">{language === 'es' ? 'Nueva' : 'New'}</span>
         </Button>
+        </div>
       </div>
     </div>
     </>
