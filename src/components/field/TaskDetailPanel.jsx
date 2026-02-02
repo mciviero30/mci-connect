@@ -209,7 +209,10 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
       </div>
 
       {/* PASO 4: Content - title moved to header */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ 
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain'
+      }}>
 
         {/* Mini Map - Location Preview */}
         {task.pin_x && task.pin_y && (pdfCanvas || planImageUrl) && (
@@ -414,7 +417,7 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
                 <Send className="w-5 h-5" />
               </Button>
             </div>
-            
+
             {/* Mentions Dropdown */}
             {showMentions && projectMembers.length > 0 && (
               <div className="absolute bottom-full left-0 right-0 mb-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-32 overflow-y-auto">
