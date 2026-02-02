@@ -60,14 +60,6 @@ export default function JobDetails() {
   const queryClient = useQueryClient();
   const toast = useToast();
 
-  // Update form state when job data loads
-  React.useEffect(() => {
-    if (rawJob) {
-      setLeadForm({ lead_name: rawJob.lead_name || '', lead_phone: rawJob.lead_phone || '', lead_id: rawJob.lead_id || '' });
-      setDatesForm({ start_date_field: rawJob.start_date_field || '', end_date_field: rawJob.end_date_field || '' });
-    }
-  }, [rawJob?.id]);
-
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
@@ -78,6 +70,14 @@ export default function JobDetails() {
     queryFn: () => base44.entities.Job.get(jobId),
     enabled: !!jobId
   });
+
+  // Update form state when job data loads
+  React.useEffect(() => {
+    if (rawJob) {
+      setLeadForm({ lead_name: rawJob.lead_name || '', lead_phone: rawJob.lead_phone || '', lead_id: rawJob.lead_id || '' });
+      setDatesForm({ start_date_field: rawJob.start_date_field || '', end_date_field: rawJob.end_date_field || '' });
+    }
+  }, [rawJob?.id]);
 
   // Guard against crashes when Drive/Field URLs are null
   const job = rawJob ? {
