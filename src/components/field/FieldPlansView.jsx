@@ -143,15 +143,24 @@ const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansF
     // Check if PDF - if so, process it differently
     if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
       setUploading(true);
+      setUploadProgress(0);
       try {
+        setUploadProgress(50);
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        setUploading(false);
-        setShowUpload(false);
-        setProcessingPdf(file_url);
+        setUploadProgress(100);
+        setTimeout(() => {
+          setUploading(false);
+          setUploadProgress(0);
+          setShowUpload(false);
+          setNewPlan({ name: '', file: null, fileSize: 0 });
+          setProcessingPdf(file_url);
+          toast.success('PDF cargado - procesando...');
+        }, 500);
       } catch (error) {
-        console.error('Upload error:', error);
-        setFileError('Error uploading PDF');
+        console.error('PDF Upload error:', error);
+        setFileError('Error al subir PDF: ' + (error?.message || 'Intenta de nuevo'));
         setUploading(false);
+        setUploadProgress(0);
       }
       return;
     }
