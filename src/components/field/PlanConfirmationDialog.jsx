@@ -101,19 +101,36 @@ export default function PlanConfirmationDialog({ plan, open, onOpenChange }) {
             )}
           </div>
 
-          {/* OCR Confidence Badge */}
-          <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700">
-            <p className="text-xs text-slate-400 mb-2">OCR detectó:</p>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-mono text-slate-300">
-                {plan?.name || 'No detectado'}
-              </span>
-              {plan?.name && (
-                <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
-                  Necesita confirmación
-                </Badge>
-              )}
-            </div>
+          {/* OCR + AI Suggestion */}
+          <div className="space-y-2">
+           <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700">
+             <p className="text-xs text-slate-400 mb-2">OCR detectó:</p>
+             <div className="flex items-center gap-2">
+               <span className="text-sm font-mono text-slate-300">
+                 {plan?.name || 'No detectado'}
+               </span>
+               {plan?.name && (
+                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30">
+                   Necesita confirmación
+                 </Badge>
+               )}
+             </div>
+           </div>
+
+           {/* AI Suggestion */}
+           {loadingSuggestion && (
+             <div className="flex items-center gap-2 p-2 bg-slate-900/30 rounded-lg border border-slate-700">
+               <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
+               <p className="text-xs text-slate-400">Analizando imagen...</p>
+             </div>
+           )}
+
+           {suggestedName && !isEditing && (
+             <div className="flex items-center gap-2 p-2 bg-blue-500/10 rounded-lg border border-blue-500/30">
+               <Wand2 className="w-4 h-4 text-blue-400" />
+               <p className="text-xs text-blue-300">IA sugiere: <span className="font-bold">{suggestedName}</span></p>
+             </div>
+           )}
           </div>
 
           {/* Edit Mode */}
