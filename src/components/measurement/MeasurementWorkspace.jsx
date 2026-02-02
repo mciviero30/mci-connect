@@ -33,6 +33,7 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   const [creditError, setCreditError] = useState(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [pdfCanvas, setPdfCanvas] = useState(null);
+  const [lockedMeasurements, setLockedMeasurements] = useState(new Set());
   const canvasRef = useRef(null);
 
   const queryClient = useQueryClient();
