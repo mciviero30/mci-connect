@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { 
   MapPin, 
   Ruler, 
-  ClipboardCheck, 
-  Search, 
-  MessageSquare, 
-  Bell, 
+  Camera,
   Plus 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,20 +11,35 @@ import GestureHelpTooltip from './GestureHelpTooltip';
 
 export default function FieldNav({ activeTab, onTabChange, language, onNewTask, onClosePanel }) {
   const [showGestureHelp, setShowGestureHelp] = useState(false);
+  
+  // FASE 4 (UX): SIMPLIFIED NAVIGATION - 3 Primary Tabs Only
+  // Removed: Jobs (not needed in job view), Search, Chat, Notifications (moved to header icons)
   const tabs = [
-    { id: 'jobs', label: language === 'es' ? 'Trabajos' : 'Jobs', icon: MapPin, color: 'text-orange-400' },
-    { id: 'measurements', label: language === 'es' ? 'Mediciones' : 'Measurements', icon: Ruler, color: 'text-purple-400' },
-    { id: 'checklists', label: language === 'es' ? 'Listas' : 'Checklists', icon: ClipboardCheck, color: 'text-green-400' },
-    { id: 'search', label: language === 'es' ? 'Buscar' : 'Search', icon: Search, color: 'text-blue-400' },
-    { id: 'chat', label: language === 'es' ? 'Chat' : 'Chat', icon: MessageSquare, color: 'text-cyan-400' },
-    { id: 'notifications', label: language === 'es' ? 'Notif.' : 'Notif.', icon: Bell, color: 'text-yellow-400' },
+    { 
+      id: 'plans', 
+      label: language === 'es' ? 'Planos' : 'Plans', 
+      icon: MapPin, 
+      color: 'text-orange-400' 
+    },
+    { 
+      id: 'measurements', 
+      label: language === 'es' ? 'Mediciones' : 'Measure', 
+      icon: Ruler, 
+      color: 'text-purple-400' 
+    },
+    { 
+      id: 'capture', 
+      label: language === 'es' ? 'Capturar' : 'Capture', 
+      icon: Camera, 
+      color: 'text-blue-400' 
+    },
   ];
 
+  // FASE 4 (UX): Simplified gestures - no search gesture
   const gestureContainerRef = useGestureHandler({
-    onLeftEdgeSwipe: () => onTabChange('search'), // Open search on left edge swipe
     onRightEdgeSwipe: onClosePanel, // Close panel on right edge swipe
     onTwoFingerTap: () => setShowGestureHelp(true), // Show help on two-finger tap
-    canGestureClose: !!onClosePanel, // Only enable close if callback exists
+    canGestureClose: !!onClosePanel,
   });
 
   return (
@@ -57,17 +69,6 @@ export default function FieldNav({ activeTab, onTabChange, language, onNewTask, 
           })}
         </div>
 
-        {/* Spacer */}
-        <div className="flex-1" />
-
-        {/* Quick New Task Button */}
-        <Button
-          onClick={onNewTask}
-          className="flex-shrink-0 min-h-[44px] px-3 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold shadow-lg touch-manipulation"
-        >
-          <Plus className="w-4 h-4 mr-1.5" />
-          <span className="hidden sm:inline">{language === 'es' ? 'Nueva' : 'New'}</span>
-        </Button>
         </div>
       </div>
     </>

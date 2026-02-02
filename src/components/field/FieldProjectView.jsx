@@ -5,18 +5,17 @@ import {
   ArrowLeft,
   Loader2,
   AlertCircle,
-  Plus,
-  X as XIcon
+  MapPin,
+  Ruler,
+  Camera
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-// Import Field Components
-import FieldProjectOverview from '@/components/field/FieldProjectOverview.jsx';
+// Import Field Components - FASE 4 (UX): Simplified imports
 import FieldPlansView from '@/components/field/FieldPlansView.jsx';
-import FieldTasksView from '@/components/field/FieldTasksView.jsx';
-import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
-import FieldInstallation from '@/components/field/FieldInstallation.jsx';
+import FieldDimensionsView from '@/components/field/FieldDimensionsView.jsx';
+import FieldCaptureView from '@/components/field/FieldCaptureView.jsx';
 import { OfflineStatusBadge } from '@/components/field/FieldOfflineManager.jsx';
 import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.jsx';
 import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
@@ -46,7 +45,8 @@ export default function FieldProjectView({
   queryClient,
 }) {
   // HOOKS MUST BE FIRST - BEFORE ANY EARLY RETURNS
-  const [activePanel, setActivePanel] = React.useState('work');
+  // FASE 4 (UX): Default to 'plans' instead of 'work' - Plans-first approach
+  const [activePanel, setActivePanel] = React.useState('plans');
   const [showCreateTask, setShowCreateTask] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
   const [showDebugDrawer, setShowDebugDrawer] = React.useState(false);
@@ -59,9 +59,9 @@ export default function FieldProjectView({
     setActivePanel(panelId);
   };
 
-  // Close panel - return to work view
+  // FASE 4 (UX): Close panel - return to plans (new default)
   const closePanel = () => {
-    setActivePanel('work');
+    setActivePanel('plans');
   };
 
   // Monitor online status
@@ -131,59 +131,24 @@ export default function FieldProjectView({
     return <AccessDenied />;
   }
 
-  // Render active panel
+  // FASE 4 (UX): Render active panel - Simplified 3-panel structure
   const renderActivePanel = () => {
     switch (activePanel) {
       case 'plans':
-        return (
-          <div className="relative h-full">
-            <Button 
-              onClick={closePanel}
-              className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-lg backdrop-blur-sm min-h-[44px] px-4 rounded-xl"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />
-          </div>
-        );
-      case 'tasks':
-        return (
-          <div className="relative h-full">
-            <Button 
-              onClick={closePanel}
-              className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-lg backdrop-blur-sm min-h-[44px] px-4 rounded-xl"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} currentUser={currentUser} />
-          </div>
-        );
-      case 'checklists':
-        return (
-          <div className="relative h-full">
-            <Button 
-              onClick={closePanel}
-              className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-lg backdrop-blur-sm min-h-[44px] px-4 rounded-xl"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <FieldChecklistsView jobId={jobId} tasks={tasks} plans={plans} currentUser={currentUser} />
-          </div>
-        );
-      case 'work':
+        // FASE 4: Plans is now the DEFAULT view (no back button needed)
+        return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
+      
+      case 'measurements':
+        // FASE 4: Dedicated measurement workspace
+        return <FieldDimensionsView jobId={jobId} jobName={job?.name || job?.job_name_field} />;
+      
+      case 'capture':
+        // FASE 4: Unified capture section (photos + reports + incidents)
+        return <FieldCaptureView jobId={jobId} jobName={job?.name || job?.job_name_field} plans={plans} />;
+      
       default:
-        return (
-          <FieldInstallation 
-            job={job} 
-            tasks={tasks} 
-            plans={plans} 
-            jobId={jobId} 
-            currentUser={currentUser}
-          />
-        );
+        // Fallback to Plans
+        return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
     }
   };
 
@@ -202,7 +167,7 @@ export default function FieldProjectView({
           <ArrowLeft className="w-5 h-5" />
         </Button>
 
-        {/* Project Info */}
+        {/* Project Info - FASE 4: Simplified header, always visible */}
         <div className="px-3 sm:px-4 md:px-6 py-4 pt-16 sm:pt-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0 sm:ml-32">
@@ -214,14 +179,23 @@ export default function FieldProjectView({
                   {job.client_name_field}
                 </p>
               )}
+              {job.address && (
+                <p className="text-xs text-slate-500 truncate mt-0.5">
+                  📍 {job.address}
+                </p>
+              )}
             </div>
-            <Badge className={`flex-shrink-0 text-xs px-3 py-1.5 font-bold ${
-              job.status === 'active' 
-                ? 'bg-green-500/20 text-green-400 border-green-500/40'
-                : 'bg-slate-500/20 text-slate-400 border-slate-500/40'
-            } border rounded-full`}>
-              {job.status === 'active' ? 'TODAY' : job.status?.toUpperCase()}
-            </Badge>
+            <div className="flex items-center gap-2">
+              {/* Online/Offline Status - FASE 4: Always visible */}
+              <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'} shadow-lg`} />
+              <Badge className={`flex-shrink-0 text-xs px-3 py-1.5 font-bold ${
+                job.status === 'active' 
+                  ? 'bg-green-500/20 text-green-400 border-green-500/40'
+                  : 'bg-slate-500/20 text-slate-400 border-slate-500/40'
+              } border rounded-full`}>
+                {job.status === 'active' ? 'ACTIVE' : job.status?.toUpperCase()}
+              </Badge>
+            </div>
           </div>
         </div>
       </div>
@@ -231,42 +205,51 @@ export default function FieldProjectView({
         {renderActivePanel()}
       </div>
 
-      {/* Persistent Bottom Elements - ALWAYS VISIBLE */}
+      {/* FASE 4 (UX): Persistent status indicators - Moved to header area */}
       <div className="flex-shrink-0">
-        {/* Offline Badge */}
-        <OfflineStatusBadge />
-        
-        {/* Sync Indicator */}
         <UniversalSyncIndicator jobId={jobId} />
-
-        {/* Upload Progress */}
         <PhotoUploadProgress jobId={jobId} />
       </div>
 
-      {/* Debug Drawer - Isolated, non-intrusive */}
-      <FieldDebugDrawer 
-        isVisible={showDebugDrawer} 
-        onClose={() => setShowDebugDrawer(false)}
-        currentUser={currentUser}
-      />
+      {/* FASE 4 (UX): Debug drawer - Hidden, admin-only */}
+      {isDebugMode && (
+        <FieldDebugDrawer 
+          isVisible={showDebugDrawer} 
+          onClose={() => setShowDebugDrawer(false)}
+          currentUser={currentUser}
+        />
+      )}
 
-      {/* Quick Create Task Dialog - ONE ACTIVE OVERLAY */}
-      <CreateTaskDialog
-        open={showCreateTask}
-        onOpenChange={setShowCreateTask}
-        jobId={jobId}
-        onCreated={() => {
-          setShowCreateTask(false);
-          updateFieldQueryData(queryClient, jobId, 'TASKS', (old) => old);
-        }}
-      />
-
-      {/* BOTTOM ACTION RAIL - Fixed, Always Visible, One-Hand Optimized */}
-      <FieldBottomActionRail 
-        jobId={jobId}
-        jobName={job?.name || job?.job_name_field}
-        jobStatus={job?.status}
-      />
+      {/* FASE 4 (UX): SIMPLIFIED BOTTOM NAV - 3 Tabs Only */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
+        <div className="flex items-center justify-around px-2 py-2">
+          {[
+            { id: 'plans', label: language === 'es' ? 'Planos' : 'Plans', icon: MapPin },
+            { id: 'measurements', label: language === 'es' ? 'Medir' : 'Measure', icon: Ruler },
+            { id: 'capture', label: language === 'es' ? 'Capturar' : 'Capture', icon: Camera },
+          ].map(tab => {
+            const isActive = activePanel === tab.id;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActivePanel(tab.id)}
+                className={`flex flex-col items-center justify-center gap-1.5 flex-1 min-h-[68px] rounded-xl touch-manipulation transition-all ${
+                  isActive 
+                    ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-black scale-105 shadow-xl' 
+                    : 'text-slate-300 active:bg-slate-800'
+                }`}
+                style={{ minWidth: '80px' }}
+              >
+                <Icon className={`w-6 h-6 ${isActive ? 'text-black' : 'text-white'}`} strokeWidth={2.5} />
+                <span className={`text-xs font-bold uppercase ${isActive ? 'text-black' : 'text-slate-300'}`}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
       
 
     </div>
