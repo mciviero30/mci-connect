@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, Edit2 } from 'lucide-react';
+import { ChevronDown, Edit2, X } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Wand2, Trash2, MoreVertical } from 'lucide-react';
