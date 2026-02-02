@@ -14,6 +14,8 @@ import WallTemplatesManager from './WallTemplatesManager.jsx';
 import PDFProcessor from './PDFProcessor.jsx';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import BatchPlanUploadDialog from './BatchPlanUploadDialog.jsx';
+import { Badge } from '@/components/ui/badge';
 
 const MAX_FILE_SIZE_MB = 100;
 const WARNING_FILE_SIZE_MB = 50;
@@ -29,6 +31,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   const [analyzePlan, setAnalyzePlan] = useState(null);
   const [showTemplates, setShowTemplates] = useState(false);
   const [processingPdf, setProcessingPdf] = useState(null);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -194,6 +197,14 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
             Templates
           </Button>
           <Button 
+            onClick={() => setShowBulkUpload(true)}
+            variant="outline"
+            className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-400 h-10 backdrop-blur-sm"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            Bulk Upload
+          </Button>
+          <Button 
             onClick={() => setShowUpload(true)}
             className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black font-semibold border-none h-10 shadow-lg shadow-orange-500/20"
           >
@@ -217,8 +228,39 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {plans.map((plan) => {
+        <>
+          {/* FASE 3B-I5: Group plans by section */}
+          {(() => {
+            // Group plans by section (null = "Unassigned")
+            const grouped = plans.reduce((acc, plan) => {
+              const key = plan.section || 'Unassigned';
+              if (!acc[key]) acc[key] = [];
+              acc[key].push(plan);
+              return acc;
+            }, {});
+
+            const sections = Object.keys(grouped).sort((a, b) => {
+              // "Unassigned" always at the end
+              if (a === 'Unassigned') return 1;
+              if (b === 'Unassigned') return -1;
+              return a.localeCompare(b);
+            });
+
+            return sections.map(section => (
+              <div key={section} className="mb-6">
+                {/* Section Header (only show if sections exist) */}
+                {sections.length > 1 && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge className="bg-orange-500/20 border-orange-500/40 text-orange-400 text-xs px-3 py-1">
+                      {section}
+                    </Badge>
+                    <div className="flex-1 h-px bg-orange-500/20" />
+                  </div>
+                )}
+
+                {/* Plans Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {grouped[section].map((plan) => {
             const taskCount = tasks.filter(t => t.blueprint_id === plan.id).length;
             const isPdf = plan.file_url?.toLowerCase().includes('.pdf');
             return (
@@ -337,7 +379,11 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
               </div>
             );
           })}
-        </div>
+                </div>
+              </div>
+            ));
+          })()}
+        </>
       )}
 
       {/* Upload Dialog */}
@@ -495,6 +541,17 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
           onCancel={() => setProcessingPdf(null)}
         />
       )}
+
+      {/* FASE 3B-I5: Batch Plan Upload Dialog */}
+      <BatchPlanUploadDialog
+        open={showBulkUpload}
+        onOpenChange={setShowBulkUpload}
+        jobId={jobId}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
+          setShowBulkUpload(false);
+        }}
+      />
     </div>
   );
 }
