@@ -205,6 +205,33 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
     setShowExportDialog(true);
   }, [dimensions.length]);
 
+  const handleSaveDrawing = React.useCallback(() => {
+    console.log('🔥 SAVE DRAWING CLICKED - Handler executed');
+    
+    if (!newPlan.file || !newPlan.name) {
+      console.log('[Save Drawing] Validation failed', { file: !!newPlan.file, name: !!newPlan.name });
+      toast.error('Please enter name and select file');
+      return;
+    }
+
+    if (typeof newPlan.file !== 'string' || !newPlan.file.startsWith('https://')) {
+      console.error('[Save Drawing] Invalid file_url:', newPlan.file);
+      toast.error('Invalid file URL - upload may have failed. Try again.');
+      setNewPlan({ name: '', file: null });
+      return;
+    }
+
+    const payload = {
+      job_id: jobId,
+      name: newPlan.name,
+      file_url: newPlan.file,
+      order: plans.length,
+      image_url: newPlan.file,
+    };
+    console.log('[Save Drawing] Mutation payload:', payload);
+    createPlanMutation.mutate(payload);
+  }, [newPlan, jobId, plans.length, createPlanMutation]);
+
   // Load PDF using pdf.js CDN
   const loadPdfWithPdfJs = React.useCallback(async (pdfUrl) => {
     try {
