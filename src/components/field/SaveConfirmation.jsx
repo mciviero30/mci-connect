@@ -64,7 +64,7 @@ export default function SaveConfirmation({
           className={`fixed top-20 left-1/2 -translate-x-1/2 z-[80] ${bg} backdrop-blur-md radius-md shadow-enterprise-xl px-5 py-3`}
         >
           <div className="flex items-center gap-3">
-            {Icon}
+            <Icon className="w-5 h-5 text-white" />
             <span className="text-white font-bold text-base">{configMessage}</span>
           </div>
         </motion.div>
