@@ -4,6 +4,11 @@ import { useFieldStability } from './useFieldStability';
 import { FieldSessionManager } from '../services/FieldSessionManager';
 
 /**
+ * FASE 3C-4: Measurement Session Lifecycle
+ * Preserves measurement session identity across app lifecycle events
+ */
+
+/**
  * Comprehensive Field Lifecycle Hook
  * Handles all mobile app lifecycle scenarios for MCI Field
  * 
@@ -39,6 +44,12 @@ export function useFieldLifecycle({ jobId, queryClient }) {
       // Mark background state for offline sync
       sessionStorage.setItem(`field_background_${jobId}`, Date.now().toString());
       
+      // FASE 3C-4: Preserve measurement session during background
+      const measurementSession = FieldSessionManager.getMeasurementSession();
+      if (measurementSession?.job_id === jobId) {
+        FieldSessionManager.updateMeasurementSession({ backgroundedAt: Date.now() });
+      }
+      
       // Keep session active (just backgrounded, not exited)
       FieldSessionManager.updateSession({
         backgroundedAt: Date.now(),
@@ -59,6 +70,15 @@ export function useFieldLifecycle({ jobId, queryClient }) {
 
       // Clear background marker
       sessionStorage.removeItem(`field_background_${jobId}`);
+      
+      // FASE 3C-4: Reactivate measurement session (no data loss)
+      const measurementSession = FieldSessionManager.getMeasurementSession();
+      if (measurementSession?.job_id === jobId) {
+        FieldSessionManager.updateMeasurementSession({ 
+          isActive: true, 
+          lastActivity: Date.now() 
+        });
+      }
       
       // Reactivate session
       FieldSessionManager.reactivateSession();

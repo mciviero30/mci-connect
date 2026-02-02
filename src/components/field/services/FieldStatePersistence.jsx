@@ -54,15 +54,22 @@ class FieldStatePersistence {
   }
 
   // Save draft with auto-expiry
-  async saveDraft(type, jobId, data, expiryHours = 24) {
+  // FASE 3C-4: CRITICAL - Use measurement_session_id for measurement drafts to prevent collisions
+  async saveDraft(type, jobId, data, expiryHours = 24, measurementSessionId = null) {
     try {
       await this.ensureDB();
       const store = this.db.transaction([STORES.DRAFTS], 'readwrite').objectStore(STORES.DRAFTS);
       
+      // FASE 3C-4: Use measurement_session_id as primary key for measurement drafts
+      const draftKey = measurementSessionId 
+        ? `${type}_${measurementSessionId}` 
+        : `${type}_${jobId}_${Date.now()}`;
+      
       const draft = {
-        id: `${type}_${jobId}_${Date.now()}`,
+        id: draftKey,
         type,
         jobId,
+        measurementSessionId, // FASE 3C-4: Store session ID for scoped restore
         data,
         timestamp: Date.now(),
         expiresAt: Date.now() + (expiryHours * 60 * 60 * 1000),
@@ -73,22 +80,44 @@ class FieldStatePersistence {
     } catch (error) {
       console.error('Failed to save draft:', error);
       // Fallback to sessionStorage
-      this.fallbackSave(`draft_${type}_${jobId}`, data);
+      const fallbackKey = measurementSessionId ? `draft_${type}_${measurementSessionId}` : `draft_${type}_${jobId}`;
+      this.fallbackSave(fallbackKey, data);
     }
   }
 
   // Load latest draft for type and job
-  async loadDraft(type, jobId) {
+  // FASE 3C-4: CRITICAL - Load draft by measurement_session_id for measurements
+  async loadDraft(type, jobId, measurementSessionId = null) {
     try {
       await this.ensureDB();
       const store = this.db.transaction([STORES.DRAFTS], 'readonly').objectStore(STORES.DRAFTS);
+      
+      // FASE 3C-4: For measurements, MUST match exact session ID (no fallback to jobId)
+      if (measurementSessionId) {
+        const draftKey = `${type}_${measurementSessionId}`;
+        const request = store.get(draftKey);
+        
+        return new Promise((resolve, reject) => {
+          request.onsuccess = () => {
+            const draft = request.result;
+            if (draft && draft.expiresAt > Date.now()) {
+              resolve(draft.data);
+            } else {
+              resolve(null); // No draft for this measurement session
+            }
+          };
+          request.onerror = () => reject(request.error);
+        });
+      }
+      
+      // Non-measurement drafts: use jobId index (legacy behavior)
       const index = store.index('jobId');
       const request = index.getAll(jobId);
 
       return new Promise((resolve, reject) => {
         request.onsuccess = () => {
           const drafts = request.result
-            .filter(d => d.type === type && d.expiresAt > Date.now())
+            .filter(d => d.type === type && d.expiresAt > Date.now() && !d.measurementSessionId) // FASE 3C-4: Exclude measurement sessions
             .sort((a, b) => b.timestamp - a.timestamp);
           resolve(drafts[0]?.data || null);
         };
@@ -97,25 +126,37 @@ class FieldStatePersistence {
     } catch (error) {
       console.error('Failed to load draft:', error);
       // Fallback to sessionStorage
-      return this.fallbackLoad(`draft_${type}_${jobId}`);
+      const fallbackKey = measurementSessionId ? `draft_${type}_${measurementSessionId}` : `draft_${type}_${jobId}`;
+      return this.fallbackLoad(fallbackKey);
     }
   }
 
   // Clear specific draft
-  async clearDraft(type, jobId) {
+  // FASE 3C-4: Clear by measurement_session_id for measurements
+  async clearDraft(type, jobId, measurementSessionId = null) {
     try {
       await this.ensureDB();
       const store = this.db.transaction([STORES.DRAFTS], 'readwrite').objectStore(STORES.DRAFTS);
+      
+      // FASE 3C-4: For measurements, delete by exact session ID
+      if (measurementSessionId) {
+        const draftKey = `${type}_${measurementSessionId}`;
+        await store.delete(draftKey);
+        return;
+      }
+      
+      // Non-measurement: delete all matching type+jobId
       const index = store.index('jobId');
       const request = index.getAll(jobId);
 
       request.onsuccess = () => {
-        const drafts = request.result.filter(d => d.type === type);
+        const drafts = request.result.filter(d => d.type === type && !d.measurementSessionId);
         drafts.forEach(draft => store.delete(draft.id));
       };
     } catch (error) {
       console.error('Failed to clear draft:', error);
-      sessionStorage.removeItem(`draft_${type}_${jobId}`);
+      const fallbackKey = measurementSessionId ? `draft_${type}_${measurementSessionId}` : `draft_${type}_${jobId}`;
+      sessionStorage.removeItem(fallbackKey);
     }
   }
 

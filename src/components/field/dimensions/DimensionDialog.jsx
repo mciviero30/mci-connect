@@ -14,6 +14,7 @@ import DimensionValueInput from './DimensionValueInput';
 import BenchMarkInput from './BenchMarkInput';
 import MeasurementDiagram from './MeasurementDiagram';
 import { validateDimension, validateBenchMarkConfirmation } from './DimensionValidation';
+import { useFieldContext } from '../FieldContextProvider';
 
 export default function DimensionDialog({ 
   open, 
@@ -23,6 +24,10 @@ export default function DimensionDialog({
   jobName,
   onSave 
 }) {
+  // FASE 3C-4: Get measurement_session_id from context for scoped persistence
+  const fieldContext = useFieldContext();
+  const measurementSessionId = fieldContext.measurement_session_id;
+
   const [formData, setFormData] = useState(dimension || {
     dimension_type: 'horizontal',
     measurement_type: 'FF-FF',
@@ -39,6 +44,13 @@ export default function DimensionDialog({
   const [uploadingMedia, setUploadingMedia] = useState(false);
   const [validation, setValidation] = useState({ isValid: true, errors: [], warnings: [] });
   const [bmConfirmed, setBmConfirmed] = useState(false);
+
+  // FASE 3C-4: Log session ID for debugging (dev only)
+  useEffect(() => {
+    if (import.meta.env?.DEV && open) {
+      console.log('[DimensionDialog] Using measurement_session_id:', measurementSessionId);
+    }
+  }, [open, measurementSessionId]);
 
   // Real-time validation
   useEffect(() => {
@@ -87,9 +99,10 @@ export default function DimensionDialog({
       return;
     }
 
-    // Add audit metadata
+    // FASE 3C-4: Add measurement_session_id to dimension data for tracking
     const dimensionData = {
       ...formData,
+      measurement_session_id: measurementSessionId, // FASE 3C-4: Session identity
       device_type: /Mobile|Android|iPhone|iPad/.test(navigator.userAgent) ? 'mobile' : 'desktop',
       language: navigator.language,
     };

@@ -553,7 +553,8 @@ export default function FieldDimensionsView({ jobId, jobName }) {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </FieldContextProvider>
   );
 }
 

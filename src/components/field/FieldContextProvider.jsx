@@ -3,11 +3,12 @@ import { base44 } from '@/api/base44Client';
 
 const FieldContext = createContext();
 
-export function FieldContextProvider({ children, jobId, blueprintId = null, areaId = null }) {
+export function FieldContextProvider({ children, jobId, blueprintId = null, areaId = null, measurementSessionId = null }) {
   const [context, setContext] = useState({
     job_id: jobId,
     blueprint_id: blueprintId,
     area_id: areaId,
+    measurement_session_id: measurementSessionId, // FASE 3C-4: Session identity for measurement isolation
     created_by: null,
     created_by_name: null,
     gps_latitude: null,
@@ -41,14 +42,15 @@ export function FieldContextProvider({ children, jobId, blueprintId = null, area
     }
   }, []);
 
-  // Update blueprint/area when they change
+  // Update blueprint/area/measurementSessionId when they change
   useEffect(() => {
     setContext(prev => ({
       ...prev,
       blueprint_id: blueprintId,
       area_id: areaId,
+      measurement_session_id: measurementSessionId, // FASE 3C-4: Update session when changed
     }));
-  }, [blueprintId, areaId]);
+  }, [blueprintId, areaId, measurementSessionId]);
 
   return (
     <FieldContext.Provider value={context}>
@@ -65,6 +67,7 @@ export function useFieldContext() {
       job_id: null,
       blueprint_id: null,
       area_id: null,
+      measurement_session_id: null, // FASE 3C-4: Safe default for measurement session
       created_by: null,
       created_by_name: null,
       gps_latitude: null,

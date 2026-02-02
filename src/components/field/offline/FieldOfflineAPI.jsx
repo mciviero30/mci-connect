@@ -10,9 +10,15 @@ import { getOnlineStatus } from './FieldConnectivityMonitor';
 
 /**
  * Create dimension (local-first)
+ * FASE 3C-4: CRITICAL - Include measurement_session_id for scoped storage
  */
 export async function createDimension(dimensionData) {
-  // Save to local store
+  // FASE 3C-4: Validate measurement_session_id exists (required for measurements)
+  if (!dimensionData.measurement_session_id) {
+    console.warn('[FieldOfflineAPI] Creating dimension without measurement_session_id - may cause collisions');
+  }
+
+  // Save to local store with session scoping
   const saved = await saveToLocalStore(STORES.DIMENSIONS, dimensionData);
   
   // Enqueue for sync
