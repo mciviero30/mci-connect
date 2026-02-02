@@ -395,29 +395,46 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 p-3 sm:p-4 flex flex-col bg-slate-950">
-        {selectedImage ? (() => {
-            const selectedOption = imageOptions.find(o => o.value === selectedImage);
+      {/* Review Hint */}
+       {filteredDimensions.length > 0 && (
+         <div className="flex-shrink-0 px-4 sm:px-6 py-3 bg-slate-800/50 border-b border-slate-700 flex items-center justify-between">
+           <div className="flex items-center gap-3">
+             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+             <span className="text-sm font-medium text-slate-400">Review measurements before export</span>
+           </div>
+           {isReadyForExport && (
+             <div className="flex items-center gap-2 px-3 py-1.5 bg-green-500/20 rounded-full border border-green-500/40">
+               <CheckCircle2 className="w-4 h-4 text-green-400" />
+               <span className="text-xs font-bold text-green-400">Ready for export</span>
+             </div>
+           )}
+         </div>
+       )}
 
-            return (
-              <DimensionCanvas
-                imageUrl={selectedOption?.isPDF ? pdfCanvas : selectedOption?.url}
-                dimensions={filteredDimensions}
-                activeDimension={activeDimension}
-                onDimensionPlace={handleDimensionPlace}
-                unitSystem={projectUnitSystem}
-              />
-            );
-          })() : (
-          <div className="h-full flex items-center justify-center bg-slate-900 rounded-2xl border-2 border-dashed border-slate-700">
-            <div className="text-center px-6">
-              <Ruler className="w-20 h-20 text-slate-700 mx-auto mb-6" />
-              <p className="text-lg font-bold text-white mb-2">Ready to Measure</p>
-              <p className="text-slate-500 max-w-sm">Select a drawing above to begin capturing dimensions</p>
-            </div>
-          </div>
-        )}
-      </div>
+      <div className="flex-1 min-h-0 p-3 sm:p-4 flex flex-col bg-slate-950">
+         {selectedImage ? (() => {
+             const selectedOption = imageOptions.find(o => o.value === selectedImage);
+
+             return (
+               <DimensionCanvas
+                 imageUrl={selectedOption?.isPDF ? pdfCanvas : selectedOption?.url}
+                 dimensions={filteredDimensions}
+                 activeDimension={activeDimension}
+                 onDimensionPlace={handleDimensionPlace}
+                 unitSystem={projectUnitSystem}
+                 lockedMeasurements={lockedMeasurements}
+               />
+             );
+           })() : (
+           <div className="h-full flex items-center justify-center bg-slate-900 rounded-2xl border-2 border-dashed border-slate-700">
+             <div className="text-center px-6">
+               <Ruler className="w-20 h-20 text-slate-700 mx-auto mb-6" />
+               <p className="text-lg font-bold text-white mb-2">Ready to Measure</p>
+               <p className="text-slate-500 max-w-sm">Select a drawing above to begin capturing dimensions</p>
+             </div>
+           </div>
+         )}
+       </div>
 
       {filteredDimensions.length > 0 && (
         <div className="flex-shrink-0 max-h-72 overflow-y-auto bg-slate-800 border-t-2 border-slate-700 p-4 sm:p-5">
