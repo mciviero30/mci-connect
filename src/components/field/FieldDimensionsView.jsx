@@ -657,9 +657,8 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
                  type="button"
                  onClick={() => {
                     console.log('[Save Drawing] Button clicked');
-                   // HARD BLOCK: Validate file_url is valid HTTPS URL
                    if (!newPlan.file || !newPlan.name) {
-                     console.log('[Save Drawing] Validation failed: missing file or name', { file: !!newPlan.file, name: !!newPlan.name });
+                     console.log('[Save Drawing] Validation failed', { file: !!newPlan.file, name: !!newPlan.name });
                      toast.error('Please enter name and select file');
                      return;
                    }
@@ -678,16 +677,10 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
                      order: plans.length,
                      image_url: newPlan.file,
                    };
-                   console.log('[Save Drawing] Creating plan mutation with payload:', payload);
-                   console.log('[Save Drawing] Mutation state:', { 
-                     isPending: createPlanMutation.isPending, 
-                     isLoading: createPlanMutation.isLoading,
-                     status: createPlanMutation.status 
-                   });
+                   console.log('[Save Drawing] Calling mutation with payload:', payload);
                    createPlanMutation.mutate(payload);
-                   console.log('[Save Drawing] Mutation.mutate() called');
                  }}
-                disabled={!newPlan.file || !newPlan.name || uploading || createPlanMutation.isPending || !!creditError}
+                disabled={!newPlan.file || !newPlan.name || uploading || createPlanMutation.isPending}
                 className="bg-blue-600 hover:bg-blue-700 text-white min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {createPlanMutation.isPending ? (
