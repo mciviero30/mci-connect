@@ -275,14 +275,7 @@ const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansF
           </Button>
         </div>
       ) : (
-        <>
-          {/* FASE 5 PERF: Group plans by section (moved out of render) */}
-          {/* Grouping logic moved outside to avoid hook ordering issues */}
-          <PlanGridSection plans={plans} tasks={tasks} setSelectedPlan={setSelectedPlan} setAnalyzePlan={setAnalyzePlan} deletePlanMutation={deletePlanMutation} />
-        </>
-      )}
-
-        </>
+        <PlanGridSection plans={plans} tasks={tasks} setSelectedPlan={setSelectedPlan} setAnalyzePlan={setAnalyzePlan} deletePlanMutation={deletePlanMutation} />
       )}
 
       {/* Upload Dialog */}
