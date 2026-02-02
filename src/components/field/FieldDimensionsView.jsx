@@ -75,6 +75,8 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
   const [newPlan, setNewPlan] = useState({ name: '', file: null });
   const [creditError, setCreditError] = useState(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [pdfCanvas, setPdfCanvas] = useState(null);
+  const canvasRef = useRef(null);
 
   const queryClient = useQueryClient();
 
@@ -197,6 +199,79 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
     setShowExportDialog(true);
   }, [dimensions.length]);
 
+  // Load PDF using pdf.js CDN
+  const loadPdfWithPdfJs = React.useCallback(async (pdfUrl) => {
+    try {
+      // Load pdf.js from CDN if not already loaded
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        script.async = true;
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Failed to load PDF.js'));
+          document.head.appendChild(script);
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        if (window.pdfjsLib) {
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+      }
+
+      if (!window.pdfjsLib) {
+        throw new Error('PDF.js library not available');
+      }
+
+      // Load the PDF document
+      const loadingTask = window.pdfjsLib.getDocument(pdfUrl);
+      const pdf = await loadingTask.promise;
+
+      // Render ALL pages into one canvas
+      const scale = 2.0;
+      const canvases = [];
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale });
+
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        await page.render({
+          canvasContext: context,
+          viewport: viewport
+        }).promise;
+
+        canvases.push(canvas);
+      }
+
+      // Combine all pages into one vertical canvas
+      const totalHeight = canvases.reduce((sum, c) => sum + c.height, 0);
+      const maxWidth = Math.max(...canvases.map(c => c.width));
+
+      const combinedCanvas = document.createElement('canvas');
+      combinedCanvas.width = maxWidth;
+      combinedCanvas.height = totalHeight;
+      const ctx = combinedCanvas.getContext('2d');
+
+      let currentY = 0;
+      canvases.forEach(canvas => {
+        ctx.drawImage(canvas, 0, currentY);
+        currentY += canvas.height;
+      });
+
+      const imageDataUrl = combinedCanvas.toDataURL('image/jpeg', 0.92);
+      setPdfCanvas(imageDataUrl);
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      toast.error('Failed to load PDF for measurement');
+    }
+  }, []);
+
   // FASE 5 PERF: Memoized image options to prevent recreation
   const imageOptions = React.useMemo(() => [
     ...plans.map(p => {
@@ -208,6 +283,7 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
         type: 'plan',
         fileType: isPDF ? 'pdf' : 'image',
         isPDF,
+        id: p.id,
       };
     }),
     ...photos.map(p => ({ 
@@ -337,38 +413,16 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
         {selectedImage ? (() => {
           const selectedOption = imageOptions.find(o => o.value === selectedImage);
           
-          if (selectedOption?.isPDF) {
-            return (
-              <div className="flex-1 min-h-0 flex flex-col bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden">
-                {/* PDF Viewer Header */}
-                <div className="flex-shrink-0 px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-amber-500" />
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                        {selectedOption.label}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        📄 View Only – Measurements Disabled
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* PDF Iframe */}
-                <iframe
-                  src={`${selectedOption.url}#toolbar=1&navpanes=0&scrollbar=1`}
-                  className="flex-1 min-h-0 w-full border-none"
-                  title={selectedOption.label}
-                  allow="fullscreen"
-                />
-              </div>
-            );
-          }
+          // Handle PDF - convert to canvas for measurement
+          React.useEffect(() => {
+            if (selectedOption?.isPDF && !pdfCanvas) {
+              loadPdfWithPdfJs(selectedOption.url);
+            }
+          }, [selectedOption?.id, selectedOption?.isPDF]);
           
           return (
             <DimensionCanvas
-              imageUrl={selectedOption?.url}
+              imageUrl={selectedOption?.isPDF ? pdfCanvas : selectedOption?.url}
               dimensions={filteredDimensions}
               activeDimension={activeDimension}
               onDimensionPlace={handleDimensionPlace}
