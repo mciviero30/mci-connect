@@ -144,7 +144,7 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                              }`}
                            >
                              {/* Checkbox overlay */}
-                             <div className="absolute top-1 left-1 z-30">
+                             <div className="absolute top-0.5 left-0.5 z-30">
                                <input
                                  type="checkbox"
                                  checked={isSelected}
@@ -158,7 +158,7 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                                    }
                                    setSelectedForDelete(newSet);
                                  }}
-                                 className="w-4 h-4 cursor-pointer accent-orange-500"
+                                 className="w-3 h-3 cursor-pointer accent-orange-500 scale-75 origin-top-left"
                                  onClick={(e) => e.stopPropagation()}
                                />
                              </div>
