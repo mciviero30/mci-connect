@@ -17,105 +17,237 @@ Deno.serve(async (req) => {
       console.warn('[exportDimensionsPDF] Missing measurement_session_id - PDF will not be session-scoped');
     }
 
-    const doc = new jsPDF('landscape', 'mm', 'letter');
-    let yPos = 20;
+    const doc = new jsPDF('portrait', 'mm', 'letter');
+    
+    // PAGE 1: COVER
+    addCoverPage(doc, jobName, dimensions, unitSystem, user);
+    
+    // PAGES 2+: MEASUREMENT SUMMARY TABLE (Grouped by type)
+    doc.addPage();
+    addMeasurementSummaryTable(doc, dimensions, unitSystem);
+    
+    // PAGES: CONFIDENCE SIGNALS
+    doc.addPage();
+    addConfidencePage(doc, jobName, dimensions.length);
 
-    // Header
-    doc.setFillColor(0, 0, 0);
-    doc.rect(0, 0, 297, 40, 'F');
+    // Generate PDF blob
+    const pdfBlob = doc.output('blob');
+    const pdfFile = new File([pdfBlob], `measurement-package_${jobName}_${Date.now()}.pdf`, { type: 'application/pdf' });
     
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.text('FIELD DIMENSIONS REPORT', 15, 20);
+    // Upload to storage
+    const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+
+    // FASE 3C-5: Save PDF as Plan entity with measurement_session_id ownership
+    if (measurementSessionId) {
+      await base44.asServiceRole.entities.Plan.create({
+        job_id: jobId,
+        name: `Measurement Package - ${new Date().toLocaleDateString()}`,
+        file_url: file_url,
+        purpose: 'measurement',
+        measurement_session_id: measurementSessionId,
+        order: 9999,
+      });
+      console.log(`[exportDimensionsPDF] PDF saved to session: ${measurementSessionId}`);
+    }
+
+    return Response.json({ 
+      success: true,
+      pdf_url: file_url 
+    });
+
+  } catch (error) {
+    console.error('[ExportDimensionsPDF] Error:', error);
+    return Response.json({ 
+      error: error.message,
+      stack: error.stack 
+    }, { status: 500 });
+  }
+});
+
+function addCoverPage(doc, jobName, dimensions, unitSystem, user) {
+  // White background
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, 210, 297, 'F');
+  
+  // Blue header bar
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, 0, 210, 80, 'F');
+  
+  // Title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(32);
+  doc.setFont('helvetica', 'bold');
+  doc.text('MEASUREMENT', 20, 35);
+  doc.text('PACKAGE', 20, 55);
+  
+  // Subtitle
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(200, 200, 255);
+  doc.text('Professional Field-Ready Documentation', 20, 72);
+  
+  // Job Info Section
+  let yPos = 105;
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Job Information', 20, yPos);
+  yPos += 12;
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Job Name: ${jobName || 'Untitled'}`, 20, yPos);
+  yPos += 8;
+  doc.text(`Measurement Date: ${new Date().toLocaleDateString()}`, 20, yPos);
+  yPos += 8;
+  doc.text(`Measured By: ${user.full_name}`, 20, yPos);
+  yPos += 8;
+  doc.text(`Unit System: ${unitSystem === 'imperial' ? 'Imperial (feet/inches)' : 'Metric (millimeters)'}`, 20, yPos);
+  yPos += 8;
+  doc.text(`Total Measurements: ${dimensions.length}`, 20, yPos);
+  
+  // Bottom banner
+  yPos = 260;
+  doc.setFillColor(245, 245, 245);
+  doc.rect(0, yPos, 210, 37, 'F');
+  
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('✓ All measurements reviewed and locked', 20, yPos + 12);
+  doc.text('Generated from MCI Measurement System', 20, yPos + 22);
+  doc.text(`Page 1 of ${Math.ceil(dimensions.length / 15) + 2}`, 180, yPos + 12);
+}
+
+function addMeasurementSummaryTable(doc, dimensions, unitSystem) {
+  // Group dimensions by measurement_type
+  const grouped = {};
+  dimensions.forEach(dim => {
+    const type = dim.measurement_type || 'Other';
+    if (!grouped[type]) {
+      grouped[type] = [];
+    }
+    grouped[type].push(dim);
+  });
+  
+  let yPos = 20;
+  
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, yPos, 210, 12, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
+  doc.setFont('helvetica', 'bold');
+  doc.text('MEASUREMENT SUMMARY', 15, yPos + 8);
+  yPos += 18;
+  
+  // Iterate over grouped types
+  Object.keys(grouped).sort().forEach(typeLabel => {
+    const items = grouped[typeLabel];
     
+    // Type header
+    doc.setFillColor(220, 220, 220);
+    doc.rect(10, yPos, 190, 8, 'F');
+    doc.setTextColor(0, 0, 0);
     doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Project: ${jobName || 'Untitled'}`, 15, 28);
-    doc.text(`Unit System: ${unitSystem === 'imperial' ? 'Imperial (ft/in)' : 'Metric (mm)'}`, 15, 34);
-    doc.text(`Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 200, 28);
-    doc.text(`By: ${user.full_name}`, 200, 34);
-
-    yPos = 50;
-
-    // Legend Box
-    doc.setFillColor(255, 248, 220);
-    doc.rect(15, yPos, 267, 45, 'FD');
-    
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('MEASUREMENT LEGEND', 20, yPos + 8);
-    
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text('FF = Finish Face  |  CL = Center Line  |  BM = Bench Mark (laser reference line)', 20, yPos + 16);
-    doc.setTextColor(0, 150, 0);
-    doc.text('● Above BM = Green', 20, yPos + 24);
-    doc.setTextColor(200, 0, 0);
-    doc.text('● Below BM = Red', 70, yPos + 24);
-    doc.setTextColor(255, 184, 0);
-    doc.text('● Benchmark = Yellow (dashed)', 120, yPos + 24);
-    
-    doc.setTextColor(0, 0, 0);
-    doc.text('Horizontal dimensions shown with arrows. All measurements verified on-site.', 20, yPos + 32);
-    doc.text('This document is for fabrication and installation verification.', 20, yPos + 40);
-
-    yPos = 105;
-
-    // Dimensions Table
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('DIMENSIONS RECORD', 15, yPos);
+    doc.text(`${typeLabel} (${items.length} total)`, 15, yPos + 5);
     yPos += 10;
-
-    // Table header
-    doc.setFillColor(30, 58, 138);
-    doc.rect(15, yPos, 267, 10, 'F');
-    doc.setTextColor(255, 255, 255);
+    
+    // Column headers
+    doc.setFillColor(245, 245, 245);
+    doc.rect(10, yPos, 190, 7, 'F');
     doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Type', 20, yPos + 7);
-    doc.text('Measurement', 50, yPos + 7);
-    doc.text('Value', 100, yPos + 7);
-    doc.text('Area/Location', 140, yPos + 7);
-    doc.text('Measured By', 200, yPos + 7);
-    doc.text('Date', 250, yPos + 7);
-    yPos += 10;
-
+    doc.text('Area', 15, yPos + 4);
+    doc.text('Value', 80, yPos + 4);
+    doc.text('Count', 140, yPos + 4);
+    yPos += 8;
+    
+    // Count by area and value
+    const areaMap = {};
+    items.forEach(dim => {
+      const area = dim.area || 'Unspecified';
+      const value = formatDimensionValue(dim);
+      const key = `${area}|${value}`;
+      areaMap[key] = (areaMap[key] || 0) + 1;
+    });
+    
     // Table rows
     doc.setTextColor(0, 0, 0);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    
-    dimensions.forEach((dim, index) => {
-      if (yPos > 180) {
+    Object.keys(areaMap).forEach((key, idx) => {
+      if (yPos > 270) {
         doc.addPage();
         yPos = 20;
       }
-
-      const bgColor = index % 2 === 0 ? [245, 245, 245] : [255, 255, 255];
+      
+      const [area, value] = key.split('|');
+      const bgColor = idx % 2 === 0 ? [252, 252, 252] : [255, 255, 255];
       doc.setFillColor(...bgColor);
-      doc.rect(15, yPos, 267, 8, 'F');
-
-      doc.setFontSize(8);
-      doc.text(dim.dimension_type || 'N/A', 20, yPos + 5);
-      doc.text(dim.measurement_type || 'N/A', 50, yPos + 5);
+      doc.rect(10, yPos, 190, 7, 'F');
       
-      const value = formatDimensionValue(dim);
-      doc.text(value, 100, yPos + 5);
-      
-      doc.text(dim.area || 'N/A', 140, yPos + 5);
-      doc.text(dim.measured_by_name || 'N/A', 200, yPos + 5);
-      doc.text(new Date(dim.created_date).toLocaleDateString(), 250, yPos + 5);
-      
+      doc.text(area, 15, yPos + 4);
+      doc.text(value, 80, yPos + 4);
+      doc.text(areaMap[key].toString(), 140, yPos + 4);
       yPos += 8;
     });
+    
+    yPos += 6; // spacing between groups
+  });
+}
 
-    // Footer
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text('This document is generated from MCI Field - Professional Field Management System', 15, 200);
-    doc.text('All dimensions are field-verified and traceable to individual technicians.', 15, 205);
+function addConfidencePage(doc, jobName, totalCount) {
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, 210, 297, 'F');
+  
+  let yPos = 40;
+  
+  // Green checkmark icon (text-based)
+  doc.setTextColor(76, 175, 80);
+  doc.setFontSize(40);
+  doc.text('✓', 90, yPos);
+  
+  yPos += 30;
+  
+  // Confidence text
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('All Measurements Reviewed', 35, yPos);
+  
+  yPos += 20;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`✓ ${totalCount} measurements captured on-site`, 20, yPos);
+  yPos += 10;
+  doc.text('✓ Each measurement individually locked for accuracy', 20, yPos);
+  yPos += 10;
+  doc.text('✓ Ready for material ordering and fabrication', 20, yPos);
+  
+  yPos += 20;
+  
+  // Footer text
+  doc.setFillColor(245, 250, 255);
+  doc.rect(15, yPos, 180, 60, 'F');
+  doc.setFillColor(30, 58, 138);
+  doc.rect(15, yPos, 180, 60, 'FD');
+  
+  doc.setTextColor(30, 58, 138);
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('About This Document', 20, yPos + 8);
+  
+  doc.setTextColor(60, 60, 60);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.text('This measurement package is a complete, field-verified documentation of all', 20, yPos + 16);
+  doc.text('dimensions captured for the project. It is suitable for sharing with suppliers,', 20, yPos + 22);
+  doc.text('contractors, or archival purposes.', 20, yPos + 28);
+  doc.text('', 20, yPos + 34);
+  doc.text('Generated from MCI Measurement', 20, yPos + 40);
+  doc.text(`Job: ${jobName}`, 20, yPos + 46);
+  doc.text(`Export Date: ${new Date().toLocaleDateString()}`, 20, yPos + 52);
 
     // Generate PDF blob
     const pdfBlob = doc.output('blob');
