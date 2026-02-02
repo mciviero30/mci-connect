@@ -918,7 +918,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                   {task.checklist.map((item, idx) => (
                        <div 
                         key={idx} 
-                        className={`flex items-center gap-2 text-xs font-medium cursor-pointer p-1.5 rounded-md border-1 min-h-[28px] touch-manipulation transition-all relative overflow-hidden ${
+                        className={`flex items-center gap-1 text-[10px] font-medium cursor-pointer px-1.5 py-0.5 rounded-sm border min-h-[20px] touch-manipulation transition-all relative overflow-hidden ${
                           item.status === 'completed' 
                             ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-slate-700 dark:text-slate-200'
                             : item.status === 'in_progress'
@@ -931,7 +931,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                            toggleChecklistItemStatus(idx);
                          }}
                         >
-                          <div className="w-4 h-4 flex items-center justify-center flex-shrink-0 scale-75">
+                          <div className="w-3 h-3 flex items-center justify-center flex-shrink-0 scale-60">
                             {getChecklistIcon(item.status)}
                           </div>
                           <span className="flex-1 truncate">{item.text}</span>
