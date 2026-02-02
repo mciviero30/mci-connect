@@ -210,7 +210,7 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
         )}
       </div>
 
-      {/* PASO 4: Content - title moved to header */}
+      {/* PASO 4: Content - smooth scroll on mobile */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ 
         WebkitOverflowScrolling: 'touch',
         overscrollBehavior: 'contain'
