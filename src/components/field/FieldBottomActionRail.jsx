@@ -55,7 +55,7 @@ export default function FieldBottomActionRail({
     }
   };
 
-  // 5 CORE ACTIONS - Fixed, Always Visible
+  // 4 CORE ACTIONS - Fixed, Always Visible
   const actions = [
     {
       id: 'camera',
@@ -71,11 +71,6 @@ export default function FieldBottomActionRail({
       id: 'task',
       icon: CheckSquare,
       label: 'Task',
-    },
-    {
-      id: 'measure',
-      icon: Ruler,
-      label: 'Measure',
     },
     {
       id: 'incident',
