@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Upload, X, ZoomIn, ZoomOut, Move, Trash2, MoreVertical, AlertTriangle, Loader2, Wand2, Settings2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,18 @@ import { Badge } from '@/components/ui/badge';
 const MAX_FILE_SIZE_MB = 100;
 const WARNING_FILE_SIZE_MB = 50;
 
-export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
+export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks = [] }) {
+  const queryClient = useQueryClient();
+
+  // FASE 3C-3: Filter only job_final plans (approved drawings for production)
+  const { data: jobFinalPlans = [] } = useQuery({
+    queryKey: ['field-job-final-plans', jobId],
+    queryFn: () => base44.entities.Plan.filter({ job_id: jobId, purpose: 'job_final' }, '-created_date'),
+    enabled: !!jobId,
+  });
+
+  // Use filtered plans instead of prop
+  const plans = jobFinalPlans;
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -36,8 +47,12 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
   const queryClient = useQueryClient();
 
   const createPlanMutation = useMutation({
-    mutationFn: (data) => base44.entities.Plan.create(data),
+    mutationFn: (data) => base44.entities.Plan.create({
+      ...data,
+      purpose: 'job_final'
+    }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-job-final-plans', jobId] });
       queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
       setShowUpload(false);
       setNewPlan({ name: '', file: null });
@@ -55,6 +70,7 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
       await base44.entities.Plan.delete(planId);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-job-final-plans', jobId] });
       queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
       queryClient.invalidateQueries({ queryKey: ['field-tasks', jobId] });
     },
@@ -136,13 +152,14 @@ export default function FieldPlansView({ jobId, plans = [], tasks = [] }) {
       if (progressInterval) clearInterval(progressInterval);
       setUploadProgress(100);
       
-      // FASE A2.1: Use backend function for versioning
+      // FASE A2.1: Use backend function for versioning (job_final purpose)
       const planName = newPlan.name || file.name.split('.')[0];
       const { plan } = await base44.functions.invoke('uploadPlanVersion', {
         job_id: jobId,
         name: planName,
         file_url: file_url,
         order: plans.length,
+        purpose: 'job_final',
       });
       
       toast.success(`Plan version ${plan.version_number || plan.version} created`);

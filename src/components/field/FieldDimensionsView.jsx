@@ -54,8 +54,8 @@ export default function FieldDimensionsView({ jobId, jobName }) {
   });
 
   const { data: plans = [] } = useQuery({
-    queryKey: ['field-plans', jobId],
-    queryFn: () => base44.entities.Plan.filter({ job_id: jobId }, '-created_date'),
+    queryKey: ['field-measurement-plans', jobId],
+    queryFn: () => base44.entities.Plan.filter({ job_id: jobId, purpose: 'measurement' }, '-created_date'),
     enabled: !!jobId,
     ...FIELD_STABLE_QUERY_CONFIG,
   });
@@ -86,17 +86,20 @@ export default function FieldDimensionsView({ jobId, jobName }) {
 
   const createPlanMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('[createPlanMutation] Saving plan:', data);
-      const result = await base44.entities.Plan.create(data);
+      console.log('[createPlanMutation] Saving measurement plan:', data);
+      const result = await base44.entities.Plan.create({
+        ...data,
+        purpose: 'measurement'
+      });
       console.log('[createPlanMutation] Success:', result);
       return result;
     },
     onSuccess: () => {
       console.log('[createPlanMutation] onSuccess triggered');
-      queryClient.invalidateQueries({ queryKey: ['field-plans', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['field-measurement-plans', jobId] });
       setShowUploadPlan(false);
       setNewPlan({ name: '', file: null });
-      toast.success('Plan uploaded successfully');
+      toast.success('Measurement drawing uploaded successfully');
     },
     onError: (error) => {
       console.error('[createPlanMutation] onError:', error);
