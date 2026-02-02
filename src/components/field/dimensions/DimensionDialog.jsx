@@ -294,32 +294,36 @@ export default function DimensionDialog({
         </Tabs>
 
         {/* Actions */}
-        <div className="flex gap-3 pt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 min-h-[48px]">
-            Cancel
-          </Button>
-          <Button 
-            onClick={handleSave}
-            disabled={uploadingMedia || !validation.isValid}
-            className={`flex-1 min-h-[48px] ${
-              validation.isValid
-                ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white'
-                : 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
-            }`}
-          >
-            {validation.isValid ? (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Save Dimension
-              </>
-            ) : (
-              <>
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                Fix Errors First
-              </>
-            )}
-          </Button>
-        </div>
+         <div className="flex gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
+           <Button 
+             variant="outline" 
+             onClick={() => onOpenChange(false)} 
+             className="flex-1 min-h-[52px] font-semibold"
+           >
+             Cancel
+           </Button>
+           <Button 
+             onClick={handleSave}
+             disabled={uploadingMedia || !validation.isValid}
+             className={`flex-1 min-h-[52px] font-semibold transition-all shadow-lg ${
+               validation.isValid
+                 ? 'bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white hover:shadow-orange-500/30 active:scale-95'
+                 : 'bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+             }`}
+           >
+             {validation.isValid ? (
+               <>
+                 <CheckCircle2 className="w-4 h-4 mr-2" />
+                 Save Measurement
+               </>
+             ) : (
+               <>
+                 <AlertTriangle className="w-4 h-4 mr-2" />
+                 Fix Errors First
+               </>
+             )}
+           </Button>
+         </div>
       </DialogContent>
     </Dialog>
   );
