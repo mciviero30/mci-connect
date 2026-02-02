@@ -125,14 +125,18 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
       ...data,
       job_id: jobId,
       job_name: jobName,
-      measured_by: user.email,
-      measured_by_name: user.full_name,
+      measured_by: user?.email,
+      measured_by_name: user?.full_name,
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['field-dimensions', jobId], exact: true });
       setShowDimensionDialog(false);
       setActiveDimension(null);
       toast.success('Dimension saved');
+    },
+    onError: (error) => {
+      console.error('[createDimensionMutation] Error:', error);
+      toast.error('Failed to save dimension: ' + (error.message || 'Unknown error'));
     },
   });
 
