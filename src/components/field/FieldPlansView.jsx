@@ -296,8 +296,43 @@ const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansF
         </div>
       ) : (
         <>
+          {selectedForDelete.size > 0 && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center justify-between">
+              <span className="text-white font-semibold">{selectedForDelete.size} plan(s) selected</span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedForDelete(new Set())}
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800"
+                >
+                  Deselect All
+                </Button>
+                <Button 
+                  onClick={async () => {
+                    for (const planId of selectedForDelete) {
+                      await deletePlanMutation.mutateAsync(planId);
+                    }
+                    setSelectedForDelete(new Set());
+                  }}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Selected
+                </Button>
+              </div>
+            </div>
+          )}
           <PendingPlansAlert plans={plans} />
-          <PlanSectionAccordion plans={plans} tasks={tasks} setSelectedPlan={setSelectedPlan} setAnalyzePlan={setAnalyzePlan} deletePlanMutation={deletePlanMutation} jobId={jobId} />
+          <PlanSectionAccordion 
+            plans={plans} 
+            tasks={tasks} 
+            setSelectedPlan={setSelectedPlan} 
+            setAnalyzePlan={setAnalyzePlan} 
+            deletePlanMutation={deletePlanMutation} 
+            jobId={jobId}
+            selectedForDelete={selectedForDelete}
+            setSelectedForDelete={setSelectedForDelete}
+          />
         </>
       )}
 
