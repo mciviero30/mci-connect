@@ -162,10 +162,30 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
   // Find which section contains the active page
   const activeSectionIndex = React.useMemo(() => {
     const index = navigation.findIndex(section => 
-      section.items.some(item => location.pathname === item.url)
+      section.items.some(item => {
+        if (item.children) {
+          return item.children.some(child => location.pathname === child.url);
+        }
+        return location.pathname === item.url;
+      })
     );
     return index >= 0 ? String(index) : undefined;
   }, [navigation, location.pathname]);
+
+  // Auto-expand parent if any child is active
+  React.useEffect(() => {
+    const newExpanded = new Set();
+    navigation.forEach(section => {
+      section.items.forEach(item => {
+        if (item.children) {
+          if (item.children.some(child => location.pathname === child.url)) {
+            newExpanded.add(item.title);
+          }
+        }
+      });
+    });
+    setExpandedParents(newExpanded);
+  }, [location.pathname, navigation]);
 
   // Keyboard navigation with useCallback to prevent recreation
   const handleKeyDown = React.useCallback((e) => {
