@@ -160,16 +160,19 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
       console.log('[createPlanMutation] Success:', result);
       return result;
     },
-    onSuccess: () => {
-      console.log('[createPlanMutation] onSuccess triggered');
+    onSuccess: (data) => {
+      console.log('[createPlanMutation] onSuccess triggered:', data);
       queryClient.invalidateQueries({ queryKey: ['field-measurement-plans', jobId, measurementSessionId] });
       setShowUploadPlan(false);
       setNewPlan({ name: '', file: null });
+      setCreditError(null);
       toast.success('Measurement drawing uploaded successfully');
     },
     onError: (error) => {
       console.error('[createPlanMutation] onError:', error);
-      toast.error('Failed to upload plan: ' + (error.message || 'Unknown error'));
+      const errorMsg = error?.message || 'Failed to save drawing';
+      toast.error(errorMsg);
+      // Don't clear newPlan on error - let user retry
     },
   });
 
