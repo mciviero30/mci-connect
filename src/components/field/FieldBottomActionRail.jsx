@@ -21,7 +21,6 @@ export default function FieldBottomActionRail({
   onPhotoClick,
   onAudioClick,
   onTaskClick,
-  onMeasureClick,
   onIncidentClick,
 }) {
   const [activeAction, setActiveAction] = useState(null);
