@@ -592,7 +592,8 @@ function renderLegendPage(doc, data, pageNum) {
  * Add headers and footers to all pages
  */
 function addHeadersAndFooters(doc, data) {
-  const pageCount = doc.internal.pages.length - 1;
+  const totalPages = doc.internal.pages;
+  const pageCount = totalPages ? totalPages.length - 1 : 0;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   
