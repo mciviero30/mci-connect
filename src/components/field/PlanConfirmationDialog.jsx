@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle2, Edit2 } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Edit2, FileText } from 'lucide-react';
 
 export default function PlanConfirmationDialog({ plan, open, onOpenChange }) {
   const [planName, setPlanName] = useState(plan?.name || '');
