@@ -14,8 +14,10 @@ import { Badge } from '@/components/ui/badge';
 
 // Import Field Components - FASE 4 (UX): Simplified imports
 import FieldPlansView from '@/components/field/FieldPlansView.jsx';
-import FieldDimensionsView from '@/components/field/FieldDimensionsView.jsx';
+import FieldTasksView from '@/components/field/FieldTasksView.jsx';
+import FieldPhotosView from '@/components/field/FieldPhotosView.jsx';
 import FieldCaptureView from '@/components/field/FieldCaptureView.jsx';
+import FieldChecklistsView from '@/components/field/FieldChecklistsView.jsx';
 import { OfflineStatusBadge } from '@/components/field/FieldOfflineManager.jsx';
 import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.jsx';
 import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
@@ -56,26 +58,14 @@ export default function FieldProjectView({
   // Handlers
   queryClient,
 }) {
-  // HOOKS MUST BE FIRST - BEFORE ANY EARLY RETURNS
-  // FASE 4 (UX): Default to 'plans' instead of 'work' - Plans-first approach
-  const [activePanel, setActivePanel] = React.useState('plans');
+  // PASO 2: Removed panel state — vertical sections, no tabs
   const [showCreateTask, setShowCreateTask] = React.useState(false);
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
   const [showDebugDrawer, setShowDebugDrawer] = React.useState(false);
-  const [language] = React.useState('en'); // FASE 5 PERF: Default language
+  const [language] = React.useState('en');
   
-  // Debug mode detection - MUST BE BEFORE EARLY RETURNS
+  // Debug mode detection
   const isDebugMode = useFieldDebugMode(currentUser);
-
-  // Panel switcher - closes others automatically
-  const switchPanel = (panelId) => {
-    setActivePanel(panelId);
-  };
-
-  // FASE 4 (UX): Close panel - return to plans (new default)
-  const closePanel = () => {
-    setActivePanel('plans');
-  };
 
   // FASE 5 PERF: Stable online status monitoring
   React.useEffect(() => {
@@ -90,17 +80,7 @@ export default function FieldProjectView({
     };
   }, []);
 
-  // Listen for navigation events from overview cards
-  React.useEffect(() => {
-    const handleFieldNavigate = (event) => {
-      const { panel } = event.detail;
-      if (panel) {
-        switchPanel(panel);
-      }
-    };
-    window.addEventListener('field:navigate', handleFieldNavigate);
-    return () => window.removeEventListener('field:navigate', handleFieldNavigate);
-  }, []);
+  // PASO 2: Removed panel navigation listener (no tabs)
 
   // Handle safe exit
   const handleSafeExit = () => {
@@ -146,28 +126,7 @@ export default function FieldProjectView({
     return <AccessDenied />;
   }
 
-  // ============================================
-  // 🔒 FROZEN — Panel Rendering Logic
-  // DO NOT MODIFY WITHOUT NEW PHASE
-  // ============================================
-  // CRITICAL: This controls which view is shown
-  // Memoized for performance (PASO 5)
-  // ============================================
-  const renderActivePanel = React.useMemo(() => {
-    switch (activePanel) {
-      case 'plans':
-        return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
-      
-      case 'measurements':
-        return <FieldDimensionsView jobId={jobId} jobName={job?.name || job?.job_name_field} />;
-      
-      case 'capture':
-        return <FieldCaptureView jobId={jobId} jobName={job?.name || job?.job_name_field} plans={plans} />;
-      
-      default:
-        return <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />;
-    }
-  }, [activePanel, jobId, plans, tasks, job]);
+  // PASO 2: Removed panel switching — all sections render vertically
 
   // Work mode only - no debug panels in this view
   // Debug panels are accessed via FieldDebugDrawer
@@ -223,18 +182,61 @@ export default function FieldProjectView({
         </div>
       </div>
 
-      {/* FASE 4 POLISH: Content with proper spacing for bottom nav */}
-      <div className="flex-1 overflow-y-auto pb-24" style={{ WebkitOverflowScrolling: 'touch' }}>
-        {renderActivePanel}
+      {/* PASO 2: Vertical sections — scroll through all content */}
+      <div className="flex-1 overflow-y-auto pb-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {/* Section 1: Plans */}
+        <section className="mb-8">
+          <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
+            <h2 className="text-lg font-bold text-white">Plans & Drawings</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Final approved drawings</p>
+          </div>
+          <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />
+        </section>
+
+        {/* Section 2: Tasks */}
+        <section className="mb-8">
+          <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
+            <h2 className="text-lg font-bold text-white">Tasks</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Work items & progress</p>
+          </div>
+          <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} currentUser={currentUser} />
+        </section>
+
+        {/* Section 3: Photos */}
+        <section className="mb-8">
+          <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
+            <h2 className="text-lg font-bold text-white">Photos</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Progress documentation</p>
+          </div>
+          <FieldPhotosView jobId={jobId} plans={plans} />
+        </section>
+
+        {/* Section 4: Reports (from FieldCaptureView temporarily) */}
+        <section className="mb-8">
+          <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
+            <h2 className="text-lg font-bold text-white">Reports & Issues</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Daily logs, incidents, voice notes</p>
+          </div>
+          <FieldCaptureView jobId={jobId} jobName={job?.name || job?.job_name_field} plans={plans} />
+        </section>
+
+        {/* Section 5: Forms */}
+        <section className="mb-8">
+          <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
+            <h2 className="text-lg font-bold text-white">Forms & Checklists</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Quality control & inspections</p>
+          </div>
+          <FieldChecklistsView jobId={jobId} />
+        </section>
       </div>
 
-      {/* FASE 4 (UX): Persistent status indicators - Moved to header area */}
+      {/* Persistent status indicators */}
       <div className="flex-shrink-0">
         <UniversalSyncIndicator jobId={jobId} />
         <PhotoUploadProgress jobId={jobId} />
       </div>
 
-      {/* FASE 4 (UX): Debug drawer - Hidden, admin-only */}
+      {/* Debug drawer - Admin only */}
       {isDebugMode && (
         <FieldDebugDrawer 
           isVisible={showDebugDrawer} 
@@ -243,37 +245,41 @@ export default function FieldProjectView({
         />
       )}
 
-      {/* FASE 4 POLISH: Premium bottom nav - cleaner, stronger visual feedback */}
+      {/* PASO 2: Bottom action rail — Quick Capture, Add Task, Start Measure */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black via-slate-900 to-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe backdrop-blur-sm">
-        <div className="flex items-center justify-around px-3 py-3">
-          {[
-            { id: 'plans', label: language === 'es' ? 'Planos' : 'Plans', icon: MapPin },
-            { id: 'measurements', label: language === 'es' ? 'Medir' : 'Measure', icon: Ruler },
-            { id: 'capture', label: language === 'es' ? 'Capturar' : 'Capture', icon: Camera },
-          ].map(tab => {
-            const isActive = activePanel === tab.id;
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  if (navigator.vibrate) navigator.vibrate(10);
-                  setActivePanel(tab.id);
-                }}
-                className={`flex flex-col items-center justify-center gap-2 flex-1 min-h-[72px] rounded-2xl touch-manipulation transition-all ${
-                  isActive 
-                    ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-black shadow-2xl shadow-orange-500/40' 
-                    : 'text-slate-400 active:bg-slate-800 hover:bg-slate-800/50'
-                }`}
-                style={{ minWidth: '90px', maxWidth: '140px' }}
-              >
-                <Icon className={`w-7 h-7 ${isActive ? 'text-black' : 'text-slate-400'}`} strokeWidth={2.5} />
-                <span className={`text-xs font-extrabold uppercase tracking-wide ${isActive ? 'text-black' : 'text-slate-400'}`}>
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
+        <div className="flex items-center justify-around px-3 py-3 gap-2">
+          <Button
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+              // Quick photo capture logic here
+            }}
+            className="flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600"
+          >
+            <Camera className="w-5 h-5" />
+            <span className="text-xs font-bold">Capture</span>
+          </Button>
+          
+          <Button
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+              setShowCreateTask(true);
+            }}
+            className="flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] rounded-xl bg-gradient-to-br from-orange-600 to-yellow-500 text-black shadow-2xl"
+          >
+            <Plus className="w-6 h-6" />
+            <span className="text-xs font-extrabold">Add Task</span>
+          </Button>
+          
+          <Button
+            onClick={() => {
+              if (navigator.vibrate) navigator.vibrate(10);
+              window.location.href = createPageUrl('FieldMeasurements') + `?id=${jobId}`;
+            }}
+            className="flex flex-col items-center justify-center gap-1 flex-1 min-h-[64px] rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-600"
+          >
+            <Ruler className="w-5 h-5" />
+            <span className="text-xs font-bold">Measure</span>
+          </Button>
         </div>
       </div>
       

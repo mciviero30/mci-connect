@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import QuickSearchDialog from '@/components/field/QuickSearchDialog.jsx';
 import GlobalChecklistsManager from '@/components/field/GlobalChecklistsManager.jsx';
-import FieldNav from '@/components/field/FieldNav.jsx';
+// PASO 2: Removed FieldNav import (no tabs)
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -106,8 +106,7 @@ export default function Field() {
   
   const [showQuickSearch, setShowQuickSearch] = useState(false);
   
-  // Persistent active tab
-  const [activeTab, setActiveTab, clearActiveTab] = usePersistentState('field_active_tab', 'jobs', { expiryHours: 48 });
+  // PASO 2: Removed activeTab state (no tabs)
   
   const [showQuickCustomer, setShowQuickCustomer] = useState(false);
   const [quickCustomer, setQuickCustomer] = useState({ first_name: '', last_name: '', company: '', email: '', phone: '' });
@@ -543,29 +542,7 @@ export default function Field() {
         </div>
       </div>
 
-      {/* PRIMARY ACTION - Dominant, Unmissable */}
-      {previousSession && previousSession.isActive ? (
-        <Button
-          onClick={handleResumeSession}
-          className="w-full bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold shadow-2xl min-h-[64px] rounded-xl mb-6 active:scale-[0.98] transition-all text-lg"
-        >
-          <RotateCcw className="w-6 h-6 mr-3" strokeWidth={2.5} />
-          {language === 'es' ? 'Reanudar Trabajo de Field' : 'Resume Field Work'}
-        </Button>
-      ) : activeProjects > 0 ? (
-        <Button
-          onClick={() => {
-            const firstActive = jobs.find(j => j.status === 'active');
-            if (firstActive) {
-              navigate(`${createPageUrl('FieldProject')}?id=${firstActive.id}`);
-            }
-          }}
-          className="w-full bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold shadow-2xl min-h-[64px] rounded-xl mb-6 active:scale-[0.98] transition-all text-lg"
-        >
-          <MapPin className="w-6 h-6 mr-3" strokeWidth={2.5} />
-          {language === 'es' ? 'Iniciar Trabajo de Field' : 'Start Field Work'}
-        </Button>
-      ) : null}
+      {/* PASO 2: Removed auto-navigation CTAs — user picks job manually */}
 
       {/* F2 — Field Purpose Banner */}
       <Card className="mb-6 bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border-2 border-blue-500/50 shadow-xl backdrop-blur-sm">
@@ -594,15 +571,7 @@ export default function Field() {
         </CardContent>
       </Card>
 
-      {/* NAV BAR - Sticky Section Selector */}
-      <div className="mb-6">
-        <FieldNav 
-          activeTab={activeTab} 
-          onTabChange={setActiveTab} 
-          language={language}
-          onNewTask={() => setShowNewProject(true)}
-        />
-      </div>
+      {/* PASO 2: Removed FieldNav tabs — pure job list */}
 
       {/* PENDING JOBS - Jobs awaiting Field acceptance */}
       {pendingJobs.length > 0 && (
@@ -700,8 +669,8 @@ export default function Field() {
         </div>
       )}
 
-      {/* SMART EMPTY STATE - Only show when no jobs visible (FASE 2A.1) */}
-      {activeTab === 'jobs' && filteredJobs.length === 0 && (
+      {/* PASO 2: Show all jobs, no tabs, no truncation */}
+      {filteredJobs.length === 0 && (
         <EmptyState
           reason={jobs.length === 0 ? 'none' : 'filtered'}
           isAdmin={user?.role === 'admin' || user?.position === 'manager'}
@@ -714,14 +683,14 @@ export default function Field() {
         />
       )}
 
-      {/* CONTENT AREA - Based on Active Tab */}
-      {activeTab === 'jobs' && filteredJobs.slice(0, 3).length > 0 && (
+      {/* ALL JOBS - No limit, no tabs */}
+      {filteredJobs.length > 0 && (
         <div className="mb-6">
           <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">
-            {language === 'es' ? 'Trabajos de hoy' : "Today's Jobs"}
+            {language === 'es' ? `${filteredJobs.length} Trabajo${filteredJobs.length !== 1 ? 's' : ''}` : `${filteredJobs.length} Job${filteredJobs.length !== 1 ? 's' : ''}`}
           </h2>
           <div className="space-y-3">
-            {filteredJobs.slice(0, 3).map((job) => (
+            {filteredJobs.map((job) => (
               <div key={job.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-700 active:scale-[0.98] transition-all shadow-md min-h-[72px]">
                 <div className="flex items-center justify-between gap-3">
                   <Link to={createPageUrl(`FieldProject?id=${job.id}`)} className="flex-1 min-w-0">
@@ -794,75 +763,7 @@ export default function Field() {
         </div>
       )}
 
-      {/* MEASUREMENTS SECTION */}
-      {activeTab === 'measurements' && (
-        <div className="mb-6">
-          <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 px-1">
-            {language === 'es' ? 'Mediciones disponibles' : 'Available Measurements'}
-          </h2>
-          <div className="space-y-3">
-            {filteredJobs.slice(0, 5).map((job) => (
-              <Link key={job.id} to={createPageUrl(`FieldMeasurements?id=${job.id}`)}>
-                <div className="bg-slate-800 border border-purple-600/30 rounded-xl p-4 hover:bg-slate-700 active:scale-[0.98] transition-all cursor-pointer shadow-md min-h-[72px]">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-base font-bold text-white truncate mb-1 flex items-center gap-2">
-                        <Ruler className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        {job.name || job.job_name_field}
-                      </h3>
-                      <p className="text-xs text-slate-400 truncate">
-                        {language === 'es' ? 'Entrada de servicio' : 'Service Input'}
-                      </p>
-                    </div>
-                    <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 border px-2.5 py-1 rounded-full text-[10px] font-bold flex-shrink-0">
-                      📐
-                    </Badge>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-          {filteredJobs.length > 5 && (
-            <Button
-              onClick={() => setShowQuickSearch(true)}
-              variant="outline"
-              className="w-full bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 mt-4"
-            >
-              {language === 'es' ? `Ver todos los ${filteredJobs.length} trabajos` : `View all ${filteredJobs.length} jobs`}
-            </Button>
-          )}
-        </div>
-      )}
-
-      {/* CHECKLISTS SECTION */}
-      {activeTab === 'checklists' && (
-        <div className="pb-6">
-          <GlobalChecklistsManager />
-        </div>
-      )}
-
-      {/* SEARCH SECTION */}
-      {activeTab === 'search' && (
-        <div className="pb-6">
-          <QuickSearchDialog open={true} onOpenChange={() => setActiveTab('jobs')} />
-        </div>
-      )}
-
-
-
-      {/* All Jobs Link - Secondary Access */}
-      {activeTab === 'jobs' && filteredJobs.length > 3 && (
-        <div className="text-center mb-6">
-          <Button
-            onClick={() => setShowQuickSearch(true)}
-            variant="outline"
-            className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white"
-          >
-            <Search className="w-4 h-4 mr-2" />
-            {language === 'es' ? `Ver todos los ${filteredJobs.length} trabajos` : `View all ${filteredJobs.length} jobs`}
-          </Button>
-        </div>
-      )}
+      {/* PASO 2: Removed tab-based sections (Measurements, Checklists, Search) */}
 
 
 
