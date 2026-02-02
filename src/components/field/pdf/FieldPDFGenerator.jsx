@@ -173,6 +173,7 @@ function renderDimensionPages(doc, data) {
   
   let pagesAdded = 0;
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   
   // Group dimensions by area
   const areaGroups = groupDimensionsForProduction(data.dimensions);
