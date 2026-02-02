@@ -9,26 +9,45 @@ import { Button } from '@/components/ui/button';
 import GestureHandler, { useGestureHandler } from './GestureHandler';
 import GestureHelpTooltip from './GestureHelpTooltip';
 
+// ============================================
+// 🔒 FROZEN — MCI FIELD CERTIFICATION v1.0
+// DO NOT MODIFY WITHOUT NEW PHASE AUTHORIZATION
+// Certified: 2026-02-02
+// ============================================
+// CRITICAL: 3-tab navigation structure
+// - Plans (default, production drawings)
+// - Measure (session-isolated measurements)
+// - Capture (photos/reports/incidents)
+// Adding/removing tabs is a BREAKING CHANGE
+// ============================================
+
 // FASE 5 PERF: Memoized navigation component
 const FieldNav = React.memo(function FieldNav({ activeTab, onTabChange, language, onNewTask, onClosePanel }) {
   const [showGestureHelp, setShowGestureHelp] = useState(false);
   
-  // FASE 5 PERF: Memoized tabs definition (stable reference)
+  // ============================================
+  // 🔒 FROZEN — Tab Definition
+  // DO NOT MODIFY WITHOUT NEW PHASE
+  // ============================================
+  // CRITICAL: Exactly 3 tabs (no more, no less)
+  // Order: Plans → Measure → Capture
+  // IDs are hardcoded in FieldProjectView
+  // ============================================
   const tabs = React.useMemo(() => [
     { 
-      id: 'plans', 
+      id: 'plans', // 🔒 FROZEN: Do not change ID
       label: language === 'es' ? 'Planos' : 'Plans', 
       icon: MapPin, 
       color: 'text-orange-400' 
     },
     { 
-      id: 'measurements', 
+      id: 'measurements', // 🔒 FROZEN: Do not change ID
       label: language === 'es' ? 'Medir' : 'Measure', 
       icon: Ruler, 
       color: 'text-purple-400' 
     },
     { 
-      id: 'capture', 
+      id: 'capture', // 🔒 FROZEN: Do not change ID
       label: language === 'es' ? 'Capturar' : 'Capture', 
       icon: Camera, 
       color: 'text-blue-400' 

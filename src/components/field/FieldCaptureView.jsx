@@ -45,6 +45,18 @@ import DailyReportGenerator from './DailyReportGenerator';
  * Rationale: All "evidence capture" shares same mental model.
  * Default: Camera ready for instant access.
  */
+// ============================================
+// 🔒 FROZEN — MCI FIELD CERTIFICATION v1.0
+// DO NOT MODIFY WITHOUT NEW PHASE AUTHORIZATION
+// Certified: 2026-02-02
+// ============================================
+// CRITICAL: Capture view (photos/reports/incidents)
+// - Mobile photo capture
+// - Daily field reports
+// - Safety incidents
+// Breaking this structure requires new phase
+// ============================================
+
 // FASE 5 PERF: Memoized component
 const FieldCaptureView = React.memo(function FieldCaptureView({ jobId, jobName, plans = [] }) {
   const [activeTab, setActiveTab] = useState('camera');

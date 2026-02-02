@@ -21,9 +21,28 @@ import { FieldContextProvider } from './FieldContextProvider';
 import { FieldSessionManager } from './services/FieldSessionManager';
 import { useEffect } from 'react';
 
+// ============================================
+// 🔒 FROZEN — MCI FIELD CERTIFICATION v1.0
+// DO NOT MODIFY WITHOUT NEW PHASE AUTHORIZATION
+// Certified: 2026-02-02
+// ============================================
+// CRITICAL: Measurement session lifecycle
+// - Generate session ID on mount
+// - Clear session ID on unmount
+// - Filter all queries by session ID
+// Breaking this logic causes data leakage
+// ============================================
+
 // FASE 5 PERF: Memoized for stable rendering
 const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, jobName }) {
-  // FASE 3C-4: Generate measurement session ID on mount
+  // ============================================
+  // 🔒 FROZEN — Session ID Generation
+  // DO NOT MODIFY WITHOUT NEW PHASE
+  // ============================================
+  // CRITICAL: Timestamp-based session ID
+  // Format: ms_${jobId}_${timestamp}
+  // Prevents cross-job contamination
+  // ============================================
   const [measurementSessionId] = useState(() => {
     const existing = FieldSessionManager.getMeasurementSession();
     if (existing?.job_id === jobId && existing?.isActive) {
@@ -32,7 +51,13 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
     return FieldSessionManager.startMeasurementSession(jobId);
   });
 
-  // FASE 5 PERF: Guaranteed cleanup on unmount
+  // ============================================
+  // 🔒 FROZEN — Session Cleanup
+  // DO NOT MODIFY WITHOUT NEW PHASE
+  // ============================================
+  // CRITICAL: Clear session on unmount
+  // Prevents session leakage
+  // ============================================
   useEffect(() => {
     return () => {
       FieldSessionManager.clearMeasurementSession();

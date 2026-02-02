@@ -134,7 +134,13 @@ export default function FieldProjectView({
     return <AccessDenied />;
   }
 
-  // FASE 5 PERF: Memoized panel rendering - prevents unnecessary re-renders
+  // ============================================
+  // 🔒 FROZEN — Panel Rendering Logic
+  // DO NOT MODIFY WITHOUT NEW PHASE
+  // ============================================
+  // CRITICAL: This controls which view is shown
+  // Memoized for performance (PASO 5)
+  // ============================================
   const renderActivePanel = React.useMemo(() => {
     switch (activePanel) {
       case 'plans':

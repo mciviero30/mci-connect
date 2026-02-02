@@ -20,6 +20,18 @@ import { Badge } from '@/components/ui/badge';
 const MAX_FILE_SIZE_MB = 100;
 const WARNING_FILE_SIZE_MB = 50;
 
+// ============================================
+// 🔒 FROZEN — MCI FIELD CERTIFICATION v1.0
+// DO NOT MODIFY WITHOUT NEW PHASE AUTHORIZATION
+// Certified: 2026-02-02
+// ============================================
+// CRITICAL: Production plans view (job_final)
+// - Shows approved drawings only
+// - NO measurement_session_id filter
+// - Query: purpose="job_final"
+// Breaking this logic requires new phase
+// ============================================
+
 // FASE 5 PERF: Memoized component for better performance
 const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansFromProp = [], tasks = [] }) {
   const [selectedPlan, setSelectedPlan] = useState(null);
