@@ -582,6 +582,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       icon: MapPin,
       items: [
         { title: 'MCI Field', url: createPageUrl("Field"), icon: MapPin },
+        { title: 'Measurement', url: createPageUrl("Measurement"), icon: Ruler },
         { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase },
         { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
       ]
