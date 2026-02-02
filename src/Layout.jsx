@@ -140,11 +140,23 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
   const { setOpenMobile } = useSidebar();
   const navigate = useNavigate();
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
+  const [expandedParents, setExpandedParents] = React.useState(new Set());
   const itemRefs = React.useRef([]);
   
   // Flatten all navigation items for keyboard navigation
   const allItems = React.useMemo(() => {
-    return navigation.flatMap(section => section.items);
+    const flat = [];
+    navigation.forEach(section => {
+      section.items.forEach(item => {
+        if (item.children) {
+          flat.push(item);
+          item.children.forEach(child => flat.push(child));
+        } else {
+          flat.push(item);
+        }
+      });
+    });
+    return flat;
   }, [navigation]);
 
   // Find which section contains the active page
