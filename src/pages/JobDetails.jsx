@@ -60,11 +60,11 @@ export default function JobDetails() {
 
   // Update form state when job data loads
   React.useEffect(() => {
-    if (job) {
-      setLeadForm({ lead_name: job.lead_name || '', lead_phone: job.lead_phone || '', lead_id: job.lead_id || '' });
-      setDatesForm({ start_date_field: job.start_date_field || '', end_date_field: job.end_date_field || '' });
+    if (rawJob) {
+      setLeadForm({ lead_name: rawJob.lead_name || '', lead_phone: rawJob.lead_phone || '', lead_id: rawJob.lead_id || '' });
+      setDatesForm({ start_date_field: rawJob.start_date_field || '', end_date_field: rawJob.end_date_field || '' });
     }
-  }, [job?.id]);
+  }, [rawJob?.id]);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
