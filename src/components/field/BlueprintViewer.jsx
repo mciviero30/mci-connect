@@ -225,6 +225,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   const handleExportReview = async () => {
     setIsExporting(true);
     try {
+      if (!allPlans || allPlans.length === 0) {
+        console.error('No plans available for export');
+        setIsExporting(false);
+        return;
+      }
       const comparePlan = allPlans.find(p => p.id === compareWithPlanId);
       await exportReview({
         projectName: currentJob?.name || 'Project',
