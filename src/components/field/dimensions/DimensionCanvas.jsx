@@ -161,6 +161,33 @@ export default function DimensionCanvas({
     ctx.restore();
   };
 
+  const drawSnapIndicator = (ctx, point, axis) => {
+    if (!axis) return;
+
+    ctx.save();
+    ctx.strokeStyle = '#00FF00';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 4]);
+
+    const indicatorSize = 12;
+
+    if (axis === 'horizontal') {
+      // Draw horizontal snap line
+      ctx.beginPath();
+      ctx.moveTo(point.x - indicatorSize, point.y);
+      ctx.lineTo(point.x + indicatorSize, point.y);
+      ctx.stroke();
+    } else if (axis === 'vertical') {
+      // Draw vertical snap line
+      ctx.beginPath();
+      ctx.moveTo(point.x, point.y - indicatorSize);
+      ctx.lineTo(point.x, point.y + indicatorSize);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  };
+
   const formatDimensionLabel = (dim) => {
     if (dim.unit_system === 'imperial') {
       const ft = dim.value_feet || 0;
