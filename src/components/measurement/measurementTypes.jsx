@@ -1,77 +1,56 @@
+
 /**
  * MEASUREMENT TYPES & COMMANDS
  * Standard construction measurement abbreviations
  */
 
-export const MEASUREMENT_TYPES = {
-  // Horizontal Measurements
-  'FF-FF': {
+// Pure data only - no logic
+export const MEASUREMENT_TYPES = [
+  {
+    id: 'FF-FF',
     label: 'Finish Face to Finish Face',
-    category: 'horizontal',
-    description: 'Distance between two finished surfaces',
-    icon: '↔️',
+    short: 'FF–FF',
+    orientation: 'horizontal',
+    description: 'Between finished faces (wall to wall)',
   },
-  'CL-FF': {
+  {
+    id: 'CL-FF',
     label: 'Centerline to Finish Face',
-    category: 'horizontal',
-    description: 'Distance from centerline to finished surface',
-    icon: '↔️',
+    short: 'CL–FF',
+    orientation: 'horizontal',
+    description: 'Center of element to finished surface',
   },
-  'CL-CL': {
+  {
+    id: 'CL-CL',
     label: 'Centerline to Centerline',
-    category: 'horizontal',
-    description: 'Distance between two centerlines',
-    icon: '↔️',
+    short: 'CL–CL',
+    orientation: 'horizontal',
+    description: 'Center to center of elements',
   },
-  'BM-FF': {
-    label: 'Bench Mark to Finish Face',
-    category: 'horizontal',
-    description: 'Distance from reference point to finished surface',
-    icon: '↔️',
-  },
-
-  // Vertical Measurements
-  'FF-BM': {
+  {
+    id: 'FF-BM',
     label: 'Finish Face to Bench Mark',
-    category: 'vertical',
-    description: 'Vertical distance from finished surface to benchmark',
-    icon: '↕️',
+    short: 'FF–BM',
+    orientation: 'vertical',
+    description: 'Finished surface to bench mark reference',
   },
-  'BM-C': {
+  {
+    id: 'BM-FF',
+    label: 'Bench Mark to Finish Face',
+    short: 'BM–FF',
+    orientation: 'vertical',
+    description: 'Bench mark reference to finished surface',
+  },
+  {
+    id: 'BM-C',
     label: 'Bench Mark to Centerline',
-    category: 'vertical',
-    description: 'Vertical distance from benchmark to centerline',
-    icon: '↕️',
+    short: 'BM–C',
+    orientation: 'vertical',
+    description: 'Bench mark reference to center of element',
   },
-  'FF-FF-V': {
-    label: 'Finish Face to Finish Face (Vertical)',
-    category: 'vertical',
-    description: 'Vertical distance between two finished surfaces',
-    icon: '↕️',
-  },
-  'CL-BM': {
-    label: 'Centerline to Bench Mark',
-    category: 'vertical',
-    description: 'Vertical distance from centerline to benchmark',
-    icon: '↕️',
-  },
+];
 
-  // Diagonal/Special
-  'DIAGONAL': {
-    label: 'Diagonal',
-    category: 'diagonal',
-    description: 'Diagonal measurement (Pythagorean)',
-    icon: '⧹',
-  },
-  'CUSTOM': {
-    label: 'Custom Measurement',
-    category: 'custom',
-    description: 'User-defined measurement type',
-    icon: '📐',
-  },
-};
-
-export const MEASUREMENT_CATEGORIES = {
+export const MEASUREMENT_ORIENTATIONS = { // Renamed from MEASUREMENT_CATEGORIES
   horizontal: {
     name: 'Horizontal',
     icon: '↔️',
@@ -82,12 +61,12 @@ export const MEASUREMENT_CATEGORIES = {
     icon: '↕️',
     description: 'Up/down measurements',
   },
-  diagonal: {
+  diagonal: { // Kept for conceptual integrity, even if not in MEASUREMENT_TYPES array
     name: 'Diagonal',
     icon: '⧹',
     description: 'Corner-to-corner measurements',
   },
-  custom: {
+  custom: { // Kept for conceptual integrity, even if not in MEASUREMENT_TYPES array
     name: 'Custom',
     icon: '📐',
     description: 'User-defined measurements',
@@ -98,23 +77,31 @@ export const MEASUREMENT_CATEGORIES = {
  * Get measurement type details
  */
 export function getMeasurementType(type) {
-  return MEASUREMENT_TYPES[type] || MEASUREMENT_TYPES.CUSTOM;
+  const foundType = MEASUREMENT_TYPES.find(mt => mt.id === type);
+  // Define a default custom type object, as 'CUSTOM' is no longer explicitly in MEASUREMENT_TYPES array.
+  const customDefault = {
+    id: 'CUSTOM',
+    label: 'Custom Measurement',
+    short: 'CUST',
+    orientation: 'custom',
+    description: 'User-defined measurement type',
+  };
+  return foundType || customDefault;
 }
 
 /**
- * Get all types for a category
+ * Get all types for a given orientation
  */
-export function getTypesByCategory(category) {
-  return Object.entries(MEASUREMENT_TYPES)
-    .filter(([_, data]) => data.category === category)
-    .map(([key, data]) => ({ key, ...data }));
+export function getTypesByOrientation(orientation) { // Renamed function and parameter
+  return MEASUREMENT_TYPES
+    .filter(data => data.orientation === orientation);
 }
 
 /**
  * Validate measurement type
  */
 export function isValidMeasurementType(type) {
-  return type in MEASUREMENT_TYPES;
+  return MEASUREMENT_TYPES.some(mt => mt.id === type);
 }
 
 /**
@@ -128,16 +115,17 @@ REFERENCE POINTS:
 • CL = Centerline (middle/center)
 • BM = Bench Mark (fixed reference point)
 
-DIRECTIONS:
-• Horizontal (↔️): Left-right measurements
-• Vertical (↕️): Up-down measurements
-• Diagonal (⧹): Corner measurements
+ORIENTATIONS:
+• ${MEASUREMENT_ORIENTATIONS.horizontal.name} (${MEASUREMENT_ORIENTATIONS.horizontal.icon}): ${MEASUREMENT_ORIENTATIONS.horizontal.description}
+• ${MEASUREMENT_ORIENTATIONS.vertical.name} (${MEASUREMENT_ORIENTATIONS.vertical.icon}): ${MEASUREMENT_ORIENTATIONS.vertical.description}
+• ${MEASUREMENT_ORIENTATIONS.diagonal.name} (${MEASUREMENT_ORIENTATIONS.diagonal.icon}): ${MEASUREMENT_ORIENTATIONS.diagonal.description}
+• ${MEASUREMENT_ORIENTATIONS.custom.name} (${MEASUREMENT_ORIENTATIONS.custom.icon}): ${MEASUREMENT_ORIENTATIONS.custom.description}
 
 COMMON TYPES:
-• FF-FF: Finish Face to Finish Face
-• CL-FF: Centerline to Finish Face
-• CL-CL: Centerline to Centerline
-• BM-FF: Bench Mark to Finish Face
-• FF-BM: Finish Face to Bench Mark (Vertical)
-• BM-C: Bench Mark to Centerline (Vertical)
+• FF–FF: Finish Face to Finish Face
+• CL–FF: Centerline to Finish Face
+• CL–CL: Centerline to Centerline
+• FF–BM: Finish Face to Bench Mark
+• BM–FF: Bench Mark to Finish Face
+• BM–C: Bench Mark to Centerline
 `;
