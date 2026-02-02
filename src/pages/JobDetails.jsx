@@ -208,8 +208,18 @@ export default function JobDetails() {
   const { data: supervisors = [] } = useQuery({
     queryKey: ['availableSupervisors'],
     queryFn: async () => {
-      const employees = await base44.entities.EmployeeDirectory.list('-full_name', 100);
-      return employees.filter(emp => emp.status === 'active');
+      try {
+        // Get all active employees from EmployeeDirectory
+        const employees = await base44.entities.EmployeeDirectory.filter(
+          { status: 'active' },
+          '-full_name',
+          100
+        );
+        return employees || [];
+      } catch (error) {
+        console.error('Error fetching supervisors:', error);
+        return [];
+      }
     },
     staleTime: 900000,
     initialData: []
