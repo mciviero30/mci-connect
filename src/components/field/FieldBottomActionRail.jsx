@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Camera, Mic, CheckSquare, Ruler, AlertTriangle } from 'lucide-react';
+import { Camera, Mic, CheckSquare, AlertTriangle } from 'lucide-react';
 import CreateTaskDialog from './CreateTaskDialog';
 import MobilePhotoCapture from './MobilePhotoCapture';
 import VoiceNoteRecorder from './VoiceNoteRecorder';
-import DimensionBottomSheet from './DimensionBottomSheet';
 import IncidentBottomSheet from './IncidentBottomSheet';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
