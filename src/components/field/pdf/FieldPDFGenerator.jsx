@@ -4,7 +4,7 @@
  * Generates production-grade PDFs with jsPDF
  */
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
 /**
  * Generate PDF from normalized dataset
