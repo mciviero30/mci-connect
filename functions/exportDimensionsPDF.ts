@@ -249,40 +249,6 @@ function addConfidencePage(doc, jobName, totalCount) {
   doc.text(`Job: ${jobName}`, 20, yPos + 46);
   doc.text(`Export Date: ${new Date().toLocaleDateString()}`, 20, yPos + 52);
 
-    // Generate PDF blob
-    const pdfBlob = doc.output('blob');
-    const pdfFile = new File([pdfBlob], `dimensions_${jobName}_${Date.now()}.pdf`, { type: 'application/pdf' });
-    
-    // Upload to storage
-    const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-
-    // FASE 3C-5: Save PDF as Plan entity with measurement_session_id ownership
-    if (measurementSessionId) {
-      await base44.asServiceRole.entities.Plan.create({
-        job_id: jobId,
-        name: `Measurement Report - ${new Date().toLocaleDateString()}`,
-        file_url: file_url,
-        purpose: 'measurement',
-        measurement_session_id: measurementSessionId,  // CRITICAL: Session ownership
-        order: 9999,  // Place at end
-      });
-      console.log(`[exportDimensionsPDF] PDF saved to session: ${measurementSessionId}`);
-    }
-
-    return Response.json({ 
-      success: true,
-      pdf_url: file_url 
-    });
-
-  } catch (error) {
-    console.error('[ExportDimensionsPDF] Error:', error);
-    return Response.json({ 
-      error: error.message,
-      stack: error.stack 
-    }, { status: 500 });
-  }
-});
-
 function formatDimensionValue(dim) {
   if (dim.unit_system === 'imperial') {
     const ft = dim.value_feet || 0;
