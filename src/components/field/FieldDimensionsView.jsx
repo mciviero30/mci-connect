@@ -420,25 +420,18 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
       {/* FASE 4 POLISH: Clean canvas area - full focus on measurement */}
       <div className="flex-1 min-h-0 p-3 sm:p-4 flex flex-col bg-slate-950">
         {selectedImage ? (() => {
-          const selectedOption = imageOptions.find(o => o.value === selectedImage);
-          
-          // Handle PDF - convert to canvas for measurement
-          React.useEffect(() => {
-            if (selectedOption?.isPDF && !pdfCanvas) {
-              loadPdfWithPdfJs(selectedOption.url);
-            }
-          }, [selectedOption?.id, selectedOption?.isPDF]);
-          
-          return (
-            <DimensionCanvas
-              imageUrl={selectedOption?.isPDF ? pdfCanvas : selectedOption?.url}
-              dimensions={filteredDimensions}
-              activeDimension={activeDimension}
-              onDimensionPlace={handleDimensionPlace}
-              unitSystem={projectUnitSystem}
-            />
-          );
-        })() : (
+            const selectedOption = imageOptions.find(o => o.value === selectedImage);
+
+            return (
+              <DimensionCanvas
+                imageUrl={selectedOption?.isPDF ? pdfCanvas : selectedOption?.url}
+                dimensions={filteredDimensions}
+                activeDimension={activeDimension}
+                onDimensionPlace={handleDimensionPlace}
+                unitSystem={projectUnitSystem}
+              />
+            );
+          })() : (
           <div className="h-full flex items-center justify-center bg-slate-900 rounded-2xl border-2 border-dashed border-slate-700">
             <div className="text-center px-6">
               <Ruler className="w-20 h-20 text-slate-700 mx-auto mb-6" />
