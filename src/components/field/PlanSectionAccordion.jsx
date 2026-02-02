@@ -63,9 +63,50 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
           value={section}
           className="bg-slate-800/50 border border-slate-700 rounded-xl px-4 data-[state=open]:bg-slate-800 transition-colors"
         >
-          <AccordionTrigger className="text-white font-bold text-lg hover:no-underline hover:text-orange-400 py-4">
+          <AccordionTrigger className="text-white font-bold text-lg hover:no-underline hover:text-orange-400 py-4 flex justify-between items-center">
             <span className="flex items-center gap-3">
-              {section}
+              {editingSection === section ? (
+                <div 
+                  className="flex items-center gap-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Input
+                    autoFocus
+                    value={editingSectionValue}
+                    onChange={(e) => setEditingSectionValue(e.target.value)}
+                    onBlur={() => handleSectionRename(section, editingSectionValue)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSectionRename(section, editingSectionValue);
+                      if (e.key === 'Escape') setEditingSection(null);
+                    }}
+                    className="h-8 bg-black/40 border-orange-500/30 text-white text-sm w-40"
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingSection(null);
+                    }}
+                    className="p-1 hover:bg-red-500/20 rounded"
+                  >
+                    <X className="w-4 h-4 text-red-400" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {section}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingSection(section);
+                      setEditingSectionValue(section);
+                    }}
+                    className="p-1 opacity-0 group-hover:opacity-100 hover:bg-orange-500/20 rounded transition-all"
+                    title="Edit section name"
+                  >
+                    <Edit2 className="w-4 h-4 text-orange-400" />
+                  </button>
+                </>
+              )}
               <span className="text-xs font-normal text-slate-400 bg-slate-900 px-2 py-1 rounded-full">
                 {Object.values(grouped[section]).flat().length} planes
               </span>
