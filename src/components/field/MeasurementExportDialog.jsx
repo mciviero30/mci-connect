@@ -12,6 +12,7 @@ export default function MeasurementExportDialog({
   jobName,
   dimensions,
   unitSystem,
+  measurementSessionId,  // FASE 3C-5: Session context for PDF ownership
 }) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -25,11 +26,13 @@ export default function MeasurementExportDialog({
     try {
       toast.info('Generating PDF...');
 
+      // FASE 3C-5: Include measurement_session_id for PDF ownership tracking
       const response = await base44.functions.invoke('exportDimensionsPDF', {
         jobId: dimensions[0]?.job_id,
         jobName,
         dimensions,
         unitSystem,
+        measurementSessionId,  // Session ownership
       });
 
       if (!response || !response.data) {

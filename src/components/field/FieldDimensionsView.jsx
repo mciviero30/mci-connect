@@ -72,10 +72,15 @@ export default function FieldDimensionsView({ jobId, jobName }) {
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
+  // FASE 3C-5: Load ONLY plans for current measurement session
   const { data: plans = [] } = useQuery({
-    queryKey: ['field-measurement-plans', jobId],
-    queryFn: () => base44.entities.Plan.filter({ job_id: jobId, purpose: 'measurement' }, '-created_date'),
-    enabled: !!jobId,
+    queryKey: ['field-measurement-plans', jobId, measurementSessionId],
+    queryFn: () => base44.entities.Plan.filter({ 
+      job_id: jobId, 
+      purpose: 'measurement',
+      measurement_session_id: measurementSessionId 
+    }, '-created_date'),
+    enabled: !!jobId && !!measurementSessionId,
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
@@ -106,16 +111,18 @@ export default function FieldDimensionsView({ jobId, jobName }) {
   const createPlanMutation = useMutation({
     mutationFn: async (data) => {
       console.log('[createPlanMutation] Saving measurement plan:', data);
+      // FASE 3C-5: CRITICAL - Always include measurement_session_id for measurement plans
       const result = await base44.entities.Plan.create({
         ...data,
-        purpose: 'measurement'
+        purpose: 'measurement',
+        measurement_session_id: measurementSessionId  // Session ownership
       });
       console.log('[createPlanMutation] Success:', result);
       return result;
     },
     onSuccess: () => {
       console.log('[createPlanMutation] onSuccess triggered');
-      queryClient.invalidateQueries({ queryKey: ['field-measurement-plans', jobId] });
+      queryClient.invalidateQueries({ queryKey: ['field-measurement-plans', jobId, measurementSessionId] });
       setShowUploadPlan(false);
       setNewPlan({ name: '', file: null });
       toast.success('Measurement drawing uploaded successfully');
@@ -417,6 +424,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
         jobName={jobName}
         dimensions={dimensions}
         unitSystem={projectUnitSystem}
+        measurementSessionId={measurementSessionId}
       />
 
       {/* Upload Plan Dialog */}

@@ -10,7 +10,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { jobId, jobName, dimensions, unitSystem } = await req.json();
+    const { jobId, jobName, dimensions, unitSystem, measurementSessionId } = await req.json();
+
+    // FASE 3C-5: Validate measurement_session_id is present (defensive)
+    if (!measurementSessionId) {
+      console.warn('[exportDimensionsPDF] Missing measurement_session_id - PDF will not be session-scoped');
+    }
 
     const doc = new jsPDF('landscape', 'mm', 'letter');
     let yPos = 20;
@@ -118,6 +123,19 @@ Deno.serve(async (req) => {
     
     // Upload to storage
     const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
+
+    // FASE 3C-5: Save PDF as Plan entity with measurement_session_id ownership
+    if (measurementSessionId) {
+      await base44.asServiceRole.entities.Plan.create({
+        job_id: jobId,
+        name: `Measurement Report - ${new Date().toLocaleDateString()}`,
+        file_url: file_url,
+        purpose: 'measurement',
+        measurement_session_id: measurementSessionId,  // CRITICAL: Session ownership
+        order: 9999,  // Place at end
+      });
+      console.log(`[exportDimensionsPDF] PDF saved to session: ${measurementSessionId}`);
+    }
 
     return Response.json({ 
       success: true,
