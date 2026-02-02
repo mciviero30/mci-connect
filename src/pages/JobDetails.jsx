@@ -53,10 +53,18 @@ export default function JobDetails() {
   const [showClientInvitation, setShowClientInvitation] = useState(false);
   const [showEditLead, setShowEditLead] = useState(false);
   const [showEditDates, setShowEditDates] = useState(false);
-  const [leadForm, setLeadForm] = useState({ lead_name: job?.lead_name || '', lead_phone: job?.lead_phone || '', lead_id: job?.lead_id || '' });
-  const [datesForm, setDatesForm] = useState({ start_date_field: job?.start_date_field || '', end_date_field: job?.end_date_field || '' });
+  const [leadForm, setLeadForm] = useState({ lead_name: '', lead_phone: '', lead_id: '' });
+  const [datesForm, setDatesForm] = useState({ start_date_field: '', end_date_field: '' });
   const queryClient = useQueryClient();
   const toast = useToast();
+
+  // Update form state when job data loads
+  React.useEffect(() => {
+    if (job) {
+      setLeadForm({ lead_name: job.lead_name || '', lead_phone: job.lead_phone || '', lead_id: job.lead_id || '' });
+      setDatesForm({ start_date_field: job.start_date_field || '', end_date_field: job.end_date_field || '' });
+    }
+  }, [job?.id]);
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
