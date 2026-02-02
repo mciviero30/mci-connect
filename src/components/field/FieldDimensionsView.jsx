@@ -682,33 +682,9 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
               </Button>
               <Button 
                  type="button"
-                 onClick={() => {
-                    console.log('[Save Drawing] Button clicked');
-                   if (!newPlan.file || !newPlan.name) {
-                     console.log('[Save Drawing] Validation failed', { file: !!newPlan.file, name: !!newPlan.name });
-                     toast.error('Please enter name and select file');
-                     return;
-                   }
-
-                   if (typeof newPlan.file !== 'string' || !newPlan.file.startsWith('https://')) {
-                     console.error('[FieldDimensionsView] Invalid file_url:', newPlan.file);
-                     toast.error('Invalid file URL - upload may have failed. Try again.');
-                     setNewPlan({ name: '', file: null });
-                     return;
-                   }
-
-                   const payload = {
-                     job_id: jobId,
-                     name: newPlan.name,
-                     file_url: newPlan.file,
-                     order: plans.length,
-                     image_url: newPlan.file,
-                   };
-                   console.log('[Save Drawing] Calling mutation with payload:', payload);
-                   createPlanMutation.mutate(payload);
-                 }}
-                disabled={!newPlan.file || !newPlan.name || uploading || createPlanMutation.isPending}
-                className="bg-blue-600 hover:bg-blue-700 text-white min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
+                 onClick={handleSaveDrawing}
+                 disabled={!newPlan.file || !newPlan.name || uploading || createPlanMutation.isPending}
+                 className="bg-blue-600 hover:bg-blue-700 text-white min-h-[48px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {createPlanMutation.isPending ? (
                   <>
