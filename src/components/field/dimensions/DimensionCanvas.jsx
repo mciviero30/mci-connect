@@ -63,22 +63,28 @@ export default function DimensionCanvas({
 
   const drawDimension = (ctx, dim) => {
     const { x1, y1, x2, y2, label_x, label_y } = dim.canvas_data;
-    
+    const isLocked = lockedMeasurements.has(dim.id);
+
     ctx.save();
-    
+
     // Style based on type
     if (dim.dimension_type === 'benchmark') {
-      ctx.strokeStyle = '#FFB800';
+      ctx.strokeStyle = isLocked ? '#888888' : '#FFB800';
       ctx.setLineDash([10, 5]);
       ctx.lineWidth = 3;
     } else if (dim.dimension_type === 'vertical') {
-      ctx.strokeStyle = dim.benchmark_above ? '#00FF00' : '#FF0000';
+      ctx.strokeStyle = isLocked ? '#888888' : (dim.benchmark_above ? '#00FF00' : '#FF0000');
       ctx.lineWidth = 3;
       ctx.setLineDash([]);
     } else {
-      ctx.strokeStyle = '#FFFFFF';
+      ctx.strokeStyle = isLocked ? '#888888' : '#FFFFFF';
       ctx.lineWidth = 3;
       ctx.setLineDash([]);
+    }
+
+    // Apply reduced opacity if locked
+    if (isLocked) {
+      ctx.globalAlpha = 0.6;
     }
     
     // Draw line
