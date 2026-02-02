@@ -30,7 +30,9 @@ import {
   UserPlus,
   Zap,
   CheckCircle2,
-  Trash2
+  Trash2,
+  Archive,
+  FileText
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
