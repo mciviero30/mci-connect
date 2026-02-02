@@ -257,6 +257,15 @@ export default function DimensionDialog({
               </div>
             )}
 
+            {/* Odd Measurement Hint */}
+            {isOddMeasurement(formData) && (
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-xl p-3 flex items-start gap-3">
+                <div className="text-sm text-slate-700 dark:text-slate-300 flex-1">
+                  <span className="font-medium">💡 Verify measurement</span> — Complex fractions detected. Confirm accuracy if needed.
+                </div>
+              </div>
+            )}
+
             {/* Area */}
             <div>
               <Label className="text-sm font-bold">Area/Location</Label>
