@@ -133,13 +133,38 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                         const isPdf = plan.file_url?.toLowerCase().includes('.pdf');
                         const taskCount = tasks.filter(t => t.blueprint_id === plan.id).length;
 
+                        const isSelected = selectedForDelete.has(plan.id);
                         return (
-                          <div
-                            key={plan.id}
-                            className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/30 transition-all group cursor-pointer active:scale-95"
-                          >
-                            {/* Action menu */}
-                            <div className="absolute top-2 right-2 z-30">
+                           <div
+                             key={plan.id}
+                             className={`bg-slate-800 border rounded-xl overflow-hidden transition-all group cursor-pointer active:scale-95 relative ${
+                               isSelected 
+                                 ? 'border-red-500 shadow-xl shadow-red-500/30' 
+                                 : 'border-slate-700 hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/30'
+                             }`}
+                           >
+                             {/* Checkbox overlay */}
+                             <div className="absolute top-2 left-2 z-30">
+                               <input
+                                 type="checkbox"
+                                 checked={isSelected}
+                                 onChange={(e) => {
+                                   e.stopPropagation();
+                                   const newSet = new Set(selectedForDelete);
+                                   if (isSelected) {
+                                     newSet.delete(plan.id);
+                                   } else {
+                                     newSet.add(plan.id);
+                                   }
+                                   setSelectedForDelete(newSet);
+                                 }}
+                                 className="w-5 h-5 cursor-pointer accent-orange-500"
+                                 onClick={(e) => e.stopPropagation()}
+                               />
+                             </div>
+
+                             {/* Action menu */}
+                             <div className="absolute top-2 right-2 z-30">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <button
