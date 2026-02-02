@@ -134,31 +134,32 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
       <div className="p-4 border-b border-slate-200 dark:border-slate-700">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-slate-900 dark:text-white">Task Details</h3>
-        <div className="flex items-center gap-2">
-          {task.pin_x && task.pin_y && onZoomTo && (
-            <Button 
-              size="icon" 
-              variant="ghost" 
-              onClick={() => onZoomTo(task)} 
-              className="text-[#FFB800] hover:text-[#FFB800]/80"
-              title="Zoom to pin"
-            >
-              <MapPin className="w-4 h-4" />
-            </Button>
-          )}
-          {isEditing ? (
-            <Button size="icon" variant="ghost" onClick={handleSave} className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300">
-              <Save className="w-4 h-4" />
-            </Button>
-          ) : (
-            <Button size="icon" variant="ghost" onClick={() => setIsEditing(true)} className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
-              <Edit2 className="w-4 h-4" />
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {task.pin_x && task.pin_y && onZoomTo && (
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                onClick={() => onZoomTo(task)} 
+                className="text-[#FFB800] hover:text-[#FFB800]/80"
+                title="Zoom to pin"
+              >
+                <MapPin className="w-4 h-4" />
+              </Button>
+            )}
+            {isEditing ? (
+              <Button size="icon" variant="ghost" onClick={handleSave} className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300">
+                <Save className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button size="icon" variant="ghost" onClick={() => setIsEditing(true)} className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                <Edit2 className="w-4 h-4" />
+              </Button>
+            )}
             <Button size="icon" variant="ghost" onClick={onClose} className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
               <X className="w-4 h-4" />
             </Button>
           </div>
+        </div>
         
         {/* PASO 4: Task title and status */}
         <div className="mb-2">
