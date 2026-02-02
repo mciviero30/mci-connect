@@ -4,6 +4,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Wand2, Trash2, MoreVertical } from 'lucide-react';
 import EditPlanDialog from './EditPlanDialog';
+import { Input } from '@/components/ui/input';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
 
 export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, setAnalyzePlan, deletePlanMutation, jobId }) {
   const [editingPlan, setEditingPlan] = useState(null);
