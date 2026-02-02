@@ -10,7 +10,8 @@ export default function DimensionCanvas({
   onDimensionPlace,
   onDimensionUpdate,
   onDimensionDelete,
-  unitSystem = 'imperial'
+  unitSystem = 'imperial',
+  lockedMeasurements = new Set()
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
