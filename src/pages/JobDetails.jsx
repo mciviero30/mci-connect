@@ -1261,22 +1261,33 @@ export default function JobDetails() {
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div>
-                <Label className="text-slate-700 dark:text-slate-300">Nombre</Label>
-                <Input 
-                  value={leadForm.lead_name}
-                  onChange={(e) => setLeadForm({...leadForm, lead_name: e.target.value})}
-                  placeholder="John Smith"
-                  className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                />
-              </div>
-              <div>
-                <Label className="text-slate-700 dark:text-slate-300">Teléfono</Label>
-                <Input 
-                  value={leadForm.lead_phone}
-                  onChange={(e) => setLeadForm({...leadForm, lead_phone: e.target.value})}
-                  placeholder="(555) 123-4567"
-                  className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700"
-                />
+                <Label className="text-slate-700 dark:text-slate-300">
+                  {language === 'es' ? 'Seleccionar Supervisor' : 'Select Supervisor'}
+                </Label>
+                <Select 
+                  value={leadForm.lead_id || ''}
+                  onValueChange={(value) => {
+                    const supervisor = supervisors.find(s => s.id === value);
+                    if (supervisor) {
+                      setLeadForm({
+                        lead_id: supervisor.id,
+                        lead_name: supervisor.full_name || '',
+                        lead_phone: supervisor.phone || ''
+                      });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="mt-1.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    <SelectValue placeholder={language === 'es' ? 'Seleccionar...' : 'Select...'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {supervisors.map(supervisor => (
+                      <SelectItem key={supervisor.id} value={supervisor.id}>
+                        {supervisor.full_name} {supervisor.phone ? `(${supervisor.phone})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
             <div className="flex justify-end gap-3 pt-4 border-t">
