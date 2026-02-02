@@ -209,11 +209,17 @@ export default function JobDetails() {
     queryKey: ['availableSupervisors'],
     queryFn: async () => {
       try {
-        // Get all employees from EmployeeDirectory (no filter, sort by name)
+        // Get all employees from EmployeeDirectory
         const employees = await base44.entities.EmployeeDirectory.list('-full_name', 200);
         console.log('Fetched employees:', employees);
-        // Filter for active status in JS
-        return (employees || []).filter(emp => emp.status === 'active' || !emp.status);
+        
+        // Filter for leadership positions only
+        const leadershipKeywords = ['supervisor', 'foreman', 'lead', 'leader', 'project manager', 'manager', 'ceo', 'director'];
+        return (employees || []).filter(emp => {
+          const position = emp.position?.toLowerCase() || '';
+          const isLeadership = leadershipKeywords.some(keyword => position.includes(keyword));
+          return (emp.status === 'active' || !emp.status) && isLeadership;
+        });
       } catch (error) {
         console.error('Error fetching supervisors:', error);
         return [];
