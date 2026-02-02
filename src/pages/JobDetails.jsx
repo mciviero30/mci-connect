@@ -204,6 +204,17 @@ export default function JobDetails() {
     initialData: []
   });
 
+  // Fetch available supervisors/leads from EmployeeDirectory
+  const { data: supervisors = [] } = useQuery({
+    queryKey: ['availableSupervisors'],
+    queryFn: async () => {
+      const employees = await base44.entities.EmployeeDirectory.list('-full_name', 100);
+      return employees.filter(emp => emp.status === 'active');
+    },
+    staleTime: 900000,
+    initialData: []
+  });
+
   const estimatedHours = relatedQuote?.estimated_hours || job?.estimated_hours || 0;
   const estimatedCost = relatedQuote?.estimated_cost || job?.estimated_cost || 0;
   const baseContractAmount = job?.contract_amount || 0;
