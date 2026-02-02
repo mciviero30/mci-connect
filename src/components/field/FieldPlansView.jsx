@@ -276,7 +276,7 @@ const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansF
           </Button>
         </div>
       ) : (
-        <PlanGridSection plans={plans} tasks={tasks} setSelectedPlan={setSelectedPlan} setAnalyzePlan={setAnalyzePlan} deletePlanMutation={deletePlanMutation} />
+        <PlanSectionAccordion plans={plans} tasks={tasks} setSelectedPlan={setSelectedPlan} setAnalyzePlan={setAnalyzePlan} deletePlanMutation={deletePlanMutation} />
       )}
 
       {/* Upload Dialog */}
