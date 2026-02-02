@@ -746,15 +746,19 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   };
 
   const handlePinClick = useCallback((task, e) => {
+    // PASO 4: Prevent double-trigger on tap
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
     
+    // Instant haptic feedback already in TaskPin.jsx
+    
     // Client punch items open review dialog
     if (task.created_by_client && task.task_type === 'punch_item') {
       setReviewingPunch(task);
     } else {
+      setSelectedTask(task); // Update selected state for visual feedback
       setEditingTask(task);
       setShowCreateTask(true);
     }
@@ -849,11 +853,12 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   };
 
   const handleImageClick = (e) => {
+    // PASO 4: Prevent accidental pin creation
     // Don't handle if clicking on a pin button
     if (e.target.closest('button')) return;
     
-    // Don't place pin if we just finished dragging the view
-    if (hasDragged || dragDistance > 5) return;
+    // Don't place pin if we just finished dragging the view (increased threshold)
+    if (hasDragged || dragDistance > 10) return;
     
     // Handle scale calibration click
     if (isCalibrating) {

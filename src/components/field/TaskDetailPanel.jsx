@@ -394,9 +394,10 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
                       setShowMentions(true);
                     }
                   }}
-                  placeholder="Type @ to mention..."
-                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white pr-10"
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddComment()}
+                  placeholder="Add comment..."
+                  className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white pr-10 min-h-[44px]"
+                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleAddComment()}
+                  style={{ fontSize: 'max(16px, 1rem)' }}
                 />
                 <button
                   onClick={() => setShowMentions(!showMentions)}
@@ -406,12 +407,11 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
                 </button>
               </div>
               <Button 
-                size="icon"
                 onClick={handleAddComment}
                 disabled={!newComment.trim() || addCommentMutation.isPending}
-                className="bg-amber-500 hover:bg-amber-600"
+                className="bg-orange-600 hover:bg-orange-700 text-white flex-shrink-0 min-h-[44px] min-w-[44px] touch-manipulation active:scale-95"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-5 h-5" />
               </Button>
             </div>
             
