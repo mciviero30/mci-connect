@@ -177,19 +177,6 @@ export default function FieldBottomActionRail({
         }}
       />
 
-      {/* Measurement */}
-      <DimensionBottomSheet
-        open={activeAction === 'measure'}
-        onOpenChange={(open) => {
-          if (!open) setActiveAction(null);
-        }}
-        jobId={jobId}
-        jobName={jobName}
-        onSave={(data) => {
-          setActiveAction(null);
-        }}
-      />
-
       {/* Incident Report */}
       <IncidentBottomSheet
         open={activeAction === 'incident'}
