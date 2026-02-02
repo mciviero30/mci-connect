@@ -7,6 +7,8 @@ import EditPlanDialog from './EditPlanDialog';
 
 export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, setAnalyzePlan, deletePlanMutation, jobId }) {
   const [editingPlan, setEditingPlan] = useState(null);
+  const [editingSection, setEditingSection] = useState(null);
+  const [editingSectionValue, setEditingSectionValue] = useState('');
 
   // Group plans by section > folder
   const grouped = plans.reduce((acc, plan) => {
