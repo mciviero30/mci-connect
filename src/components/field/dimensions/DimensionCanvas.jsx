@@ -179,22 +179,87 @@ export default function DimensionCanvas({
     }
   };
 
+  const calculateSnapToAxis = (p1, p2) => {
+    const dx = Math.abs(p2.x - p1.x);
+    const dy = Math.abs(p2.y - p1.y);
+    const angle = Math.abs(Math.atan2(dy, dx) * 180 / Math.PI);
+
+    // Snap threshold: ±5 degrees from horizontal or vertical
+    const SNAP_THRESHOLD = 5;
+    const isNearHorizontal = angle < SNAP_THRESHOLD || angle > (90 - SNAP_THRESHOLD);
+    const isNearVertical = Math.abs(angle - 90) < SNAP_THRESHOLD;
+
+    if (isNearHorizontal) {
+      return { snapped: true, axis: 'horizontal', point: { x: p2.x, y: p1.y } };
+    }
+    if (isNearVertical) {
+      return { snapped: true, axis: 'vertical', point: { x: p1.x, y: p2.y } };
+    }
+    return { snapped: false, axis: null, point: p2 };
+  };
+
+  const calculateSnapToPoint = (testPoint, allPoints) => {
+    const SNAP_DISTANCE = 10; // pixels
+
+    for (const dim of dimensions) {
+      if (!dim.canvas_data) continue;
+      const points = [
+        { x: dim.canvas_data.x1, y: dim.canvas_data.y1 },
+        { x: dim.canvas_data.x2, y: dim.canvas_data.y2 }
+      ];
+
+      for (const p of points) {
+        const distance = Math.hypot(testPoint.x - p.x, testPoint.y - p.y);
+        if (distance < SNAP_DISTANCE) {
+          return { snapped: true, point: p };
+        }
+      }
+    }
+
+    return { snapped: false, point: testPoint };
+  };
+
   const handleCanvasClick = (e) => {
     if (!activeDimension) return;
-    
+
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-    
-    const newPoints = [...drawingPoints, { x, y }];
-    setDrawingPoints(newPoints);
-    
-    if (newPoints.length === 2) {
+
+    let finalPoint = { x, y };
+    let axis = null;
+
+    // First point: just place it
+    if (drawingPoints.length === 0) {
+      setDrawingPoints([finalPoint]);
+      setSnappedAxis(null);
+      return;
+    }
+
+    // Second point: apply snap logic
+    if (drawingPoints.length === 1) {
+      const p1 = drawingPoints[0];
+
+      // Try axis snap first
+      const axisSnap = calculateSnapToAxis(p1, finalPoint);
+      if (axisSnap.snapped) {
+        finalPoint = axisSnap.point;
+        axis = axisSnap.axis;
+      } else {
+        // Try point snap if no axis snap
+        const pointSnap = calculateSnapToPoint(finalPoint, dimensions);
+        if (pointSnap.snapped) {
+          finalPoint = pointSnap.point;
+        }
+      }
+
+      const newPoints = [p1, finalPoint];
+
       // Complete dimension placement
       const label_x = (newPoints[0].x + newPoints[1].x) / 2;
       const label_y = (newPoints[0].y + newPoints[1].y) / 2 - 20;
-      
+
       onDimensionPlace({
         canvas_data: {
           x1: newPoints[0].x,
@@ -203,10 +268,12 @@ export default function DimensionCanvas({
           y2: newPoints[1].y,
           label_x,
           label_y,
+          snap_axis: axis,
         }
       });
-      
+
       setDrawingPoints([]);
+      setSnappedAxis(null);
     }
   };
 
