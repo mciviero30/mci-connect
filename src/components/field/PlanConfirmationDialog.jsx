@@ -41,6 +41,32 @@ export default function PlanConfirmationDialog({ plan, open, onOpenChange }) {
         </DialogHeader>
 
         <div className="space-y-4">
+          {/* Plan Preview */}
+          <div className="relative w-full aspect-video bg-slate-900 border border-slate-700 rounded-lg overflow-hidden flex items-center justify-center">
+            {plan?.file_url ? (
+              plan.file_url.toLowerCase().endsWith('.pdf') || plan.file_url.includes('.pdf') ? (
+                <div className="flex flex-col items-center gap-3">
+                  <FileText className="w-12 h-12 text-slate-600" />
+                  <p className="text-xs text-slate-500">PDF Documento</p>
+                </div>
+              ) : (
+                <img
+                  src={plan.file_url}
+                  alt="Plan preview"
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              )
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <AlertCircle className="w-8 h-8 text-slate-600" />
+                <p className="text-xs text-slate-500">No preview available</p>
+              </div>
+            )}
+          </div>
+
           {/* OCR Confidence Badge */}
           <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-700">
             <p className="text-xs text-slate-400 mb-2">OCR detectó:</p>
