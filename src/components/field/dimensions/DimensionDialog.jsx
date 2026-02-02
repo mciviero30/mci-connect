@@ -14,6 +14,25 @@ import DimensionValueInput from './DimensionValueInput';
 import BenchMarkInput from './BenchMarkInput';
 import MeasurementDiagram from './MeasurementDiagram';
 import { validateDimension, validateBenchMarkConfirmation } from './DimensionValidation';
+
+const isOddMeasurement = (dimension) => {
+  if (dimension.dimension_type !== 'horizontal') return false;
+  if (!dimension.value_feet && !dimension.value_inches) return false;
+  
+  // Check for suspiciously complex fractions (more than 1/2)
+  const frac = dimension.value_fraction;
+  const complexFractions = ['3/8', '5/8', '7/8', '1/3', '2/3', '3/16', '5/16', '7/16', '9/16', '11/16', '13/16', '15/16'];
+  
+  if (complexFractions.includes(frac)) {
+    // Combined with odd inches, might warrant verification
+    const inches = dimension.value_inches || 0;
+    if (inches % 2 !== 0 && frac !== '0') {
+      return true;
+    }
+  }
+  
+  return false;
+};
 import { useFieldContext } from '../FieldContextProvider';
 
 export default function DimensionDialog({ 
