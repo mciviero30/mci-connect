@@ -144,13 +144,15 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     gcTime: Infinity
   });
 
-  // CRITICAL FIX: Define filteredTasks BEFORE using in hooks
-  const filteredTasks = tasks.filter(task => {
-    if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
-    if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
-    if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
-    return true;
-  });
+  // CRITICAL FIX: Use useMemo for filteredTasks so it's a proper hook
+  const filteredTasks = React.useMemo(() => {
+    return tasks.filter(task => {
+      if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
+      if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
+      if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
+      return true;
+    });
+  }, [tasks, taskFilters]);
 
   const impactContext = useChangeImpactContext(
     activeChangeBlock,
