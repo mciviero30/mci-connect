@@ -21,17 +21,6 @@ const MAX_FILE_SIZE_MB = 100;
 const WARNING_FILE_SIZE_MB = 50;
 
 export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks = [] }) {
-  const queryClient = useQueryClient();
-
-  // FASE 3C-3: Filter only job_final plans (approved drawings for production)
-  const { data: jobFinalPlans = [] } = useQuery({
-    queryKey: ['field-job-final-plans', jobId],
-    queryFn: () => base44.entities.Plan.filter({ job_id: jobId, purpose: 'job_final' }, '-created_date'),
-    enabled: !!jobId,
-  });
-
-  // Use filtered plans instead of prop
-  const plans = jobFinalPlans;
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [showUpload, setShowUpload] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -45,6 +34,16 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   
   const queryClient = useQueryClient();
+
+  // FASE 3C-3: Filter only job_final plans (approved drawings for production)
+  const { data: jobFinalPlans = [] } = useQuery({
+    queryKey: ['field-job-final-plans', jobId],
+    queryFn: () => base44.entities.Plan.filter({ job_id: jobId, purpose: 'job_final' }, '-created_date'),
+    enabled: !!jobId,
+  });
+
+  // Use filtered plans instead of prop
+  const plans = jobFinalPlans;
 
   const createPlanMutation = useMutation({
     mutationFn: (data) => base44.entities.Plan.create({
