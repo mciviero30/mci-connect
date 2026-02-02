@@ -48,6 +48,7 @@ const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansF
   const [showTemplates, setShowTemplates] = useState(false);
   const [processingPdf, setProcessingPdf] = useState(null);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [selectedForDelete, setSelectedForDelete] = useState(new Set());
   
   const queryClient = useQueryClient();
 
