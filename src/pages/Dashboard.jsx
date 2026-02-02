@@ -909,7 +909,15 @@ export default function Dashboard() {
 
         {/* Actions for Employees */}
         {!isAdmin && (
-          <div className="text-center mt-6 sm:mt-8">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 mt-6 sm:mt-8">
+            <Link to={createPageUrl('Measurement')}>
+              <Button
+                className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full sm:w-auto min-h-[48px] text-sm sm:text-base px-6"
+              >
+                <Ruler className="w-4 h-4 mr-2" />
+                Measure
+              </Button>
+            </Link>
             <Button
               onClick={() => setShowTimeOffDialog(true)}
               className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md w-full sm:w-auto min-h-[48px] text-sm sm:text-base px-6"
