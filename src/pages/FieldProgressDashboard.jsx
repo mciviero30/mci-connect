@@ -201,7 +201,7 @@ export default function FieldProgressDashboard() {
   const COLORS = ['#FF8C00', '#FFB347', '#507DB4', '#6B9DD8', '#10B981', '#F59E0B'];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 p-4 md:p-6">
       <PageHeader 
         title="Field Progress Dashboard"
         description="Real-time job completion visibility and team activity tracking"
@@ -220,20 +220,22 @@ export default function FieldProgressDashboard() {
         }
       />
 
-      {/* Filters */}
-      <Card className="mb-6">
+      {/* Filters - Enhanced visual hierarchy */}
+      <Card className="mb-8 shadow-enterprise-md border-slate-200 dark:border-slate-700">
         <CardContent className="pt-6">
           <div className="flex flex-wrap gap-4">
             <div className="flex-1 min-w-[200px]">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">
                 Job Filter
               </label>
               <Select value={selectedJobId} onValueChange={setSelectedJobId}>
-                <SelectTrigger>
+                <SelectTrigger className="min-h-[48px]">
                   <SelectValue placeholder="Select job..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Active Jobs</SelectItem>
+                  <SelectItem value="all">
+                    <span className="font-semibold">All Active Jobs</span>
+                  </SelectItem>
                   {jobs.map(job => (
                     <SelectItem key={job.id} value={job.id}>
                       {job.name || job.job_name}
@@ -243,12 +245,12 @@ export default function FieldProgressDashboard() {
               </Select>
             </div>
 
-            <div className="w-40">
-              <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
+            <div className="w-48">
+              <label className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 block">
                 Time Range
               </label>
               <Select value={dateRange} onValueChange={setDateRange}>
-                <SelectTrigger>
+                <SelectTrigger className="min-h-[48px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -264,118 +266,162 @@ export default function FieldProgressDashboard() {
       </Card>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <RefreshCw className="w-8 h-8 text-slate-400 animate-spin" />
+        <div className="flex flex-col items-center justify-center h-96 gap-4">
+          <RefreshCw className="w-12 h-12 text-[#507DB4] animate-spin" />
+          <p className="text-sm text-slate-500 dark:text-slate-400">Loading field progress data...</p>
         </div>
       ) : (
         <>
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {/* Task Completion */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Task Completion
-                </CardTitle>
-                <CheckCircle2 className="w-4 h-4 text-green-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {metrics.taskCompletionRate}%
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {metrics.completedTasks} of {metrics.totalTasks} tasks
-                </p>
-              </CardContent>
-            </Card>
+          {/* ========================================= */}
+          {/* SECTION 1: JOB PROGRESS OVERVIEW          */}
+          {/* ========================================= */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-1 rounded-full bg-[#507DB4]" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Job Progress Overview
+              </h2>
+              <div className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-700" />
+            </div>
 
-            {/* Dimensions Captured */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Dimensions Captured
-                </CardTitle>
-                <Ruler className="w-4 h-4 text-purple-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {metrics.totalDimensions}
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {metrics.validatedDimensions} production-ready
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Task Completion */}
+              <Card className="shadow-enterprise-md border-slate-200 dark:border-slate-700 hover:shadow-enterprise-lg transition-all">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0">
+                  <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Task Completion
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/20">
+                    <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent mb-2">
+                    {metrics.taskCompletionRate}%
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    <span className="font-semibold text-slate-900 dark:text-white">{metrics.completedTasks}</span> of {metrics.totalTasks} tasks completed
+                  </p>
+                  <div className="mt-3 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-green-600 to-green-500 rounded-full transition-all"
+                      style={{ width: `${metrics.taskCompletionRate}%` }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Photos Uploaded */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Photos Uploaded
-                </CardTitle>
-                <Camera className="w-4 h-4 text-blue-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {metrics.totalPhotos}
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  Documentation images
-                </p>
-              </CardContent>
-            </Card>
+              {/* Dimensions Captured */}
+              <Card className="shadow-enterprise-md border-slate-200 dark:border-slate-700 hover:shadow-enterprise-lg transition-all">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0">
+                  <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Dimensions
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                    <Ruler className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-purple-500 bg-clip-text text-transparent mb-2">
+                    {metrics.totalDimensions}
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    <span className="font-semibold text-green-600 dark:text-green-400">{metrics.validatedDimensions}</span> production-ready
+                  </p>
+                  {metrics.totalDimensions > 0 && (
+                    <p className="text-xs text-slate-500 dark:text-slate-500 mt-2">
+                      {((metrics.validatedDimensions / metrics.totalDimensions) * 100).toFixed(0)}% validated
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* Team Hours */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                  Labor Hours
-                </CardTitle>
-                <Clock className="w-4 h-4 text-orange-600" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-900 dark:text-white">
-                  {metrics.totalHours.toFixed(1)}h
-                </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                  {metrics.uniqueWorkers} team members
-                </p>
-              </CardContent>
-            </Card>
+              {/* Photos Uploaded */}
+              <Card className="shadow-enterprise-md border-slate-200 dark:border-slate-700 hover:shadow-enterprise-lg transition-all">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0">
+                  <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Photos
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                    <Camera className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent mb-2">
+                    {metrics.totalPhotos}
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Documentation images
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Team Hours */}
+              <Card className="shadow-enterprise-md border-slate-200 dark:border-slate-700 hover:shadow-enterprise-lg transition-all">
+                <CardHeader className="flex flex-row items-center justify-between pb-3 space-y-0">
+                  <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Labor Hours
+                  </CardTitle>
+                  <div className="p-2 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                    <Clock className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent mb-2">
+                    {metrics.totalHours.toFixed(1)}h
+                  </div>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    <span className="font-semibold text-slate-900 dark:text-white">{metrics.uniqueWorkers}</span> team members active
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          {/* Job Details (if specific job selected) */}
+          {/* Job Context Card (if specific job selected) */}
           {metrics.selectedJob && (
-            <Card className="mb-6 bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-900/10 dark:to-yellow-900/10 border-orange-200 dark:border-orange-800">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-orange-600" />
-                  {metrics.selectedJob.name || metrics.selectedJob.job_name}
-                </CardTitle>
+            <Card className="mb-8 shadow-enterprise-lg border-2 border-[#507DB4]/20 dark:border-[#507DB4]/40 bg-gradient-to-br from-blue-50/50 to-slate-50 dark:from-slate-800 dark:to-slate-800">
+              <CardHeader className="border-b border-slate-200 dark:border-slate-700 pb-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] shadow-lg">
+                      <MapPin className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">
+                        {metrics.selectedJob.name || metrics.selectedJob.job_name}
+                      </CardTitle>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                        Job ID: {metrics.selectedJob.job_number || metrics.selectedJob.id.slice(0, 8)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <p className="text-slate-600 dark:text-slate-400 mb-1">Customer</p>
-                    <p className="font-semibold text-slate-900 dark:text-white">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Customer</p>
+                    <p className="text-base font-semibold text-slate-900 dark:text-white">
                       {metrics.selectedJob.customer_name}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-slate-600 dark:text-slate-400 mb-1">Days Active</p>
-                    <p className="font-semibold text-slate-900 dark:text-white">
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Days Active</p>
+                    <p className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-[#507DB4]" />
                       {metrics.daysActive} days
                     </p>
                   </div>
-                  <div>
-                    <p className="text-slate-600 dark:text-slate-400 mb-1">Address</p>
-                    <p className="font-semibold text-slate-900 dark:text-white truncate">
-                      {metrics.selectedJob.address || 'N/A'}
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Location</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate" title={metrics.selectedJob.address}>
+                      {metrics.selectedJob.address || 'No address'}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-slate-600 dark:text-slate-400 mb-1">Last Activity</p>
-                    <p className="font-semibold text-slate-900 dark:text-white">
+                  <div className="space-y-1">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Last Activity</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">
                       {metrics.lastActivity 
                         ? format(new Date(metrics.lastActivity.created_date), 'MMM d, h:mm a')
                         : 'No activity'
@@ -387,15 +433,17 @@ export default function FieldProgressDashboard() {
             </Card>
           )}
 
-          {/* Alerts */}
+          {/* Action Required Alert */}
           {metrics.pendingPunchItems > 0 && (
-            <Card className="mb-6 border-purple-300 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/10">
+            <Card className="mb-8 border-2 border-purple-400 dark:border-purple-600 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-900/20 dark:to-purple-900/10 shadow-enterprise-lg">
               <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-purple-600" />
-                  <div>
-                    <p className="font-semibold text-purple-900 dark:text-purple-100">
-                      {metrics.pendingPunchItems} Client Punch Item(s) Pending Review
+                <div className="flex items-start gap-4">
+                  <div className="p-3 rounded-xl bg-purple-500 shadow-lg flex-shrink-0">
+                    <AlertCircle className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-base font-bold text-purple-900 dark:text-purple-100 mb-1">
+                      {metrics.pendingPunchItems} Client Punch Item{metrics.pendingPunchItems > 1 ? 's' : ''} Pending Review
                     </p>
                     <p className="text-sm text-purple-700 dark:text-purple-300">
                       Action required: Review and resolve client-submitted items
@@ -406,89 +454,148 @@ export default function FieldProgressDashboard() {
             </Card>
           )}
 
-          {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Task Status Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Task Status Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {taskStatusData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={taskStatusData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {taskStatusData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-64 flex items-center justify-center text-slate-400">
-                    No task data available
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {/* ========================================= */}
+          {/* SECTION 2: ACTIVITY METRICS               */}
+          {/* ========================================= */}
+          <div className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-1 rounded-full bg-[#507DB4]" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Activity Metrics
+              </h2>
+              <div className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-700" />
+            </div>
 
-            {/* Activity Trend */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Daily Activity Trend</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {activityTrend.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={activityTrend}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="date" 
-                        tick={{ fontSize: 11 }}
-                        tickFormatter={(date) => format(new Date(date), 'MMM d')}
-                      />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip 
-                        labelFormatter={(date) => format(new Date(date), 'MMMM d, yyyy')}
-                      />
-                      <Legend />
-                      <Line type="monotone" dataKey="hours" stroke="#FF8C00" name="Hours" />
-                      <Line type="monotone" dataKey="tasks" stroke="#507DB4" name="Tasks" />
-                      <Line type="monotone" dataKey="dimensions" stroke="#A855F7" name="Dimensions" />
-                      <Line type="monotone" dataKey="photos" stroke="#10B981" name="Photos" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-64 flex items-center justify-center text-slate-400">
-                    No activity data for selected range
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Task Status Breakdown */}
+              <Card className="shadow-enterprise-md border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                      <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    Task Status Distribution
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {taskStatusData.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <PieChart>
+                        <Pie
+                          data={taskStatusData}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          dataKey="value"
+                        >
+                          {taskStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            padding: '8px 12px'
+                          }}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-64 flex flex-col items-center justify-center gap-3">
+                      <CheckCircle2 className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                      <p className="text-sm text-slate-400 dark:text-slate-500">No task data available</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Activity Trend */}
+              <Card className="shadow-enterprise-md border-slate-200 dark:border-slate-700">
+                <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
+                  <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                      <TrendingUp className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                    </div>
+                    Daily Activity Trend
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {activityTrend.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={300}>
+                      <LineChart data={activityTrend}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis 
+                          dataKey="date" 
+                          tick={{ fontSize: 11, fill: '#64748b' }}
+                          tickFormatter={(date) => format(new Date(date), 'MMM d')}
+                        />
+                        <YAxis tick={{ fontSize: 11, fill: '#64748b' }} />
+                        <Tooltip 
+                          labelFormatter={(date) => format(new Date(date), 'MMMM d, yyyy')}
+                          contentStyle={{ 
+                            backgroundColor: 'white', 
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            padding: '8px 12px'
+                          }}
+                        />
+                        <Legend 
+                          wrapperStyle={{ paddingTop: '16px' }}
+                          iconType="circle"
+                        />
+                        <Line type="monotone" dataKey="hours" stroke="#FF8C00" strokeWidth={2} name="Hours" dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="tasks" stroke="#507DB4" strokeWidth={2} name="Tasks" dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="dimensions" stroke="#A855F7" strokeWidth={2} name="Dimensions" dot={{ r: 4 }} />
+                        <Line type="monotone" dataKey="photos" stroke="#10B981" strokeWidth={2} name="Photos" dot={{ r: 4 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-64 flex flex-col items-center justify-center gap-3">
+                      <TrendingUp className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+                      <p className="text-sm text-slate-400 dark:text-slate-500">No activity data for selected range</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* ========================================= */}
+          {/* SECTION 3: TEAM ACTIVITY SNAPSHOT         */}
+          {/* ========================================= */}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="h-1 w-1 rounded-full bg-[#507DB4]" />
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                Team Activity Snapshot
+              </h2>
+              <div className="flex-1 h-px bg-gradient-to-r from-slate-200 to-transparent dark:from-slate-700" />
+            </div>
+
+            <Card className="shadow-enterprise-md border-slate-200 dark:border-slate-700">
+              <CardHeader className="border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 shadow-md">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    Team Performance Summary
+                  </CardTitle>
+                  <div className="text-xs text-slate-500 dark:text-slate-400">
+                    {metrics.uniqueWorkers} active members
                   </div>
-                )}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <TeamActivityTable timeEntries={allTimeEntries} tasks={allTasks} dimensions={allDimensions} />
               </CardContent>
             </Card>
           </div>
-
-          {/* Team Activity Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="w-5 h-5 text-orange-600" />
-                Team Activity Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <TeamActivityTable timeEntries={allTimeEntries} tasks={allTasks} dimensions={allDimensions} />
-            </CardContent>
-          </Card>
         </>
       )}
     </div>
@@ -540,30 +647,32 @@ function TeamActivityTable({ timeEntries, tasks, dimensions }) {
 
   if (teamStats.length === 0) {
     return (
-      <div className="text-center py-8 text-slate-400">
-        No team activity recorded
+      <div className="flex flex-col items-center justify-center py-12 gap-3">
+        <Users className="w-12 h-12 text-slate-300 dark:text-slate-600" />
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No team activity recorded</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">Time entries will appear here once logged</p>
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto -mx-6">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-slate-200 dark:border-slate-700">
-            <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <tr className="border-b-2 border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+            <th className="text-left py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Team Member
             </th>
-            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <th className="text-right py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Hours
             </th>
-            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <th className="text-right py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Tasks
             </th>
-            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <th className="text-right py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Dimensions
             </th>
-            <th className="text-right py-3 px-4 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <th className="text-right py-4 px-6 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Last Active
             </th>
           </tr>
@@ -572,25 +681,44 @@ function TeamActivityTable({ timeEntries, tasks, dimensions }) {
           {teamStats.map((member, idx) => (
             <tr 
               key={member.email}
-              className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+              className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
             >
-              <td className="py-3 px-4">
-                <div>
-                  <p className="font-medium text-slate-900 dark:text-white">{member.name}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">{member.email}</p>
+              <td className="py-4 px-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center flex-shrink-0 shadow-md">
+                    <span className="text-white font-bold text-sm">
+                      {member.name?.charAt(0)?.toUpperCase() || '?'}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900 dark:text-white text-sm">{member.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{member.email}</p>
+                  </div>
                 </div>
               </td>
-              <td className="text-right py-3 px-4 font-semibold text-slate-900 dark:text-white">
-                {member.hours.toFixed(1)}h
+              <td className="text-right py-4 px-6">
+                <span className="text-base font-bold text-orange-600 dark:text-orange-400">
+                  {member.hours.toFixed(1)}
+                </span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 ml-1">hrs</span>
               </td>
-              <td className="text-right py-3 px-4 text-slate-700 dark:text-slate-300">
-                {member.tasks}
+              <td className="text-right py-4 px-6">
+                <span className="inline-flex items-center justify-center min-w-[32px] h-7 px-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-sm font-semibold text-blue-700 dark:text-blue-300">
+                  {member.tasks}
+                </span>
               </td>
-              <td className="text-right py-3 px-4 text-slate-700 dark:text-slate-300">
-                {member.dimensions}
+              <td className="text-right py-4 px-6">
+                <span className="inline-flex items-center justify-center min-w-[32px] h-7 px-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-sm font-semibold text-purple-700 dark:text-purple-300">
+                  {member.dimensions}
+                </span>
               </td>
-              <td className="text-right py-3 px-4 text-xs text-slate-500 dark:text-slate-400">
-                {format(new Date(member.lastActive), 'MMM d, h:mm a')}
+              <td className="text-right py-4 px-6">
+                <div className="flex items-center justify-end gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                  <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                    {format(new Date(member.lastActive), 'MMM d, h:mm a')}
+                  </span>
+                </div>
               </td>
             </tr>
           ))}
