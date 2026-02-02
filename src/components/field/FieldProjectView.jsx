@@ -156,52 +156,58 @@ export default function FieldProjectView({
   // Debug panels are accessed via FieldDebugDrawer
 
   return (
-    <div data-field-scope="true" className="min-h-screen bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 flex flex-col overflow-hidden dark">
-      {/* HEADER FIJO - Simple, Clear */}
-      <div className="flex-shrink-0 sticky top-0 z-50 bg-gradient-to-br from-black to-slate-900 border-b border-slate-700 shadow-xl">
-        {/* Back Button - Top Left - Smart Exit */}
+    <div data-field-scope="true" className="min-h-screen bg-slate-900 flex flex-col overflow-hidden dark">
+      {/* FASE 4 POLISH: Cleaner header */}
+      <div className="flex-shrink-0 sticky top-0 z-50 bg-slate-900 border-b-2 border-slate-700 shadow-2xl">
+        {/* FASE 4 POLISH: Larger, clearer back button */}
         <Button 
           onClick={handleSafeExit}
-          className="absolute top-4 left-4 z-10 bg-slate-800/90 hover:bg-slate-700 text-white border border-slate-600 shadow-xl backdrop-blur-sm min-h-[48px] px-3 rounded-xl touch-manipulation"
+          className="absolute top-4 left-4 z-10 bg-slate-800 hover:bg-slate-700 text-white border-2 border-slate-600 shadow-2xl min-h-[52px] min-w-[52px] rounded-xl touch-manipulation active:scale-95 transition-transform"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-6 h-6" />
         </Button>
 
-        {/* Project Info - FASE 4: Simplified header, always visible */}
-        <div className="px-3 sm:px-4 md:px-6 py-4 pt-16 sm:pt-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1 min-w-0 sm:ml-32">
-              <h1 className="text-xl sm:text-2xl font-bold text-white truncate mb-1">
+        {/* FASE 4 POLISH: Professional header with clear status */}
+        <div className="px-4 sm:px-6 py-5 pt-16 sm:pt-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0 sm:ml-14">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white truncate mb-2">
                 {job.name || job.job_name_field}
               </h1>
               {job.client_name_field && (
-                <p className="text-xs text-slate-400 truncate">
+                <p className="text-sm text-slate-300 truncate mb-1">
                   {job.client_name_field}
                 </p>
               )}
               {job.address && (
-                <p className="text-xs text-slate-500 truncate mt-0.5">
-                  📍 {job.address}
+                <p className="text-xs text-slate-500 truncate flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3" />
+                  {job.address}
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              {/* Online/Offline Status - FASE 4: Always visible */}
-              <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'} shadow-lg`} />
-              <Badge className={`flex-shrink-0 text-xs px-3 py-1.5 font-bold ${
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {/* FASE 4 POLISH: Larger status indicators */}
+              <div className="flex items-center gap-2 bg-slate-800 px-3 py-2 rounded-full border border-slate-700">
+                <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'} shadow-lg`} />
+                <span className="text-xs font-bold text-slate-400">
+                  {isOnline ? 'Online' : 'Offline'}
+                </span>
+              </div>
+              <Badge className={`text-xs px-4 py-2 font-bold ${
                 job.status === 'active' 
-                  ? 'bg-green-500/20 text-green-400 border-green-500/40'
-                  : 'bg-slate-500/20 text-slate-400 border-slate-500/40'
-              } border rounded-full`}>
-                {job.status === 'active' ? 'ACTIVE' : job.status?.toUpperCase()}
+                  ? 'bg-green-500 text-black'
+                  : 'bg-slate-700 text-slate-300'
+              } rounded-full shadow-lg`}>
+                {job.status === 'active' ? '● ACTIVE' : job.status?.toUpperCase()}
               </Badge>
             </div>
           </div>
         </div>
       </div>
 
-      {/* MAIN CONTENT - Dynamic panel based on navigation */}
-      <div className="flex-1 overflow-y-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+      {/* FASE 4 POLISH: Content with proper spacing for bottom nav */}
+      <div className="flex-1 overflow-y-auto pb-24" style={{ WebkitOverflowScrolling: 'touch' }}>
         {renderActivePanel()}
       </div>
 
@@ -220,9 +226,9 @@ export default function FieldProjectView({
         />
       )}
 
-      {/* FASE 4 (UX): SIMPLIFIED BOTTOM NAV - 3 Tabs Only */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe">
-        <div className="flex items-center justify-around px-2 py-2">
+      {/* FASE 4 POLISH: Premium bottom nav - cleaner, stronger visual feedback */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black via-slate-900 to-slate-900 border-t-2 border-slate-700 shadow-2xl pb-safe backdrop-blur-sm">
+        <div className="flex items-center justify-around px-3 py-3">
           {[
             { id: 'plans', label: language === 'es' ? 'Planos' : 'Plans', icon: MapPin },
             { id: 'measurements', label: language === 'es' ? 'Medir' : 'Measure', icon: Ruler },
@@ -233,16 +239,19 @@ export default function FieldProjectView({
             return (
               <button
                 key={tab.id}
-                onClick={() => setActivePanel(tab.id)}
-                className={`flex flex-col items-center justify-center gap-1.5 flex-1 min-h-[68px] rounded-xl touch-manipulation transition-all ${
+                onClick={() => {
+                  if (navigator.vibrate) navigator.vibrate(10);
+                  setActivePanel(tab.id);
+                }}
+                className={`flex flex-col items-center justify-center gap-2 flex-1 min-h-[72px] rounded-2xl touch-manipulation transition-all ${
                   isActive 
-                    ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-black scale-105 shadow-xl' 
-                    : 'text-slate-300 active:bg-slate-800'
+                    ? 'bg-gradient-to-br from-orange-600 to-yellow-500 text-black shadow-2xl shadow-orange-500/40' 
+                    : 'text-slate-400 active:bg-slate-800 hover:bg-slate-800/50'
                 }`}
-                style={{ minWidth: '80px' }}
+                style={{ minWidth: '90px', maxWidth: '140px' }}
               >
-                <Icon className={`w-6 h-6 ${isActive ? 'text-black' : 'text-white'}`} strokeWidth={2.5} />
-                <span className={`text-xs font-bold uppercase ${isActive ? 'text-black' : 'text-slate-300'}`}>
+                <Icon className={`w-7 h-7 ${isActive ? 'text-black' : 'text-slate-400'}`} strokeWidth={2.5} />
+                <span className={`text-xs font-extrabold uppercase tracking-wide ${isActive ? 'text-black' : 'text-slate-400'}`}>
                   {tab.label}
                 </span>
               </button>

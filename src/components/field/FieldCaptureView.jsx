@@ -118,63 +118,63 @@ export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
 
   return (
     <div className="h-full flex flex-col bg-slate-900">
-      {/* Header - FASE 4: Camera-first CTA */}
-      <div className="flex-shrink-0 p-4 bg-slate-800 border-b border-slate-700">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Camera className="w-5 h-5 text-orange-500" />
-            Capture
-          </h2>
+      {/* FASE 4 POLISH: Camera-first hero CTA */}
+      <div className="flex-shrink-0 p-4 sm:p-6 bg-slate-800 border-b border-slate-700">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-1">Capture</h2>
+            <p className="text-sm text-slate-400">Document progress & issues</p>
+          </div>
           <Button
             onClick={() => isMobile ? setShowMobileCapture(true) : setShowUpload(true)}
-            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-semibold min-h-[52px] px-6 rounded-xl shadow-lg"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold min-h-[56px] px-8 rounded-xl shadow-2xl active:scale-95 transition-transform"
           >
-            <Camera className="w-5 h-5 mr-2" />
-            Take Photo
+            <Camera className="w-6 h-6 mr-2" />
+            Photo
           </Button>
         </div>
 
-        {/* Quick Actions - FASE 4: Evidence-gathering shortcuts */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {/* FASE 4 POLISH: Larger, clearer quick actions */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {quickActions.map(action => {
             const Icon = action.icon;
             return (
               <button
                 key={action.id}
                 onClick={action.action}
-                className="flex flex-col items-center gap-2 p-3 bg-slate-700/50 hover:bg-slate-700 rounded-lg border border-slate-600 transition-all min-h-[72px] touch-manipulation active:scale-95"
+                className="flex flex-col items-center gap-3 p-4 bg-slate-700 hover:bg-slate-600 rounded-xl border border-slate-600 transition-all min-h-[88px] touch-manipulation active:scale-95 shadow-lg"
               >
-                <Icon className="w-5 h-5 text-orange-400" />
-                <span className="text-xs font-semibold text-slate-300">{action.label}</span>
+                <Icon className="w-6 h-6 text-orange-400" />
+                <span className="text-sm font-bold text-white">{action.label}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* Content Area */}
-      <div className="flex-1 overflow-y-auto p-4">
+      {/* FASE 4 POLISH: Content with better visual hierarchy */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-slate-800 border border-slate-700 p-1 rounded-xl mb-4 w-full">
+          <TabsList className="bg-slate-800 border-2 border-slate-700 p-1.5 rounded-xl mb-6 w-full shadow-xl">
             <TabsTrigger 
               value="camera" 
-              className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-white min-h-[44px]"
+              className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-black min-h-[52px] font-bold rounded-lg data-[state=active]:shadow-lg"
             >
-              <Camera className="w-4 h-4 mr-2" />
+              <Camera className="w-5 h-5 mr-2" />
               Gallery
             </TabsTrigger>
             <TabsTrigger 
               value="before-after" 
-              className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-white min-h-[44px]"
+              className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-black min-h-[52px] font-bold rounded-lg data-[state=active]:shadow-lg"
             >
-              <ArrowLeftRight className="w-4 h-4 mr-2" />
-              Before/After
+              <ArrowLeftRight className="w-5 h-5 mr-2" />
+              Compare
             </TabsTrigger>
             <TabsTrigger 
               value="reports" 
-              className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-white min-h-[44px]"
+              className="flex-1 data-[state=active]:bg-orange-600 data-[state=active]:text-black min-h-[52px] font-bold rounded-lg data-[state=active]:shadow-lg"
             >
-              <Clock className="w-4 h-4 mr-2" />
+              <FileText className="w-5 h-5 mr-2" />
               Reports
             </TabsTrigger>
           </TabsList>
@@ -183,38 +183,38 @@ export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
           <TabsContent value="camera" className="mt-0">
             {isLoading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
+                <Loader2 className="w-12 h-12 text-orange-500 animate-spin" />
               </div>
             ) : photos.length === 0 ? (
-              <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
-                <Camera className="w-16 h-16 text-orange-400/40 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-white mb-2">No Photos Yet</h3>
-                <p className="text-slate-400 mb-6">Start documenting progress</p>
+              <div className="bg-slate-800 border-2 border-slate-700 rounded-2xl p-16 text-center">
+                <Camera className="w-24 h-24 text-slate-700 mx-auto mb-6" />
+                <h3 className="text-xl font-bold text-white mb-3">No Photos</h3>
+                <p className="text-slate-400 mb-8 max-w-sm mx-auto">Capture site progress, issues, or before/after comparisons</p>
                 <Button 
                   onClick={() => isMobile ? setShowMobileCapture(true) : setShowUpload(true)}
-                  className="bg-orange-600 hover:bg-orange-700 text-white min-h-[48px]"
+                  className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold min-h-[56px] px-8 shadow-xl rounded-xl active:scale-95 transition-transform"
                 >
-                  <Camera className="w-5 h-5 mr-2" />
-                  Take Photo
+                  <Camera className="w-6 h-6 mr-2" />
+                  Take First Photo
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 {photos.map((photo) => (
                   <div
                     key={photo.id}
                     onClick={() => setSelectedPhoto(photo)}
-                    className="relative aspect-square bg-slate-800 rounded-lg overflow-hidden cursor-pointer hover:ring-2 hover:ring-orange-500 transition-all group"
+                    className="relative aspect-square bg-slate-950 rounded-xl overflow-hidden cursor-pointer hover:ring-4 hover:ring-orange-500 transition-all group shadow-lg active:scale-95"
                   >
                     <img 
                       src={photo.file_url || photo.photo_url}
                       alt={photo.caption}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     {photo.caption && (
-                      <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <p className="text-white text-xs font-medium truncate">{photo.caption}</p>
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <p className="text-white text-sm font-semibold truncate">{photo.caption}</p>
                       </div>
                     )}
                   </div>
@@ -228,30 +228,38 @@ export default function FieldCaptureView({ jobId, jobName, plans = [] }) {
             <BeforeAfterPhotoManager jobId={jobId} />
           </TabsContent>
 
-          {/* Reports Tab - FASE 4: Daily Reports + Incidents */}
+          {/* FASE 4 POLISH: Larger, clearer report actions */}
           <TabsContent value="reports" className="mt-0">
-            <div className="space-y-4">
-              <Button
+            <div className="space-y-5">
+              <button
                 onClick={() => setShowDailyReport(true)}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 min-h-[56px] justify-start"
+                className="w-full bg-slate-800 hover:bg-slate-700 text-white border-2 border-slate-700 rounded-2xl p-6 min-h-[88px] transition-all active:scale-[0.98] touch-manipulation shadow-lg"
               >
-                <FileText className="w-5 h-5 mr-3 text-blue-400" />
-                <div className="text-left">
-                  <div className="font-semibold">Generate Daily Report</div>
-                  <div className="text-xs text-slate-400">Photos + Tasks + Progress</div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-bold text-base text-white mb-1">Daily Report</div>
+                    <div className="text-sm text-slate-400">Photos + Tasks + Progress</div>
+                  </div>
                 </div>
-              </Button>
+              </button>
               
-              <Button
+              <button
                 onClick={() => setShowIncident(true)}
-                className="w-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 min-h-[56px] justify-start"
+                className="w-full bg-slate-800 hover:bg-slate-700 text-white border-2 border-slate-700 rounded-2xl p-6 min-h-[88px] transition-all active:scale-[0.98] touch-manipulation shadow-lg"
               >
-                <AlertTriangle className="w-5 h-5 mr-3 text-red-400" />
-                <div className="text-left">
-                  <div className="font-semibold">Report Safety Incident</div>
-                  <div className="text-xs text-slate-400">Document issues immediately</div>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <AlertTriangle className="w-6 h-6 text-red-400" />
+                  </div>
+                  <div className="text-left flex-1">
+                    <div className="font-bold text-base text-white mb-1">Safety Incident</div>
+                    <div className="text-sm text-slate-400">Document issues immediately</div>
+                  </div>
                 </div>
-              </Button>
+              </button>
             </div>
           </TabsContent>
         </Tabs>

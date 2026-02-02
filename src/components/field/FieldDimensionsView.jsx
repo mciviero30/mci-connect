@@ -195,39 +195,36 @@ export default function FieldDimensionsView({ jobId, jobName }) {
         </div>
       )}
       
-      <div className="h-full flex flex-col bg-slate-100 dark:bg-slate-900">
-      {/* Header - Primary action removed (moved to bottom rail) */}
-      <div className="flex-shrink-0 p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+      <div className="h-full flex flex-col bg-slate-900">
+      {/* FASE 4 POLISH: Calm, focused measurement header */}
+      <div className="flex-shrink-0 p-4 sm:p-6 bg-slate-800 border-b border-slate-700">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Ruler className="w-5 h-5 text-orange-500" />
-              Field Dimensions
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-              Professional measurement documentation
+            <h2 className="text-2xl font-bold text-white mb-1">Measure</h2>
+            <p className="text-sm text-slate-400">
+              Precision site measurements
             </p>
           </div>
 
-          {/* Secondary actions - Unit system & Export */}
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+          {/* FASE 4 POLISH: Cleaner unit toggle & export */}
+          <div className="flex items-center gap-3">
+            <div className="flex bg-slate-900 rounded-xl p-1 border border-slate-700">
               <button
                 onClick={() => setProjectUnitSystem('imperial')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all min-h-[48px] touch-manipulation active:scale-95 ${
+                className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all min-h-[48px] ${
                   projectUnitSystem === 'imperial'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400'
+                    ? 'bg-orange-600 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-slate-300'
                 }`}
               >
                 Imperial
               </button>
               <button
                 onClick={() => setProjectUnitSystem('metric')}
-                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all min-h-[48px] touch-manipulation active:scale-95 ${
+                className={`px-5 py-2.5 rounded-lg text-sm font-bold transition-all min-h-[48px] ${
                   projectUnitSystem === 'metric'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-slate-600 dark:text-slate-400'
+                    ? 'bg-orange-600 text-white shadow-lg'
+                    : 'text-slate-400 hover:text-slate-300'
                 }`}
               >
                 Metric
@@ -236,44 +233,38 @@ export default function FieldDimensionsView({ jobId, jobName }) {
 
             <Button
               onClick={handleExportPDF}
-              variant="outline"
-              className="min-h-[52px] touch-manipulation active:scale-95 font-semibold"
+              className="bg-slate-700 hover:bg-slate-600 text-white border border-slate-600 min-h-[52px] font-semibold"
             >
               <Download className="w-5 h-5 mr-2" />
-              Export PDF
+              <span className="hidden sm:inline">Export</span>
             </Button>
           </div>
         </div>
 
-        {/* Image Selector with Upload Button */}
-        <div className="mt-4 flex gap-3">
+        {/* FASE 4 POLISH: Cleaner drawing selector */}
+        <div className="mt-5 flex gap-3">
           <Select value={selectedImage || ''} onValueChange={setSelectedImage} className="flex-1">
-            <SelectTrigger className="h-12">
-              <SelectValue placeholder="Select drawing or photo to dimension..." />
+            <SelectTrigger className="min-h-[56px] bg-slate-900 border-slate-700 text-white font-medium rounded-xl">
+              <SelectValue placeholder="Select drawing to measure..." />
             </SelectTrigger>
             <SelectContent 
-              className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 max-h-[60vh]"
+              className="bg-slate-900 border-slate-700 max-h-[60vh]"
               position="popper"
-              sideOffset={5}
-              style={{ 
-                overflowY: 'auto', 
-                WebkitOverflowScrolling: 'touch',
-                touchAction: 'pan-y'
-              }}
+              sideOffset={8}
             >
-              <div className="py-1" style={{ touchAction: 'pan-y' }}>
+              <div className="py-2">
                 {imageOptions.map(opt => (
                   <SelectItem 
                     key={opt.value} 
                     value={opt.value}
                     disabled={opt.isPDF}
-                    className={`py-3 px-4 cursor-pointer min-h-[48px] ${
+                    className={`py-3 px-4 min-h-[52px] text-base ${
                       opt.isPDF 
-                        ? 'text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-60' 
-                        : 'text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700'
+                        ? 'text-slate-600 cursor-not-allowed opacity-50' 
+                        : 'text-white hover:bg-slate-800'
                     }`}
                   >
-                    {opt.isPDF ? '📄 (view-only)' : (opt.type === 'plan' ? '🖼️' : '📷')} {opt.label}
+                    {opt.isPDF ? '📄 (view only)' : (opt.type === 'plan' ? '📐' : '📷')} {opt.label}
                   </SelectItem>
                 ))}
               </div>
@@ -281,21 +272,21 @@ export default function FieldDimensionsView({ jobId, jobName }) {
           </Select>
           <Button
             onClick={() => setShowUploadPlan(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold min-h-[48px] px-4 rounded-lg"
+            className="bg-orange-600 hover:bg-orange-700 text-white font-bold min-h-[56px] px-5 rounded-xl shadow-lg active:scale-95 transition-transform"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Upload Drawing
+            <Plus className="w-5 h-5 mr-2" />
+            <span className="hidden sm:inline">Upload</span>
           </Button>
         </div>
 
-        {/* Legend */}
+        {/* FASE 4 POLISH: Collapsible legend for cleaner UI */}
         <div className="mt-4">
           <DimensionLegend unitSystem={projectUnitSystem} />
         </div>
       </div>
 
-      {/* Canvas Area */}
-      <div className="flex-1 min-h-0 p-4 flex flex-col">
+      {/* FASE 4 POLISH: Clean canvas area - full focus on measurement */}
+      <div className="flex-1 min-h-0 p-3 sm:p-4 flex flex-col bg-slate-950">
         {selectedImage ? (() => {
           const selectedOption = imageOptions.find(o => o.value === selectedImage);
           
@@ -338,20 +329,21 @@ export default function FieldDimensionsView({ jobId, jobName }) {
             />
           );
         })() : (
-          <div className="h-full flex items-center justify-center bg-slate-800 rounded-xl">
-            <div className="text-center">
-              <ImageIcon className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-              <p className="text-slate-400 font-medium">Select a drawing or photo to start dimensioning</p>
+          <div className="h-full flex items-center justify-center bg-slate-900 rounded-2xl border-2 border-dashed border-slate-700">
+            <div className="text-center px-6">
+              <Ruler className="w-20 h-20 text-slate-700 mx-auto mb-6" />
+              <p className="text-lg font-bold text-white mb-2">Ready to Measure</p>
+              <p className="text-slate-500 max-w-sm">Select a drawing above to begin capturing dimensions</p>
             </div>
           </div>
         )}
       </div>
 
-      {/* Dimensions List */}
+      {/* FASE 4 POLISH: Cleaner dimensions list */}
       {filteredDimensions.length > 0 && (
-        <div className="flex-shrink-0 max-h-64 overflow-y-auto bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 p-4">
-          <h3 className="font-bold text-sm text-slate-700 dark:text-slate-300 mb-3">
-            Dimensions on this image ({filteredDimensions.length})
+        <div className="flex-shrink-0 max-h-72 overflow-y-auto bg-slate-800 border-t-2 border-slate-700 p-4 sm:p-5">
+          <h3 className="font-bold text-sm text-slate-400 uppercase tracking-wider mb-4">
+            Dimensions ({filteredDimensions.length})
           </h3>
           <div className="space-y-2">
             {filteredDimensions.map(dim => {
@@ -360,47 +352,44 @@ export default function FieldDimensionsView({ jobId, jobName }) {
               const hasWarnings = validation.hasWarnings;
 
               return (
-                <Card 
+                <div
                   key={dim.id} 
-                  className={`bg-slate-50 dark:bg-slate-900 ${
-                    hasErrors ? 'border-2 border-red-500' : hasWarnings ? 'border-2 border-yellow-500' : ''
+                  className={`bg-slate-900 rounded-xl p-4 border-2 transition-all ${
+                    hasErrors 
+                      ? 'border-red-500 bg-red-500/5' 
+                      : hasWarnings 
+                      ? 'border-yellow-500 bg-yellow-500/5' 
+                      : 'border-slate-700 hover:border-slate-600'
                   }`}
                 >
-                  <CardContent className="p-3 flex items-center justify-between">
+                  <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        {hasErrors && <AlertTriangle className="w-4 h-4 text-red-500" />}
-                        {!hasErrors && hasWarnings && <AlertTriangle className="w-4 h-4 text-yellow-500" />}
-                        {!hasErrors && !hasWarnings && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                        <span className="font-bold text-sm text-slate-900 dark:text-white">
+                      <div className="flex items-center gap-3 mb-2">
+                        {hasErrors && <AlertTriangle className="w-5 h-5 text-red-400" />}
+                        {!hasErrors && hasWarnings && <AlertTriangle className="w-5 h-5 text-yellow-400" />}
+                        {!hasErrors && !hasWarnings && <CheckCircle2 className="w-5 h-5 text-green-400" />}
+                        <span className="font-bold text-lg text-white">
                           {formatDimensionValue(dim)}
                         </span>
-                        <span className="text-xs text-slate-600 dark:text-slate-400 bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded">
+                        <span className="text-xs font-bold text-orange-400 bg-orange-500/20 px-2.5 py-1 rounded-full border border-orange-500/30">
                           {dim.measurement_type}
                         </span>
-                        {hasWarnings && (
-                          <span className="text-xs px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100 rounded font-bold">
-                            Review
-                          </span>
-                        )}
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-400">
-                        {dim.area || 'No area specified'} • {format(new Date(dim.created_date), 'MMM d, h:mm a')}
+                      <p className="text-sm text-slate-400 mb-1">
+                        {dim.area || 'No area'}
                       </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">
-                        By {dim.measured_by_name} • {dim.device_type || 'unknown'}
+                      <p className="text-xs text-slate-500">
+                        {format(new Date(dim.created_date), 'MMM d, h:mm a')} • {dim.measured_by_name}
                       </p>
                     </div>
                     <Button
-                      variant="ghost"
-                      size="sm"
                       onClick={() => deleteDimensionMutation.mutate(dim.id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 min-h-[48px] min-w-[48px] rounded-xl active:scale-95"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-5 h-5" />
                     </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               );
             })}
           </div>

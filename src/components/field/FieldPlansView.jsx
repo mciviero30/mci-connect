@@ -198,49 +198,51 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
   }
 
   return (
-    <div className="p-6 min-h-screen bg-[#0a0a0a]">
-      <div className="flex items-center justify-between mb-6">
-        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 px-6 py-3 rounded-xl">
-          <h1 className="text-2xl font-bold text-black" style={{ fontSize: '1.575rem' }}>Plans</h1>
+    <div className="p-4 sm:p-6 min-h-screen bg-slate-900">
+      {/* FASE 4 POLISH: Cleaner header with better spacing */}
+      <div className="flex items-center justify-between mb-8 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white mb-1">Plans</h1>
+          <p className="text-sm text-slate-400">Final approved drawings</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap justify-end">
           <Button 
             onClick={() => setShowTemplates(true)}
             variant="outline"
-            className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-400 h-10 backdrop-blur-sm"
+            className="border-slate-700 text-slate-300 hover:bg-slate-800 min-h-[48px] touch-manipulation"
           >
             <Settings2 className="w-4 h-4 mr-2" />
-            Templates
+            <span className="hidden sm:inline">Templates</span>
           </Button>
           <Button 
             onClick={() => setShowBulkUpload(true)}
             variant="outline"
-            className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:border-orange-400 h-10 backdrop-blur-sm"
+            className="border-slate-700 text-slate-300 hover:bg-slate-800 min-h-[48px] touch-manipulation"
           >
             <Upload className="w-4 h-4 mr-2" />
-            Bulk Upload
+            <span className="hidden sm:inline">Bulk</span>
           </Button>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black font-semibold border-none h-10 shadow-lg shadow-orange-500/20"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold min-h-[52px] px-6 shadow-lg active:scale-95 transition-transform touch-manipulation"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Upload Plan
+            <Plus className="w-5 h-5 mr-2" />
+            Upload
           </Button>
         </div>
       </div>
 
       {plans.length === 0 ? (
-        <div className="bg-[#1a1a1a] border border-orange-500/20 rounded-2xl p-12 text-center backdrop-blur-sm">
-          <Upload className="w-12 h-12 text-orange-500/40 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white mb-2">No plans yet</h3>
-          <p className="text-slate-400 mb-4">Upload your first plan to get started</p>
+        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-16 text-center">
+          <Upload className="w-20 h-20 text-slate-600 mx-auto mb-6" />
+          <h3 className="text-xl font-bold text-white mb-3">No Plans Yet</h3>
+          <p className="text-slate-400 mb-8 max-w-md mx-auto">Upload approved drawings to begin field work</p>
           <Button 
             onClick={() => setShowUpload(true)}
-            className="bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black font-semibold shadow-lg shadow-orange-500/20"
+            className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-black font-bold min-h-[56px] px-8 shadow-xl rounded-xl active:scale-95 transition-transform"
           >
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Plan
+            <Upload className="w-5 h-5 mr-2" />
+            Upload First Plan
           </Button>
         </div>
       ) : (
@@ -264,59 +266,59 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
 
             return sections.map(section => (
               <div key={section} className="mb-6">
-                {/* Section Header (only show if sections exist) */}
+                {/* FASE 4 POLISH: Cleaner section headers */}
                 {sections.length > 1 && (
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge className="bg-orange-500/20 border-orange-500/40 text-orange-400 text-xs px-3 py-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
                       {section}
-                    </Badge>
-                    <div className="flex-1 h-px bg-orange-500/20" />
+                    </h3>
+                    <div className="flex-1 h-px bg-slate-700" />
                   </div>
                 )}
 
-                {/* Plans Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* FASE 4 POLISH: Better grid spacing, stronger tap affordance */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                   {grouped[section].map((plan) => {
             const taskCount = tasks.filter(t => t.blueprint_id === plan.id).length;
             const isPdf = plan.file_url?.toLowerCase().includes('.pdf');
             return (
               <div 
                 key={plan.id}
-                className="bg-[#1a1a1a] border border-orange-500/30 rounded-xl overflow-hidden hover:border-orange-400 hover:shadow-lg hover:shadow-orange-500/20 transition-all group relative backdrop-blur-sm"
+                className="bg-slate-800 border-2 border-slate-700 rounded-2xl overflow-hidden hover:border-orange-500 hover:shadow-2xl hover:shadow-orange-500/30 transition-all duration-200 group relative cursor-pointer active:scale-[0.98]"
               >
-                {/* Action Menu */}
-                <div className="absolute top-2 left-2 z-20">
+                {/* FASE 4 POLISH: Better action menu visibility */}
+                <div className="absolute top-3 left-3 z-20">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button 
                         onClick={(e) => e.stopPropagation()}
-                        className="p-2 bg-black/40 backdrop-blur-sm rounded-lg hover:bg-black/60 transition-colors"
+                        className="p-2.5 bg-black/60 backdrop-blur-md rounded-xl hover:bg-black/80 transition-all shadow-lg min-h-[44px] min-w-[44px] active:scale-95"
                         title="Options"
                       >
-                        <MoreVertical className="w-4 h-4 text-white" />
+                        <MoreVertical className="w-5 h-5 text-white" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="bg-[#1a1a1a] border-orange-500/30 backdrop-blur-xl">
+                    <DropdownMenuContent className="bg-slate-900 border-slate-700 shadow-2xl min-w-[200px]">
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
                           setAnalyzePlan(plan);
                         }}
-                        className="text-white hover:bg-orange-500/10 focus:bg-orange-500/10 cursor-pointer"
+                        className="text-white hover:bg-orange-500/20 focus:bg-orange-500/20 cursor-pointer min-h-[48px] touch-manipulation"
                       >
-                        <Wand2 className="w-4 h-4 mr-2 text-orange-400" />
+                        <Wand2 className="w-5 h-5 mr-3 text-orange-400" />
                         Analyze & Create Tasks
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm('Are you sure you want to delete this plan and all its tasks?')) {
+                          if (window.confirm('Delete this plan and all its tasks?')) {
                             deletePlanMutation.mutate(plan.id);
                           }
                         }}
-                        className="text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 cursor-pointer"
+                        className="text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 cursor-pointer min-h-[48px] touch-manipulation"
                       >
-                        <Trash2 className="w-4 h-4 mr-2" />
+                        <Trash2 className="w-5 h-5 mr-3" />
                         Delete Plan
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -325,9 +327,10 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
 
                 <div 
                   onClick={() => setSelectedPlan(plan)}
-                  className="cursor-pointer"
+                  className="cursor-pointer touch-manipulation"
                 >
-                  <div className="aspect-video relative overflow-hidden bg-black/40">
+                  {/* FASE 4 POLISH: Better image container */}
+                  <div className="aspect-video relative overflow-hidden bg-slate-950">
                     {isPdf ? (
                       <div className="w-full h-full flex items-center justify-center">
                         <div className="text-center">
@@ -347,48 +350,50 @@ export default function FieldPlansView({ jobId, plans: plansFromProp = [], tasks
                         }}
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                    {/* FASE 4 POLISH: Darker overlay for better text contrast */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none" />
                     
-                    {/* Version Badge - FASE A2.1 */}
-                     <div className="absolute top-2 left-2 flex gap-2">
-                       <div className={`backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-bold border ${
-                         plan.is_active ? 'bg-green-500/80 border-green-400' : 'bg-slate-900/80 border-slate-700'
-                       }`}>
-                         {plan.is_active ? '✅ Active' : `V${plan.version_number || plan.version || 1}`}
-                       </div>
-                       {plan.is_locked && (
-                         <div className="bg-red-500/80 backdrop-blur-sm text-white text-xs px-2.5 py-1 rounded-full font-bold border border-red-400">
-                           🔒 Locked
-                         </div>
-                       )}
-                     </div>
-
+                    {/* FASE 4 POLISH: Larger, clearer badges */}
                     {taskCount > 0 && (
-                      <div className="absolute top-2 right-2 flex gap-2">
-                        <div className="bg-gradient-to-r from-orange-500 to-yellow-500 text-black text-xs px-3 py-1 rounded-full font-semibold shadow-lg">
-                          {taskCount} tasks
+                      <div className="absolute top-3 right-3">
+                        <div className="bg-gradient-to-r from-orange-600 to-yellow-500 text-black text-sm font-bold px-4 py-2 rounded-full shadow-2xl">
+                          {taskCount}
                         </div>
-                        {tasks.filter(t => t.blueprint_id === plan.id && t.created_by_client && t.punch_status === 'client_submitted').length > 0 && (
-                          <Badge className="bg-purple-600 text-white text-xs px-2 py-1 shadow-lg animate-pulse">
-                            {tasks.filter(t => t.blueprint_id === plan.id && t.created_by_client && t.punch_status === 'client_submitted').length} 🔔
-                          </Badge>
-                        )}
                       </div>
                     )}
-                  </div>
-                  <div className="p-4 bg-gradient-to-b from-transparent to-black/20">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-white group-hover:text-orange-400 transition-colors flex-1">
-                        {plan.name}
-                      </h3>
-                      {plan.needs_confirmation && (
-                        <div className="flex-shrink-0 px-2 py-1 bg-amber-500/20 border border-amber-500/40 rounded text-[10px] text-amber-400 font-medium backdrop-blur-sm">
-                          Pending
+                    
+                    {/* Status badges - bottom corner */}
+                    <div className="absolute bottom-3 left-3 flex gap-2">
+                      {plan.is_active && (
+                        <div className="bg-green-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg">
+                          ✓ Active
+                        </div>
+                      )}
+                      {plan.is_locked && (
+                        <div className="bg-red-500 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg">
+                          🔒 Locked
+                        </div>
+                      )}
+                      {!plan.is_active && (
+                        <div className="bg-slate-700 text-slate-300 text-xs px-3 py-1.5 rounded-full font-bold">
+                          V{plan.version_number || plan.version || 1}
                         </div>
                       )}
                     </div>
+                  </div>
+                  
+                  {/* FASE 4 POLISH: Better plan info footer */}
+                  <div className="p-4 bg-slate-800/80">
+                    <h3 className="font-bold text-white text-base group-hover:text-orange-400 transition-colors truncate">
+                      {plan.name}
+                    </h3>
                     {plan.folder && (
-                      <p className="text-sm text-slate-400 mt-1">{plan.folder}</p>
+                      <p className="text-xs text-slate-500 mt-1 truncate">{plan.folder}</p>
+                    )}
+                    {plan.needs_confirmation && (
+                      <div className="mt-2 inline-flex items-center gap-1 px-2 py-1 bg-amber-500/20 border border-amber-500/50 rounded-lg text-[10px] text-amber-400 font-bold">
+                        ⚠️ Needs Review
+                      </div>
                     )}
                   </div>
                 </div>
