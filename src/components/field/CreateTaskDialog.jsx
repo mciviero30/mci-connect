@@ -916,27 +916,27 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
               {task.checklist.length > 0 ? (
                 <div className="space-y-2">
                   {task.checklist.map((item, idx) => (
-                    <div 
-                     key={idx} 
-                     className={`flex items-center gap-3 text-sm font-medium cursor-pointer p-3 rounded-lg border-2 min-h-[56px] touch-manipulation transition-all relative overflow-hidden ${
-                       item.status === 'completed' 
-                         ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-slate-700 dark:text-slate-200'
-                         : item.status === 'in_progress'
-                         ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-slate-900 dark:text-white'
-                         : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100'
-                     } active:scale-[0.98]`}
-                     onClick={(e) => {
-                       e.preventDefault();
-                       e.stopPropagation();
-                       toggleChecklistItemStatus(idx);
-                     }}
-                    >
-                      <div className="w-7 h-7 flex items-center justify-center flex-shrink-0">
-                        {getChecklistIcon(item.status)}
-                      </div>
-                      <span className="flex-1">{item.text}</span>
-                    </div>
-                  ))}
+                       <div 
+                        key={idx} 
+                        className={`flex items-center gap-2 text-xs font-medium cursor-pointer p-1.5 rounded-md border-1 min-h-[28px] touch-manipulation transition-all relative overflow-hidden ${
+                          item.status === 'completed' 
+                            ? 'bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700 text-slate-700 dark:text-slate-200'
+                            : item.status === 'in_progress'
+                            ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-slate-900 dark:text-white'
+                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100'
+                         } active:scale-[0.98]`}
+                         onClick={(e) => {
+                           e.preventDefault();
+                           e.stopPropagation();
+                           toggleChecklistItemStatus(idx);
+                         }}
+                        >
+                          <div className="w-4 h-4 flex items-center justify-center flex-shrink-0 scale-75">
+                            {getChecklistIcon(item.status)}
+                          </div>
+                          <span className="flex-1 truncate">{item.text}</span>
+                        </div>
+                      ))}
                 </div>
               ) : (
                 <p className="text-sm text-slate-400 dark:text-slate-500">No checklist items yet. Select a template above.</p>
