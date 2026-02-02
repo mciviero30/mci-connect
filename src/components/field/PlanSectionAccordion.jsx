@@ -158,7 +158,7 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                                    }
                                    setSelectedForDelete(newSet);
                                  }}
-                                 className="w-3 h-3 cursor-pointer accent-orange-500 scale-75 origin-top-left"
+                                 className="w-2 h-2 cursor-pointer accent-orange-500 scale-50 origin-top-left"
                                  onClick={(e) => e.stopPropagation()}
                                />
                              </div>
