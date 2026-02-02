@@ -257,18 +257,24 @@ export default function DimensionCanvas({
         />
       </div>
 
-      {/* Drawing Instructions */}
-      {activeDimension && drawingPoints.length === 0 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-black px-6 py-3 rounded-full font-bold shadow-2xl animate-pulse">
-          Tap first point
-        </div>
-      )}
+      {/* Command Hints - Context-aware */}
+       {!activeDimension && (
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 text-slate-300 px-8 py-4 rounded-2xl font-medium shadow-2xl backdrop-blur-sm border border-slate-700">
+           Select a measurement type to begin
+         </div>
+       )}
 
-      {activeDimension && drawingPoints.length === 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-black px-6 py-3 rounded-full font-bold shadow-2xl animate-pulse">
-          Tap second point
-        </div>
-      )}
+       {activeDimension && drawingPoints.length === 0 && (
+         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-black px-6 py-3 rounded-full font-bold shadow-2xl animate-pulse">
+           👆 Tap first point
+         </div>
+       )}
+
+       {activeDimension && drawingPoints.length === 1 && (
+         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-black px-6 py-3 rounded-full font-bold shadow-2xl animate-pulse">
+           👆 Tap second point
+         </div>
+       )}
     </div>
   );
 }
