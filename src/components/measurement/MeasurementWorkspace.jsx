@@ -446,11 +446,14 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
               const validation = validateDimension(dim);
               const hasErrors = !validation.isValid;
               const hasWarnings = validation.hasWarnings;
+              const isLocked = lockedMeasurements.has(dim.id);
 
               return (
                 <div
                   key={dim.id} 
                   className={`bg-slate-900 rounded-xl p-4 border-2 transition-all ${
+                    isLocked ? 'opacity-75' : ''
+                  } ${
                     hasErrors 
                       ? 'border-red-500 bg-red-500/5' 
                       : hasWarnings 
@@ -470,6 +473,12 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                         <span className="text-xs font-bold text-orange-400 bg-orange-500/20 px-2.5 py-1 rounded-full border border-orange-500/30">
                           {dim.measurement_type}
                         </span>
+                        {isLocked && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 bg-green-500/20 rounded-full border border-green-500/40">
+                            <Lock className="w-3 h-3 text-green-400" />
+                            <span className="text-[10px] font-bold text-green-400">Locked</span>
+                          </div>
+                        )}
                       </div>
                       <p className="text-sm text-slate-400 mb-1">
                         {dim.area || 'No area'}
@@ -478,12 +487,25 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                         {format(new Date(dim.created_date), 'MMM d, h:mm a')} • {dim.measured_by_name}
                       </p>
                     </div>
-                    <Button
-                      onClick={() => deleteDimensionMutation.mutate(dim.id)}
-                      className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 min-h-[48px] min-w-[48px] rounded-xl active:scale-95"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => toggleLock(dim.id)}
+                        className={`min-h-[48px] min-w-[48px] rounded-xl active:scale-95 transition-all ${
+                          isLocked
+                            ? 'bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/40'
+                            : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400 border border-slate-600'
+                        }`}
+                        title={isLocked ? 'Unlock' : 'Lock'}
+                      >
+                        {isLocked ? <Lock className="w-5 h-5" /> : <LockOpen className="w-5 h-5" />}
+                      </Button>
+                      <Button
+                        onClick={() => deleteDimensionMutation.mutate(dim.id)}
+                        className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 min-h-[48px] min-w-[48px] rounded-xl active:scale-95"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
