@@ -17,7 +17,8 @@ import {
   Save,
   Link2,
   MapPin,
-  AtSign
+  AtSign,
+  CheckCircle2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
