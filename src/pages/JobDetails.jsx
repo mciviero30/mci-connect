@@ -77,6 +77,14 @@ export default function JobDetails() {
     provisioning_status: rawJob.provisioning_status || 'not_started'
   } : null;
 
+  const updateJobMutation = useMutation({
+    mutationFn: (data) => base44.entities.Job.update(jobId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job', jobId] });
+      toast.success(language === 'es' ? 'Trabajo actualizado' : 'Job updated');
+    },
+  });
+
   const updateWebSyncMutation = useMutation({
     mutationFn: (data) => base44.entities.Job.update(jobId, data),
     onSuccess: () => {
