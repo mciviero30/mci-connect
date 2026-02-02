@@ -68,12 +68,13 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
                             className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden hover:border-orange-500 hover:shadow-xl hover:shadow-orange-500/30 transition-all group cursor-pointer active:scale-95"
                           >
                             {/* Action menu */}
-                            <div className="absolute top-2 left-2 z-20">
+                            <div className="absolute top-2 right-2 z-30">
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <button
                                     onClick={(e) => e.stopPropagation()}
-                                    className="p-2 bg-black/60 backdrop-blur rounded-lg hover:bg-black/80 transition-all shadow-lg min-h-[40px] min-w-[40px] active:scale-95"
+                                    className="p-2.5 bg-black/70 backdrop-blur-md rounded-lg hover:bg-black/90 transition-all shadow-lg min-h-[44px] min-w-[44px] active:scale-95"
+                                    title="Opciones"
                                   >
                                     <MoreVertical className="w-4 h-4 text-white" />
                                   </button>
