@@ -19,7 +19,6 @@ import { FIELD_STABLE_QUERY_CONFIG } from './config/fieldQueryConfig';
 import { format } from 'date-fns';
 import { FieldContextProvider } from './FieldContextProvider';
 import { FieldSessionManager } from './services/FieldSessionManager';
-import { useEffect } from 'react';
 
 // ============================================
 // 🔒 FROZEN — MCI FIELD CERTIFICATION v1.0
