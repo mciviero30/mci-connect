@@ -1,3 +1,15 @@
+// ============================================
+// 🔒 FROZEN — MCI FIELD CERTIFICATION v1.0
+// DO NOT MODIFY WITHOUT NEW PHASE AUTHORIZATION
+// Certified: 2026-02-02
+// ============================================
+// CRITICAL: Measurement Session Manager
+// - Generates unique session IDs
+// - Isolates measurement from production data
+// - Prevents cross-session contamination
+// Breaking this logic causes data leakage
+// ============================================
+
 /**
  * FieldSessionManager - Continuous Work Session Tracking
  * 
@@ -11,6 +23,10 @@
  * Session Memory:
  * - Active panel, open work, scroll positions, mode, area
  * - Survives: refresh, crash, app switch, screen lock, calls
+ * 
+ * 🔒 FROZEN: Session ID format: ms_${jobId}_${timestamp}
+ * 🔒 FROZEN: Sessions are NOT persisted across reloads
+ * 🔒 FROZEN: Sessions are job-scoped (cannot share across jobs)
  */
 
 const SESSION_KEY = 'field_active_session';
@@ -32,8 +48,15 @@ export const FieldSessionManager = {
     }
   },
 
+  // ============================================
+  // 🔒 FROZEN — Session ID Generation
+  // DO NOT MODIFY WITHOUT NEW PHASE
+  // ============================================
+  // CRITICAL: Timestamp-based ID prevents collisions
+  // Format: ms_${jobId}_${timestamp}
+  // ============================================
   startMeasurementSession(jobId) {
-    const sessionId = this.generateMeasurementSessionId(jobId);
+    const sessionId = this.generateMeasurementSessionId(jobId); // 🔒 FROZEN
     const session = {
       measurement_session_id: sessionId,
       job_id: jobId,
@@ -46,15 +69,22 @@ export const FieldSessionManager = {
       console.log('[MeasurementSession] 🆕 Started:', sessionId);
     }
     
-    return sessionId;
+    return sessionId; // 🔒 FROZEN: Return format
   },
 
+  // ============================================
+  // 🔒 FROZEN — Session Cleanup
+  // DO NOT MODIFY WITHOUT NEW PHASE
+  // ============================================
+  // CRITICAL: Must be called on unmount
+  // Prevents session leakage
+  // ============================================
   clearMeasurementSession() {
     const session = this.getMeasurementSession();
     if (import.meta.env?.DEV && session) {
       console.log('[MeasurementSession] 🗑️ Cleared:', session.measurement_session_id);
     }
-    sessionStorage.removeItem(MEASUREMENT_SESSION_KEY);
+    sessionStorage.removeItem(MEASUREMENT_SESSION_KEY); // 🔒 FROZEN
   },
 
   updateMeasurementSession(updates) {

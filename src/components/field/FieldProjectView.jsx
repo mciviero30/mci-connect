@@ -31,6 +31,18 @@ import FieldDebugDrawer from '@/components/field/FieldDebugDrawer.jsx';
 
 
 
+// ============================================
+// 🔒 FROZEN — MCI FIELD CERTIFICATION v1.0
+// DO NOT MODIFY WITHOUT NEW PHASE AUTHORIZATION
+// Certified: 2026-02-02
+// ============================================
+// CRITICAL: 3-tab navigation structure
+// - Plans (default)
+// - Measure (session-isolated)
+// - Capture (photos/reports)
+// Breaking this structure requires new phase
+// ============================================
+
 export default function FieldProjectView({
   // Data
   job,

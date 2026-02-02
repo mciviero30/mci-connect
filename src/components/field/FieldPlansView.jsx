@@ -48,10 +48,20 @@ const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansF
   
   const queryClient = useQueryClient();
 
-  // FASE 3C-3: Filter only job_final plans (approved drawings for production)
+  // ============================================
+  // 🔒 FROZEN — Production Plans Query
+  // DO NOT MODIFY WITHOUT NEW PHASE
+  // ============================================
+  // CRITICAL: purpose="job_final" ONLY
+  // NO measurement_session_id filter
+  // This ensures production/measurement separation
+  // ============================================
   const { data: jobFinalPlans = [] } = useQuery({
     queryKey: ['field-job-final-plans', jobId],
-    queryFn: () => base44.entities.Plan.filter({ job_id: jobId, purpose: 'job_final' }, '-created_date'),
+    queryFn: () => base44.entities.Plan.filter({ 
+      job_id: jobId, 
+      purpose: 'job_final' // 🔒 FROZEN: Do not change
+    }, '-created_date'),
     enabled: !!jobId,
   });
 

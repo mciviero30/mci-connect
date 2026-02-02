@@ -98,13 +98,22 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
     ...FIELD_STABLE_QUERY_CONFIG,
   });
 
-  // FASE 3C-5: Load ONLY plans for current measurement session
+  // ============================================
+  // 🔒 FROZEN — Measurement Plans Query
+  // DO NOT MODIFY WITHOUT NEW PHASE
+  // ============================================
+  // CRITICAL: Three filters REQUIRED
+  // 1. job_id = current job
+  // 2. purpose = "measurement"
+  // 3. measurement_session_id = current session
+  // Missing any filter causes data leakage
+  // ============================================
   const { data: plans = [] } = useQuery({
     queryKey: ['field-measurement-plans', jobId, measurementSessionId],
     queryFn: () => base44.entities.Plan.filter({ 
       job_id: jobId, 
-      purpose: 'measurement',
-      measurement_session_id: measurementSessionId 
+      purpose: 'measurement', // 🔒 FROZEN: Do not change
+      measurement_session_id: measurementSessionId // 🔒 FROZEN: Required
     }, '-created_date'),
     enabled: !!jobId && !!measurementSessionId,
     ...FIELD_STABLE_QUERY_CONFIG,
