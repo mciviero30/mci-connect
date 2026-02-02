@@ -120,11 +120,19 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
     completed: 'bg-green-500/20 text-green-400 border-green-500/30',
   };
 
+  // PASO 4: Calculate checklist completion
+  const checklistItems = task.checklist || [];
+  const completedItems = checklistItems.filter(item => item.checked).length;
+  const totalItems = checklistItems.length;
+  const completionPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+  const isFullyComplete = totalItems > 0 && completedItems === totalItems;
+
   return (
     <div className="w-96 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 flex flex-col h-full shadow-xl fixed right-0 top-0 z-50">
-      {/* Header */}
-      <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-        <h3 className="font-semibold text-slate-900 dark:text-white">Task Details</h3>
+      {/* PASO 4: Enhanced header with completion status */}
+      <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-slate-900 dark:text-white">Task Details</h3>
         <div className="flex items-center gap-2">
           {task.pin_x && task.pin_y && onZoomTo && (
             <Button 
@@ -146,24 +154,62 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
               <Edit2 className="w-4 h-4" />
             </Button>
           )}
-          <Button size="icon" variant="ghost" onClick={onClose} className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
-            <X className="w-4 h-4" />
-          </Button>
+            <Button size="icon" variant="ghost" onClick={onClose} className="text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        
+        {/* PASO 4: Task title and status */}
+        <div className="mb-2">
+          {isEditing ? (
+            <Input 
+              value={editedTask.title}
+              onChange={(e) => setEditedTask({...editedTask, title: e.target.value})}
+              className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white font-semibold"
+            />
+          ) : (
+            <h4 className="text-lg font-bold text-slate-900 dark:text-white">{task.title}</h4>
+          )}
         </div>
+
+        {/* PASO 4: Checklist progress indicator */}
+        {totalItems > 0 && (
+          <div className={`flex items-center gap-3 p-3 rounded-lg ${
+            isFullyComplete 
+              ? 'bg-green-500/20 border-2 border-green-500/40' 
+              : 'bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700'
+          }`}>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1">
+                <span className={`text-sm font-bold ${
+                  isFullyComplete ? 'text-green-700 dark:text-green-300' : 'text-slate-700 dark:text-slate-300'
+                }`}>
+                  {isFullyComplete ? '✓ Complete' : `${completedItems} / ${totalItems} items`}
+                </span>
+                <span className={`text-xs font-bold ${
+                  isFullyComplete ? 'text-green-600 dark:text-green-400' : 'text-slate-500 dark:text-slate-500'
+                }`}>
+                  {completionPercent}%
+                </span>
+              </div>
+              <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+                <div 
+                  className={`h-full transition-all duration-300 ${
+                    isFullyComplete ? 'bg-green-500' : 'bg-blue-500'
+                  }`}
+                  style={{ width: `${completionPercent}%` }}
+                />
+              </div>
+            </div>
+            {isFullyComplete && (
+              <CheckCircle2 className="w-6 h-6 text-green-500 flex-shrink-0" />
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {/* Title */}
-        {isEditing ? (
-          <Input 
-            value={editedTask.title}
-            onChange={(e) => setEditedTask({...editedTask, title: e.target.value})}
-            className="bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white"
-          />
-        ) : (
-          <h4 className="text-lg font-semibold text-slate-900 dark:text-white">{task.title}</h4>
-        )}
+      {/* PASO 4: Content - title moved to header */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4" style={{ WebkitOverflowScrolling: 'touch' }}>
 
         {/* Mini Map - Location Preview */}
         {task.pin_x && task.pin_y && (pdfCanvas || planImageUrl) && (
@@ -275,15 +321,26 @@ export default function TaskDetailPanel({ task, onClose, onDelete, jobId, allTas
           </div>
         </div>
 
-        {/* Checklist - Enhanced */}
+        {/* PASO 4: Enhanced checklist section */}
         <div>
-          <label className="text-xs text-slate-600 dark:text-slate-400 uppercase mb-2 block flex items-center gap-2">
-            <CheckSquare className="w-3 h-3" />
-            Checklist
+          <label className="text-xs text-slate-600 dark:text-slate-400 uppercase mb-3 block flex items-center gap-2">
+            <CheckSquare className="w-4 h-4" />
+            Checklist Items
+            {totalItems > 0 && (
+              <Badge className={`ml-auto ${
+                isFullyComplete 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+              }`}>
+                {completedItems}/{totalItems}
+              </Badge>
+            )}
           </label>
           <TaskChecklistEditor 
             checklist={task.checklist || []}
             onChange={handleChecklistChange}
+            taskId={task.id}
+            jobId={jobId}
           />
         </div>
 

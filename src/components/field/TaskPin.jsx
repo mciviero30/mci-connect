@@ -35,6 +35,8 @@ export default function TaskPin({ task, onClick, isSelected, onDragPin, isDraggi
   const handleClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    // PASO 4: Instant feedback on tap
+    if (navigator.vibrate) navigator.vibrate(10);
     // Only trigger onClick if we didn't drag
     if (!hasMoved && onClick) {
       onClick(e);
