@@ -30,6 +30,31 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
     return a.localeCompare(b);
   });
 
+  const queryClient = useQueryClient();
+
+  const updateSectionMutation = useMutation({
+    mutationFn: async (data) => {
+      const { oldSection, newSection } = data;
+      const sectionPlans = grouped[oldSection];
+      
+      // Batch update all plans in this section
+      for (const plan of Object.values(sectionPlans).flat()) {
+        await base44.entities.Plan.update(plan.id, {
+          section: newSection || null,
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['field-job-final-plans', jobId] });
+      setEditingSection(null);
+    },
+  });
+
+  const handleSectionRename = (oldSection, newSection) => {
+    if (!newSection.trim()) return;
+    updateSectionMutation.mutate({ oldSection, newSection: newSection.trim() });
+  };
+
   return (
     <Accordion type="single" collapsible defaultValue={sections[0]} className="space-y-3">
       {sections.map((section) => (
