@@ -14,9 +14,55 @@
  */
 
 const SESSION_KEY = 'field_active_session';
+const MEASUREMENT_SESSION_KEY = 'field_measurement_session'; // FASE 3C-4: Measurement session isolation
 const SESSION_EXPIRY_HOURS = 24; // Session expires after 24h of inactivity
 
 export const FieldSessionManager = {
+  // FASE 3C-4: Measurement Session Management
+  generateMeasurementSessionId(jobId) {
+    return `ms_${jobId}_${Date.now()}`;
+  },
+
+  getMeasurementSession() {
+    try {
+      const data = sessionStorage.getItem(MEASUREMENT_SESSION_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch {
+      return null;
+    }
+  },
+
+  startMeasurementSession(jobId) {
+    const sessionId = this.generateMeasurementSessionId(jobId);
+    const session = {
+      measurement_session_id: sessionId,
+      job_id: jobId,
+      started_at: Date.now(),
+      isActive: true,
+    };
+    sessionStorage.setItem(MEASUREMENT_SESSION_KEY, JSON.stringify(session));
+    
+    if (import.meta.env?.DEV) {
+      console.log('[MeasurementSession] 🆕 Started:', sessionId);
+    }
+    
+    return sessionId;
+  },
+
+  clearMeasurementSession() {
+    const session = this.getMeasurementSession();
+    if (import.meta.env?.DEV && session) {
+      console.log('[MeasurementSession] 🗑️ Cleared:', session.measurement_session_id);
+    }
+    sessionStorage.removeItem(MEASUREMENT_SESSION_KEY);
+  },
+
+  updateMeasurementSession(updates) {
+    const current = this.getMeasurementSession() || {};
+    const updated = { ...current, ...updates, lastActivity: Date.now() };
+    sessionStorage.setItem(MEASUREMENT_SESSION_KEY, JSON.stringify(updated));
+  },
+
   /**
    * Start or resume a Field session
    */
