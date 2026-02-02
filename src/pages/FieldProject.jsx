@@ -15,7 +15,7 @@ import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 import { DebugUI } from '@/components/policies/UIVisibilityWrapper';
 import { usePerformanceMonitor } from '@/components/field/hooks/usePerformanceMonitor';
 
-export default function FieldProject() {
+const FieldProjectMemoized = React.memo(function FieldProject() {
   // HOOKS BEFORE ANY LOGIC
   const { setIsFieldMode } = useUI();
   
@@ -64,5 +64,7 @@ export default function FieldProject() {
         </ThemeProvider>
       </div>
     </FieldErrorBoundary>
-  );
-}
+    );
+    });
+
+    export default FieldProjectMemoized;

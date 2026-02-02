@@ -46,7 +46,7 @@ import FieldDebugDrawer from '@/components/field/FieldDebugDrawer.jsx';
 // Breaking this structure requires new phase
 // ============================================
 
-export default function FieldProjectView({
+const FieldProjectViewMemoized = React.memo(function FieldProjectView({
   // Data
   job,
   tasks,
@@ -64,6 +64,7 @@ export default function FieldProjectView({
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
   const [showDebugDrawer, setShowDebugDrawer] = React.useState(false);
   const [language] = React.useState('en');
+  const [visibleSections, setVisibleSections] = React.useState({ plans: true });
   
   // Debug mode detection
   const isDebugMode = useFieldDebugMode(currentUser);
@@ -183,9 +184,9 @@ export default function FieldProjectView({
         </div>
       </div>
 
-      {/* PASO 2: Vertical sections — scroll through all content */}
+      {/* PASO 2: Vertical sections — lazy loaded */}
       <div className="flex-1 overflow-y-auto pb-6" style={{ WebkitOverflowScrolling: 'touch' }}>
-        {/* Section 1: Plans */}
+        {/* Section 1: Plans - Always rendered */}
         <section className="mb-8">
           <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
             <h2 className="text-lg font-bold text-white">Plans & Drawings</h2>
@@ -194,40 +195,40 @@ export default function FieldProjectView({
           <FieldPlansView jobId={jobId} plans={plans} tasks={tasks} />
         </section>
 
-        {/* Section 2: Tasks */}
-        <section className="mb-8">
+        {/* Section 2: Tasks - Lazy loaded after scroll */}
+        <section className="mb-8" onMouseEnter={() => setVisibleSections(prev => ({...prev, tasks: true}))}>
           <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
             <h2 className="text-lg font-bold text-white">Tasks</h2>
             <p className="text-xs text-slate-400 mt-0.5">Work items & progress</p>
           </div>
-          <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} currentUser={currentUser} />
+          {visibleSections.tasks && <FieldTasksView jobId={jobId} tasks={tasks} plans={plans} currentUser={currentUser} />}
         </section>
 
-        {/* Section 3: Photos */}
-        <section className="mb-8">
+        {/* Section 3: Photos - Lazy loaded */}
+        <section className="mb-8" onMouseEnter={() => setVisibleSections(prev => ({...prev, photos: true}))}>
           <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
             <h2 className="text-lg font-bold text-white">Photos</h2>
             <p className="text-xs text-slate-400 mt-0.5">Progress documentation</p>
           </div>
-          <FieldPhotosView jobId={jobId} plans={plans} />
+          {visibleSections.photos && <FieldPhotosView jobId={jobId} plans={plans} />}
         </section>
 
-        {/* Section 4: Reports (from FieldCaptureView temporarily) */}
-        <section className="mb-8">
+        {/* Section 4: Reports - Lazy loaded */}
+        <section className="mb-8" onMouseEnter={() => setVisibleSections(prev => ({...prev, reports: true}))}>
           <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
             <h2 className="text-lg font-bold text-white">Reports & Issues</h2>
             <p className="text-xs text-slate-400 mt-0.5">Daily logs, incidents, voice notes</p>
           </div>
-          <FieldCaptureView jobId={jobId} jobName={job?.name || job?.job_name_field} plans={plans} />
+          {visibleSections.reports && <FieldCaptureView jobId={jobId} jobName={job?.name || job?.job_name_field} plans={plans} />}
         </section>
 
-        {/* Section 5: Forms */}
-        <section className="mb-8">
+        {/* Section 5: Forms - Lazy loaded */}
+        <section className="mb-8" onMouseEnter={() => setVisibleSections(prev => ({...prev, forms: true}))}>
           <div className="px-4 py-3 bg-slate-800/50 border-b-2 border-slate-700 sticky top-0 z-30 backdrop-blur-sm">
             <h2 className="text-lg font-bold text-white">Forms & Checklists</h2>
             <p className="text-xs text-slate-400 mt-0.5">Quality control & inspections</p>
           </div>
-          <FieldChecklistsView jobId={jobId} />
+          {visibleSections.forms && <FieldChecklistsView jobId={jobId} />}
         </section>
       </div>
 
