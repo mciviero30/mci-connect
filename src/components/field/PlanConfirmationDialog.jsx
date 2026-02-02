@@ -1,16 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, CheckCircle2, Edit2, FileText } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Edit2, FileText, Wand2, Loader2 } from 'lucide-react';
 
 export default function PlanConfirmationDialog({ plan, open, onOpenChange }) {
   const [planName, setPlanName] = useState(plan?.name || '');
   const [isEditing, setIsEditing] = useState(false);
+  const [suggestedName, setSuggestedName] = useState(null);
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false);
   const queryClient = useQueryClient();
+
+  // Generate AI suggestion when dialog opens
+  useEffect(() => {
+    if (open && plan?.file_url && !suggestedName) {
+      generateAISuggestion();
+    }
+  }, [open, plan?.id]);
+
+  const generateAISuggestion = async () => {
+    setLoadingSuggestion(true);
+    try {
+      const result = await base44.integrations.Core.InvokeLLM({
+        prompt: `You are analyzing an architectural plan/drawing image. Extract ONLY the plan/drawing number or name that appears on this document. Look especially at the bottom-right corner where plan numbers are typically placed (like IN-001, FL-02, EXT-03, etc.). Return ONLY the plan number/name in format like "IN-001" or "Floor Plan" - nothing else, no explanation.`,
+        file_urls: [plan.file_url],
+        response_json_schema: {
+          type: "object",
+          properties: {
+            plan_name: { type: "string" }
+          }
+        }
+      });
+      
+      if (result?.plan_name && result.plan_name.length > 0) {
+        setSuggestedName(result.plan_name.trim());
+        setPlanName(result.plan_name.trim());
+      }
+    } catch (error) {
+      console.error('Error generating suggestion:', error);
+    } finally {
+      setLoadingSuggestion(false);
+    }
+  };
 
   const confirmMutation = useMutation({
     mutationFn: (newName) =>
