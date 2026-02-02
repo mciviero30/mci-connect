@@ -70,5 +70,6 @@ export default function FieldNav({ activeTab, onTabChange, language, onNewTask, 
         </Button>
       </div>
     </div>
+    </>
   );
 }
