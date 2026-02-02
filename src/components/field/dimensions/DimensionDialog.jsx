@@ -340,16 +340,16 @@ export default function DimensionDialog({
              }`}
            >
              {validation.isValid ? (
-               <>
-                 <CheckCircle2 className="w-4 h-4 mr-2" />
-                 Save Measurement
-               </>
-             ) : (
-               <>
-                 <AlertTriangle className="w-4 h-4 mr-2" />
-                 Fix Errors First
-               </>
-             )}
+                 <>
+                   <CheckCircle2 className="w-4 h-4 mr-2 text-green-300 animate-pulse" />
+                   Save Measurement
+                 </>
+               ) : (
+                 <>
+                   <AlertTriangle className="w-4 h-4 mr-2" />
+                   Fix Errors First
+                 </>
+               )}
            </Button>
          </div>
       </DialogContent>
