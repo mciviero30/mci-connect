@@ -520,13 +520,13 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
                     ) : (
                       <>
                         <Upload className="w-8 h-8 text-slate-400 mb-2" />
-                         <span className="text-sm text-slate-600 dark:text-slate-300">Click to upload image</span>
-                         <span className="text-xs text-slate-500 mt-1">JPG, PNG only (max 100MB)</span>
+                         <span className="text-sm text-slate-600 dark:text-slate-300">Click to upload drawing</span>
+                         <span className="text-xs text-slate-500 mt-1">JPG, PNG, PDF (max 100MB)</span>
                       </>
                     )}
                     <input 
                        type="file" 
-                       accept="image/*"
+                       accept="image/*,.pdf"
                        onChange={async (e) => {
                           const file = e.target.files[0];
                           if (!file) return;
