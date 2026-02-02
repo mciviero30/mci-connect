@@ -285,6 +285,29 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
     );
   }, [selectedImage, dimensions]);
 
+  const allValid = React.useMemo(() => {
+    return filteredDimensions.every(d => validateDimension(d).isValid);
+  }, [filteredDimensions]);
+
+  const allLockedOrReviewed = React.useMemo(() => {
+    if (filteredDimensions.length === 0) return false;
+    return filteredDimensions.every(d => lockedMeasurements.has(d.id));
+  }, [filteredDimensions, lockedMeasurements]);
+
+  const isReadyForExport = allValid && allLockedOrReviewed;
+
+  const toggleLock = React.useCallback((dimensionId) => {
+    setLockedMeasurements(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(dimensionId)) {
+        newSet.delete(dimensionId);
+      } else {
+        newSet.add(dimensionId);
+      }
+      return newSet;
+    });
+  }, []);
+
   return (
     <div className="h-full flex flex-col bg-slate-900">
       <div className="flex-shrink-0 p-4 sm:p-6 bg-slate-800 border-b border-slate-700">
