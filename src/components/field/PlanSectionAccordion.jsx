@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 
-export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, setAnalyzePlan, deletePlanMutation, jobId }) {
+export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, setAnalyzePlan, deletePlanMutation, jobId, selectedForDelete = new Set(), setSelectedForDelete = () => {} }) {
   const [editingPlan, setEditingPlan] = useState(null);
   const [editingSection, setEditingSection] = useState(null);
   const [editingSectionValue, setEditingSectionValue] = useState('');
