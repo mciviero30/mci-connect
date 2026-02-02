@@ -165,6 +165,16 @@ export default function PlanSectionAccordion({ plans, tasks, setSelectedPlan, se
           </AccordionContent>
         </AccordionItem>
       ))}
+
+      {/* Edit Dialog */}
+      {editingPlan && (
+        <EditPlanDialog
+          open={!!editingPlan}
+          onOpenChange={(open) => !open && setEditingPlan(null)}
+          plan={editingPlan}
+          jobId={jobId}
+        />
+      )}
     </Accordion>
   );
 }
