@@ -9,12 +9,12 @@ import { Button } from '@/components/ui/button';
 import GestureHandler, { useGestureHandler } from './GestureHandler';
 import GestureHelpTooltip from './GestureHelpTooltip';
 
-export default function FieldNav({ activeTab, onTabChange, language, onNewTask, onClosePanel }) {
+// FASE 5 PERF: Memoized navigation component
+const FieldNav = React.memo(function FieldNav({ activeTab, onTabChange, language, onNewTask, onClosePanel }) {
   const [showGestureHelp, setShowGestureHelp] = useState(false);
   
-  // FASE 4 (UX): SIMPLIFIED NAVIGATION - 3 Primary Tabs Only
-  // Removed: Jobs (not needed in job view), Search, Chat, Notifications (moved to header icons)
-  const tabs = [
+  // FASE 5 PERF: Memoized tabs definition (stable reference)
+  const tabs = React.useMemo(() => [
     { 
       id: 'plans', 
       label: language === 'es' ? 'Planos' : 'Plans', 
@@ -23,7 +23,7 @@ export default function FieldNav({ activeTab, onTabChange, language, onNewTask, 
     },
     { 
       id: 'measurements', 
-      label: language === 'es' ? 'Mediciones' : 'Measure', 
+      label: language === 'es' ? 'Medir' : 'Measure', 
       icon: Ruler, 
       color: 'text-purple-400' 
     },
@@ -33,7 +33,7 @@ export default function FieldNav({ activeTab, onTabChange, language, onNewTask, 
       icon: Camera, 
       color: 'text-blue-400' 
     },
-  ];
+  ], [language]);
 
   // FASE 4 (UX): Simplified gestures - no search gesture
   const gestureContainerRef = useGestureHandler({
