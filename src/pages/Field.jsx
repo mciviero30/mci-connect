@@ -690,75 +690,118 @@ export default function Field() {
             {language === 'es' ? `${filteredJobs.length} Trabajo${filteredJobs.length !== 1 ? 's' : ''}` : `${filteredJobs.length} Job${filteredJobs.length !== 1 ? 's' : ''}`}
           </h2>
           <div className="space-y-3">
-            {filteredJobs.map((job) => (
-              <div key={job.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-700 active:scale-[0.98] transition-all shadow-md min-h-[72px]">
-                <div className="flex items-center justify-between gap-3">
-                  <Link to={createPageUrl(`FieldProject?id=${job.id}`)} className="flex-1 min-w-0">
-                    <h3 className="text-base font-bold text-white truncate mb-1">
-                      {job.name || job.job_name_field}
-                    </h3>
-                    <p className="text-xs text-slate-400 truncate">
-                      {job.customer_name || job.client_name_field || 'No customer'}
-                    </p>
-                  </Link>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <Badge className={`${
-                      job.status === 'active' 
-                        ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                        : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
-                    } border px-2.5 py-1 rounded-full text-[10px] font-bold`}>
-                      {job.status === 'active' ? 'TODAY' : 'SCHEDULED'}
-                    </Badge>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-700"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
-                        <DropdownMenuItem 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            duplicateJobMutation.mutate(job);
-                          }}
-                          className="text-white hover:bg-slate-700 cursor-pointer"
-                        >
-                          <Copy className="w-4 h-4 mr-2" />
-                          {language === 'es' ? 'Duplicar' : 'Duplicate'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            archiveJobMutation.mutate(job.id);
-                          }}
-                          className="text-white hover:bg-slate-700 cursor-pointer"
-                        >
-                          <Archive className="w-4 h-4 mr-2" />
-                          {language === 'es' ? 'Archivar' : 'Archive'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (window.confirm(language === 'es' ? '¿Borrar este proyecto?' : 'Delete this project?')) {
-                              deleteJobMutation.mutate(job.id);
-                            }
-                          }}
-                          className="text-red-400 hover:bg-red-900/20 cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          {language === 'es' ? 'Borrar' : 'Delete'}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+            {filteredJobs.map((job) => {
+              const jobTasks = tasks.filter(t => t.job_id === job.id);
+              const taskCount = jobTasks.length;
+              const completedTasks = jobTasks.filter(t => t.status === 'completed').length;
+              
+              return (
+                <div key={job.id} className="bg-slate-800 border border-slate-700 rounded-xl p-4 hover:bg-slate-700 active:scale-[0.98] transition-all shadow-md">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <Link to={createPageUrl(`FieldProject?id=${job.id}`)} className="flex-1 min-w-0">
+                      <h3 className="text-base font-bold text-white truncate mb-1">
+                        {job.name || job.job_name_field}
+                      </h3>
+                      <p className="text-xs text-slate-400 truncate mb-2">
+                        {job.customer_name || job.client_name_field || 'No customer'}
+                      </p>
+                      {/* Address */}
+                      {job.address && (
+                        <p className="text-xs text-slate-500 truncate mb-1 flex items-center gap-1">
+                          📍 {job.address}
+                        </p>
+                      )}
+                      {/* Dates */}
+                      {(job.start_date_field || job.end_date_field) && (
+                        <p className="text-xs text-slate-500 mb-1">
+                          📅 {job.start_date_field ? new Date(job.start_date_field).toLocaleDateString() : 'N/A'} → {job.end_date_field ? new Date(job.end_date_field).toLocaleDateString() : 'N/A'}
+                        </p>
+                      )}
+                    </Link>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Badge className={`${
+                        job.status === 'active' 
+                          ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                          : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                      } border px-2.5 py-1 rounded-full text-[10px] font-bold whitespace-nowrap`}>
+                        {job.status === 'active' ? 'TODAY' : 'SCHEDULED'}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="icon"
+                            className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-700"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              duplicateJobMutation.mutate(job);
+                            }}
+                            className="text-white hover:bg-slate-700 cursor-pointer"
+                          >
+                            <Copy className="w-4 h-4 mr-2" />
+                            {language === 'es' ? 'Duplicar' : 'Duplicate'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              archiveJobMutation.mutate(job.id);
+                            }}
+                            className="text-white hover:bg-slate-700 cursor-pointer"
+                          >
+                            <Archive className="w-4 h-4 mr-2" />
+                            {language === 'es' ? 'Archivar' : 'Archive'}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (window.confirm(language === 'es' ? '¿Borrar este proyecto?' : 'Delete this project?')) {
+                                deleteJobMutation.mutate(job.id);
+                              }
+                            }}
+                            className="text-red-400 hover:bg-red-900/20 cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            {language === 'es' ? 'Borrar' : 'Delete'}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+
+                  {/* Info Grid */}
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    {/* Tasks */}
+                    <div className="bg-slate-700/50 rounded-lg p-2 border border-slate-600/50">
+                      <p className="text-slate-400 font-semibold">Tasks</p>
+                      <p className="text-white font-bold text-sm">{completedTasks}/{taskCount}</p>
+                    </div>
+                    
+                    {/* Team */}
+                    {job.assigned_team_field && job.assigned_team_field.length > 0 && (
+                      <div className="bg-slate-700/50 rounded-lg p-2 border border-slate-600/50">
+                        <p className="text-slate-400 font-semibold">Team ({job.assigned_team_field.length})</p>
+                        <p className="text-white font-bold text-sm truncate">{job.assigned_team_field[0]?.split('@')[0]}</p>
+                      </div>
+                    )}
+
+                    {/* Lead/Supervisor */}
+                    {job.lead_name && (
+                      <div className="bg-slate-700/50 rounded-lg p-2 border border-slate-600/50 col-span-2">
+                        <p className="text-slate-400 font-semibold">Lead</p>
+                        <p className="text-white font-bold">{job.lead_name} {job.lead_phone && `• ${job.lead_phone}`}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
