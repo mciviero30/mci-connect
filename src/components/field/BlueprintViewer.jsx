@@ -122,6 +122,11 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   const [pdfDoc, setPdfDoc] = useState(null);
   const canvasRef = useRef(null);
   
+  // CRITICAL: ALL useState BEFORE any other hooks
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const lastTapRef = useRef(0);
+  
   // FASE A2.3: Use diff overlay hook
   const { changeRegions, isProcessing: isDiffProcessing, changeCount } = useBlueprintDiffOverlay(
     isComparing && showChangeMarkers,
@@ -164,7 +169,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
 
   // FASE A2.6: Generate suggested actions
   const suggestedActions = useSuggestedActions(activeChangeBlock, impactContext);
-  const [showSuggestions, setShowSuggestions] = useState(true);
 
   // Navigate to element from suggestion
   const handleSuggestionClick = (suggestion) => {
@@ -179,7 +183,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
 
   // FASE A2.7: Export review
   const { exportReview } = useChangeReviewExport();
-  const [isExporting, setIsExporting] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['current-user'],
@@ -588,7 +591,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
   }, []);
 
   // Double-tap/click to zoom
-  const lastTapRef = useRef(0);
   const handleDoubleTap = useCallback((e) => {
     const now = Date.now();
     if (now - lastTapRef.current < 300) {
