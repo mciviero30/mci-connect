@@ -184,29 +184,37 @@ const FieldPlansView = React.memo(function FieldPlansView({ jobId, plans: plansF
     }
 
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      if (progressInterval) clearInterval(progressInterval);
-      setUploadProgress(100);
-      
-      // FASE A2.1: Use backend function for versioning (job_final purpose)
-      const planName = newPlan.name || file.name.split('.')[0];
-      const { plan } = await base44.functions.invoke('uploadPlanVersion', {
-        job_id: jobId,
-        name: planName,
-        file_url: file_url,
-        order: plans.length,
-        purpose: 'job_final',
-      });
-      
-      toast.success(`Plan version ${plan.version_number || plan.version} created`);
-      setNewPlan({ name: '', file: null, fileSize: 0 });
-      setUploadProgress(0);
-    } catch (error) {
-      console.error('Upload error:', error);
-      if (progressInterval) clearInterval(progressInterval);
-      setFileError('Error uploading file. Please try again.');
-    }
-    setUploading(false);
+       setUploadProgress(50);
+       const { file_url } = await base44.integrations.Core.UploadFile({ file });
+       setUploadProgress(75);
+
+       if (progressInterval) clearInterval(progressInterval);
+
+       // FASE A2.1: Use backend function for versioning (job_final purpose)
+       const planName = newPlan.name || file.name.split('.')[0];
+       const { plan } = await base44.functions.invoke('uploadPlanVersion', {
+         job_id: jobId,
+         name: planName,
+         file_url: file_url,
+         order: plans.length,
+         purpose: 'job_final',
+       });
+
+       setUploadProgress(100);
+       setTimeout(() => {
+         toast.success(`✅ Plan "${plan.name}" subido exitosamente`);
+         setNewPlan({ name: '', file: null, fileSize: 0 });
+         setUploadProgress(0);
+         setUploading(false);
+       }, 300);
+     } catch (error) {
+       console.error('Upload error:', error);
+       if (progressInterval) clearInterval(progressInterval);
+       const errorMsg = error?.message || 'Error desconocido';
+       setFileError(`⚠️ Error: ${errorMsg}. Intenta de nuevo.`);
+       setUploadProgress(0);
+       setUploading(false);
+     }
   }, [jobId, plans.length, newPlan.name, queryClient, validateFile]);
 
   // FASE 5 PERF: Stable create handler
