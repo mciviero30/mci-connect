@@ -94,6 +94,14 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     gcTime: Infinity
   });
 
+  // CRITICAL FIX: Define filteredTasks BEFORE using in hooks
+  const filteredTasks = tasks.filter(task => {
+    if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
+    if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
+    if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
+    return true;
+  });
+
   const impactContext = useChangeImpactContext(
     activeChangeBlock,
     filteredTasks,
@@ -536,14 +544,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
       height: e.target.naturalHeight
     });
   };
-
-  // Filter tasks based on active filters
-  const filteredTasks = tasks.filter(task => {
-    if (taskFilters.status.length > 0 && !taskFilters.status.includes(task.status)) return false;
-    if (taskFilters.priority.length > 0 && !taskFilters.priority.includes(task.priority)) return false;
-    if (taskFilters.category.length > 0 && !taskFilters.category.includes(task.category)) return false;
-    return true;
-  });
 
   // Keyboard shortcuts
   useEffect(() => {
