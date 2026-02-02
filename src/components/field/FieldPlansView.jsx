@@ -16,6 +16,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { toast } from 'sonner';
 import BatchPlanUploadDialog from './BatchPlanUploadDialog.jsx';
 import { Badge } from '@/components/ui/badge';
+import PlanGridSection from './PlanGridSection.jsx';
 
 const MAX_FILE_SIZE_MB = 100;
 const WARNING_FILE_SIZE_MB = 50;
