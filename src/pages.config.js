@@ -101,6 +101,7 @@ import Facturas from './pages/Facturas';
 import Field from './pages/Field';
 import FieldExport from './pages/FieldExport';
 import FieldMeasurements from './pages/FieldMeasurements';
+import FieldProgressDashboard from './pages/FieldProgressDashboard';
 import FieldProject from './pages/FieldProject';
 import Formularios from './pages/Formularios';
 import Gastos from './pages/Gastos';
@@ -178,7 +179,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import FieldProgressDashboard from './pages/FieldProgressDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -237,6 +237,7 @@ export const PAGES = {
     "Field": Field,
     "FieldExport": FieldExport,
     "FieldMeasurements": FieldMeasurements,
+    "FieldProgressDashboard": FieldProgressDashboard,
     "FieldProject": FieldProject,
     "Formularios": Formularios,
     "Gastos": Gastos,
@@ -314,7 +315,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "FieldProgressDashboard": FieldProgressDashboard,
 }
 
 export const pagesConfig = {

@@ -8,11 +8,29 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import FieldDimensionsView from '@/components/field/FieldDimensionsView.jsx';
 import { FIELD_STABLE_QUERY_CONFIG, FIELD_QUERY_KEYS } from '@/components/field/config/fieldQueryConfig';
+import { FieldSessionManager } from '@/components/field/services/FieldSessionManager';
+import { useEffect } from 'react';
 
 export default function FieldMeasurements() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const jobId = searchParams.get('id');
+
+  // FASE 3C-4: Start measurement session on page mount
+  const [measurementSessionId] = useState(() => {
+    const existing = FieldSessionManager.getMeasurementSession();
+    if (existing?.job_id === jobId && existing?.isActive) {
+      return existing.measurement_session_id;
+    }
+    return FieldSessionManager.startMeasurementSession(jobId);
+  });
+
+  // FASE 3C-4: Clear measurement session on unmount
+  useEffect(() => {
+    return () => {
+      FieldSessionManager.clearMeasurementSession();
+    };
+  }, []);
 
   const { data: job, isLoading: jobLoading } = useQuery({
     queryKey: FIELD_QUERY_KEYS.JOB(jobId),
