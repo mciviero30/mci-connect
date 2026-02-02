@@ -24,7 +24,7 @@ import UniversalSyncIndicator from '@/components/field/UniversalSyncIndicator.js
 import PhotoUploadProgress from '@/components/field/PhotoUploadProgress.jsx';
 import AccessDenied from '@/components/field/AccessDenied';
 import CreateTaskDialog from '@/components/field/CreateTaskDialog.jsx';
-import FieldBottomActionRail from './FieldBottomActionRail';
+// PASO 2: Removed FieldBottomActionRail import (replaced with inline action rail)
 import { updateFieldQueryData } from '@/components/field/config/fieldQueryConfig';
 import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 import { DebugUI } from '@/components/policies/UIVisibilityWrapper';
