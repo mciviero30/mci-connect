@@ -20,6 +20,7 @@ export default function DimensionCanvas({
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [image, setImage] = useState(null);
   const [drawingPoints, setDrawingPoints] = useState([]);
+  const [snappedAxis, setSnappedAxis] = useState(null);
 
   // Load image
   useEffect(() => {
