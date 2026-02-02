@@ -17,8 +17,27 @@ import MeasurementExportDialog from './MeasurementExportDialog';
 import { validateDimension } from './dimensions/DimensionValidation';
 import { FIELD_STABLE_QUERY_CONFIG } from './config/fieldQueryConfig';
 import { format } from 'date-fns';
+import { FieldContextProvider } from './FieldContextProvider';
+import { FieldSessionManager } from './services/FieldSessionManager';
+import { useEffect } from 'react';
 
 export default function FieldDimensionsView({ jobId, jobName }) {
+  // FASE 3C-4: Generate measurement session ID on mount to isolate measurement state
+  const [measurementSessionId] = useState(() => {
+    const existing = FieldSessionManager.getMeasurementSession();
+    if (existing?.job_id === jobId && existing?.isActive) {
+      return existing.measurement_session_id;
+    }
+    return FieldSessionManager.startMeasurementSession(jobId);
+  });
+
+  // FASE 3C-4: Clear measurement session on unmount
+  useEffect(() => {
+    return () => {
+      FieldSessionManager.clearMeasurementSession();
+    };
+  }, []);
+
   const [selectedImage, setSelectedImage] = useState(null);
   const [showDimensionDialog, setShowDimensionDialog] = useState(false);
   const [activeDimension, setActiveDimension] = useState(null);
@@ -157,8 +176,19 @@ export default function FieldDimensionsView({ jobId, jobName }) {
       })
     : dimensions;
 
+  // FASE 3C-4: Wrap in FieldContextProvider with measurement_session_id
   return (
-    <div className="h-full flex flex-col bg-slate-100 dark:bg-slate-900">
+    <FieldContextProvider jobId={jobId} measurementSessionId={measurementSessionId}>
+      {/* FASE 3C-4: Debug indicator (dev only) */}
+      {import.meta.env?.DEV && (
+        <div className="bg-purple-900/20 border-b border-purple-500/30 px-4 py-2">
+          <span className="text-xs text-purple-300 font-mono">
+            Measurement Session: {measurementSessionId}
+          </span>
+        </div>
+      )}
+      
+      <div className="h-full flex flex-col bg-slate-100 dark:bg-slate-900">
       {/* Header - Primary action removed (moved to bottom rail) */}
       <div className="flex-shrink-0 p-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -553,7 +583,7 @@ export default function FieldDimensionsView({ jobId, jobName }) {
           </div>
         </DialogContent>
       </Dialog>
-      </div>
+    </div>
     </FieldContextProvider>
   );
 }
