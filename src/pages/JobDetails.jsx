@@ -209,20 +209,17 @@ export default function JobDetails() {
     queryKey: ['availableSupervisors'],
     queryFn: async () => {
       try {
-        // Get all active employees from EmployeeDirectory
-        const employees = await base44.entities.EmployeeDirectory.filter(
-          { status: 'active' },
-          '-full_name',
-          100
-        );
-        return employees || [];
+        // Get all employees from EmployeeDirectory (no filter, sort by name)
+        const employees = await base44.entities.EmployeeDirectory.list('-full_name', 200);
+        console.log('Fetched employees:', employees);
+        // Filter for active status in JS
+        return (employees || []).filter(emp => emp.status === 'active' || !emp.status);
       } catch (error) {
         console.error('Error fetching supervisors:', error);
         return [];
       }
     },
-    staleTime: 900000,
-    initialData: []
+    staleTime: 300000
   });
 
   const estimatedHours = relatedQuote?.estimated_hours || job?.estimated_hours || 0;
