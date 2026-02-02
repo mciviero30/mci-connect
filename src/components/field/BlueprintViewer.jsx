@@ -149,6 +149,31 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
     gcTime: Infinity
   });
 
+  // CRITICAL: Fetch measurements data FIRST - BEFORE useChangeImpactContext
+  const { data: horizontalMeasurements = [] } = useQuery({
+    queryKey: FIELD_QUERY_KEYS.FIELD_DIMENSIONS(jobId),
+    queryFn: () => base44.entities.FieldDimension.filter({ project_id: jobId }),
+    enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
+
+  const { data: verticalMeasurements = [] } = useQuery({
+    queryKey: FIELD_QUERY_KEYS.VERTICAL_MEASUREMENTS(jobId),
+    queryFn: () => base44.entities.VerticalMeasurement.filter({ project_id: jobId }),
+    enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
+
+  const { data: benchmarks = [] } = useQuery({
+    queryKey: FIELD_QUERY_KEYS.BENCHMARKS(jobId),
+    queryFn: () => base44.entities.Benchmark.filter({ project_id: jobId }),
+    enabled: !!jobId,
+    staleTime: Infinity,
+    gcTime: Infinity
+  });
+
   // CRITICAL FIX: Use useMemo for filteredTasks so it's a proper hook
   const filteredTasks = React.useMemo(() => {
     return tasks.filter(task => {
@@ -183,31 +208,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
 
   // FASE A2.7: Export review
   const { exportReview } = useChangeReviewExport();
-
-  // Fetch measurements data (BEFORE impactContext calculation)
-  const { data: horizontalMeasurements = [] } = useQuery({
-    queryKey: FIELD_QUERY_KEYS.FIELD_DIMENSIONS(jobId),
-    queryFn: () => base44.entities.FieldDimension.filter({ project_id: jobId }),
-    enabled: !!jobId,
-    staleTime: Infinity,
-    gcTime: Infinity
-  });
-
-  const { data: verticalMeasurements = [] } = useQuery({
-    queryKey: FIELD_QUERY_KEYS.VERTICAL_MEASUREMENTS(jobId),
-    queryFn: () => base44.entities.VerticalMeasurement.filter({ project_id: jobId }),
-    enabled: !!jobId,
-    staleTime: Infinity,
-    gcTime: Infinity
-  });
-
-  const { data: benchmarks = [] } = useQuery({
-    queryKey: FIELD_QUERY_KEYS.BENCHMARKS(jobId),
-    queryFn: () => base44.entities.Benchmark.filter({ project_id: jobId }),
-    enabled: !!jobId,
-    staleTime: Infinity,
-    gcTime: Infinity
-  });
 
   const { data: currentUser } = useQuery({
     queryKey: ['current-user'],
