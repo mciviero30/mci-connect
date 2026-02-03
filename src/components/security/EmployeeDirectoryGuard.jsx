@@ -26,11 +26,19 @@ export default function EmployeeDirectoryGuard({ children, user }) {
     return <>{children}</>;
   }
 
-  // Query EmployeeDirectory by user_id
+  // Query EmployeeDirectory by user_id OR email (fallback)
   const { data: directoryRecords, isLoading, error } = useQuery({
-    queryKey: ['employeeDirectoryGuard', user.id],
+    queryKey: ['employeeDirectoryGuard', user.id, user.email],
     queryFn: async () => {
-      return await base44.entities.EmployeeDirectory.filter({ user_id: user.id });
+      // Try user_id first
+      let records = await base44.entities.EmployeeDirectory.filter({ user_id: user.id });
+      
+      // Fallback to email if no user_id match
+      if (!records || records.length === 0) {
+        records = await base44.entities.EmployeeDirectory.filter({ employee_email: user.email });
+      }
+      
+      return records;
     },
     staleTime: 300000, // 5 min cache
     gcTime: 600000,
