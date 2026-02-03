@@ -14,6 +14,7 @@ import DimensionCanvas from '@/components/field/dimensions/DimensionCanvas';
 import DimensionDialog from '@/components/field/dimensions/DimensionDialog';
 import DimensionLegend from '@/components/field/dimensions/DimensionLegend';
 import MeasurementExportDialog from '@/components/field/MeasurementExportDialog';
+import MeasurementToolbar from '@/components/measurement/MeasurementToolbar';
 import { validateDimension } from '@/components/field/dimensions/DimensionValidation';
 import { FIELD_STABLE_QUERY_CONFIG } from '@/components/field/config/fieldQueryConfig';
 import { format } from 'date-fns';
@@ -41,6 +42,12 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
   const [showExportWarning, setShowExportWarning] = useState(false);
+  
+  // FASE D1: Markup state (local only, not persisted)
+  const [markupsByPlan, setMarkupsByPlan] = useState({});
+  const [activeTool, setActiveTool] = useState(null);
+  const [markupOptions, setMarkupOptions] = useState({ color: '#EF4444', thickness: 2 });
+  
   const canvasRef = useRef(null);
 
   const queryClient = useQueryClient();
@@ -301,6 +308,7 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
 
   return (
     <div className="h-full flex flex-col bg-slate-900">
+      {/* Header with Back, Units, Export */}
       <div className="flex-shrink-0 p-4 sm:p-6 bg-slate-800 border-b border-slate-700">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
@@ -396,11 +404,16 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
             </Button>
           </div>
         </div>
-
-        <div className="mt-4">
-          <DimensionLegend unitSystem={projectUnitSystem} />
-        </div>
       </div>
+
+      {/* FASE D1: Measurement + Markup Toolbar */}
+      <MeasurementToolbar
+        activeTool={activeTool}
+        onSelectTool={handleToolSelect}
+        markupOptions={markupOptions}
+        onChangeMarkupOptions={setMarkupOptions}
+        onClearMarkups={handleClearMarkups}
+      />
 
       {/* Review Hint */}
        {filteredDimensions.length > 0 && (
@@ -430,6 +443,11 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                  onDimensionPlace={handleDimensionPlace}
                  unitSystem={projectUnitSystem}
                  lockedMeasurements={lockedMeasurements}
+                 markups={currentMarkups}
+                 activeTool={activeTool}
+                 markupOptions={markupOptions}
+                 onAddMarkup={handleAddMarkup}
+                 onRemoveMarkup={handleRemoveMarkup}
                />
              );
            })() : (
