@@ -179,13 +179,14 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
     setActiveTool(prev => prev === tool ? null : tool);
     
     // Convert measurement tool to activeDimension
-    const measurementTypes = ['FF-FF', 'CL-CL', 'BM-FF-UP', 'BM-FF-DOWN', 'BM-C'];
+    const measurementTypes = ['FF-FF', 'CL-CL', 'FF-CL', 'CL-FF', 'SFF-SFF', 'BM-FF-UP', 'BM-FF-DOWN', 'BM-C'];
     if (measurementTypes.includes(tool)) {
       const dimensionType = tool.startsWith('BM-') ? 'vertical' : 'horizontal';
       setActiveDimension({
         dimension_type: dimensionType,
         measurement_type: tool,
         unit_system: projectUnitSystem,
+        construction_state: 'with_drywall',
       });
     } else {
       setActiveDimension(null);

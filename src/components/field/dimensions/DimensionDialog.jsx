@@ -58,6 +58,7 @@ export default function DimensionDialog({
     notes: '',
     photos: [],
     audio_notes: [],
+    construction_state: 'with_drywall',
   });
 
   const [uploadingMedia, setUploadingMedia] = useState(false);
@@ -262,6 +263,37 @@ export default function DimensionDialog({
               <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-300 dark:border-slate-700 rounded-xl p-3 flex items-start gap-3">
                 <div className="text-sm text-slate-700 dark:text-slate-300 flex-1">
                   <span className="font-medium">💡 Verify measurement</span> — Complex fractions detected. Confirm accuracy if needed.
+                </div>
+              </div>
+            )}
+
+            {/* FASE D2.3: Construction State */}
+            {formData.dimension_type === 'horizontal' && (
+              <div>
+                <Label className="text-sm font-bold">Construction State</Label>
+                <div className="flex gap-3 mt-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, construction_state: 'stud_only'})}
+                    className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold transition-all min-h-[52px] touch-manipulation ${
+                      formData.construction_state === 'stud_only'
+                        ? 'bg-amber-600 text-white border-amber-500 shadow-lg'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-amber-400'
+                    }`}
+                  >
+                    Stud Only
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, construction_state: 'with_drywall'})}
+                    className={`flex-1 px-4 py-3 rounded-xl border-2 font-semibold transition-all min-h-[52px] touch-manipulation ${
+                      formData.construction_state === 'with_drywall'
+                        ? 'bg-green-600 text-white border-green-500 shadow-lg'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:border-green-400'
+                    }`}
+                  >
+                    With Drywall
+                  </button>
                 </div>
               </div>
             )}
