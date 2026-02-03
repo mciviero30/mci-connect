@@ -509,8 +509,7 @@ export default function Field() {
               // Show exit confirmation
               setShowExitConfirmation(true);
             } else {
-              // Safe to exit immediately
-              setIsFieldMode(false);
+              // Safe to exit immediately - use navigate instead of setting state
               navigate(createPageUrl('Dashboard'));
             }
           }}
