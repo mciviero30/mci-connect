@@ -11,7 +11,13 @@ export default function DimensionCanvas({
   onDimensionUpdate,
   onDimensionDelete,
   unitSystem = 'imperial',
-  lockedMeasurements = new Set()
+  lockedMeasurements = new Set(),
+  // FASE D1: Markup props (optional, backward compatible)
+  markups = [],
+  activeTool = null,
+  markupOptions = { color: '#EF4444', thickness: 2 },
+  onAddMarkup = () => {},
+  onRemoveMarkup = () => {},
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -22,6 +28,9 @@ export default function DimensionCanvas({
   const [image, setImage] = useState(null);
   const [drawingPoints, setDrawingPoints] = useState([]);
   const [snappedAxis, setSnappedAxis] = useState(null);
+  
+  // FASE D1: Markup drawing state
+  const [markupDrawPoints, setMarkupDrawPoints] = useState([]);
 
   // Load image
   useEffect(() => {
@@ -55,11 +64,21 @@ export default function DimensionCanvas({
       drawDimension(ctx, dim);
     });
 
+    // FASE D1: Draw markups
+    markups.forEach(markup => {
+      drawMarkup(ctx, markup);
+    });
+
     // Draw active drawing
     if (drawingPoints.length > 0) {
       drawActiveLine(ctx, drawingPoints);
     }
-  }, [image, dimensions, drawingPoints, zoom]);
+
+    // FASE D1: Draw active markup (preview while drawing)
+    if (markupDrawPoints.length > 0 && activeTool?.startsWith('markup_')) {
+      drawActiveMarkup(ctx, markupDrawPoints, activeTool, markupOptions);
+    }
+  }, [image, dimensions, drawingPoints, zoom, markups, markupDrawPoints, activeTool, markupOptions]);
 
   const drawDimension = (ctx, dim) => {
     const { x1, y1, x2, y2, label_x, label_y } = dim.canvas_data;
@@ -254,12 +273,31 @@ export default function DimensionCanvas({
   };
 
   const handleCanvasClick = (e) => {
-    if (!activeDimension) return;
-
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+    // FASE D1: Handle markup clicks
+    if (activeTool?.startsWith('markup_')) {
+      if (markupDrawPoints.length === 0) {
+        setMarkupDrawPoints([{ x, y }]);
+      } else if (markupDrawPoints.length === 1) {
+        const newMarkup = {
+          id: `markup_${Date.now()}`,
+          type: activeTool.replace('markup_', ''),
+          points: [markupDrawPoints[0], { x, y }],
+          color: markupOptions.color,
+          thickness: markupOptions.thickness,
+        };
+        
+        onAddMarkup(newMarkup);
+        setMarkupDrawPoints([]);
+      }
+      return;
+    }
+
+    if (!activeDimension) return;
 
     let finalPoint = { x, y };
     let axis = null;
@@ -360,9 +398,9 @@ export default function DimensionCanvas({
       </div>
 
       {/* Command Hints - Context-aware */}
-       {!activeDimension && (
+       {!activeDimension && !activeTool && (
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 text-slate-300 px-8 py-4 rounded-2xl font-medium shadow-2xl backdrop-blur-sm border border-slate-700">
-           Select a measurement type to begin
+           Select a tool to begin
          </div>
        )}
 
@@ -375,6 +413,18 @@ export default function DimensionCanvas({
        {activeDimension && drawingPoints.length === 1 && (
          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-[#FFB800] text-black px-6 py-3 rounded-full font-bold shadow-2xl animate-pulse">
            👆 Tap second point
+         </div>
+       )}
+
+       {activeTool?.startsWith('markup_') && markupDrawPoints.length === 0 && (
+         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl animate-pulse">
+           👆 Tap to start drawing
+         </div>
+       )}
+
+       {activeTool?.startsWith('markup_') && markupDrawPoints.length === 1 && (
+         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl animate-pulse">
+           👆 Tap to finish
          </div>
        )}
     </div>
