@@ -84,10 +84,10 @@ const FieldProjectViewMemoized = React.memo(function FieldProjectView({
 
   // PASO 2: Removed panel navigation listener (no tabs)
 
-  // Handle safe exit
+  // Handle safe exit - navigate to Field page
   const handleSafeExit = () => {
     if (window.confirm('Exit Field? Any unsaved work will be lost.')) {
-      window.history.back();
+      window.location.href = createPageUrl('Field');
     }
   };
   // Loading state
