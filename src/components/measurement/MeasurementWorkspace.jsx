@@ -48,6 +48,9 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   const [activeTool, setActiveTool] = useState(null);
   const [markupOptions, setMarkupOptions] = useState({ color: '#EF4444', thickness: 2 });
   
+  // FASE D2.1: Local dimension overlays (instant feedback, optional save)
+  const [dimensionOverlays, setDimensionOverlays] = useState([]);
+  
   const canvasRef = useRef(null);
 
   const queryClient = useQueryClient();
@@ -146,6 +149,19 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   }, [activeDimension]);
 
   const handleSaveDimension = React.useCallback((data) => {
+    // FASE D2.1: Add to local overlays immediately (instant visual feedback)
+    const overlay = {
+      id: `overlay_${Date.now()}`,
+      ...data,
+      created_date: new Date().toISOString(),
+    };
+    
+    setDimensionOverlays(prev => [...prev, overlay]);
+    setShowDimensionDialog(false);
+    setActiveDimension(null);
+    toast.success('Dimension added to canvas');
+    
+    // OPTIONAL: Save to backend in background (user doesn't wait)
     createDimensionMutation.mutate(data);
   }, [createDimensionMutation]);
 
@@ -281,6 +297,11 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
       (type === 'photo' && d.photo_id === id)
     );
   }, [selectedImage, dimensions]);
+
+  // FASE D2.1: Combine saved dimensions + local overlays for rendering
+  const allDimensionsForCanvas = React.useMemo(() => {
+    return [...filteredDimensions, ...dimensionOverlays];
+  }, [filteredDimensions, dimensionOverlays]);
 
   const allValid = React.useMemo(() => {
     return filteredDimensions.every(d => validateDimension(d).isValid);
@@ -474,7 +495,7 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
              return (
                <DimensionCanvas
                  imageUrl={selectedOption?.url}
-                 dimensions={filteredDimensions}
+                 dimensions={allDimensionsForCanvas}
                  activeDimension={activeDimension}
                  onDimensionPlace={handleDimensionPlace}
                  unitSystem={projectUnitSystem}
@@ -497,17 +518,18 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
          )}
        </div>
 
-      {filteredDimensions.length > 0 && (
+      {allDimensionsForCanvas.length > 0 && (
         <div className="flex-shrink-0 max-h-72 overflow-y-auto bg-slate-800 border-t-2 border-slate-700 p-4 sm:p-5">
           <h3 className="font-bold text-sm text-slate-400 uppercase tracking-wider mb-4">
-            Dimensions ({filteredDimensions.length})
+            Dimensions ({allDimensionsForCanvas.length})
           </h3>
           <div className="space-y-2">
-            {filteredDimensions.map(dim => {
+            {allDimensionsForCanvas.map(dim => {
               const validation = validateDimension(dim);
               const hasErrors = !validation.isValid;
               const hasWarnings = validation.hasWarnings;
               const isLocked = lockedMeasurements.has(dim.id);
+              const isOverlay = dim.id?.startsWith('overlay_');
 
               return (
                 <div
@@ -515,11 +537,13 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                   className={`bg-slate-900 rounded-xl p-4 border-2 transition-all ${
                     isLocked ? 'opacity-75' : ''
                   } ${
+                    isOverlay ? 'border-orange-500 bg-orange-500/10' : ''
+                  } ${
                     hasErrors 
                       ? 'border-red-500 bg-red-500/5' 
                       : hasWarnings 
                       ? 'border-yellow-500 bg-yellow-500/5' 
-                      : 'border-slate-700 hover:border-slate-600'
+                      : !isOverlay ? 'border-slate-700 hover:border-slate-600' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -540,7 +564,12 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                             <span className="text-[10px] font-bold text-green-400">Locked</span>
                           </div>
                         )}
-                      </div>
+                        {isOverlay && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 bg-orange-500/20 rounded-full border border-orange-500/40">
+                            <span className="text-[10px] font-bold text-orange-400">Local</span>
+                          </div>
+                        )}
+                        </div>
                       <p className="text-sm text-slate-400 mb-1">
                         {dim.area || 'No area'}
                       </p>
@@ -549,19 +578,28 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      {!isOverlay && (
+                        <Button
+                          onClick={() => toggleLock(dim.id)}
+                          className={`min-h-[48px] min-w-[48px] rounded-xl active:scale-95 transition-all ${
+                            isLocked
+                              ? 'bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/40'
+                              : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400 border border-slate-600'
+                          }`}
+                          title={isLocked ? 'Unlock' : 'Lock'}
+                        >
+                          {isLocked ? <Lock className="w-5 h-5" /> : <LockOpen className="w-5 h-5" />}
+                        </Button>
+                      )}
                       <Button
-                        onClick={() => toggleLock(dim.id)}
-                        className={`min-h-[48px] min-w-[48px] rounded-xl active:scale-95 transition-all ${
-                          isLocked
-                            ? 'bg-green-500/20 hover:bg-green-500/30 text-green-400 border border-green-500/40'
-                            : 'bg-slate-700/50 hover:bg-slate-700 text-slate-400 border border-slate-600'
-                        }`}
-                        title={isLocked ? 'Unlock' : 'Lock'}
-                      >
-                        {isLocked ? <Lock className="w-5 h-5" /> : <LockOpen className="w-5 h-5" />}
-                      </Button>
-                      <Button
-                        onClick={() => deleteDimensionMutation.mutate(dim.id)}
+                        onClick={() => {
+                          if (isOverlay) {
+                            setDimensionOverlays(prev => prev.filter(d => d.id !== dim.id));
+                            toast.success('Local dimension removed');
+                          } else {
+                            deleteDimensionMutation.mutate(dim.id);
+                          }
+                        }}
                         className="bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/40 min-h-[48px] min-w-[48px] rounded-xl active:scale-95"
                       >
                         <Trash2 className="w-5 h-5" />
