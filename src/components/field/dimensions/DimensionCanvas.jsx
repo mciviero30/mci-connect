@@ -44,6 +44,10 @@ export default function DimensionCanvas({
   const [dragStart, setDragStart] = useState(null);
   const lastTapTime = useRef(0);
 
+  // FASE D2.4: Measurement editing state
+  const [selectedDimension, setSelectedDimension] = useState(null);
+  const [editingHandle, setEditingHandle] = useState(null); // 'start' | 'end' | null
+
   // Load image
   useEffect(() => {
     if (!imageUrl) return;
@@ -73,7 +77,8 @@ export default function DimensionCanvas({
     // Draw existing dimensions
     dimensions.forEach(dim => {
       if (!dim.canvas_data) return;
-      drawDimension(ctx, dim);
+      const isSelected = selectedDimension?.id === dim.id;
+      drawDimension(ctx, dim, isSelected);
     });
 
     // FASE D1: Draw markups
@@ -92,11 +97,24 @@ export default function DimensionCanvas({
     }
   }, [image, dimensions, drawingPoints, zoom, markups, markupDrawPoints, activeTool, markupOptions, selectedMarkup]);
 
-  const drawDimension = (ctx, dim) => {
+  const drawDimension = (ctx, dim, isSelected = false) => {
     const { x1, y1, x2, y2, label_x, label_y } = dim.canvas_data;
     const isLocked = lockedMeasurements.has(dim.id);
 
     ctx.save();
+
+    // FASE D2.4: Highlight if selected
+    if (isSelected) {
+      ctx.strokeStyle = '#FFB800';
+      ctx.lineWidth = 6;
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
 
     // Style based on type
     if (dim.dimension_type === 'benchmark') {
@@ -149,6 +167,26 @@ export default function DimensionCanvas({
       ctx.fillStyle = '#000000';
       ctx.font = 'bold 10px Arial';
       ctx.fillText(badgeText, label_x, label_y + 30);
+    }
+
+    // FASE D2.4: Draw handles when selected
+    if (isSelected && !isLocked) {
+      const handleRadius = 12;
+      ctx.fillStyle = '#FFB800';
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 3;
+
+      // Start handle
+      ctx.beginPath();
+      ctx.arc(x1, y1, handleRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // End handle
+      ctx.beginPath();
+      ctx.arc(x2, y2, handleRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
     }
     
     ctx.restore();
@@ -282,6 +320,28 @@ export default function DimensionCanvas({
     return { x, y };
   };
 
+  // FASE D2.4: Check if point is near dimension handle
+  const isPointNearHandle = (point, dim) => {
+    if (!dim.canvas_data) return null;
+    const { x1, y1, x2, y2 } = dim.canvas_data;
+    const HANDLE_THRESHOLD = 20;
+
+    const distToStart = Math.hypot(point.x - x1, point.y - y1);
+    const distToEnd = Math.hypot(point.x - x2, point.y - y2);
+
+    if (distToStart < HANDLE_THRESHOLD) return 'start';
+    if (distToEnd < HANDLE_THRESHOLD) return 'end';
+    return null;
+  };
+
+  // FASE D2.4: Check if point is on dimension line (for selection)
+  const isPointOnDimension = (point, dim) => {
+    if (!dim.canvas_data) return false;
+    const { x1, y1, x2, y2 } = dim.canvas_data;
+    const dist = pointToLineDistance(point, { x: x1, y: y1 }, { x: x2, y: y2 });
+    return dist < 30;
+  };
+
   const isPointInMarkup = (point, markup) => {
     if (!markup.points || markup.points.length < 2) return false;
     const [p1, p2] = markup.points;
@@ -355,10 +415,33 @@ export default function DimensionCanvas({
       return;
     }
 
+    // FASE D2.4: Check if clicking on dimension handle
+    if (!activeTool && selectedDimension) {
+      const handle = isPointNearHandle(point, selectedDimension);
+      if (handle) {
+        setEditingHandle(handle);
+        setDragStart(point);
+        return;
+      }
+    }
+
+    // FASE D2.4: Check if clicking on dimension (selection)
+    if (!activeTool && !activeDimension) {
+      const clickedDimension = dimensions.find(dim => 
+        isPointOnDimension(point, dim) && !lockedMeasurements.has(dim.id)
+      );
+      if (clickedDimension) {
+        setSelectedDimension(clickedDimension);
+        setSelectedMarkup(null);
+        return;
+      }
+    }
+
     // Check if clicking on existing markup (selection)
     const clickedMarkup = markups.find(m => isPointInMarkup(point, m));
     if (clickedMarkup && !activeTool) {
       setSelectedMarkup(clickedMarkup);
+      setSelectedDimension(null);
       setDragStart(point);
       setIsDragging(true);
       return;
@@ -367,6 +450,7 @@ export default function DimensionCanvas({
     // Deselect if clicking empty area
     if (!activeTool && !activeDimension) {
       setSelectedMarkup(null);
+      setSelectedDimension(null);
     }
 
     // FASE D1: Handle markup drawing
@@ -452,8 +536,93 @@ export default function DimensionCanvas({
     }
   };
 
+  // FASE D2.4: Recalculate dimension value from geometry
+  const recalculateDimensionValue = (x1, y1, x2, y2, unitSystem) => {
+    const pixelDistance = Math.hypot(x2 - x1, y2 - y1);
+    
+    // CRITICAL: Need scale factor (assume 1 pixel = 1/16 inch for now)
+    // In production, this should come from blueprint calibration
+    const PIXELS_PER_INCH = 16;
+    
+    if (unitSystem === 'imperial') {
+      const totalInches = pixelDistance / PIXELS_PER_INCH;
+      const feet = Math.floor(totalInches / 12);
+      const remainingInches = totalInches % 12;
+      const inches = Math.floor(remainingInches);
+      const fractionInches = remainingInches - inches;
+      
+      // Convert decimal to fraction
+      let fraction = '0';
+      if (fractionInches > 0) {
+        if (fractionInches < 0.0625) fraction = '0';
+        else if (fractionInches < 0.125) fraction = '1/16';
+        else if (fractionInches < 0.1875) fraction = '1/8';
+        else if (fractionInches < 0.25) fraction = '3/16';
+        else if (fractionInches < 0.3125) fraction = '1/4';
+        else if (fractionInches < 0.375) fraction = '5/16';
+        else if (fractionInches < 0.4375) fraction = '3/8';
+        else if (fractionInches < 0.5) fraction = '7/16';
+        else if (fractionInches < 0.5625) fraction = '1/2';
+        else if (fractionInches < 0.625) fraction = '9/16';
+        else if (fractionInches < 0.6875) fraction = '5/8';
+        else if (fractionInches < 0.75) fraction = '11/16';
+        else if (fractionInches < 0.8125) fraction = '3/4';
+        else if (fractionInches < 0.875) fraction = '13/16';
+        else if (fractionInches < 0.9375) fraction = '7/8';
+        else fraction = '15/16';
+      }
+      
+      return { value_feet: feet, value_inches: inches, value_fraction: fraction };
+    } else {
+      const mm = Math.round(pixelDistance / PIXELS_PER_INCH * 25.4);
+      return { value_mm: mm };
+    }
+  };
+
   // FASE D2.3: Drag to move markup
   const handlePointerMove = (e) => {
+    // FASE D2.4: Drag dimension handle
+    if (editingHandle && selectedDimension && dragStart) {
+      e.preventDefault();
+      const point = getCanvasPoint(e);
+      
+      const { x1, y1, x2, y2 } = selectedDimension.canvas_data;
+      let newX1 = x1, newY1 = y1, newX2 = x2, newY2 = y2;
+
+      if (editingHandle === 'start') {
+        const snap = calculateSnapToAxis({ x: x2, y: y2 }, point);
+        newX1 = snap.point.x;
+        newY1 = snap.point.y;
+      } else {
+        const snap = calculateSnapToAxis({ x: x1, y: y1 }, point);
+        newX2 = snap.point.x;
+        newY2 = snap.point.y;
+      }
+
+      // Recalculate value
+      const newValues = recalculateDimensionValue(newX1, newY1, newX2, newY2, selectedDimension.unit_system);
+      
+      // Update dimension in place
+      const updatedDimension = {
+        ...selectedDimension,
+        canvas_data: {
+          x1: newX1, y1: newY1, x2: newX2, y2: newY2,
+          label_x: (newX1 + newX2) / 2,
+          label_y: (newY1 + newY2) / 2 - 20,
+        },
+        ...newValues,
+      };
+
+      setSelectedDimension(updatedDimension);
+      
+      // Update in parent (local overlay or saved dimension)
+      if (onDimensionUpdate) {
+        onDimensionUpdate(updatedDimension);
+      }
+      
+      return;
+    }
+
     if (!isDragging || !selectedMarkup || !dragStart) return;
 
     e.preventDefault();
@@ -478,6 +647,14 @@ export default function DimensionCanvas({
   };
 
   const handlePointerUp = (e) => {
+    // FASE D2.4: Stop handle editing
+    if (editingHandle) {
+      setEditingHandle(null);
+      setDragStart(null);
+      toast.success('Measurement updated');
+      return;
+    }
+
     setIsDragging(false);
     setDragStart(null);
   };
@@ -565,6 +742,24 @@ export default function DimensionCanvas({
        {activeTool?.startsWith('markup_') && markupDrawPoints.length === 1 && (
          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-3 rounded-full font-bold shadow-2xl animate-pulse">
            👆 Tap to finish
+         </div>
+       )}
+
+       {/* FASE D2.4: Selected dimension actions */}
+       {selectedDimension && !activeTool && !lockedMeasurements.has(selectedDimension.id) && (
+         <div className="absolute top-4 left-4 bg-[#FFB800] text-black px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 font-bold">
+           <span className="text-sm">Measurement selected • Drag handles to adjust</span>
+           <button
+             onClick={() => {
+               if (onDimensionDelete) {
+                 onDimensionDelete(selectedDimension.id);
+               }
+               setSelectedDimension(null);
+             }}
+             className="p-1.5 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+           >
+             <Trash2 className="w-4 h-4 text-white" />
+           </button>
          </div>
        )}
 

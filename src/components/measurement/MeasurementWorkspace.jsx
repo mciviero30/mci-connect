@@ -516,6 +516,21 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                  dimensions={allDimensionsForCanvas}
                  activeDimension={activeDimension}
                  onDimensionPlace={handleDimensionPlace}
+                 onDimensionUpdate={(updated) => {
+                   // FASE D2.4: Update overlay in real-time (no save yet)
+                   setDimensionOverlays(prev => 
+                     prev.map(d => d.id === updated.id ? updated : d)
+                   );
+                 }}
+                 onDimensionDelete={(id) => {
+                   const isOverlay = id?.startsWith('overlay_');
+                   if (isOverlay) {
+                     setDimensionOverlays(prev => prev.filter(d => d.id !== id));
+                     toast.success('Local dimension removed');
+                   } else {
+                     deleteDimensionMutation.mutate(id);
+                   }
+                 }}
                  unitSystem={projectUnitSystem}
                  lockedMeasurements={lockedMeasurements}
                  markups={currentMarkups}
