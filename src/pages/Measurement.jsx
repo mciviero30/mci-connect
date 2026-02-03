@@ -97,7 +97,7 @@ export default function Measurement() {
         <div className="px-3 sm:px-6 md:px-10 py-6 sm:py-8 -mx-3 sm:-mx-4 md:-mx-6 -mt-3 sm:-mt-4 md:-mt-6 mb-6 relative" style={{ background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)' }}>
           {/* Back Button */}
           <Button 
-            onClick={() => navigate(createPageUrl('Dashboard'))}
+            onClick={() => window.location.href = createPageUrl('Dashboard')}
             className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 bg-slate-700/80 hover:bg-slate-600 text-white border border-slate-500/50 shadow-lg backdrop-blur-sm min-h-[40px] sm:min-h-[44px] px-3 sm:px-4 rounded-lg touch-manipulation transition-all"
           >
             <ArrowLeft className="w-4 h-4 mr-1.5 sm:mr-2" />
