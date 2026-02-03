@@ -135,13 +135,7 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
     },
   });
 
-  const handleStartDimension = React.useCallback((type) => {
-    setActiveDimension({
-      dimension_type: type,
-      measurement_type: type === 'horizontal' ? 'FF-FF' : 'BM-C',
-      unit_system: projectUnitSystem,
-    });
-  }, [projectUnitSystem]);
+
 
   const handleDimensionPlace = React.useCallback((canvasData) => {
     setEditingDimension(prev => ({
@@ -160,7 +154,20 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
 
   const handleToolSelect = React.useCallback((tool) => {
     setActiveTool(prev => prev === tool ? null : tool);
-  }, []);
+    
+    // Convert measurement tool to activeDimension
+    const measurementTypes = ['FF-FF', 'CL-CL', 'BM-FF-UP', 'BM-FF-DOWN', 'BM-C'];
+    if (measurementTypes.includes(tool)) {
+      const dimensionType = tool.startsWith('BM-') ? 'vertical' : 'horizontal';
+      setActiveDimension({
+        dimension_type: dimensionType,
+        measurement_type: tool,
+        unit_system: projectUnitSystem,
+      });
+    } else {
+      setActiveDimension(null);
+    }
+  }, [projectUnitSystem]);
 
   const handleAddMarkup = React.useCallback((markup) => {
     setMarkupsByPlan(prev => ({
