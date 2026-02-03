@@ -31,6 +31,13 @@ export default function DimensionCanvas({
   
   // FASE D1: Markup drawing state
   const [markupDrawPoints, setMarkupDrawPoints] = useState([]);
+  
+  // FASE D2: Markup editing state
+  const [selectedMarkup, setSelectedMarkup] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState(null);
+  const [editingText, setEditingText] = useState(null);
+  const lastTapTime = useRef(0);
 
   // Load image
   useEffect(() => {
@@ -66,7 +73,7 @@ export default function DimensionCanvas({
 
     // FASE D1: Draw markups
     markups.forEach(markup => {
-      drawMarkup(ctx, markup);
+      drawMarkup(ctx, markup, selectedMarkup?.id === markup.id);
     });
 
     // Draw active drawing
@@ -272,21 +279,123 @@ export default function DimensionCanvas({
     return { snapped: false, point: testPoint };
   };
 
-  const handleCanvasClick = (e) => {
+  // FASE D2: Unified pointer handler (mouse + touch)
+  const getCanvasPoint = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+    
+    const x = (clientX - rect.left) * (canvas.width / rect.width);
+    const y = (clientY - rect.top) * (canvas.height / rect.height);
+    return { x, y };
+  };
 
-    // FASE D1: Handle markup clicks
+  const isPointInMarkup = (point, markup) => {
+    if (!markup.points || markup.points.length < 2) return false;
+    const [p1, p2] = markup.points;
+    const threshold = 20;
+
+    if (markup.type === 'line' || markup.type === 'highlight') {
+      const dist = pointToLineDistance(point, p1, p2);
+      return dist < threshold;
+    } else if (markup.type === 'circle') {
+      const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+      const dist = Math.sqrt((point.x - p1.x) ** 2 + (point.y - p1.y) ** 2);
+      return Math.abs(dist - radius) < threshold;
+    } else if (markup.type === 'rectangle') {
+      const minX = Math.min(p1.x, p2.x);
+      const maxX = Math.max(p1.x, p2.x);
+      const minY = Math.min(p1.y, p2.y);
+      const maxY = Math.max(p1.y, p2.y);
+      return point.x >= minX - threshold && point.x <= maxX + threshold &&
+             point.y >= minY - threshold && point.y <= maxY + threshold;
+    }
+    return false;
+  };
+
+  const pointToLineDistance = (point, lineStart, lineEnd) => {
+    const A = point.x - lineStart.x;
+    const B = point.y - lineStart.y;
+    const C = lineEnd.x - lineStart.x;
+    const D = lineEnd.y - lineStart.y;
+
+    const dot = A * C + B * D;
+    const lenSq = C * C + D * D;
+    const param = lenSq !== 0 ? dot / lenSq : -1;
+
+    let xx, yy;
+
+    if (param < 0) {
+      xx = lineStart.x;
+      yy = lineStart.y;
+    } else if (param > 1) {
+      xx = lineEnd.x;
+      yy = lineEnd.y;
+    } else {
+      xx = lineStart.x + param * C;
+      yy = lineStart.y + param * D;
+    }
+
+    const dx = point.x - xx;
+    const dy = point.y - yy;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handlePointerDown = (e) => {
+    e.preventDefault();
+    const point = getCanvasPoint(e);
+    
+    // FASE D2.3: Double tap detection for text editing
+    const now = Date.now();
+    const timeSinceLast = now - lastTapTime.current;
+    lastTapTime.current = now;
+
+    // Double tap on markup → edit text
+    if (timeSinceLast < 300 && selectedMarkup?.type === 'text') {
+      const textContent = prompt('Edit text:', selectedMarkup.text || '');
+      if (textContent !== null) {
+        const updatedMarkup = { ...selectedMarkup, text: textContent };
+        onAddMarkup(updatedMarkup); // Replace
+        setSelectedMarkup(null);
+      }
+      return;
+    }
+
+    // Check if clicking on existing markup (selection)
+    const clickedMarkup = markups.find(m => isPointInMarkup(point, m));
+    if (clickedMarkup && !activeTool) {
+      setSelectedMarkup(clickedMarkup);
+      setDragStart(point);
+      setIsDragging(true);
+      return;
+    }
+
+    // FASE D1: Handle markup drawing
     if (activeTool?.startsWith('markup_')) {
+      if (activeTool === 'markup_text') {
+        const textContent = prompt('Enter text:');
+        if (textContent) {
+          const newMarkup = {
+            id: `markup_${Date.now()}`,
+            type: 'text',
+            points: [point, point],
+            color: markupOptions.color,
+            thickness: markupOptions.thickness,
+            text: textContent,
+          };
+          onAddMarkup(newMarkup);
+        }
+        return;
+      }
+
       if (markupDrawPoints.length === 0) {
-        setMarkupDrawPoints([{ x, y }]);
+        setMarkupDrawPoints([point]);
       } else if (markupDrawPoints.length === 1) {
         const newMarkup = {
           id: `markup_${Date.now()}`,
           type: activeTool.replace('markup_', ''),
-          points: [markupDrawPoints[0], { x, y }],
+          points: [markupDrawPoints[0], point],
           color: markupOptions.color,
           thickness: markupOptions.thickness,
         };
@@ -297,29 +406,26 @@ export default function DimensionCanvas({
       return;
     }
 
+    // Dimension drawing
     if (!activeDimension) return;
 
-    let finalPoint = { x, y };
+    let finalPoint = point;
     let axis = null;
 
-    // First point: just place it
     if (drawingPoints.length === 0) {
       setDrawingPoints([finalPoint]);
       setSnappedAxis(null);
       return;
     }
 
-    // Second point: apply snap logic
     if (drawingPoints.length === 1) {
       const p1 = drawingPoints[0];
 
-      // Try axis snap first
       const axisSnap = calculateSnapToAxis(p1, finalPoint);
       if (axisSnap.snapped) {
         finalPoint = axisSnap.point;
         axis = axisSnap.axis;
       } else {
-        // Try point snap if no axis snap
         const pointSnap = calculateSnapToPoint(finalPoint, dimensions);
         if (pointSnap.snapped) {
           finalPoint = pointSnap.point;
@@ -328,7 +434,6 @@ export default function DimensionCanvas({
 
       const newPoints = [p1, finalPoint];
 
-      // Complete dimension placement
       const label_x = (newPoints[0].x + newPoints[1].x) / 2;
       const label_y = (newPoints[0].y + newPoints[1].y) / 2 - 20;
 
@@ -347,6 +452,35 @@ export default function DimensionCanvas({
       setDrawingPoints([]);
       setSnappedAxis(null);
     }
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging || !selectedMarkup || !dragStart) return;
+
+    e.preventDefault();
+    const point = getCanvasPoint(e);
+    const deltaX = point.x - dragStart.x;
+    const deltaY = point.y - dragStart.y;
+
+    // Update markup position
+    const movedMarkup = {
+      ...selectedMarkup,
+      points: selectedMarkup.points.map(p => ({
+        x: p.x + deltaX,
+        y: p.y + deltaY
+      }))
+    };
+
+    // Remove old, add updated
+    onRemoveMarkup(selectedMarkup.id);
+    onAddMarkup(movedMarkup);
+    setSelectedMarkup(movedMarkup);
+    setDragStart(point);
+  };
+
+  const handlePointerUp = (e) => {
+    setIsDragging(false);
+    setDragStart(null);
   };
 
   const resetView = () => {
@@ -385,13 +519,20 @@ export default function DimensionCanvas({
       </div>
 
       {/* Canvas */}
-      <div className="w-full h-full overflow-auto" style={{ cursor: activeDimension ? 'crosshair' : 'default' }}>
+      <div className="w-full h-full overflow-auto" style={{ 
+        cursor: activeDimension || activeTool ? 'crosshair' : (selectedMarkup ? 'move' : 'default'),
+        touchAction: 'none'
+      }}>
         <canvas
           ref={canvasRef}
-          onClick={handleCanvasClick}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
           style={{
             transform: `scale(${zoom}) translate(${panOffset.x}px, ${panOffset.y}px)`,
             transformOrigin: 'top left',
+            touchAction: 'none',
           }}
           className="max-w-full h-auto"
         />
@@ -427,12 +568,28 @@ export default function DimensionCanvas({
            👆 Tap to finish
          </div>
        )}
+
+       {/* FASE D2.3: Selected markup actions */}
+       {selectedMarkup && !activeTool && (
+         <div className="absolute top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-2">
+           <span className="text-sm font-semibold">Selected</span>
+           <button
+             onClick={() => {
+               onRemoveMarkup(selectedMarkup.id);
+               setSelectedMarkup(null);
+             }}
+             className="p-1.5 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+           >
+             <Trash2 className="w-4 h-4" />
+           </button>
+         </div>
+       )}
     </div>
   );
 }
 
-// FASE D1: Draw markup on canvas
-function drawMarkup(ctx, markup) {
+// FASE D1 + D2: Draw markup on canvas with selection
+function drawMarkup(ctx, markup, isSelected = false) {
   if (!markup.points || markup.points.length < 2) return;
 
   ctx.save();
@@ -443,6 +600,7 @@ function drawMarkup(ctx, markup) {
 
   const [p1, p2] = markup.points;
 
+  // Draw markup shape
   ctx.beginPath();
   
   if (markup.type === 'line' || markup.type === 'highlight') {
@@ -456,6 +614,34 @@ function drawMarkup(ctx, markup) {
   } else if (markup.type === 'rectangle') {
     ctx.rect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
     ctx.stroke();
+  } else if (markup.type === 'text') {
+    ctx.globalAlpha = 1;
+    ctx.font = 'bold 24px Arial';
+    ctx.fillStyle = markup.color;
+    ctx.fillText(markup.text || '', p1.x, p1.y);
+  }
+
+  // FASE D2.3: Selection bounding box
+  if (isSelected) {
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#3B82F6';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([5, 5]);
+
+    const minX = Math.min(p1.x, p2.x) - 10;
+    const minY = Math.min(p1.y, p2.y) - 10;
+    const maxX = Math.max(p1.x, p2.x) + 10;
+    const maxY = Math.max(p1.y, p2.y) + 10;
+
+    ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
+
+    // Corner handles
+    ctx.fillStyle = '#3B82F6';
+    [
+      [minX, minY], [maxX, minY], [minX, maxY], [maxX, maxY]
+    ].forEach(([hx, hy]) => {
+      ctx.fillRect(hx - 4, hy - 4, 8, 8);
+    });
   }
 
   ctx.restore();
