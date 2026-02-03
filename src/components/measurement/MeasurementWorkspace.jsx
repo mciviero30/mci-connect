@@ -141,29 +141,36 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
 
 
   const handleDimensionPlace = React.useCallback((canvasData) => {
-    setEditingDimension(prev => ({
+    // FASE D2.2: Store canvas geometry for overlay rendering
+    const [type, id] = selectedImage.split('_');
+    setEditingDimension({
       ...activeDimension,
       canvas_data: canvasData,
-    }));
+      blueprint_id: type === 'plan' ? id : null,
+      photo_id: type === 'photo' ? id : null,
+    });
     setShowDimensionDialog(true);
-  }, [activeDimension]);
+  }, [activeDimension, selectedImage]);
 
   const handleSaveDimension = React.useCallback((data) => {
-    // FASE D2.1: Add to local overlays immediately (instant visual feedback)
+    // FASE D2.2: Merge canvas geometry + user values for instant rendering
     const overlay = {
       id: `overlay_${Date.now()}`,
-      ...data,
+      ...editingDimension,  // Includes canvas_data, blueprint_id, photo_id, dimension_type, measurement_type, unit_system
+      ...data,  // User-entered values from dialog
       created_date: new Date().toISOString(),
+      measured_by_name: user?.full_name || 'You',
     };
     
     setDimensionOverlays(prev => [...prev, overlay]);
     setShowDimensionDialog(false);
+    setEditingDimension(null);
     setActiveDimension(null);
-    toast.success('Dimension added to canvas');
+    toast.success('Measurement rendered on canvas');
     
     // OPTIONAL: Save to backend in background (user doesn't wait)
     createDimensionMutation.mutate(data);
-  }, [createDimensionMutation]);
+  }, [editingDimension, user, createDimensionMutation]);
 
   // FASE D1: Markup handlers
   const currentMarkups = markupsByPlan[selectedImage] || [];
@@ -299,9 +306,19 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   }, [selectedImage, dimensions]);
 
   // FASE D2.1: Combine saved dimensions + local overlays for rendering
+  // Filter overlays to current selected image
+  const filteredOverlays = React.useMemo(() => {
+    if (!selectedImage) return [];
+    const [type, id] = selectedImage.split('_');
+    return dimensionOverlays.filter(d => 
+      (type === 'plan' && d.blueprint_id === id) || 
+      (type === 'photo' && d.photo_id === id)
+    );
+  }, [selectedImage, dimensionOverlays]);
+
   const allDimensionsForCanvas = React.useMemo(() => {
-    return [...filteredDimensions, ...dimensionOverlays];
-  }, [filteredDimensions, dimensionOverlays]);
+    return [...filteredDimensions, ...filteredOverlays];
+  }, [filteredDimensions, filteredOverlays]);
 
   const allValid = React.useMemo(() => {
     return filteredDimensions.every(d => validateDimension(d).isValid);
