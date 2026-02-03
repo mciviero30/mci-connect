@@ -430,3 +430,73 @@ export default function DimensionCanvas({
     </div>
   );
 }
+
+// FASE D1: Draw markup on canvas
+function drawMarkup(ctx, markup) {
+  if (!markup.points || markup.points.length < 2) return;
+
+  ctx.save();
+  ctx.strokeStyle = markup.color;
+  ctx.fillStyle = markup.color;
+  ctx.lineWidth = markup.thickness;
+  ctx.globalAlpha = markup.type === 'highlight' ? 0.3 : 1;
+
+  const [p1, p2] = markup.points;
+
+  ctx.beginPath();
+  
+  if (markup.type === 'line' || markup.type === 'highlight') {
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  } else if (markup.type === 'circle') {
+    const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+    ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  } else if (markup.type === 'rectangle') {
+    ctx.rect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+// FASE D1: Draw active markup preview
+function drawActiveMarkup(ctx, points, activeTool, options) {
+  if (points.length < 1) return;
+
+  ctx.save();
+  ctx.strokeStyle = options.color;
+  ctx.fillStyle = options.color;
+  ctx.lineWidth = options.thickness;
+  ctx.setLineDash([5, 5]);
+  ctx.globalAlpha = activeTool === 'markup_highlight' ? 0.3 : 0.7;
+
+  const p1 = points[0];
+
+  if (points.length === 2) {
+    const p2 = points[1];
+
+    ctx.beginPath();
+    
+    if (activeTool === 'markup_line' || activeTool === 'markup_highlight') {
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+    } else if (activeTool === 'markup_circle') {
+      const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+      ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+    } else if (activeTool === 'markup_rectangle') {
+      ctx.rect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+      ctx.stroke();
+    }
+  } else {
+    // First click - show indicator
+    ctx.beginPath();
+    ctx.arc(p1.x, p1.y, 8, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
