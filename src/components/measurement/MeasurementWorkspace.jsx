@@ -199,6 +199,13 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
 
 
 
+  // Auto-select first plan when plans are loaded
+  useEffect(() => {
+    if (plans.length > 0 && !selectedImage) {
+      setSelectedImage(`plan_${plans[0].id}`);
+    }
+  }, [plans, selectedImage]);
+
   const filteredDimensions = React.useMemo(() => {
     if (!selectedImage) return dimensions;
     const [type, id] = selectedImage.split('_');
