@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Plus, Ruler, Download, Trash2, CheckCircle2, AlertTriangle, Upload, Loader2, X, Lock, LockOpen } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -22,7 +24,8 @@ import PDFProcessor from '@/components/field/PDFProcessor';
 // Separado completamente de MCI Field
 // ============================================
 
-const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, jobName }) {
+const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, jobName, onExit }) {
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState(null);
   const [showDimensionDialog, setShowDimensionDialog] = useState(false);
   const [activeDimension, setActiveDimension] = useState(null);
@@ -35,6 +38,8 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [lockedMeasurements, setLockedMeasurements] = useState(new Set());
   const [processingPdf, setProcessingPdf] = useState(null);
+  const [showExitWarning, setShowExitWarning] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState(null);
   const canvasRef = useRef(null);
 
   const queryClient = useQueryClient();
@@ -238,6 +243,49 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
     });
   }, []);
 
+  // FASE C3.1: Detect unlocked measurements in progress
+  const hasUnlockedMeasurements = React.useMemo(() => {
+    if (dimensions.length === 0) return false;
+    return dimensions.some(d => !lockedMeasurements.has(d.id));
+  }, [dimensions, lockedMeasurements]);
+
+  // FASE C3.1: Browser refresh/close protection
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnlockedMeasurements) {
+        e.preventDefault();
+        e.returnValue = 'You have measurements in progress. Leaving may lose your work.';
+        return e.returnValue;
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnlockedMeasurements]);
+
+  // FASE C3.1: Handle internal navigation with confirmation
+  const handleNavigation = React.useCallback((action) => {
+    if (hasUnlockedMeasurements) {
+      setPendingNavigation(() => action);
+      setShowExitWarning(true);
+    } else {
+      action();
+    }
+  }, [hasUnlockedMeasurements]);
+
+  const confirmNavigation = React.useCallback(() => {
+    if (pendingNavigation) {
+      pendingNavigation();
+    }
+    setShowExitWarning(false);
+    setPendingNavigation(null);
+  }, [pendingNavigation]);
+
+  const cancelNavigation = React.useCallback(() => {
+    setShowExitWarning(false);
+    setPendingNavigation(null);
+  }, []);
+
   return (
     <div className="h-full flex flex-col bg-slate-900">
       <div className="flex-shrink-0 p-4 sm:p-6 bg-slate-800 border-b border-slate-700">
@@ -250,6 +298,14 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
           </div>
 
           <div className="flex items-center gap-3">
+            <Button
+              onClick={() => handleNavigation(() => onExit ? onExit() : navigate(-1))}
+              variant="outline"
+              className="bg-slate-700 hover:bg-slate-600 text-white border-slate-600 min-h-[52px] font-semibold"
+            >
+              ← Back
+            </Button>
+
             <div className="flex bg-slate-900 rounded-xl p-1 border border-slate-700">
               <button
                 onClick={() => setProjectUnitSystem('imperial')}
@@ -290,7 +346,13 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
             </p>
           )}
           <div className="flex gap-3">
-            <Select value={selectedImage || ''} onValueChange={setSelectedImage} className="flex-1">
+            <Select 
+              value={selectedImage || ''} 
+              onValueChange={(newValue) => {
+                handleNavigation(() => setSelectedImage(newValue));
+              }}
+              className="flex-1"
+            >
               <SelectTrigger className="min-h-[56px] bg-slate-900 border-slate-700 text-white font-medium rounded-xl">
                 <SelectValue placeholder="Select drawing to measure..." />
               </SelectTrigger>
@@ -476,6 +538,31 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
           onCancel={() => setProcessingPdf(null)}
         />
       )}
+
+      {/* FASE C3.1: Exit Warning Dialog */}
+      <AlertDialog open={showExitWarning} onOpenChange={setShowExitWarning}>
+        <AlertDialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-900 dark:text-white">
+              Measurements in progress
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
+              You have measurements in progress. Leaving may lose your work. Are you sure you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={cancelNavigation}>
+              Stay
+            </Button>
+            <Button 
+              onClick={confirmNavigation}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Leave anyway
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={showUploadPlan} onOpenChange={setShowUploadPlan}>
         <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">

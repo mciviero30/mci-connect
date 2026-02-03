@@ -67,6 +67,7 @@ export default function Measurement() {
       <MeasurementWorkspace
         jobId={selectedJobId}
         jobName={selectedJob?.name || selectedJob?.job_name_field}
+        onExit={() => setSelectedJobId(null)}
       />
     );
   }
