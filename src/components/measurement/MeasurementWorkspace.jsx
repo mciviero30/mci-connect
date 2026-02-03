@@ -180,9 +180,9 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
 
 
   const imageOptions = React.useMemo(() => [
-    ...plans.map(p => ({
+    ...plans.map((p, index) => ({
       value: `plan_${p.id}`,
-      label: `Plan: ${p.name}`,
+      label: `Page ${index + 1} — ${p.name}`,
       url: p.image_url || p.file_url,
       type: 'plan',
       fileType: 'image',
