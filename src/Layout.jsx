@@ -1352,15 +1352,13 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           <PermissionsProvider>
             <UIProvider>
               <InvitationGate user={user}>
-                <EmployeeDirectoryGuard user={user}>
-                  <AgreementGate>
-                    <TaxProfileGate>
-                      <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                        {children}
-                      </LayoutContentWrapper>
-                    </TaxProfileGate>
-                  </AgreementGate>
-                </EmployeeDirectoryGuard>
+                <AgreementGate>
+                  <TaxProfileGate>
+                    <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                      {children}
+                    </LayoutContentWrapper>
+                  </TaxProfileGate>
+                </AgreementGate>
               </InvitationGate>
             </UIProvider>
           </PermissionsProvider>
