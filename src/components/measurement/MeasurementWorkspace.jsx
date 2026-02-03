@@ -283,11 +283,17 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
           </div>
         </div>
 
-        <div className="mt-5 flex gap-3">
-          <Select value={selectedImage || ''} onValueChange={setSelectedImage} className="flex-1">
-            <SelectTrigger className="min-h-[56px] bg-slate-900 border-slate-700 text-white font-medium rounded-xl">
-              <SelectValue placeholder="Select drawing to measure..." />
-            </SelectTrigger>
+        <div className="mt-5 flex flex-col gap-2">
+          {plans.length > 1 && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 px-1">
+              📄 PDF procesado en {plans.length} páginas
+            </p>
+          )}
+          <div className="flex gap-3">
+            <Select value={selectedImage || ''} onValueChange={setSelectedImage} className="flex-1">
+              <SelectTrigger className="min-h-[56px] bg-slate-900 border-slate-700 text-white font-medium rounded-xl">
+                <SelectValue placeholder="Select drawing to measure..." />
+              </SelectTrigger>
             <SelectContent 
               className="bg-slate-900 border-slate-700 max-h-[60vh]"
               position="popper"
@@ -306,13 +312,14 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
               </div>
             </SelectContent>
           </Select>
-          <Button
-            onClick={() => setShowUploadPlan(true)}
-            className="bg-orange-600 hover:bg-orange-700 text-white font-bold min-h-[56px] px-5 rounded-xl shadow-lg active:scale-95 transition-transform"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            <span className="hidden sm:inline">Upload</span>
-          </Button>
+            <Button
+              onClick={() => setShowUploadPlan(true)}
+              className="bg-orange-600 hover:bg-orange-700 text-white font-bold min-h-[56px] px-5 rounded-xl shadow-lg active:scale-95 transition-transform"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              <span className="hidden sm:inline">Upload</span>
+            </Button>
+          </div>
         </div>
 
         <div className="mt-4">
