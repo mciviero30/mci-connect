@@ -155,6 +155,35 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
     createDimensionMutation.mutate(data);
   }, [createDimensionMutation]);
 
+  // FASE D1: Markup handlers
+  const currentMarkups = markupsByPlan[selectedImage] || [];
+
+  const handleToolSelect = React.useCallback((tool) => {
+    setActiveTool(prev => prev === tool ? null : tool);
+  }, []);
+
+  const handleAddMarkup = React.useCallback((markup) => {
+    setMarkupsByPlan(prev => ({
+      ...prev,
+      [selectedImage]: [...(prev[selectedImage] || []), markup]
+    }));
+  }, [selectedImage]);
+
+  const handleRemoveMarkup = React.useCallback((markupId) => {
+    setMarkupsByPlan(prev => ({
+      ...prev,
+      [selectedImage]: (prev[selectedImage] || []).filter(m => m.id !== markupId)
+    }));
+  }, [selectedImage]);
+
+  const handleClearMarkups = React.useCallback(() => {
+    setMarkupsByPlan(prev => ({
+      ...prev,
+      [selectedImage]: []
+    }));
+    toast.success('All markups cleared');
+  }, [selectedImage]);
+
   const handleExportPDF = React.useCallback(() => {
     if (dimensions.length === 0) {
       toast.error('No dimensions to export');
