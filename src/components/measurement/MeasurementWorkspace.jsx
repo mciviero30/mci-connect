@@ -15,6 +15,7 @@ import MeasurementExportDialog from '@/components/field/MeasurementExportDialog'
 import { validateDimension } from '@/components/field/dimensions/DimensionValidation';
 import { FIELD_STABLE_QUERY_CONFIG } from '@/components/field/config/fieldQueryConfig';
 import { format } from 'date-fns';
+import PDFProcessor from '@/components/field/PDFProcessor';
 
 // ============================================
 // MEASUREMENT DOMAIN - AUTÓNOMO
@@ -32,8 +33,8 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   const [newPlan, setNewPlan] = useState({ name: '', file: null });
   const [creditError, setCreditError] = useState(null);
   const [showExportDialog, setShowExportDialog] = useState(false);
-  const [pdfCanvas, setPdfCanvas] = useState(null);
   const [lockedMeasurements, setLockedMeasurements] = useState(new Set());
+  const [processingPdf, setProcessingPdf] = useState(null);
   const canvasRef = useRef(null);
 
   const queryClient = useQueryClient();
@@ -176,105 +177,27 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
     createPlanMutation.mutate(payload);
   }, [newPlan, jobId, plans.length, createPlanMutation]);
 
-  const loadPdfWithPdfJs = React.useCallback(async (pdfUrl) => {
-    try {
-      if (!window.pdfjsLib) {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        script.async = true;
-        await new Promise((resolve, reject) => {
-          script.onload = resolve;
-          script.onerror = () => reject(new Error('Failed to load PDF.js'));
-          document.head.appendChild(script);
-        });
-        
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        if (window.pdfjsLib) {
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        }
-      }
 
-      if (!window.pdfjsLib) {
-        throw new Error('PDF.js library not available');
-      }
-
-      const loadingTask = window.pdfjsLib.getDocument(pdfUrl);
-      const pdf = await loadingTask.promise;
-
-      const scale = 2.0;
-      const canvases = [];
-      
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale });
-
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-
-        await page.render({
-          canvasContext: context,
-          viewport: viewport
-        }).promise;
-
-        canvases.push(canvas);
-      }
-
-      const totalHeight = canvases.reduce((sum, c) => sum + c.height, 0);
-      const maxWidth = Math.max(...canvases.map(c => c.width));
-
-      const combinedCanvas = document.createElement('canvas');
-      combinedCanvas.width = maxWidth;
-      combinedCanvas.height = totalHeight;
-      const ctx = combinedCanvas.getContext('2d');
-
-      let currentY = 0;
-      canvases.forEach(canvas => {
-        ctx.drawImage(canvas, 0, currentY);
-        currentY += canvas.height;
-      });
-
-      const imageDataUrl = combinedCanvas.toDataURL('image/jpeg', 0.92);
-      setPdfCanvas(imageDataUrl);
-    } catch (error) {
-      console.error('Error loading PDF:', error);
-      toast.error('Failed to load PDF for measurement');
-    }
-  }, []);
 
   const imageOptions = React.useMemo(() => [
-    ...plans.map(p => {
-      const isPDF = p.file_url?.toLowerCase?.().endsWith('.pdf');
-      return {
-        value: `plan_${p.id}`,
-        label: `Plan: ${p.name}`,
-        url: isPDF ? p.file_url : (p.image_url || p.file_url),
-        type: 'plan',
-        fileType: isPDF ? 'pdf' : 'image',
-        isPDF,
-        id: p.id,
-      };
-    }),
+    ...plans.map(p => ({
+      value: `plan_${p.id}`,
+      label: `Plan: ${p.name}`,
+      url: p.image_url || p.file_url,
+      type: 'plan',
+      fileType: 'image',
+      id: p.id,
+    })),
     ...photos.map(p => ({ 
       value: `photo_${p.id}`, 
       label: `Photo: ${p.caption || 'Untitled'}`, 
       url: p.photo_url, 
       type: 'photo', 
-      fileType: 'image', 
-      isPDF: false 
+      fileType: 'image'
     })),
   ], [plans, photos]);
 
-  useEffect(() => {
-    if (selectedImage && !pdfCanvas) {
-      const selectedOption = imageOptions.find(o => o.value === selectedImage);
-      if (selectedOption?.isPDF) {
-        loadPdfWithPdfJs(selectedOption.url);
-      }
-    }
-  }, [selectedImage, imageOptions, pdfCanvas, loadPdfWithPdfJs]);
+
 
   const filteredDimensions = React.useMemo(() => {
     if (!selectedImage) return dimensions;
@@ -368,14 +291,9 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                   <SelectItem 
                     key={opt.value} 
                     value={opt.value}
-                    disabled={opt.isPDF}
-                    className={`py-3 px-4 min-h-[52px] text-base ${
-                      opt.isPDF 
-                        ? 'text-slate-600 cursor-not-allowed opacity-50' 
-                        : 'text-white hover:bg-slate-800'
-                    }`}
+                    className="py-3 px-4 min-h-[52px] text-base text-white hover:bg-slate-800"
                   >
-                    {opt.isPDF ? '📄 (view only)' : (opt.type === 'plan' ? '📐' : '📷')} {opt.label}
+                    {opt.type === 'plan' ? '📐' : '📷'} {opt.label}
                   </SelectItem>
                 ))}
               </div>
@@ -417,7 +335,7 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
 
              return (
                <DimensionCanvas
-                 imageUrl={selectedOption?.isPDF ? pdfCanvas : selectedOption?.url}
+                 imageUrl={selectedOption?.url}
                  dimensions={filteredDimensions}
                  activeDimension={activeDimension}
                  onDimensionPlace={handleDimensionPlace}
@@ -532,6 +450,19 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
         measurementSessionId={null}
       />
 
+      {processingPdf && (
+        <PDFProcessor
+          pdfFile={processingPdf}
+          jobId={jobId}
+          onComplete={(count) => {
+            toast.success(`${count} plans created from PDF`);
+            setProcessingPdf(null);
+            queryClient.invalidateQueries({ queryKey: ['measurement-plans', jobId] });
+          }}
+          onCancel={() => setProcessingPdf(null)}
+        />
+      )}
+
       <Dialog open={showUploadPlan} onOpenChange={setShowUploadPlan}>
         <DialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
           <DialogHeader>
@@ -599,6 +530,30 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                           const file = e.target.files[0];
                           if (!file) return;
 
+                          // Check if PDF - route to PDFProcessor (same as Field)
+                          if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                            setUploading(true);
+                            setCreditError(null);
+                            try {
+                              const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                              setUploading(false);
+                              setShowUploadPlan(false);
+                              setNewPlan({ name: '', file: null });
+                              setProcessingPdf(file_url);
+                              toast.success('PDF uploaded - processing...');
+                            } catch (error) {
+                              console.error('[PDF Upload] Error:', error);
+                              const errorCode = error?.status || error?.code;
+                              if (errorCode === 402 || error?.message?.includes('credit')) {
+                                setCreditError('integration_credits_limit_reached');
+                              }
+                              toast.error(error?.message || 'PDF upload failed');
+                              setUploading(false);
+                            }
+                            return;
+                          }
+
+                          // Images: continue with current flow
                           setUploading(true);
                           setCreditError(null);
                           try {
