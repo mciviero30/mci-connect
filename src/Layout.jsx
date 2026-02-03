@@ -286,7 +286,7 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
                         </button>
 
                         {isExpanded && (
-                          <div className="space-y-1 pl-2">
+                          <div className="space-y-1 pl-6">
                             {item.children.map((child) => {
                               const isActive = location.pathname === child.url;
                               const childItemIndex = itemIndex++;
@@ -311,9 +311,13 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
                                       data-sidebar-item
                                       tabIndex={0}>
                                       <child.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
-                                        isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400'
-                                      }`} />
-                                      <span className="font-medium text-sm">
+                                        isActive ? 'text-white' : 'text-[#FF8C00]'
+                                      }`} style={{ 
+                                        filter: isActive ? 'none' : 'drop-shadow(0 0 8px rgba(255, 140, 0, 0.3))'
+                                      }} />
+                                      <span className={`font-medium text-sm ${
+                                        isActive ? '' : 'bg-gradient-to-r from-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent'
+                                      }`}>
                                         {child.title}
                                       </span>
                                       {isActive && (
