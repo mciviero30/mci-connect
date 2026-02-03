@@ -184,6 +184,12 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
     toast.success('All markups cleared');
   }, [selectedImage]);
 
+  // FASE C3.1: Detect unlocked measurements in progress (must be before handleExportPDF)
+  const hasUnlockedMeasurements = React.useMemo(() => {
+    if (dimensions.length === 0) return false;
+    return dimensions.some(d => !lockedMeasurements.has(d.id));
+  }, [dimensions, lockedMeasurements]);
+
   const handleExportPDF = React.useCallback(() => {
     if (dimensions.length === 0) {
       toast.error('No dimensions to export');
@@ -291,12 +297,6 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
       return newSet;
     });
   }, []);
-
-  // FASE C3.1: Detect unlocked measurements in progress
-  const hasUnlockedMeasurements = React.useMemo(() => {
-    if (dimensions.length === 0) return false;
-    return dimensions.some(d => !lockedMeasurements.has(d.id));
-  }, [dimensions, lockedMeasurements]);
 
   // FASE C3.1: Browser refresh/close protection
   useEffect(() => {
