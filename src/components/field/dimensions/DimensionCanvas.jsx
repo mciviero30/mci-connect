@@ -130,14 +130,26 @@ export default function DimensionCanvas({
       drawArrow(ctx, x2, y2, x1, y1);
     }
     
-    // Draw label
+    // Draw label with value
     const label = formatDimensionLabel(dim);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-    ctx.fillRect(label_x - 50, label_y - 15, 100, 30);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+    ctx.fillRect(label_x - 60, label_y - 15, 120, 30);
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 14px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(label, label_x, label_y + 5);
+
+    // FASE D2.3: Draw construction state badge below
+    if (dim.construction_state) {
+      const badgeText = dim.construction_state === 'stud_only' ? 'STUD' : 'DW';
+      const badgeColor = dim.construction_state === 'stud_only' ? '#F59E0B' : '#10B981';
+      
+      ctx.fillStyle = badgeColor;
+      ctx.fillRect(label_x - 25, label_y + 18, 50, 18);
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 10px Arial';
+      ctx.fillText(badgeText, label_x, label_y + 30);
+    }
     
     ctx.restore();
   };
@@ -209,11 +221,12 @@ export default function DimensionCanvas({
       if (frac !== '0') {
         label = `${ft}' ${inches} ${frac}"`;
       }
-      label += ` (${dim.measurement_type})`;
+      // FASE D2.3: Show measurement type in label
+      label += ` ${dim.measurement_type}`;
       return label;
     } else {
       const mm = dim.value_mm || 0;
-      return `${mm}mm (${dim.measurement_type})`;
+      return `${mm}mm ${dim.measurement_type}`;
     }
   };
 

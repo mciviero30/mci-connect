@@ -10,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 const MEASUREMENT_TYPES = [
   { type: 'FF-FF', label: 'FF-FF', icon: Ruler },
   { type: 'CL-CL', label: 'CL-CL', icon: Ruler },
+  { type: 'FF-CL', label: 'FF-CL', icon: Ruler },
+  { type: 'CL-FF', label: 'CL-FF', icon: Ruler },
+  { type: 'SFF-SFF', label: 'SFF-SFF', icon: Ruler },
   { type: 'BM-FF-UP', label: 'BM-FF ↑', icon: Ruler },
   { type: 'BM-FF-DOWN', label: 'BM-FF ↓', icon: Ruler },
   { type: 'BM-C', label: 'BM-C', icon: Ruler },
