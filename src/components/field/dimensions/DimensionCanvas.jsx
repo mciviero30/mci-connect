@@ -1,7 +1,13 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RotateCcw, Save, Trash2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+// ============================================
+// FASE D2 — Measurement & Markup Canvas
+// iPad-First: Pointer Events (mouse + touch)
+// Markup Editing: Select, Drag, Edit
+// ============================================
 
 export default function DimensionCanvas({ 
   imageUrl, 
@@ -36,7 +42,6 @@ export default function DimensionCanvas({
   const [selectedMarkup, setSelectedMarkup] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(null);
-  const [editingText, setEditingText] = useState(null);
   const lastTapTime = useRef(0);
 
   // Load image
@@ -85,7 +90,7 @@ export default function DimensionCanvas({
     if (markupDrawPoints.length > 0 && activeTool?.startsWith('markup_')) {
       drawActiveMarkup(ctx, markupDrawPoints, activeTool, markupOptions);
     }
-  }, [image, dimensions, drawingPoints, zoom, markups, markupDrawPoints, activeTool, markupOptions]);
+  }, [image, dimensions, drawingPoints, zoom, markups, markupDrawPoints, activeTool, markupOptions, selectedMarkup]);
 
   const drawDimension = (ctx, dim) => {
     const { x1, y1, x2, y2, label_x, label_y } = dim.canvas_data;
@@ -194,33 +199,6 @@ export default function DimensionCanvas({
     ctx.restore();
   };
 
-  const drawSnapIndicator = (ctx, point, axis) => {
-    if (!axis) return;
-
-    ctx.save();
-    ctx.strokeStyle = '#00FF00';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 4]);
-
-    const indicatorSize = 12;
-
-    if (axis === 'horizontal') {
-      // Draw horizontal snap line
-      ctx.beginPath();
-      ctx.moveTo(point.x - indicatorSize, point.y);
-      ctx.lineTo(point.x + indicatorSize, point.y);
-      ctx.stroke();
-    } else if (axis === 'vertical') {
-      // Draw vertical snap line
-      ctx.beginPath();
-      ctx.moveTo(point.x, point.y - indicatorSize);
-      ctx.lineTo(point.x, point.y + indicatorSize);
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  };
-
   const formatDimensionLabel = (dim) => {
     if (dim.unit_system === 'imperial') {
       const ft = dim.value_feet || 0;
@@ -279,7 +257,7 @@ export default function DimensionCanvas({
     return { snapped: false, point: testPoint };
   };
 
-  // FASE D2: Unified pointer handler (mouse + touch)
+  // FASE D2.2: Unified pointer handler (mouse + touch)
   const getCanvasPoint = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
@@ -303,7 +281,7 @@ export default function DimensionCanvas({
       const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
       const dist = Math.sqrt((point.x - p1.x) ** 2 + (point.y - p1.y) ** 2);
       return Math.abs(dist - radius) < threshold;
-    } else if (markup.type === 'rectangle') {
+    } else if (markup.type === 'rectangle' || markup.type === 'text') {
       const minX = Math.min(p1.x, p2.x);
       const maxX = Math.max(p1.x, p2.x);
       const minY = Math.min(p1.y, p2.y);
@@ -342,6 +320,7 @@ export default function DimensionCanvas({
     return Math.sqrt(dx * dx + dy * dy);
   };
 
+  // FASE D2.2: Pointer down (unified mouse + touch)
   const handlePointerDown = (e) => {
     e.preventDefault();
     const point = getCanvasPoint(e);
@@ -351,13 +330,14 @@ export default function DimensionCanvas({
     const timeSinceLast = now - lastTapTime.current;
     lastTapTime.current = now;
 
-    // Double tap on markup → edit text
+    // Double tap on text markup → edit
     if (timeSinceLast < 300 && selectedMarkup?.type === 'text') {
       const textContent = prompt('Edit text:', selectedMarkup.text || '');
       if (textContent !== null) {
         const updatedMarkup = { ...selectedMarkup, text: textContent };
-        onAddMarkup(updatedMarkup); // Replace
-        setSelectedMarkup(null);
+        onRemoveMarkup(selectedMarkup.id);
+        onAddMarkup(updatedMarkup);
+        setSelectedMarkup(updatedMarkup);
       }
       return;
     }
@@ -371,6 +351,11 @@ export default function DimensionCanvas({
       return;
     }
 
+    // Deselect if clicking empty area
+    if (!activeTool && !activeDimension) {
+      setSelectedMarkup(null);
+    }
+
     // FASE D1: Handle markup drawing
     if (activeTool?.startsWith('markup_')) {
       if (activeTool === 'markup_text') {
@@ -379,7 +364,7 @@ export default function DimensionCanvas({
           const newMarkup = {
             id: `markup_${Date.now()}`,
             type: 'text',
-            points: [point, point],
+            points: [point, { x: point.x + 100, y: point.y + 30 }],
             color: markupOptions.color,
             thickness: markupOptions.thickness,
             text: textContent,
@@ -454,6 +439,7 @@ export default function DimensionCanvas({
     }
   };
 
+  // FASE D2.3: Drag to move markup
   const handlePointerMove = (e) => {
     if (!isDragging || !selectedMarkup || !dragStart) return;
 
@@ -539,7 +525,7 @@ export default function DimensionCanvas({
       </div>
 
       {/* Command Hints - Context-aware */}
-       {!activeDimension && !activeTool && (
+       {!activeDimension && !activeTool && !selectedMarkup && (
          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-900/90 text-slate-300 px-8 py-4 rounded-2xl font-medium shadow-2xl backdrop-blur-sm border border-slate-700">
            Select a tool to begin
          </div>
@@ -572,7 +558,7 @@ export default function DimensionCanvas({
        {/* FASE D2.3: Selected markup actions */}
        {selectedMarkup && !activeTool && (
          <div className="absolute top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-2">
-           <span className="text-sm font-semibold">Selected</span>
+           <span className="text-sm font-semibold">Markup selected • Drag to move</span>
            <button
              onClick={() => {
                onRemoveMarkup(selectedMarkup.id);
@@ -588,7 +574,11 @@ export default function DimensionCanvas({
   );
 }
 
-// FASE D1 + D2: Draw markup on canvas with selection
+// ============================================
+// RENDERING FUNCTIONS
+// ============================================
+
+// FASE D1 + D2.3: Draw markup on canvas with selection
 function drawMarkup(ctx, markup, isSelected = false) {
   if (!markup.points || markup.points.length < 2) return;
 
@@ -616,7 +606,7 @@ function drawMarkup(ctx, markup, isSelected = false) {
     ctx.stroke();
   } else if (markup.type === 'text') {
     ctx.globalAlpha = 1;
-    ctx.font = 'bold 24px Arial';
+    ctx.font = `bold ${24 + (markup.thickness * 4)}px Arial`;
     ctx.fillStyle = markup.color;
     ctx.fillText(markup.text || '', p1.x, p1.y);
   }
@@ -628,10 +618,23 @@ function drawMarkup(ctx, markup, isSelected = false) {
     ctx.lineWidth = 2;
     ctx.setLineDash([5, 5]);
 
-    const minX = Math.min(p1.x, p2.x) - 10;
-    const minY = Math.min(p1.y, p2.y) - 10;
-    const maxX = Math.max(p1.x, p2.x) + 10;
-    const maxY = Math.max(p1.y, p2.y) + 10;
+    const padding = 15;
+    let minX, minY, maxX, maxY;
+
+    if (markup.type === 'text') {
+      // Text bounding box estimation
+      ctx.font = `bold ${24 + (markup.thickness * 4)}px Arial`;
+      const textWidth = ctx.measureText(markup.text || '').width;
+      minX = p1.x - padding;
+      minY = p1.y - 30 - padding;
+      maxX = p1.x + textWidth + padding;
+      maxY = p1.y + padding;
+    } else {
+      minX = Math.min(p1.x, p2.x) - padding;
+      minY = Math.min(p1.y, p2.y) - padding;
+      maxX = Math.max(p1.x, p2.x) + padding;
+      maxY = Math.max(p1.y, p2.y) + padding;
+    }
 
     ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
 
@@ -640,7 +643,7 @@ function drawMarkup(ctx, markup, isSelected = false) {
     [
       [minX, minY], [maxX, minY], [minX, maxY], [maxX, maxY]
     ].forEach(([hx, hy]) => {
-      ctx.fillRect(hx - 4, hy - 4, 8, 8);
+      ctx.fillRect(hx - 5, hy - 5, 10, 10);
     });
   }
 
