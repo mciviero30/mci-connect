@@ -40,6 +40,7 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   const [processingPdf, setProcessingPdf] = useState(null);
   const [showExitWarning, setShowExitWarning] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState(null);
+  const [showExportWarning, setShowExportWarning] = useState(false);
   const canvasRef = useRef(null);
 
   const queryClient = useQueryClient();
@@ -152,8 +153,20 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
       toast.error('No dimensions to export');
       return;
     }
+
+    // FASE C3.2: Warn if exporting unverified measurements
+    if (hasUnlockedMeasurements) {
+      setShowExportWarning(true);
+      return;
+    }
+
     setShowExportDialog(true);
-  }, [dimensions.length]);
+  }, [dimensions.length, hasUnlockedMeasurements]);
+
+  const confirmExport = React.useCallback(() => {
+    setShowExportWarning(false);
+    setShowExportDialog(true);
+  }, []);
 
   const handleSaveDrawing = React.useCallback(() => {
     console.log('🔥 SAVE DRAWING CLICKED - Handler executed');
@@ -559,6 +572,32 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               Leave anyway
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* FASE C3.2: Export Warning Dialog */}
+      <AlertDialog open={showExportWarning} onOpenChange={setShowExportWarning}>
+        <AlertDialogContent className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+              Some measurements are not verified
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-600 dark:text-slate-400">
+              Some measurements are not verified. Are you sure you want to export?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button variant="outline" onClick={() => setShowExportWarning(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={confirmExport}
+              className="bg-orange-600 hover:bg-orange-700 text-white"
+            >
+              Export anyway
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
