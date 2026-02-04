@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Clock, Play, Square, Coffee, CheckCircle, XCircle, Calendar, Download, Users, Shield } from "lucide-react";
+import { Clock, Play, Square, Coffee, CheckCircle, XCircle, Calendar, Download, Users, Shield, MapPin } from "lucide-react";
 import { format, startOfWeek, endOfWeek, startOfDay, endOfDay, differenceInMinutes } from "date-fns";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -18,7 +18,6 @@ import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 import { buildUserQuery } from "@/components/utils/userResolution";
 import PageHeader from "@/components/shared/PageHeader";
-import { MapPin, Shield } from "lucide-react";
 
 export default function TimeTracking() {
   const toast = useToast();
