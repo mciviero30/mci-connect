@@ -13,6 +13,8 @@ export default function MeasurementExportDialog({
   dimensions,
   unitSystem,
   measurementSessionId,  // FASE 3C-5: Session context for PDF ownership
+  plans = [],  // FASE D4: Drawing images
+  markupsByPlan = {},  // FASE D4: Markups per drawing
 }) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -26,13 +28,15 @@ export default function MeasurementExportDialog({
     try {
       toast.info('Generating PDF...');
 
-      // FASE 3C-5: Include measurement_session_id for PDF ownership tracking
+      // FASE D4: Include plans and markups
       const response = await base44.functions.invoke('exportDimensionsPDF', {
         jobId: dimensions[0]?.job_id,
         jobName,
         dimensions,
         unitSystem,
         measurementSessionId,  // Session ownership
+        plans,  // Drawing images
+        markupsByPlan,  // Markups per drawing
       });
 
       if (!response || !response.data) {

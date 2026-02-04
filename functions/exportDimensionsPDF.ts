@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { jobId, jobName, jobAddress, dimensions, unitSystem, measurementSessionId, plans = [], markupsByPlan = {} } = await req.json();
+    const { jobId, jobName, dimensions, unitSystem, measurementSessionId, plans = [], markupsByPlan = {} } = await req.json();
 
     // FASE 3C-5: Validate measurement_session_id is present (defensive)
     if (!measurementSessionId) {
@@ -20,19 +20,25 @@ Deno.serve(async (req) => {
     const doc = new jsPDF('portrait', 'mm', 'letter');
     
     // PAGE 1: COVER
-    addCoverPage(doc, jobName, jobAddress, dimensions, unitSystem, user, plans);
+    const totalPages = 1 + (plans.length > 0 ? plans.length : 0) + 1 + 1; // cover + drawings + summary + legend
+    addCoverPage(doc, jobName, dimensions, unitSystem, user, totalPages);
     
-    // PAGES 2+: DRAWING PAGES (one per drawing with overlays)
-    for (let i = 0; i < plans.length; i++) {
-      doc.addPage();
-      await addDrawingPage(doc, plans[i], dimensions, markupsByPlan[`plan_${plans[i].id}`] || [], unitSystem, i + 1, plans.length);
+    // PAGES 2+: DRAWING PAGES with measurements + markups
+    if (plans.length > 0) {
+      for (let i = 0; i < plans.length; i++) {
+        doc.addPage();
+        const plan = plans[i];
+        const planDimensions = dimensions.filter(d => d.blueprint_id === plan.id);
+        const planMarkups = markupsByPlan[`plan_${plan.id}`] || [];
+        await addDrawingPage(doc, plan, planDimensions, planMarkups, i + 1, unitSystem);
+      }
     }
     
-    // PAGE: MEASUREMENT SUMMARY TABLE (Grouped by type and condition)
+    // PAGES: MEASUREMENT SUMMARY TABLE (Grouped by type and condition)
     doc.addPage();
     addMeasurementSummaryTable(doc, dimensions, unitSystem);
     
-    // PAGE: LEGEND / GLOSSARY
+    // PAGES: LEGEND / GLOSSARY
     doc.addPage();
     addLegendPage(doc);
 
@@ -70,7 +76,7 @@ Deno.serve(async (req) => {
   }
 });
 
-function addCoverPage(doc, jobName, jobAddress, dimensions, unitSystem, user, plans) {
+function addCoverPage(doc, jobName, dimensions, unitSystem, user, totalPages) {
   // White background
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, 210, 297, 'F');
@@ -104,19 +110,15 @@ function addCoverPage(doc, jobName, jobAddress, dimensions, unitSystem, user, pl
   doc.setFont('helvetica', 'normal');
   doc.text(`Job Name: ${jobName || 'Untitled'}`, 20, yPos);
   yPos += 8;
-  if (jobAddress) {
-    doc.text(`Address: ${jobAddress}`, 20, yPos);
-    yPos += 8;
-  }
   doc.text(`Measurement Date: ${new Date().toLocaleDateString()}`, 20, yPos);
   yPos += 8;
   doc.text(`Measured By: ${user.full_name}`, 20, yPos);
   yPos += 8;
   doc.text(`Unit System: ${unitSystem === 'imperial' ? 'Imperial (feet/inches)' : 'Metric (millimeters)'}`, 20, yPos);
   yPos += 8;
-  doc.text(`Total Drawings: ${plans.length}`, 20, yPos);
-  yPos += 8;
   doc.text(`Total Measurements: ${dimensions.length}`, 20, yPos);
+  yPos += 8;
+  doc.text(`Total Pages: ${totalPages}`, 20, yPos);
   
   // Bottom banner
   yPos = 260;
@@ -128,152 +130,225 @@ function addCoverPage(doc, jobName, jobAddress, dimensions, unitSystem, user, pl
   doc.setFont('helvetica', 'normal');
   doc.text('✓ All measurements reviewed and locked', 20, yPos + 12);
   doc.text('Generated from MCI Measurement System', 20, yPos + 22);
-  doc.text(`Page 1 of ${plans.length + 3}`, 180, yPos + 12);
+  doc.text(`Page 1 of ${totalPages}`, 180, yPos + 12);
 }
 
-async function addDrawingPage(doc, plan, dimensions, markups, unitSystem, pageNum, totalPages) {
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, 210, 297, 'F');
+// FASE D4: Add drawing page with image + overlays
+async function addDrawingPage(doc, plan, planDimensions, planMarkups, pageNumber, unitSystem) {
+  let yPos = 15;
   
-  // Header
+  // Page header
   doc.setFillColor(30, 58, 138);
-  doc.rect(0, 0, 210, 20, 'F');
+  doc.rect(0, 0, 210, 15, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Page ${pageNum} of ${totalPages} — ${plan.name}`, 15, 13);
+  doc.text(`Drawing ${pageNumber}: ${plan.name}`, 15, 10);
   
-  // Load and render drawing image
+  yPos = 25;
+  
+  // Drawing image with measurements + markups rendered
   try {
-    const response = await fetch(plan.image_url || plan.file_url);
-    const blob = await response.blob();
-    const arrayBuffer = await blob.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    const imgData = `data:image/png;base64,${base64}`;
-    
-    // Calculate aspect ratio to fit page
-    const maxWidth = 170;
-    const maxHeight = 200;
-    const imgWidth = maxWidth;
-    const imgHeight = maxHeight;
-    const xOffset = 20;
-    const yOffset = 30;
-    
-    doc.addImage(imgData, 'PNG', xOffset, yOffset, imgWidth, imgHeight);
-    
-    // Render measurements on top of image
-    const planDimensions = dimensions.filter(d => d.blueprint_id === plan.id);
-    planDimensions.forEach(dim => {
-      if (!dim.canvas_data) return;
+    const imageUrl = plan.image_url || plan.file_url;
+    if (imageUrl) {
+      // CRITICAL: Render drawing with overlays on a temporary canvas
+      const canvas = await createDrawingCanvas(imageUrl, planDimensions, planMarkups, unitSystem);
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
       
-      // Scale canvas coordinates to PDF coordinates
-      const scaleX = imgWidth / 1000; // Assume canvas width ~1000px
-      const scaleY = imgHeight / 1000;
+      const imgWidth = 170;
+      const imgHeight = (canvas.height / canvas.width) * imgWidth;
       
-      const x1 = xOffset + (dim.canvas_data.x1 * scaleX);
-      const y1 = yOffset + (dim.canvas_data.y1 * scaleY);
-      const x2 = xOffset + (dim.canvas_data.x2 * scaleX);
-      const y2 = yOffset + (dim.canvas_data.y2 * scaleY);
-      const labelX = xOffset + (dim.canvas_data.label_x * scaleX);
-      const labelY = yOffset + (dim.canvas_data.label_y * scaleY);
-      
-      // Draw measurement line
-      doc.setDrawColor(255, 255, 255);
-      doc.setLineWidth(0.5);
-      doc.line(x1, y1, x2, y2);
-      
-      // Draw label
-      const label = formatDimensionValue(dim);
-      doc.setFillColor(0, 0, 0);
-      doc.rect(labelX - 15, labelY - 4, 30, 6, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'bold');
-      doc.text(label, labelX, labelY + 1, { align: 'center' });
-      
-      // Draw type badge
-      doc.setFontSize(5);
-      doc.text(dim.measurement_type || '', labelX, labelY + 5, { align: 'center' });
-      
-      // Draw construction state badge
-      if (dim.construction_state) {
-        const badge = dim.construction_state === 'stud_only' ? 'STUD' : 'DW';
-        const badgeColor = dim.construction_state === 'stud_only' ? [245, 158, 11] : [16, 185, 129];
-        doc.setFillColor(...badgeColor);
-        doc.rect(labelX - 8, labelY + 7, 16, 4, 'F');
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(5);
-        doc.text(badge, labelX, labelY + 10, { align: 'center' });
-      }
-    });
-    
-    // Render markups
-    markups.forEach(markup => {
-      if (!markup.points || markup.points.length < 2) return;
-      
-      const [p1, p2] = markup.points;
-      const mx1 = xOffset + (p1.x * scaleX);
-      const my1 = yOffset + (p1.y * scaleY);
-      const mx2 = xOffset + (p2.x * scaleX);
-      const my2 = yOffset + (p2.y * scaleY);
-      
-      // Convert hex color to RGB
-      const hexToRgb = (hex) => {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return [r, g, b];
-      };
-      
-      const [r, g, b] = hexToRgb(markup.color);
-      doc.setDrawColor(r, g, b);
-      doc.setLineWidth(markup.thickness * 0.3);
-      
-      if (markup.type === 'line' || markup.type === 'arrow' || markup.type === 'double_arrow') {
-        doc.line(mx1, my1, mx2, my2);
-        // Arrows rendered as simple lines in PDF
-      } else if (markup.type === 'rectangle') {
-        doc.rect(mx1, my1, mx2 - mx1, my2 - my1);
-      } else if (markup.type === 'circle') {
-        const radius = Math.sqrt((mx2 - mx1) ** 2 + (my2 - my1) ** 2);
-        doc.circle(mx1, my1, radius);
-      } else if (markup.type === 'highlight') {
-        doc.setFillColor(r, g, b);
-        doc.setGState(new doc.GState({ opacity: 0.3 }));
-        doc.rect(mx1, my1, mx2 - mx1, 3, 'F');
-        doc.setGState(new doc.GState({ opacity: 1 }));
-      } else if (markup.type === 'text' && markup.text) {
-        doc.setTextColor(r, g, b);
-        doc.setFontSize(8 + markup.thickness);
-        doc.text(markup.text, mx1, my1);
-      }
-    });
-    
+      doc.addImage(imgData, 'JPEG', 20, yPos, imgWidth, Math.min(imgHeight, 220));
+    }
   } catch (error) {
-    console.error('[addDrawingPage] Image load error:', error);
-    doc.setTextColor(255, 0, 0);
+    console.error('[addDrawingPage] Error rendering drawing:', error);
+    doc.setTextColor(200, 0, 0);
     doc.setFontSize(10);
-    doc.text('Error loading drawing image', 20, 100);
+    doc.text('⚠ Drawing could not be rendered', 20, yPos + 20);
+  }
+}
+
+// FASE D4: Create canvas with drawing + measurements + markups
+async function createDrawingCanvas(imageUrl, dimensions, markups, unitSystem) {
+  // Create offscreen canvas
+  const img = await loadImage(imageUrl);
+  const canvas = new OffscreenCanvas(img.width, img.height);
+  const ctx = canvas.getContext('2d');
+  
+  // Draw image
+  ctx.drawImage(img, 0, 0);
+  
+  // Draw dimensions
+  dimensions.forEach(dim => {
+    if (!dim.canvas_data) return;
+    drawDimensionOnPDF(ctx, dim, unitSystem);
+  });
+  
+  // Draw markups
+  markups.forEach(markup => {
+    drawMarkupOnPDF(ctx, markup);
+  });
+  
+  return canvas;
+}
+
+async function loadImage(url) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const bitmap = await createImageBitmap(blob);
+  return bitmap;
+}
+
+function drawDimensionOnPDF(ctx, dim, unitSystem) {
+  const { x1, y1, x2, y2, label_x, label_y } = dim.canvas_data;
+  
+  ctx.save();
+  
+  // Line style
+  if (dim.dimension_type === 'benchmark') {
+    ctx.strokeStyle = '#FFB800';
+    ctx.setLineDash([10, 5]);
+    ctx.lineWidth = 3;
+  } else if (dim.dimension_type === 'vertical') {
+    ctx.strokeStyle = dim.benchmark_above ? '#00FF00' : '#FF0000';
+    ctx.lineWidth = 3;
+  } else {
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 3;
   }
   
-  // Footer
-  doc.setTextColor(100, 100, 100);
-  doc.setFontSize(8);
-  doc.text(`Drawing ${pageNum}/${totalPages}`, 180, 285);
+  // Draw line
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.stroke();
+  
+  // Arrows for horizontal
+  if (dim.dimension_type === 'horizontal') {
+    drawArrowOnPDF(ctx, x1, y1, x2, y2);
+    drawArrowOnPDF(ctx, x2, y2, x1, y1);
+  }
+  
+  // Value label
+  const valueLabel = formatDimensionValue(dim);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+  ctx.fillRect(label_x - 60, label_y - 15, 120, 30);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 14px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(valueLabel, label_x, label_y + 5);
+  
+  // Type label (below value)
+  ctx.fillStyle = '#FFB800';
+  ctx.font = 'bold 10px Arial';
+  ctx.fillText(dim.measurement_type, label_x, label_y + 15);
+  
+  // Construction state badge
+  if (dim.construction_state) {
+    const badgeText = dim.construction_state === 'stud_only' ? 'STUD' : 'DW';
+    const badgeColor = dim.construction_state === 'stud_only' ? '#F59E0B' : '#10B981';
+    
+    ctx.fillStyle = badgeColor;
+    ctx.fillRect(label_x - 25, label_y + 20, 50, 16);
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 9px Arial';
+    ctx.fillText(badgeText, label_x, label_y + 31);
+  }
+  
+  ctx.restore();
+}
+
+function drawArrowOnPDF(ctx, fromX, fromY, toX, toY) {
+  const angle = Math.atan2(toY - fromY, toX - fromX);
+  const arrowLength = 15;
+  
+  ctx.beginPath();
+  ctx.moveTo(fromX, fromY);
+  ctx.lineTo(
+    fromX - arrowLength * Math.cos(angle - Math.PI / 6),
+    fromY - arrowLength * Math.sin(angle - Math.PI / 6)
+  );
+  ctx.moveTo(fromX, fromY);
+  ctx.lineTo(
+    fromX - arrowLength * Math.cos(angle + Math.PI / 6),
+    fromY - arrowLength * Math.sin(angle + Math.PI / 6)
+  );
+  ctx.stroke();
+}
+
+function drawMarkupOnPDF(ctx, markup) {
+  if (!markup.points || markup.points.length < 2) return;
+  
+  ctx.save();
+  ctx.strokeStyle = markup.color;
+  ctx.fillStyle = markup.color;
+  ctx.lineWidth = markup.thickness;
+  ctx.globalAlpha = markup.type === 'highlight' ? 0.3 : 1;
+  
+  const [p1, p2] = markup.points;
+  
+  ctx.beginPath();
+  
+  if (markup.type === 'line' || markup.type === 'highlight') {
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+  } else if (markup.type === 'arrow') {
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+    drawArrowHeadOnPDF(ctx, p1.x, p1.y, p2.x, p2.y, markup.thickness * 3);
+  } else if (markup.type === 'double_arrow') {
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+    drawArrowHeadOnPDF(ctx, p1.x, p1.y, p2.x, p2.y, markup.thickness * 3);
+    drawArrowHeadOnPDF(ctx, p2.x, p2.y, p1.x, p1.y, markup.thickness * 3);
+  } else if (markup.type === 'circle') {
+    const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
+    ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+  } else if (markup.type === 'rectangle') {
+    ctx.rect(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+    ctx.stroke();
+  } else if (markup.type === 'text') {
+    ctx.globalAlpha = 1;
+    ctx.font = `bold ${24 + (markup.thickness * 4)}px Arial`;
+    ctx.fillStyle = markup.color;
+    ctx.fillText(markup.text || '', p1.x, p1.y);
+  }
+  
+  ctx.restore();
+}
+
+function drawArrowHeadOnPDF(ctx, fromX, fromY, toX, toY, size = 15) {
+  const angle = Math.atan2(toY - fromY, toX - fromX);
+  
+  ctx.beginPath();
+  ctx.moveTo(toX, toY);
+  ctx.lineTo(
+    toX - size * Math.cos(angle - Math.PI / 6),
+    toY - size * Math.sin(angle - Math.PI / 6)
+  );
+  ctx.moveTo(toX, toY);
+  ctx.lineTo(
+    toX - size * Math.cos(angle + Math.PI / 6),
+    toY - size * Math.sin(angle + Math.PI / 6)
+  );
+  ctx.stroke();
 }
 
 function addMeasurementSummaryTable(doc, dimensions, unitSystem) {
-  // Group dimensions by measurement_type AND construction_state
+  // FASE D4: Group by measurement_type AND construction_state
   const grouped = {};
   dimensions.forEach(dim => {
     const type = dim.measurement_type || 'Other';
-    const condition = dim.construction_state || 'unspecified';
-    const key = `${type}|${condition}`;
-    
+    const state = dim.construction_state || 'with_drywall';
+    const key = `${type}|${state}`;
     if (!grouped[key]) {
-      grouped[key] = { type, condition, items: [] };
+      grouped[key] = [];
     }
-    grouped[key].items.push(dim);
+    grouped[key].push(dim);
   });
   
   let yPos = 20;
@@ -286,21 +361,23 @@ function addMeasurementSummaryTable(doc, dimensions, unitSystem) {
   doc.text('MEASUREMENT SUMMARY', 15, yPos + 8);
   yPos += 18;
   
-  // Table header
-  doc.setFillColor(220, 220, 220);
-  doc.rect(10, yPos, 190, 8, 'F');
+  // Column headers
+  doc.setFillColor(245, 245, 245);
+  doc.rect(10, yPos, 190, 7, 'F');
   doc.setTextColor(0, 0, 0);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('Type', 15, yPos + 5);
-  doc.text('Condition', 60, yPos + 5);
-  doc.text('Qty', 110, yPos + 5);
-  doc.text('Values', 135, yPos + 5);
-  yPos += 10;
+  doc.text('Type', 15, yPos + 4);
+  doc.text('Condition', 70, yPos + 4);
+  doc.text('Qty', 130, yPos + 4);
+  doc.text('Notes', 160, yPos + 4);
+  yPos += 8;
   
-  // Table rows
-  doc.setFont('helvetica', 'normal');
-  Object.values(grouped).forEach((group, idx) => {
+  // Iterate over grouped types
+  Object.keys(grouped).sort().forEach((key, idx) => {
+    const [typeLabel, stateLabel] = key.split('|');
+    const items = grouped[key];
+    
     if (yPos > 270) {
       doc.addPage();
       yPos = 20;
@@ -310,73 +387,99 @@ function addMeasurementSummaryTable(doc, dimensions, unitSystem) {
     doc.setFillColor(...bgColor);
     doc.rect(10, yPos, 190, 7, 'F');
     
-    const conditionLabel = group.condition === 'stud_only' ? 'Stud Only' : 
-                          group.condition === 'with_drywall' ? 'With Drywall' : 
-                          'Unspecified';
-    
-    const uniqueValues = [...new Set(group.items.map(formatDimensionValue))];
-    
     doc.setTextColor(0, 0, 0);
-    doc.text(group.type, 15, yPos + 4);
-    doc.text(conditionLabel, 60, yPos + 4);
-    doc.text(group.items.length.toString(), 110, yPos + 4);
-    doc.text(uniqueValues.slice(0, 2).join(', '), 135, yPos + 4);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.text(typeLabel, 15, yPos + 4);
+    doc.text(stateLabel === 'stud_only' ? 'Stud Only' : 'With Drywall', 70, yPos + 4);
+    doc.text(items.length.toString(), 130, yPos + 4);
+    
+    // Show sample values
+    const sampleValues = items.slice(0, 2).map(d => formatDimensionValue(d)).join(', ');
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.text(sampleValues.substring(0, 30), 160, yPos + 4);
+    
     yPos += 8;
   });
 }
 
-function addConfidencePage(doc, jobName, totalCount) {
+// FASE D4: Legend / Glossary Page
+function addLegendPage(doc) {
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, 210, 297, 'F');
   
-  let yPos = 40;
+  let yPos = 20;
   
-  // Green checkmark icon (text-based)
-  doc.setTextColor(76, 175, 80);
-  doc.setFontSize(40);
-  doc.text('✓', 90, yPos);
-  
-  yPos += 30;
-  
-  // Confidence text
-  doc.setTextColor(0, 0, 0);
-  doc.setFontSize(18);
-  doc.setFont('helvetica', 'bold');
-  doc.text('All Measurements Reviewed', 35, yPos);
-  
-  yPos += 20;
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`✓ ${totalCount} measurements captured on-site`, 20, yPos);
-  yPos += 10;
-  doc.text('✓ Each measurement individually locked for accuracy', 20, yPos);
-  yPos += 10;
-  doc.text('✓ Ready for material ordering and fabrication', 20, yPos);
-  
-  yPos += 20;
-  
-  // Footer text
-  doc.setFillColor(245, 250, 255);
-  doc.rect(15, yPos, 180, 60, 'F');
+  // Header
   doc.setFillColor(30, 58, 138);
-  doc.rect(15, yPos, 180, 60, 'FD');
-  
-  doc.setTextColor(30, 58, 138);
-  doc.setFontSize(10);
+  doc.rect(0, yPos, 210, 12, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(13);
   doc.setFont('helvetica', 'bold');
-  doc.text('About This Document', 20, yPos + 8);
+  doc.text('MEASUREMENT LEGEND', 15, yPos + 8);
+  yPos += 20;
   
-  doc.setTextColor(60, 60, 60);
+  // Measurement Types
+  doc.setTextColor(0, 0, 0);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Measurement Types', 15, yPos);
+  yPos += 8;
+  
+  const types = [
+    { code: 'FF-FF', desc: 'Finished Floor to Finished Floor (horizontal)' },
+    { code: 'CL-CL', desc: 'Center Line to Center Line (horizontal)' },
+    { code: 'FF-CL', desc: 'Finished Floor to Center Line (horizontal)' },
+    { code: 'CL-FF', desc: 'Center Line to Finished Floor (horizontal)' },
+    { code: 'SFF-SFF', desc: 'Sub-Finished Floor to Sub-Finished Floor (horizontal)' },
+    { code: 'BM-FF ↑', desc: 'Bench Mark to Finished Floor (UP - vertical)' },
+    { code: 'BM-FF ↓', desc: 'Bench Mark to Finished Floor (DOWN - vertical)' },
+    { code: 'BM-C', desc: 'Bench Mark to Ceiling (vertical)' },
+  ];
+  
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('This measurement package is a complete, field-verified documentation of all', 20, yPos + 16);
-  doc.text('dimensions captured for the project. It is suitable for sharing with suppliers,', 20, yPos + 22);
-  doc.text('contractors, or archival purposes.', 20, yPos + 28);
-  doc.text('', 20, yPos + 34);
-  doc.text('Generated from MCI Measurement', 20, yPos + 40);
-  doc.text(`Job: ${jobName}`, 20, yPos + 46);
-  doc.text(`Export Date: ${new Date().toLocaleDateString()}`, 20, yPos + 52);
+  types.forEach(({ code, desc }) => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(code, 15, yPos);
+    doc.setFont('helvetica', 'normal');
+    doc.text(desc, 50, yPos);
+    yPos += 6;
+  });
+  
+  yPos += 10;
+  
+  // Construction States
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Construction States', 15, yPos);
+  yPos += 8;
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('STUD', 15, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Measured with studs only (no drywall installed)', 50, yPos);
+  yPos += 6;
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('DW', 15, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Measured with drywall installed (finished condition)', 50, yPos);
+  yPos += 10;
+  
+  // Footer
+  yPos = 270;
+  doc.setFillColor(245, 245, 245);
+  doc.rect(0, yPos, 210, 27, 'F');
+  doc.setTextColor(100, 100, 100);
+  doc.setFontSize(8);
+  doc.text('This legend explains all measurement codes used in this package.', 15, yPos + 10);
+  doc.text('Generated from MCI Measurement System', 15, yPos + 18);
+}
+
+
 
 function formatDimensionValue(dim) {
   if (dim.unit_system === 'imperial') {
