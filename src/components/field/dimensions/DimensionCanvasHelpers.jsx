@@ -4,7 +4,8 @@
 // ============================================
 
 // FASE D5.1: Legible Measurement Labels with anti-collision
-export function drawMeasurementLabel(ctx, dim, baseX, baseY, labelBounds) {
+// FASE D5.4: Added warning indicator for unlocked measurements
+export function drawMeasurementLabel(ctx, dim, baseX, baseY, labelBounds, isLocked = false) {
   ctx.save();
   
   // D5.1: Separate components
@@ -12,6 +13,9 @@ export function drawMeasurementLabel(ctx, dim, baseX, baseY, labelBounds) {
   const typeText = dim.measurement_type || '';
   const stateText = dim.construction_state === 'stud_only' ? 'STUD' : 'DRYWALL';
   const stateColor = dim.construction_state === 'stud_only' ? '#F59E0B' : '#10B981';
+  
+  // D5.4: Warning indicator if not locked
+  const needsReview = !isLocked;
   
   // D5.1: Measure for sizing
   ctx.font = '700 18px Arial';
@@ -45,8 +49,30 @@ export function drawMeasurementLabel(ctx, dim, baseX, baseY, labelBounds) {
     height: labelHeight
   });
   
+  // D5.4: Warning icon if needs review (top-left corner)
+  if (needsReview) {
+    const iconX = baseX - labelWidth/2 - 8;
+    const iconY = finalY - 48;
+    
+    // Pulsing warning triangle
+    const pulse = Math.abs(Math.sin(Date.now() / 400)) * 0.3 + 0.7;
+    ctx.fillStyle = `rgba(255, 140, 0, ${pulse})`;
+    ctx.beginPath();
+    ctx.moveTo(iconX, iconY - 6);
+    ctx.lineTo(iconX + 6, iconY + 6);
+    ctx.lineTo(iconX - 6, iconY + 6);
+    ctx.closePath();
+    ctx.fill();
+    
+    ctx.fillStyle = '#000000';
+    ctx.font = '700 10px Arial';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('!', iconX, iconY + 1);
+  }
+  
   // D5.1: Value label (primary, top)
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+  ctx.fillStyle = needsReview ? 'rgba(255, 140, 0, 0.95)' : 'rgba(0, 0, 0, 0.85)';
   roundRect(ctx, baseX - labelWidth/2, finalY - 40, labelWidth, 30, 15);
   ctx.fill();
   
@@ -55,7 +81,7 @@ export function drawMeasurementLabel(ctx, dim, baseX, baseY, labelBounds) {
   ctx.lineWidth = 2;
   ctx.stroke();
   
-  ctx.fillStyle = '#FFFFFF';
+  ctx.fillStyle = needsReview ? '#000000' : '#FFFFFF';
   ctx.font = '700 18px Arial';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';

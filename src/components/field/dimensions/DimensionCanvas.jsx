@@ -102,13 +102,38 @@ export default function DimensionCanvas({
     if (markupDrawPoints.length > 0 && activeTool?.startsWith('markup_')) {
       drawActiveMarkup(ctx, markupDrawPoints, activeTool, markupOptions);
     }
-  }, [image, dimensions, drawingPoints, zoom, markups, markupDrawPoints, activeTool, markupOptions, selectedMarkup]);
+    
+    // FASE D5.4: Re-render every 100ms to animate warnings
+    const hasUnlocked = dimensions.some(d => !lockedMeasurements.has(d.id));
+    if (hasUnlocked) {
+      const timer = setTimeout(() => {
+        if (canvasRef.current) {
+          canvasRef.current.getContext('2d'); // Force re-render
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [image, dimensions, drawingPoints, zoom, markups, markupDrawPoints, activeTool, markupOptions, selectedMarkup, lockedMeasurements, selectedDimension]);
 
   const drawDimension = (ctx, dim, isSelected = false) => {
     const { x1, y1, x2, y2, label_x, label_y } = dim.canvas_data;
     const isLocked = lockedMeasurements.has(dim.id);
 
     ctx.save();
+
+    // FASE D5.4: Visual warning for unlocked measurements (flashing orange glow)
+    if (!isLocked && !isSelected) {
+      const pulse = Math.abs(Math.sin(Date.now() / 500)) * 0.4 + 0.6;
+      ctx.strokeStyle = '#FF8C00';
+      ctx.lineWidth = 8;
+      ctx.setLineDash([]);
+      ctx.globalAlpha = pulse * 0.3;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
 
     // FASE D2.4: Highlight if selected
     if (isSelected) {
@@ -155,8 +180,8 @@ export default function DimensionCanvas({
       drawArrow(ctx, x2, y2, x1, y1);
     }
     
-    // FASE D5.1 + D5.2: Legible labels with anti-collision
-    drawMeasurementLabel(ctx, dim, label_x, label_y);
+    // FASE D5.1 + D5.2 + D5.4: Legible labels with anti-collision + warning
+    drawMeasurementLabel(ctx, dim, label_x, label_y, labelBounds.current, isLocked);
 
     // FASE D2.4: Draw handles when selected (D5.3: increased size for touch)
     if (isSelected && !isLocked) {
