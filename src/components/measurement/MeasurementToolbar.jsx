@@ -1,5 +1,5 @@
 import React from 'react';
-import { Ruler, Minus, Circle, Square, Highlighter, Type } from 'lucide-react';
+import { Ruler, Minus, Circle, Square, Highlighter, Type, ArrowRight, ArrowLeftRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -20,6 +20,8 @@ const MEASUREMENT_TYPES = [
 
 const MARKUP_TOOLS = [
   { type: 'line', label: 'Line', icon: Minus },
+  { type: 'arrow', label: 'Arrow', icon: ArrowRight },
+  { type: 'double_arrow', label: 'Double Arrow', icon: ArrowLeftRight },
   { type: 'circle', label: 'Circle', icon: Circle },
   { type: 'rectangle', label: 'Rectangle', icon: Square },
   { type: 'highlight', label: 'Highlight', icon: Highlighter },
@@ -32,6 +34,7 @@ const COLORS = [
   { value: '#10B981', label: 'Green' },
   { value: '#F59E0B', label: 'Yellow' },
   { value: '#FFFFFF', label: 'White' },
+  { value: '#000000', label: 'Black' },
 ];
 
 const THICKNESS = [
