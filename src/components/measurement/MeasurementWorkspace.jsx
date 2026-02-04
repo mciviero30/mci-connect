@@ -658,13 +658,14 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
       <MeasurementExportDialog
         open={showExportDialog}
         onOpenChange={setShowExportDialog}
+        jobId={jobId}
         jobName={jobName}
         dimensions={dimensions}
         unitSystem={projectUnitSystem}
         measurementSessionId={null}
         plans={plans}
         markupsByPlan={markupsByPlan}
-      />
+        />
 
       {processingPdf && (
         <PDFProcessor

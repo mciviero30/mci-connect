@@ -10,7 +10,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { jobId, jobName, dimensions, unitSystem, measurementSessionId, plans = [], markupsByPlan = {} } = await req.json();
+    const { jobId, jobName, jobAddress = '', dimensions, unitSystem, measurementSessionId, plans = [], markupsByPlan = {} } = await req.json();
 
     // FASE 3C-5: Validate measurement_session_id is present (defensive)
     if (!measurementSessionId) {
@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     
     // PAGE 1: COVER
     const totalPages = 1 + (plans.length > 0 ? plans.length : 0) + 1 + 1; // cover + drawings + summary + legend
-    addCoverPage(doc, jobName, dimensions, unitSystem, user, totalPages);
+    addCoverPage(doc, jobName, jobAddress, dimensions, unitSystem, user, totalPages, plans);
     
     // PAGES 2+: DRAWING PAGES with measurements + markups
     if (plans.length > 0) {
@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
   }
 });
 
-function addCoverPage(doc, jobName, dimensions, unitSystem, user, totalPages) {
+function addCoverPage(doc, jobName, jobAddress, dimensions, unitSystem, user, totalPages, plans) {
   // White background
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, 210, 297, 'F');
@@ -110,15 +110,19 @@ function addCoverPage(doc, jobName, dimensions, unitSystem, user, totalPages) {
   doc.setFont('helvetica', 'normal');
   doc.text(`Job Name: ${jobName || 'Untitled'}`, 20, yPos);
   yPos += 8;
+  if (jobAddress) {
+    doc.text(`Address: ${jobAddress}`, 20, yPos);
+    yPos += 8;
+  }
   doc.text(`Measurement Date: ${new Date().toLocaleDateString()}`, 20, yPos);
   yPos += 8;
   doc.text(`Measured By: ${user.full_name}`, 20, yPos);
   yPos += 8;
   doc.text(`Unit System: ${unitSystem === 'imperial' ? 'Imperial (feet/inches)' : 'Metric (millimeters)'}`, 20, yPos);
   yPos += 8;
-  doc.text(`Total Measurements: ${dimensions.length}`, 20, yPos);
+  doc.text(`Total Drawings: ${plans.length}`, 20, yPos);
   yPos += 8;
-  doc.text(`Total Pages: ${totalPages}`, 20, yPos);
+  doc.text(`Total Measurements: ${dimensions.length}`, 20, yPos);
   
   // Bottom banner
   yPos = 260;
