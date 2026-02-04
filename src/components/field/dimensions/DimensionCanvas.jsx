@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ZoomIn, ZoomOut, RotateCcw, Trash2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw, Trash2, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 // ============================================
@@ -747,8 +747,36 @@ export default function DimensionCanvas({
 
        {/* FASE D2.4: Selected dimension actions */}
        {selectedDimension && !activeTool && !lockedMeasurements.has(selectedDimension.id) && (
-         <div className="absolute top-4 left-4 bg-[#FFB800] text-black px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 font-bold">
+         <div className="absolute top-4 left-4 bg-[#FFB800] text-black px-4 py-2 rounded-xl shadow-lg flex items-center gap-3 font-bold">
            <span className="text-sm">Measurement selected • Drag handles to adjust</span>
+           <button
+             onClick={() => {
+               // FASE D2.5: Duplicate measurement
+               const OFFSET = 20;
+               const duplicated = {
+                 ...selectedDimension,
+                 id: `overlay_${Date.now()}`,
+                 canvas_data: {
+                   ...selectedDimension.canvas_data,
+                   x1: selectedDimension.canvas_data.x1 + OFFSET,
+                   y1: selectedDimension.canvas_data.y1 + OFFSET,
+                   x2: selectedDimension.canvas_data.x2 + OFFSET,
+                   y2: selectedDimension.canvas_data.y2 + OFFSET,
+                   label_x: selectedDimension.canvas_data.label_x + OFFSET,
+                   label_y: selectedDimension.canvas_data.label_y + OFFSET,
+                 },
+                 created_date: new Date().toISOString(),
+               };
+               
+               setDimensionOverlays(prev => [...prev, duplicated]);
+               setSelectedDimension(duplicated);
+               toast.success('Measurement duplicated');
+             }}
+             className="p-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+             title="Duplicate"
+           >
+             <Copy className="w-4 h-4 text-white" />
+           </button>
            <button
              onClick={() => {
                if (onDimensionDelete) {
@@ -757,6 +785,7 @@ export default function DimensionCanvas({
                setSelectedDimension(null);
              }}
              className="p-1.5 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+             title="Delete"
            >
              <Trash2 className="w-4 h-4 text-white" />
            </button>
