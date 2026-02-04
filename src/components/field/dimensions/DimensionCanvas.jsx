@@ -48,6 +48,10 @@ export default function DimensionCanvas({
   const [selectedDimension, setSelectedDimension] = useState(null);
   const [editingHandle, setEditingHandle] = useState(null); // 'start' | 'end' | null
 
+  // FASE D2.5: Markup resize state
+  const [resizingMarkup, setResizingMarkup] = useState(null); // 'corner' | null
+  const [resizeCorner, setResizeCorner] = useState(null); // 0-3 (corner index)
+
   // Load image
   useEffect(() => {
     if (!imageUrl) return;
@@ -347,7 +351,7 @@ export default function DimensionCanvas({
     const [p1, p2] = markup.points;
     const threshold = 20;
 
-    if (markup.type === 'line' || markup.type === 'highlight') {
+    if (markup.type === 'line' || markup.type === 'highlight' || markup.type === 'arrow' || markup.type === 'double_arrow') {
       const dist = pointToLineDistance(point, p1, p2);
       return dist < threshold;
     } else if (markup.type === 'circle') {
@@ -413,6 +417,17 @@ export default function DimensionCanvas({
         setSelectedMarkup(updatedMarkup);
       }
       return;
+    }
+
+    // FASE D2.5: Check if clicking on markup resize handle
+    if (selectedMarkup && !activeTool) {
+      const corner = getCornerNearPoint(point, selectedMarkup);
+      if (corner !== null) {
+        setResizingMarkup(selectedMarkup);
+        setResizeCorner(corner);
+        setDragStart(point);
+        return;
+      }
     }
 
     // FASE D2.4: Check if clicking on dimension handle
@@ -536,6 +551,33 @@ export default function DimensionCanvas({
     }
   };
 
+  // FASE D2.5: Get corner near point for resize
+  const getCornerNearPoint = (point, markup) => {
+    if (!markup.points || markup.points.length < 2) return null;
+    if (markup.type === 'circle' || markup.type === 'text') return null; // No resize for these
+    
+    const [p1, p2] = markup.points;
+    const minX = Math.min(p1.x, p2.x);
+    const maxX = Math.max(p1.x, p2.x);
+    const minY = Math.min(p1.y, p2.y);
+    const maxY = Math.max(p1.y, p2.y);
+    
+    const corners = [
+      { x: minX, y: minY },
+      { x: maxX, y: minY },
+      { x: minX, y: maxY },
+      { x: maxX, y: maxY }
+    ];
+    
+    const CORNER_THRESHOLD = 20;
+    for (let i = 0; i < corners.length; i++) {
+      const dist = Math.hypot(point.x - corners[i].x, point.y - corners[i].y);
+      if (dist < CORNER_THRESHOLD) return i;
+    }
+    
+    return null;
+  };
+
   // FASE D2.4: Recalculate dimension value from geometry
   const recalculateDimensionValue = (x1, y1, x2, y2, unitSystem) => {
     const pixelDistance = Math.hypot(x2 - x1, y2 - y1);
@@ -581,6 +623,47 @@ export default function DimensionCanvas({
 
   // FASE D2.3: Drag to move markup
   const handlePointerMove = (e) => {
+    // FASE D2.5: Resize markup
+    if (resizingMarkup && resizeCorner !== null && dragStart) {
+      e.preventDefault();
+      const point = getCanvasPoint(e);
+      
+      const [p1, p2] = resizingMarkup.points;
+      const minX = Math.min(p1.x, p2.x);
+      const maxX = Math.max(p1.x, p2.x);
+      const minY = Math.min(p1.y, p2.y);
+      const maxY = Math.max(p1.y, p2.y);
+      
+      let newP1 = { ...p1 };
+      let newP2 = { ...p2 };
+      
+      // Update based on which corner is being dragged
+      if (resizeCorner === 0) { // Top-left
+        newP1 = { x: Math.min(point.x, maxX - 20), y: Math.min(point.y, maxY - 20) };
+        newP2 = { x: maxX, y: maxY };
+      } else if (resizeCorner === 1) { // Top-right
+        newP1 = { x: minX, y: Math.min(point.y, maxY - 20) };
+        newP2 = { x: Math.max(point.x, minX + 20), y: maxY };
+      } else if (resizeCorner === 2) { // Bottom-left
+        newP1 = { x: Math.min(point.x, maxX - 20), y: minY };
+        newP2 = { x: maxX, y: Math.max(point.y, minY + 20) };
+      } else if (resizeCorner === 3) { // Bottom-right
+        newP1 = { x: minX, y: minY };
+        newP2 = { x: Math.max(point.x, minX + 20), y: Math.max(point.y, minY + 20) };
+      }
+      
+      const resizedMarkup = {
+        ...resizingMarkup,
+        points: [newP1, newP2]
+      };
+      
+      onRemoveMarkup(resizingMarkup.id);
+      onAddMarkup(resizedMarkup);
+      setResizingMarkup(resizedMarkup);
+      setSelectedMarkup(resizedMarkup);
+      return;
+    }
+
     // FASE D2.4: Drag dimension handle
     if (editingHandle && selectedDimension && dragStart) {
       e.preventDefault();
@@ -647,6 +730,15 @@ export default function DimensionCanvas({
   };
 
   const handlePointerUp = (e) => {
+    // FASE D2.5: Stop markup resize
+    if (resizingMarkup) {
+      setResizingMarkup(null);
+      setResizeCorner(null);
+      setDragStart(null);
+      toast.success('Markup resized');
+      return;
+    }
+
     // FASE D2.4: Stop handle editing
     if (editingHandle) {
       setEditingHandle(null);
@@ -696,7 +788,7 @@ export default function DimensionCanvas({
 
       {/* Canvas */}
       <div className="w-full h-full overflow-auto" style={{ 
-        cursor: activeDimension || activeTool ? 'crosshair' : (selectedMarkup ? 'move' : 'default'),
+        cursor: activeDimension || activeTool ? 'crosshair' : (resizingMarkup || editingHandle ? 'grabbing' : (selectedMarkup || selectedDimension ? 'move' : 'default')),
         touchAction: 'none'
       }}>
         <canvas
@@ -792,16 +884,39 @@ export default function DimensionCanvas({
          </div>
        )}
 
-       {/* FASE D2.3: Selected markup actions */}
+       {/* FASE D2.3 + D2.5: Selected markup actions */}
        {selectedMarkup && !activeTool && (
-         <div className="absolute top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-2">
+         <div className="absolute top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-3">
            <span className="text-sm font-semibold">Markup selected • Drag to move</span>
+           <button
+             onClick={() => {
+               // FASE D2.5: Duplicate markup
+               const OFFSET = 20;
+               const duplicated = {
+                 ...selectedMarkup,
+                 id: `markup_${Date.now()}`,
+                 points: selectedMarkup.points.map(p => ({
+                   x: p.x + OFFSET,
+                   y: p.y + OFFSET
+                 }))
+               };
+               
+               onAddMarkup(duplicated);
+               setSelectedMarkup(duplicated);
+               toast.success('Markup duplicated');
+             }}
+             className="p-1.5 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+             title="Duplicate"
+           >
+             <Copy className="w-4 h-4" />
+           </button>
            <button
              onClick={() => {
                onRemoveMarkup(selectedMarkup.id);
                setSelectedMarkup(null);
              }}
              className="p-1.5 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+             title="Delete"
            >
              <Trash2 className="w-4 h-4" />
            </button>
@@ -815,7 +930,7 @@ export default function DimensionCanvas({
 // RENDERING FUNCTIONS
 // ============================================
 
-// FASE D1 + D2.3: Draw markup on canvas with selection
+// FASE D1 + D2.3 + D2.5: Draw markup on canvas with selection
 function drawMarkup(ctx, markup, isSelected = false) {
   if (!markup.points || markup.points.length < 2) return;
 
@@ -834,6 +949,19 @@ function drawMarkup(ctx, markup, isSelected = false) {
     ctx.moveTo(p1.x, p1.y);
     ctx.lineTo(p2.x, p2.y);
     ctx.stroke();
+  } else if (markup.type === 'arrow' || markup.type === 'double_arrow') {
+    // FASE D2.5: Arrow rendering
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+    
+    // Draw arrowhead at end
+    drawArrowHead(ctx, p1.x, p1.y, p2.x, p2.y, markup.thickness * 3);
+    
+    // Draw second arrowhead if double arrow
+    if (markup.type === 'double_arrow') {
+      drawArrowHead(ctx, p2.x, p2.y, p1.x, p1.y, markup.thickness * 3);
+    }
   } else if (markup.type === 'circle') {
     const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
     ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2);
@@ -848,7 +976,7 @@ function drawMarkup(ctx, markup, isSelected = false) {
     ctx.fillText(markup.text || '', p1.x, p1.y);
   }
 
-  // FASE D2.3: Selection bounding box
+  // FASE D2.3 + D2.5: Selection bounding box with resize handles
   if (isSelected) {
     ctx.globalAlpha = 1;
     ctx.strokeStyle = '#3B82F6';
@@ -875,16 +1003,50 @@ function drawMarkup(ctx, markup, isSelected = false) {
 
     ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
 
-    // Corner handles
-    ctx.fillStyle = '#3B82F6';
-    [
-      [minX, minY], [maxX, minY], [minX, maxY], [maxX, maxY]
-    ].forEach(([hx, hy]) => {
-      ctx.fillRect(hx - 5, hy - 5, 10, 10);
-    });
+    // FASE D2.5: Resize handles (only for rectangle, line, arrow)
+    if (markup.type === 'rectangle' || markup.type === 'line' || markup.type === 'arrow' || markup.type === 'double_arrow' || markup.type === 'highlight') {
+      ctx.fillStyle = '#3B82F6';
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      
+      [
+        [minX, minY], [maxX, minY], [minX, maxY], [maxX, maxY]
+      ].forEach(([hx, hy]) => {
+        ctx.beginPath();
+        ctx.arc(hx, hy, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      });
+    } else {
+      // Just corner indicators for non-resizable
+      ctx.fillStyle = '#3B82F6';
+      [
+        [minX, minY], [maxX, minY], [minX, maxY], [maxX, maxY]
+      ].forEach(([hx, hy]) => {
+        ctx.fillRect(hx - 5, hy - 5, 10, 10);
+      });
+    }
   }
 
   ctx.restore();
+}
+
+// FASE D2.5: Draw arrow head helper
+function drawArrowHead(ctx, fromX, fromY, toX, toY, size = 15) {
+  const angle = Math.atan2(toY - fromY, toX - fromX);
+  
+  ctx.beginPath();
+  ctx.moveTo(toX, toY);
+  ctx.lineTo(
+    toX - size * Math.cos(angle - Math.PI / 6),
+    toY - size * Math.sin(angle - Math.PI / 6)
+  );
+  ctx.moveTo(toX, toY);
+  ctx.lineTo(
+    toX - size * Math.cos(angle + Math.PI / 6),
+    toY - size * Math.sin(angle + Math.PI / 6)
+  );
+  ctx.stroke();
 }
 
 // FASE D1: Draw active markup preview
@@ -909,6 +1071,16 @@ function drawActiveMarkup(ctx, points, activeTool, options) {
       ctx.moveTo(p1.x, p1.y);
       ctx.lineTo(p2.x, p2.y);
       ctx.stroke();
+    } else if (activeTool === 'markup_arrow' || activeTool === 'markup_double_arrow') {
+      // FASE D2.5: Arrow preview
+      ctx.moveTo(p1.x, p1.y);
+      ctx.lineTo(p2.x, p2.y);
+      ctx.stroke();
+      
+      drawArrowHead(ctx, p1.x, p1.y, p2.x, p2.y, options.thickness * 3);
+      if (activeTool === 'markup_double_arrow') {
+        drawArrowHead(ctx, p2.x, p2.y, p1.x, p1.y, options.thickness * 3);
+      }
     } else if (activeTool === 'markup_circle') {
       const radius = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2);
       ctx.arc(p1.x, p1.y, radius, 0, Math.PI * 2);
