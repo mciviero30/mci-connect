@@ -1,7 +1,9 @@
 import React from 'react';
-import { Ruler, Minus, Circle, Square, Highlighter, Type, ArrowRight, ArrowLeftRight } from 'lucide-react';
+import { Ruler, Minus, Circle, Square, Highlighter, Type, ArrowRight, ArrowLeftRight, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 // FASE D1 — Measurement Toolbar
 // GRUPO 1: Measurement (structured, persisted)
@@ -146,16 +148,48 @@ export default function MeasurementToolbar({
               </div>
 
               <Button
-                onClick={onClearMarkups}
+                onClick={() => setShowClearConfirm(true)}
                 variant="outline"
-                className="bg-slate-700 border-slate-600 text-white hover:bg-red-600 hover:border-red-500"
+                className="bg-red-500/20 border-red-500/40 text-red-400 hover:bg-red-500/30 min-h-[44px] font-semibold"
               >
+                <Trash2 className="w-4 h-4 mr-2" />
                 Clear All
               </Button>
             </div>
           )}
         </div>
       </div>
+      
+      {/* D6.4: Clear confirmation dialog */}
+      <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+        <AlertDialogContent className="bg-slate-900 border-slate-700 text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear all markups?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400">
+              This will remove all annotations from this drawing. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowClearConfirm(false)}
+              className="border-slate-700 text-slate-300"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                onClearMarkups();
+                setShowClearConfirm(false);
+                toast.success('All markups cleared');
+              }}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Clear All
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
