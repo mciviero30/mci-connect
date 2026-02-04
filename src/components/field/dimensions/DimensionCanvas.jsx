@@ -656,17 +656,17 @@ export default function DimensionCanvas({
       
       // Update based on which corner is being dragged
       if (resizeCorner === 0) { // Top-left
-        newP1 = { x: Math.min(currentPoint.x, maxX - 20), y: Math.min(currentPoint.y, maxY - 20) };
+        newP1 = { x: Math.min(point.x, maxX - 20), y: Math.min(point.y, maxY - 20) };
         newP2 = { x: maxX, y: maxY };
       } else if (resizeCorner === 1) { // Top-right
-        newP1 = { x: minX, y: Math.min(currentPoint.y, maxY - 20) };
-        newP2 = { x: Math.max(currentPoint.x, minX + 20), y: maxY };
+        newP1 = { x: minX, y: Math.min(point.y, maxY - 20) };
+        newP2 = { x: Math.max(point.x, minX + 20), y: maxY };
       } else if (resizeCorner === 2) { // Bottom-left
-        newP1 = { x: Math.min(currentPoint.x, maxX - 20), y: minY };
-        newP2 = { x: maxX, y: Math.max(currentPoint.y, minY + 20) };
+        newP1 = { x: Math.min(point.x, maxX - 20), y: minY };
+        newP2 = { x: maxX, y: Math.max(point.y, minY + 20) };
       } else if (resizeCorner === 3) { // Bottom-right
         newP1 = { x: minX, y: minY };
-        newP2 = { x: Math.max(currentPoint.x, minX + 20), y: Math.max(currentPoint.y, minY + 20) };
+        newP2 = { x: Math.max(point.x, minX + 20), y: Math.max(point.y, minY + 20) };
       }
       
       const resizedMarkup = {
@@ -684,7 +684,6 @@ export default function DimensionCanvas({
     // FASE D2.4: Drag dimension handle
     if (editingHandle && selectedDimension && dragStart) {
       e.preventDefault();
-      const point = getCanvasPoint(e);
       
       const { x1, y1, x2, y2 } = selectedDimension.canvas_data;
       let newX1 = x1, newY1 = y1, newX2 = x2, newY2 = y2;
@@ -726,7 +725,6 @@ export default function DimensionCanvas({
     if (!isDragging || !selectedMarkup || !dragStart) return;
 
     e.preventDefault();
-    const point = getCanvasPoint(e);
     const deltaX = point.x - dragStart.x;
     const deltaY = point.y - dragStart.y;
 
@@ -743,7 +741,7 @@ export default function DimensionCanvas({
     onRemoveMarkup(selectedMarkup.id);
     onAddMarkup(movedMarkup);
     setSelectedMarkup(movedMarkup);
-    setDragStart(point);
+    setDragStart({ x: point.x, y: point.y });
   };
 
   const handlePointerUp = (e) => {
