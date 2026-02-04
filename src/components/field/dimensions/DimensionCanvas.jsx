@@ -78,6 +78,9 @@ export default function DimensionCanvas({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0);
     
+    // FASE D5.2: Reset collision detection
+    labelBounds.current = [];
+    
     // Draw existing dimensions
     dimensions.forEach(dim => {
       if (!dim.canvas_data) return;
@@ -152,30 +155,12 @@ export default function DimensionCanvas({
       drawArrow(ctx, x2, y2, x1, y1);
     }
     
-    // Draw label with value
-    const label = formatDimensionLabel(dim);
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-    ctx.fillRect(label_x - 60, label_y - 15, 120, 30);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = 'bold 14px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, label_x, label_y + 5);
+    // FASE D5.1 + D5.2: Legible labels with anti-collision
+    drawMeasurementLabel(ctx, dim, label_x, label_y);
 
-    // FASE D2.3: Draw construction state badge below
-    if (dim.construction_state) {
-      const badgeText = dim.construction_state === 'stud_only' ? 'STUD' : 'DW';
-      const badgeColor = dim.construction_state === 'stud_only' ? '#F59E0B' : '#10B981';
-      
-      ctx.fillStyle = badgeColor;
-      ctx.fillRect(label_x - 25, label_y + 18, 50, 18);
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 10px Arial';
-      ctx.fillText(badgeText, label_x, label_y + 30);
-    }
-
-    // FASE D2.4: Draw handles when selected
+    // FASE D2.4: Draw handles when selected (D5.3: increased size for touch)
     if (isSelected && !isLocked) {
-      const handleRadius = 12;
+      const handleRadius = 14; // D5.3: 28px diameter for touch
       ctx.fillStyle = '#FFB800';
       ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 3;
@@ -253,23 +238,39 @@ export default function DimensionCanvas({
     ctx.restore();
   };
 
-  const formatDimensionLabel = (dim) => {
+  // FASE D5.1: Format value only (no type)
+  const formatDimensionValue = (dim) => {
     if (dim.unit_system === 'imperial') {
       const ft = dim.value_feet || 0;
       const inches = dim.value_inches || 0;
       const frac = dim.value_fraction || '0';
       
-      let label = `${ft}' ${inches}"`;
       if (frac !== '0') {
-        label = `${ft}' ${inches} ${frac}"`;
+        return `${ft}' ${inches} ${frac}"`;
       }
-      // FASE D2.3: Show measurement type in label
-      label += ` ${dim.measurement_type}`;
-      return label;
+      return `${ft}' ${inches}"`;
     } else {
       const mm = dim.value_mm || 0;
-      return `${mm}mm ${dim.measurement_type}`;
+      return `${mm}mm`;
     }
+  };
+
+  // FASE D5.2: Detect label collision
+  const labelBounds = useRef([]);
+  const detectLabelCollision = (x, y, width, height) => {
+    const currentBox = { x: x - width/2, y: y - height/2, width, height };
+    
+    for (const box of labelBounds.current) {
+      if (!(currentBox.x + currentBox.width < box.x || 
+            currentBox.x > box.x + box.width ||
+            currentBox.y + currentBox.height < box.y || 
+            currentBox.y > box.y + box.height)) {
+        return true; // Collision detected
+      }
+    }
+    
+    labelBounds.current.push(currentBox);
+    return false;
   };
 
   const calculateSnapToAxis = (p1, p2) => {
@@ -324,11 +325,11 @@ export default function DimensionCanvas({
     return { x, y };
   };
 
-  // FASE D2.4: Check if point is near dimension handle
+  // FASE D5.3: Increased touch threshold (28px diameter = 14px radius)
   const isPointNearHandle = (point, dim) => {
     if (!dim.canvas_data) return null;
     const { x1, y1, x2, y2 } = dim.canvas_data;
-    const HANDLE_THRESHOLD = 20;
+    const HANDLE_THRESHOLD = 28; // D5.3: larger for touch
 
     const distToStart = Math.hypot(point.x - x1, point.y - y1);
     const distToEnd = Math.hypot(point.x - x2, point.y - y2);
@@ -397,10 +398,17 @@ export default function DimensionCanvas({
     return Math.sqrt(dx * dx + dy * dy);
   };
 
-  // FASE D2.2: Pointer down (unified mouse + touch)
+  // FASE D5.3: Unified pointer down (tap detection + long press)
+  const pointerDownTime = useRef(0);
+  const pointerMoved = useRef(false);
+
   const handlePointerDown = (e) => {
     e.preventDefault();
     const point = getCanvasPoint(e);
+    
+    // D5.3: Track timing and movement
+    pointerDownTime.current = Date.now();
+    pointerMoved.current = false;
     
     // FASE D2.3: Double tap detection for text editing
     const now = Date.now();
@@ -621,12 +629,21 @@ export default function DimensionCanvas({
     }
   };
 
-  // FASE D2.3: Drag to move markup
+  // FASE D5.3: Track pointer movement (for tap vs drag detection)
   const handlePointerMove = (e) => {
+    const point = getCanvasPoint(e);
+    
+    // D5.3: Mark movement if > 6px
+    if (dragStart) {
+      const distance = Math.hypot(point.x - dragStart.x, point.y - dragStart.y);
+      if (distance > 6) {
+        pointerMoved.current = true;
+      }
+    }
+    
     // FASE D2.5: Resize markup
     if (resizingMarkup && resizeCorner !== null && dragStart) {
       e.preventDefault();
-      const point = getCanvasPoint(e);
       
       const [p1, p2] = resizingMarkup.points;
       const minX = Math.min(p1.x, p2.x);
@@ -639,17 +656,17 @@ export default function DimensionCanvas({
       
       // Update based on which corner is being dragged
       if (resizeCorner === 0) { // Top-left
-        newP1 = { x: Math.min(point.x, maxX - 20), y: Math.min(point.y, maxY - 20) };
+        newP1 = { x: Math.min(currentPoint.x, maxX - 20), y: Math.min(currentPoint.y, maxY - 20) };
         newP2 = { x: maxX, y: maxY };
       } else if (resizeCorner === 1) { // Top-right
-        newP1 = { x: minX, y: Math.min(point.y, maxY - 20) };
-        newP2 = { x: Math.max(point.x, minX + 20), y: maxY };
+        newP1 = { x: minX, y: Math.min(currentPoint.y, maxY - 20) };
+        newP2 = { x: Math.max(currentPoint.x, minX + 20), y: maxY };
       } else if (resizeCorner === 2) { // Bottom-left
-        newP1 = { x: Math.min(point.x, maxX - 20), y: minY };
-        newP2 = { x: maxX, y: Math.max(point.y, minY + 20) };
+        newP1 = { x: Math.min(currentPoint.x, maxX - 20), y: minY };
+        newP2 = { x: maxX, y: Math.max(currentPoint.y, minY + 20) };
       } else if (resizeCorner === 3) { // Bottom-right
         newP1 = { x: minX, y: minY };
-        newP2 = { x: Math.max(point.x, minX + 20), y: Math.max(point.y, minY + 20) };
+        newP2 = { x: Math.max(currentPoint.x, minX + 20), y: Math.max(currentPoint.y, minY + 20) };
       }
       
       const resizedMarkup = {
@@ -730,6 +747,10 @@ export default function DimensionCanvas({
   };
 
   const handlePointerUp = (e) => {
+    // D5.3: Detect tap vs drag
+    const pressDuration = Date.now() - pointerDownTime.current;
+    const wasTap = pressDuration < 200 && !pointerMoved.current;
+    
     // FASE D2.5: Stop markup resize
     if (resizingMarkup) {
       setResizingMarkup(null);
