@@ -9,12 +9,12 @@ import { format } from 'date-fns';
 export default function MeasurementExportDialog({
   open,
   onOpenChange,
+  jobId,
   jobName,
   dimensions,
   unitSystem,
   measurementSessionId,  // FASE 3C-5: Session context for PDF ownership
-  plans = [],  // FASE D4: Drawing images
-  markupsByPlan = {},  // FASE D4: Markups per drawing
+  markupsByPlan = {},
 }) {
   const [isExporting, setIsExporting] = useState(false);
 
@@ -28,15 +28,25 @@ export default function MeasurementExportDialog({
     try {
       toast.info('Generating PDF...');
 
-      // FASE D4: Include plans and markups
+      // FASE D4: Collect plans and job info for PDF
+      const plans = await base44.entities.Plan.filter({ 
+        job_id: jobId, 
+        purpose: 'job_final'
+      }, '-created_date');
+
+      const jobs = await base44.entities.Job.filter({ id: jobId });
+      const jobAddress = jobs?.[0]?.address || '';
+
+      // FASE D4: Include plans, markups, and job address
       const response = await base44.functions.invoke('exportDimensionsPDF', {
-        jobId: dimensions[0]?.job_id,
+        jobId,
         jobName,
+        jobAddress,
         dimensions,
         unitSystem,
-        measurementSessionId,  // Session ownership
-        plans,  // Drawing images
-        markupsByPlan,  // Markups per drawing
+        measurementSessionId,
+        plans,
+        markupsByPlan,
       });
 
       if (!response || !response.data) {
