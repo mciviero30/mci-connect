@@ -17,6 +17,8 @@ import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView"
 import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 import { buildUserQuery } from "@/components/utils/userResolution";
+import PageHeader from "@/components/shared/PageHeader";
+import { MapPin, Shield } from "lucide-react";
 
 export default function TimeTracking() {
   const toast = useToast();
