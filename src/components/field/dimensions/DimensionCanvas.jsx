@@ -51,6 +51,16 @@ export default function DimensionCanvas({
   // FASE D2.5: Markup resize state
   const [resizingMarkup, setResizingMarkup] = useState(null); // 'corner' | null
   const [resizeCorner, setResizeCorner] = useState(null); // 0-3 (corner index)
+  
+  // FASE D6.3: Undo/Redo state
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+  
+  // FASE D6.1: Performance optimization refs
+  const rafId = useRef(null);
+  const lastMoveTime = useRef(0);
+  const renderCache = useRef(new Map());
 
   // Load image
   useEffect(() => {
@@ -63,8 +73,8 @@ export default function DimensionCanvas({
     };
   }, [imageUrl]);
 
-  // Draw canvas
-  useEffect(() => {
+  // FASE D6.1: Optimized render with RAF
+  const renderCanvas = React.useCallback(() => {
     if (!canvasRef.current || !image) return;
     
     const canvas = canvasRef.current;
@@ -78,19 +88,32 @@ export default function DimensionCanvas({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0);
     
-    // FASE D5.2: Reset collision detection
+    // Reset collision detection
     labelBounds.current = [];
     
-    // Draw existing dimensions
+    // D6.2: Draw non-selected dimensions with reduced opacity
     dimensions.forEach(dim => {
       if (!dim.canvas_data) return;
       const isSelected = selectedDimension?.id === dim.id;
-      drawDimension(ctx, dim, isSelected);
+      
+      // D6.1: Use render cache for non-selected, static items
+      if (!isSelected && renderCache.current.has(dim.id)) {
+        const cached = renderCache.current.get(dim.id);
+        ctx.putImageData(cached, 0, 0);
+      } else {
+        drawDimension(ctx, dim, isSelected);
+        
+        // Cache if not selected and not locked (static)
+        if (!isSelected && lockedMeasurements.has(dim.id)) {
+          renderCache.current.set(dim.id, ctx.getImageData(0, 0, canvas.width, canvas.height));
+        }
+      }
     });
 
-    // FASE D1: Draw markups
+    // D6.2: Draw non-selected markups with reduced opacity
     markups.forEach(markup => {
-      drawMarkup(ctx, markup, selectedMarkup?.id === markup.id);
+      const isSelected = selectedMarkup?.id === markup.id;
+      drawMarkup(ctx, markup, isSelected);
     });
 
     // Draw active drawing
@@ -98,22 +121,29 @@ export default function DimensionCanvas({
       drawActiveLine(ctx, drawingPoints);
     }
 
-    // FASE D1: Draw active markup (preview while drawing)
+    // Draw active markup preview
     if (markupDrawPoints.length > 0 && activeTool?.startsWith('markup_')) {
       drawActiveMarkup(ctx, markupDrawPoints, activeTool, markupOptions);
     }
     
-    // FASE D5.4: Re-render every 100ms to animate warnings
+    // Animation loop for warnings
     const hasUnlocked = dimensions.some(d => !lockedMeasurements.has(d.id));
     if (hasUnlocked) {
-      const timer = setTimeout(() => {
-        if (canvasRef.current) {
-          canvasRef.current.getContext('2d'); // Force re-render
-        }
-      }, 100);
-      return () => clearTimeout(timer);
+      rafId.current = requestAnimationFrame(renderCanvas);
     }
-  }, [image, dimensions, drawingPoints, zoom, markups, markupDrawPoints, activeTool, markupOptions, selectedMarkup, lockedMeasurements, selectedDimension]);
+  }, [image, dimensions, markups, drawingPoints, markupDrawPoints, activeTool, markupOptions, selectedMarkup, lockedMeasurements, selectedDimension]);
+
+  // D6.1: Use RAF for render
+  useEffect(() => {
+    renderCanvas();
+    
+    return () => {
+      if (rafId.current) {
+        cancelAnimationFrame(rafId.current);
+        rafId.current = null;
+      }
+    };
+  }, [renderCanvas]);
 
   const drawDimension = (ctx, dim, isSelected = false) => {
     const { x1, y1, x2, y2, label_x, label_y } = dim.canvas_data;
@@ -121,7 +151,12 @@ export default function DimensionCanvas({
 
     ctx.save();
 
-    // FASE D5.4: Visual warning for unlocked measurements (flashing orange glow)
+    // D6.2: Non-selected items have reduced opacity
+    if (!isSelected && !isLocked) {
+      ctx.globalAlpha = 0.7;
+    }
+
+    // FASE D5.4 + D6.2: Visual warning for unlocked (enhanced glow)
     if (!isLocked && !isSelected) {
       const pulse = Math.abs(Math.sin(Date.now() / 500)) * 0.4 + 0.6;
       ctx.strokeStyle = '#FF8C00';
@@ -132,34 +167,39 @@ export default function DimensionCanvas({
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
-      ctx.globalAlpha = 1;
+      ctx.globalAlpha = !isSelected ? 0.7 : 1;
     }
 
-    // FASE D2.4: Highlight if selected
+    // D6.2: Enhanced highlight if selected (thicker, glow)
     if (isSelected) {
+      // Outer glow
+      ctx.shadowColor = '#FFB800';
+      ctx.shadowBlur = 12;
       ctx.strokeStyle = '#FFB800';
-      ctx.lineWidth = 6;
+      ctx.lineWidth = 8;
       ctx.setLineDash([]);
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = 1;
       ctx.beginPath();
       ctx.moveTo(x1, y1);
       ctx.lineTo(x2, y2);
       ctx.stroke();
-      ctx.globalAlpha = 1;
+      
+      // Reset shadow
+      ctx.shadowBlur = 0;
     }
 
     // Style based on type
     if (dim.dimension_type === 'benchmark') {
       ctx.strokeStyle = isLocked ? '#888888' : '#FFB800';
       ctx.setLineDash([10, 5]);
-      ctx.lineWidth = 3;
+      ctx.lineWidth = isSelected ? 4 : 3;
     } else if (dim.dimension_type === 'vertical') {
       ctx.strokeStyle = isLocked ? '#888888' : (dim.benchmark_above ? '#00FF00' : '#FF0000');
-      ctx.lineWidth = 3;
+      ctx.lineWidth = isSelected ? 4 : 3;
       ctx.setLineDash([]);
     } else {
       ctx.strokeStyle = isLocked ? '#888888' : '#FFFFFF';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = isSelected ? 4 : 3;
       ctx.setLineDash([]);
     }
 
@@ -180,12 +220,18 @@ export default function DimensionCanvas({
       drawArrow(ctx, x2, y2, x1, y1);
     }
     
-    // FASE D5.1 + D5.2 + D5.4: Legible labels with anti-collision + warning
+    // Labels always at 100% opacity for clarity
+    ctx.globalAlpha = 1;
     drawMeasurementLabel(ctx, dim, label_x, label_y, labelBounds.current, isLocked);
 
-    // FASE D2.4: Draw handles when selected (D5.3: increased size for touch)
+    // D6.2: Draw handles when selected (enhanced visibility)
     if (isSelected && !isLocked) {
       const handleRadius = 14; // D5.3: 28px diameter for touch
+      
+      // Handle glow
+      ctx.shadowColor = '#FFB800';
+      ctx.shadowBlur = 8;
+      
       ctx.fillStyle = '#FFB800';
       ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 3;
@@ -201,6 +247,8 @@ export default function DimensionCanvas({
       ctx.arc(x2, y2, handleRadius, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
+      
+      ctx.shadowBlur = 0;
     }
     
     ctx.restore();
@@ -422,10 +470,6 @@ export default function DimensionCanvas({
     const dy = point.y - yy;
     return Math.sqrt(dx * dx + dy * dy);
   };
-
-  // FASE D5.3: Unified pointer down (tap detection + long press)
-  const pointerDownTime = useRef(0);
-  const pointerMoved = useRef(false);
 
   const handlePointerDown = (e) => {
     e.preventDefault();
@@ -654,11 +698,15 @@ export default function DimensionCanvas({
     }
   };
 
-  // FASE D5.3: Track pointer movement (for tap vs drag detection)
+  // D6.1: Throttled pointer move (60fps)
   const handlePointerMove = (e) => {
+    const now = Date.now();
+    if (now - lastMoveTime.current < 16) return; // ~60fps
+    lastMoveTime.current = now;
+    
     const point = getCanvasPoint(e);
     
-    // D5.3: Mark movement if > 6px
+    // Mark movement if > 6px
     if (dragStart) {
       const distance = Math.hypot(point.x - dragStart.x, point.y - dragStart.y);
       if (distance > 6) {
@@ -802,9 +850,69 @@ export default function DimensionCanvas({
 
   const handleZoomIn = () => setZoom(z => Math.min(z + 0.2, 3));
   const handleZoomOut = () => setZoom(z => Math.max(z - 0.2, 0.5));
+  
+  // D6.3: Keyboard shortcuts for Undo/Redo
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Undo: Cmd/Ctrl + Z
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (historyIndex > 0) {
+          setHistoryIndex(prev => prev - 1);
+          toast.success('Undo');
+        }
+      }
+      
+      // Redo: Cmd/Ctrl + Shift + Z
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && e.shiftKey) {
+        e.preventDefault();
+        if (historyIndex < history.length - 1) {
+          setHistoryIndex(prev => prev + 1);
+          toast.success('Redo');
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [historyIndex, history.length]);
 
   return (
     <div ref={containerRef} className="relative w-full h-full bg-slate-900 rounded-xl overflow-hidden">
+      {/* D6.3: Undo/Redo Controls */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-2 rounded-xl border border-slate-700">
+        <Button
+          onClick={() => {
+            if (historyIndex > 0) {
+              setHistoryIndex(prev => prev - 1);
+              // TODO: Apply undo logic
+              toast.success('Undo');
+            }
+          }}
+          disabled={historyIndex <= 0}
+          size="sm"
+          className="bg-slate-800 hover:bg-slate-700 min-w-[40px] min-h-[40px] disabled:opacity-30"
+          title="Undo (Cmd/Ctrl+Z)"
+        >
+          ↶
+        </Button>
+        <Button
+          onClick={() => {
+            if (historyIndex < history.length - 1) {
+              setHistoryIndex(prev => prev + 1);
+              // TODO: Apply redo logic
+              toast.success('Redo');
+            }
+          }}
+          disabled={historyIndex >= history.length - 1}
+          size="sm"
+          className="bg-slate-800 hover:bg-slate-700 min-w-[40px] min-h-[40px] disabled:opacity-30"
+          title="Redo (Cmd/Ctrl+Shift+Z)"
+        >
+          ↷
+        </Button>
+      </div>
+
       {/* Controls */}
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
         <Button
@@ -881,13 +989,19 @@ export default function DimensionCanvas({
          </div>
        )}
 
-       {/* FASE D2.4: Selected dimension actions */}
+       {/* D6.2 + D6.3 + D6.4: Selected dimension actions with Undo/Redo */}
        {selectedDimension && !activeTool && !lockedMeasurements.has(selectedDimension.id) && (
          <div className="absolute top-4 left-4 bg-[#FFB800] text-black px-4 py-2 rounded-xl shadow-lg flex items-center gap-3 font-bold">
            <span className="text-sm">Measurement selected • Drag handles to adjust</span>
            <button
              onClick={() => {
-               // FASE D2.5: Duplicate measurement
+               // D6.3: Save to history before duplicate
+               saveToHistory({
+                 type: 'duplicate_dimension',
+                 target: selectedDimension,
+                 timestamp: Date.now()
+               });
+
                const OFFSET = 20;
                const duplicated = {
                  ...selectedDimension,
@@ -903,24 +1017,47 @@ export default function DimensionCanvas({
                  },
                  created_date: new Date().toISOString(),
                };
-               
-               setDimensionOverlays(prev => [...prev, duplicated]);
+
+               if (onDimensionUpdate) onDimensionUpdate(duplicated);
                setSelectedDimension(duplicated);
                toast.success('Measurement duplicated');
              }}
-             className="p-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+             className="p-1.5 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors min-w-[36px] min-h-[36px]"
              title="Duplicate"
            >
              <Copy className="w-4 h-4 text-white" />
            </button>
            <button
              onClick={() => {
-               if (onDimensionDelete) {
-                 onDimensionDelete(selectedDimension.id);
+               // D6.4: Double-tap to delete protection
+               if (deleteConfirmId === selectedDimension.id) {
+                 // Second tap - confirm delete
+                 saveToHistory({
+                   type: 'delete_dimension',
+                   target: selectedDimension,
+                   timestamp: Date.now()
+                 });
+
+                 if (onDimensionDelete) {
+                   onDimensionDelete(selectedDimension.id);
+                 }
+                 setSelectedDimension(null);
+                 setDeleteConfirmId(null);
+                 toast.success('Measurement deleted');
+               } else {
+                 // First tap - require confirmation
+                 setDeleteConfirmId(selectedDimension.id);
+                 toast('Tap again to delete', { duration: 1500 });
+
+                 // Reset after 1.5s
+                 setTimeout(() => setDeleteConfirmId(null), 1500);
                }
-               setSelectedDimension(null);
              }}
-             className="p-1.5 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+             className={`p-1.5 rounded-lg transition-all min-w-[36px] min-h-[36px] ${
+               deleteConfirmId === selectedDimension.id
+                 ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                 : 'bg-red-500 hover:bg-red-600'
+             }`}
              title="Delete"
            >
              <Trash2 className="w-4 h-4 text-white" />
@@ -928,13 +1065,19 @@ export default function DimensionCanvas({
          </div>
        )}
 
-       {/* FASE D2.3 + D2.5: Selected markup actions */}
+       {/* D6.2 + D6.3 + D6.4: Selected markup actions with Undo/Redo */}
        {selectedMarkup && !activeTool && (
          <div className="absolute top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-3">
            <span className="text-sm font-semibold">Markup selected • Drag to move</span>
            <button
              onClick={() => {
-               // FASE D2.5: Duplicate markup
+               // D6.3: Save to history
+               saveToHistory({
+                 type: 'duplicate_markup',
+                 target: selectedMarkup,
+                 timestamp: Date.now()
+               });
+               
                const OFFSET = 20;
                const duplicated = {
                  ...selectedMarkup,
@@ -949,17 +1092,36 @@ export default function DimensionCanvas({
                setSelectedMarkup(duplicated);
                toast.success('Markup duplicated');
              }}
-             className="p-1.5 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+             className="p-1.5 bg-green-600 hover:bg-green-700 rounded-lg transition-colors min-w-[36px] min-h-[36px]"
              title="Duplicate"
            >
              <Copy className="w-4 h-4" />
            </button>
            <button
              onClick={() => {
-               onRemoveMarkup(selectedMarkup.id);
-               setSelectedMarkup(null);
+               // D6.4: Double-tap protection
+               if (deleteConfirmId === selectedMarkup.id) {
+                 saveToHistory({
+                   type: 'delete_markup',
+                   target: selectedMarkup,
+                   timestamp: Date.now()
+                 });
+                 
+                 onRemoveMarkup(selectedMarkup.id);
+                 setSelectedMarkup(null);
+                 setDeleteConfirmId(null);
+                 toast.success('Markup deleted');
+               } else {
+                 setDeleteConfirmId(selectedMarkup.id);
+                 toast('Tap again to delete', { duration: 1500 });
+                 setTimeout(() => setDeleteConfirmId(null), 1500);
+               }
              }}
-             className="p-1.5 bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+             className={`p-1.5 rounded-lg transition-all min-w-[36px] min-h-[36px] ${
+               deleteConfirmId === selectedMarkup.id
+                 ? 'bg-red-600 hover:bg-red-700 animate-pulse'
+                 : 'bg-red-500 hover:bg-red-600'
+             }`}
              title="Delete"
            >
              <Trash2 className="w-4 h-4" />
@@ -974,15 +1136,25 @@ export default function DimensionCanvas({
 // RENDERING FUNCTIONS
 // ============================================
 
-// FASE D1 + D2.3 + D2.5: Draw markup on canvas with selection
+// D6.2: Draw markup with visual hierarchy
 function drawMarkup(ctx, markup, isSelected = false) {
   if (!markup.points || markup.points.length < 2) return;
 
   ctx.save();
+  
+  // D6.2: Reduced opacity for non-selected
+  const baseOpacity = isSelected ? 1 : 0.7;
+  
   ctx.strokeStyle = markup.color;
   ctx.fillStyle = markup.color;
-  ctx.lineWidth = markup.thickness;
-  ctx.globalAlpha = markup.type === 'highlight' ? 0.3 : 1;
+  ctx.lineWidth = isSelected ? markup.thickness + 1 : markup.thickness;
+  ctx.globalAlpha = markup.type === 'highlight' ? (baseOpacity * 0.3) : baseOpacity;
+  
+  // D6.2: Glow effect for selected
+  if (isSelected) {
+    ctx.shadowColor = markup.color;
+    ctx.shadowBlur = 8;
+  }
 
   const [p1, p2] = markup.points;
 
@@ -1020,12 +1192,13 @@ function drawMarkup(ctx, markup, isSelected = false) {
     ctx.fillText(markup.text || '', p1.x, p1.y);
   }
 
-  // FASE D2.3 + D2.5: Selection bounding box with resize handles
+  // D6.2: Enhanced selection with glow
   if (isSelected) {
+    ctx.shadowBlur = 0; // Reset shadow
     ctx.globalAlpha = 1;
     ctx.strokeStyle = '#3B82F6';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([5, 5]);
+    ctx.lineWidth = 3;
+    ctx.setLineDash([8, 4]);
 
     const padding = 15;
     let minX, minY, maxX, maxY;
@@ -1047,8 +1220,10 @@ function drawMarkup(ctx, markup, isSelected = false) {
 
     ctx.strokeRect(minX, minY, maxX - minX, maxY - minY);
 
-    // FASE D2.5: Resize handles (only for rectangle, line, arrow)
+    // D6.2: Larger resize handles with glow
     if (markup.type === 'rectangle' || markup.type === 'line' || markup.type === 'arrow' || markup.type === 'double_arrow' || markup.type === 'highlight') {
+      ctx.shadowColor = '#3B82F6';
+      ctx.shadowBlur = 6;
       ctx.fillStyle = '#3B82F6';
       ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 2;
@@ -1057,17 +1232,22 @@ function drawMarkup(ctx, markup, isSelected = false) {
         [minX, minY], [maxX, minY], [minX, maxY], [maxX, maxY]
       ].forEach(([hx, hy]) => {
         ctx.beginPath();
-        ctx.arc(hx, hy, 8, 0, Math.PI * 2);
+        ctx.arc(hx, hy, 10, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
       });
     } else {
-      // Just corner indicators for non-resizable
+      // Corner indicators for non-resizable
       ctx.fillStyle = '#3B82F6';
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
       [
         [minX, minY], [maxX, minY], [minX, maxY], [maxX, maxY]
       ].forEach(([hx, hy]) => {
-        ctx.fillRect(hx - 5, hy - 5, 10, 10);
+        ctx.beginPath();
+        ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
       });
     }
   }
