@@ -199,6 +199,7 @@ async function loadImage(url) {
   return bitmap;
 }
 
+// FASE D5.5: PDF-optimized dimension rendering (high contrast, solid backgrounds)
 function drawDimensionOnPDF(ctx, dim, unitSystem) {
   const { x1, y1, x2, y2, label_x, label_y } = dim.canvas_data;
   
@@ -208,13 +209,13 @@ function drawDimensionOnPDF(ctx, dim, unitSystem) {
   if (dim.dimension_type === 'benchmark') {
     ctx.strokeStyle = '#FFB800';
     ctx.setLineDash([10, 5]);
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4; // D5.5: Thicker for print
   } else if (dim.dimension_type === 'vertical') {
     ctx.strokeStyle = dim.benchmark_above ? '#00FF00' : '#FF0000';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
   } else {
     ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
   }
   
   // Draw line
@@ -229,33 +230,85 @@ function drawDimensionOnPDF(ctx, dim, unitSystem) {
     drawArrowOnPDF(ctx, x2, y2, x1, y1);
   }
   
-  // Value label
-  const valueLabel = formatDimensionValue(dim);
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
-  ctx.fillRect(label_x - 60, label_y - 15, 120, 30);
+  // D5.5: Measure text for proper box sizing
+  const valueText = formatDimensionValue(dim);
+  const typeText = dim.measurement_type || '';
+  
+  ctx.font = 'bold 16px Arial';
+  const valueWidth = ctx.measureText(valueText).width;
+  ctx.font = 'bold 12px Arial';
+  const typeWidth = ctx.measureText(typeText).width;
+  const labelWidth = Math.max(valueWidth, typeWidth) + 20;
+  
+  // D5.5: Ensure label stays within canvas bounds
+  let finalLabelX = label_x;
+  const margin = 30;
+  if (finalLabelX - labelWidth/2 < margin) finalLabelX = margin + labelWidth/2;
+  if (finalLabelX + labelWidth/2 > ctx.canvas.width - margin) finalLabelX = ctx.canvas.width - margin - labelWidth/2;
+  
+  let finalLabelY = label_y;
+  if (finalLabelY < margin) finalLabelY = margin;
+  if (finalLabelY > ctx.canvas.height - margin) finalLabelY = ctx.canvas.height - margin;
+  
+  // D5.5: Value label with solid background and border
+  const valueBoxHeight = 30;
+  ctx.fillStyle = '#000000'; // Solid black
+  roundRectPDF(ctx, finalLabelX - labelWidth/2, finalLabelY - 40, labelWidth, valueBoxHeight, 15);
+  ctx.fill();
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = 'bold 14px Arial';
+  ctx.font = 'bold 16px Arial'; // D5.5: 16px for print
   ctx.textAlign = 'center';
-  ctx.fillText(valueLabel, label_x, label_y + 5);
+  ctx.textBaseline = 'middle';
+  ctx.fillText(valueText, finalLabelX, finalLabelY - 25);
   
-  // Type label (below value)
+  // D5.5: Type label (solid orange background)
+  const typeBoxHeight = 22;
   ctx.fillStyle = '#FFB800';
-  ctx.font = 'bold 10px Arial';
-  ctx.fillText(dim.measurement_type, label_x, label_y + 15);
+  roundRectPDF(ctx, finalLabelX - labelWidth/2, finalLabelY - 8, labelWidth, typeBoxHeight, 11);
+  ctx.fill();
   
-  // Construction state badge
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 12px Arial';
+  ctx.fillText(typeText, finalLabelX, finalLabelY + 3);
+  
+  // D5.5: Construction state badge (solid background)
   if (dim.construction_state) {
-    const badgeText = dim.construction_state === 'stud_only' ? 'STUD' : 'DW';
-    const badgeColor = dim.construction_state === 'stud_only' ? '#F59E0B' : '#10B981';
+    const stateText = dim.construction_state === 'stud_only' ? 'STUD' : 'DRYWALL';
+    const stateColor = dim.construction_state === 'stud_only' ? '#F59E0B' : '#10B981';
+    const stateWidth = 85;
+    const stateHeight = 20;
     
-    ctx.fillStyle = badgeColor;
-    ctx.fillRect(label_x - 25, label_y + 20, 50, 16);
+    ctx.fillStyle = stateColor;
+    roundRectPDF(ctx, finalLabelX - stateWidth/2, finalLabelY + 16, stateWidth, stateHeight, 10);
+    ctx.fill();
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 9px Arial';
-    ctx.fillText(badgeText, label_x, label_y + 31);
+    ctx.font = 'bold 11px Arial';
+    ctx.fillText(stateText, finalLabelX, finalLabelY + 26);
   }
   
   ctx.restore();
+}
+
+function roundRectPDF(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
 }
 
 function drawArrowOnPDF(ctx, fromX, fromY, toX, toY) {
