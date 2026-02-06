@@ -246,6 +246,17 @@ export default function ClientAppDemo() {
                         <div className="flex gap-2">
                           <Button
                             size="sm"
+                            onClick={async () => {
+                              const status = await base44.functions.invoke('checkDemoUserStatus', { email: user.email });
+                              console.log('Demo user status:', status.data);
+                              toast.info(`Role: ${status.data.user.role} | Demo: ${status.data.user.is_demo_user}`);
+                            }}
+                            variant="outline"
+                          >
+                            Check Status
+                          </Button>
+                          <Button
+                            size="sm"
                             onClick={() => convertToDemo.mutate(user.email)}
                             disabled={convertToDemo.isPending}
                             className="bg-gradient-to-r from-blue-600 to-indigo-600"
