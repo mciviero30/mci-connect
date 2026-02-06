@@ -52,6 +52,7 @@ export default function MeasurementToolbar({
   onChangeMarkupOptions,
   onClearMarkups 
 }) {
+  const [showClearConfirm, setShowClearConfirm] = React.useState(false);
   const isMeasurementActive = activeTool && !activeTool.startsWith('markup_');
   const isMarkupActive = activeTool && activeTool.startsWith('markup_');
   
