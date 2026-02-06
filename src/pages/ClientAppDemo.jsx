@@ -78,16 +78,15 @@ export default function ClientAppDemo() {
 
   const convertToDemo = useMutation({
     mutationFn: async (email) => {
-      const { convertPendingToDemo } = await import("@/functions/convertPendingToDemo");
-      const response = await convertPendingToDemo({ email });
+      const response = await base44.functions.invoke('convertPendingToDemo', { email });
       return response.data;
     },
     onSuccess: () => {
-      toast.success("User converted to demo role");
+      toast.success("Converted to demo role - user should logout and login again");
       queryClient.invalidateQueries({ queryKey: ['demo-users'] });
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to convert user");
+      toast.error(error?.response?.data?.error || error.message || "Failed to convert user");
     },
   });
 
