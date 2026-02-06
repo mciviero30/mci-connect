@@ -35,10 +35,7 @@ export default function ClientAppDemo() {
 
     setIsInviting(true);
     try {
-      // Invite as regular user first
-      await base44.users.inviteUser(email, "user");
-      
-      // Mark as demo user by adding to PendingEmployee with demo flag
+      // Mark as demo user FIRST
       await base44.entities.PendingEmployee.create({
         email: email,
         first_name: name.split(' ')[0] || name,
@@ -47,8 +44,11 @@ export default function ClientAppDemo() {
         status: 'invited',
         notes: 'DEMO_USER - Sandbox access only'
       });
+
+      // Then invite as regular user
+      await base44.users.inviteUser(email, "user");
       
-      toast.success(`Demo invitation sent to ${email}`);
+      toast.success(`Demo invitation sent to ${email}. Once they register, manually convert them to demo role.`);
       setEmail("");
       setName("");
       queryClient.invalidateQueries({ queryKey: ['demo-users'] });
@@ -59,6 +59,21 @@ export default function ClientAppDemo() {
       setIsInviting(false);
     }
   };
+
+  const convertToDemo = useMutation({
+    mutationFn: async (email) => {
+      const { convertPendingToDemo } = await import("@/functions/convertPendingToDemo");
+      const response = await convertPendingToDemo({ email });
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("User converted to demo role");
+      queryClient.invalidateQueries({ queryKey: ['demo-users'] });
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to convert user");
+    },
+  });
 
   const deleteDemoUser = useMutation({
     mutationFn: async (demoId) => {
@@ -212,6 +227,26 @@ export default function ClientAppDemo() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
+                      {user.status === 'active' && (
+                        <Button
+                          size="sm"
+                          onClick={() => convertToDemo.mutate(user.email)}
+                          disabled={convertToDemo.isPending}
+                          className="bg-gradient-to-r from-blue-600 to-indigo-600"
+                        >
+                          {convertToDemo.isPending ? (
+                            <>
+                              <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                              Converting...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-3 h-3 mr-2" />
+                              Convert to Demo
+                            </>
+                          )}
+                        </Button>
+                      )}
                       <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
                         Demo Access
                       </Badge>
