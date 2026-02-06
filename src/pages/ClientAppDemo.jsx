@@ -247,9 +247,14 @@ export default function ClientAppDemo() {
                           <Button
                             size="sm"
                             onClick={async () => {
-                              const status = await base44.functions.invoke('checkDemoUserStatus', { email: user.email });
-                              console.log('Demo user status:', status.data);
-                              toast.info(`Role: ${status.data.user.role} | Demo: ${status.data.user.is_demo_user}`);
+                              try {
+                                const status = await base44.functions.invoke('checkDemoUserStatus', { email: user.email });
+                                console.log('Demo user status:', status.data);
+                                toast.info(`Role: ${status.data.user.role}`);
+                              } catch (error) {
+                                console.error('Check status error:', error);
+                                toast.error(error.message || 'Failed to check status');
+                              }
                             }}
                             variant="outline"
                           >
