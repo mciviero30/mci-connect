@@ -836,9 +836,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const navigation = useMemo(() => {
     const effectiveUser = displayUser || user;
 
-    // Demo users get sandbox navigation
+    // Demo users get full admin navigation to explore all features
     if (effectiveUser?.role === 'demo') {
-      return demoNavigation;
+      return adminNavigation;
     }
 
     const navType = getNavigationForRole(effectiveUser);
