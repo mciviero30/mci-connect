@@ -243,23 +243,41 @@ export default function ClientAppDemo() {
                     </div>
                     <div className="flex items-center gap-3">
                       {user.registered_user && user.registered_user.role !== 'demo' && (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => convertToDemo.mutate(user.email)}
+                            disabled={convertToDemo.isPending}
+                            className="bg-gradient-to-r from-blue-600 to-indigo-600"
+                          >
+                            {convertToDemo.isPending ? (
+                              <>
+                                <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                                Converting...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="w-3 h-3 mr-2" />
+                                Convert to Demo
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      )}
+                      {user.registered_user?.role === 'demo' && (
                         <Button
                           size="sm"
-                          onClick={() => convertToDemo.mutate(user.email)}
-                          disabled={convertToDemo.isPending}
-                          className="bg-gradient-to-r from-blue-600 to-indigo-600"
+                          onClick={async () => {
+                            try {
+                              await base44.functions.invoke('seedDemoData');
+                              toast.success('Demo data seeded - tell user to refresh');
+                            } catch (error) {
+                              toast.error(error.message || 'Failed to seed demo data');
+                            }
+                          }}
+                          className="bg-gradient-to-r from-green-500 to-green-600"
                         >
-                          {convertToDemo.isPending ? (
-                            <>
-                              <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                              Converting...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle2 className="w-3 h-3 mr-2" />
-                              Convert to Demo
-                            </>
-                          )}
+                          Seed Demo Data
                         </Button>
                       )}
                       {user.registered_user?.role === 'demo' ? (
