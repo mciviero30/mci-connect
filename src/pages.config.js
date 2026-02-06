@@ -62,6 +62,7 @@ import Capacitacion from './pages/Capacitacion';
 import CashFlowReport from './pages/CashFlowReport';
 import ChangeOrders from './pages/ChangeOrders';
 import Chat from './pages/Chat';
+import ClientAppDemo from './pages/ClientAppDemo';
 import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
 import Clientes from './pages/Clientes';
@@ -180,7 +181,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import ClientAppDemo from './pages/ClientAppDemo';
 import __Layout from './Layout.jsx';
 
 
@@ -200,6 +200,7 @@ export const PAGES = {
     "CashFlowReport": CashFlowReport,
     "ChangeOrders": ChangeOrders,
     "Chat": Chat,
+    "ClientAppDemo": ClientAppDemo,
     "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
     "Clientes": Clientes,
@@ -318,7 +319,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "ClientAppDemo": ClientAppDemo,
 }
 
 export const pagesConfig = {

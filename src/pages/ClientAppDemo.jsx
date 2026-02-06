@@ -16,12 +16,14 @@ export default function ClientAppDemo() {
   const [isInviting, setIsInviting] = useState(false);
   const queryClient = useQueryClient();
 
-  // Fetch all demo users
+  // Fetch all demo users (marked in PendingEmployee as demo)
   const { data: demoUsers = [], isLoading } = useQuery({
     queryKey: ['demo-users'],
     queryFn: async () => {
-      const users = await base44.entities.User.filter({ role: 'demo' });
-      return users;
+      const pending = await base44.entities.PendingEmployee.filter({ 
+        position: 'demo_user' 
+      });
+      return pending;
     },
   });
 
@@ -33,21 +35,34 @@ export default function ClientAppDemo() {
 
     setIsInviting(true);
     try {
-      await base44.users.inviteUser(email, "demo", name);
+      // Invite as regular user first
+      await base44.users.inviteUser(email, "user");
+      
+      // Mark as demo user by adding to PendingEmployee with demo flag
+      await base44.entities.PendingEmployee.create({
+        email: email,
+        first_name: name.split(' ')[0] || name,
+        last_name: name.split(' ').slice(1).join(' ') || '',
+        position: 'demo_user',
+        status: 'invited',
+        notes: 'DEMO_USER - Sandbox access only'
+      });
+      
       toast.success(`Demo invitation sent to ${email}`);
       setEmail("");
       setName("");
       queryClient.invalidateQueries({ queryKey: ['demo-users'] });
     } catch (error) {
       toast.error(error.message || "Failed to send invitation");
+      console.error(error);
     } finally {
       setIsInviting(false);
     }
   };
 
   const deleteDemoUser = useMutation({
-    mutationFn: async (userId) => {
-      await base44.entities.User.update(userId, { employment_status: 'deleted' });
+    mutationFn: async (demoId) => {
+      await base44.entities.PendingEmployee.delete(demoId);
     },
     onSuccess: () => {
       toast.success("Demo user removed");
@@ -173,20 +188,27 @@ export default function ClientAppDemo() {
               </div>
             ) : (
               <div className="space-y-3">
-                {demoUsers.map((user) => (
+                {demoUsers.map((user) => {
+                  const fullName = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+                  return (
                   <div
                     key={user.id}
                     className="flex items-center justify-between p-4 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
-                        {user.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
+                        {user.first_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
                       </div>
                       <div>
                         <p className="font-semibold text-slate-900 dark:text-white">
-                          {user.full_name || "Demo User"}
+                          {fullName || "Demo User"}
                         </p>
                         <p className="text-sm text-slate-600 dark:text-slate-400">{user.email}</p>
+                        {user.status === 'invited' && (
+                          <Badge variant="outline" className="mt-1 text-xs bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300">
+                            Invitation Pending
+                          </Badge>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -207,7 +229,7 @@ export default function ClientAppDemo() {
                           <DialogHeader>
                             <DialogTitle>Remove Demo User</DialogTitle>
                             <DialogDescription>
-                              Are you sure you want to remove <strong>{user.full_name || user.email}</strong> from demo access?
+                              Are you sure you want to remove <strong>{fullName || user.email}</strong> from demo access?
                               Their sandbox data will remain but they won't be able to login.
                             </DialogDescription>
                           </DialogHeader>
@@ -232,7 +254,8 @@ export default function ClientAppDemo() {
                       </Dialog>
                     </div>
                   </div>
-                ))}
+                );
+                })}
               </div>
             )}
           </CardContent>
