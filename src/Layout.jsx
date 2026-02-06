@@ -683,6 +683,34 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
     }
   ];
 
+  const demoNavigation = [
+    {
+      section: 'DEMO SANDBOX',
+      icon: LayoutDashboard,
+      items: [
+        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+      ]
+    },
+    {
+      section: 'EXPLORE FEATURES',
+      icon: Briefcase,
+      items: [
+        { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText },
+        { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck },
+        { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
+        { title: 'Customers', url: createPageUrl("Clientes"), icon: Users },
+        { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package },
+      ]
+    },
+    {
+      section: 'DEMO INFO',
+      icon: User,
+      items: [
+        { title: 'My Profile', url: createPageUrl("MyProfile"), icon: User },
+      ]
+    }
+  ];
+
   const employeeNavigation = [
     {
       section: 'HOME',
@@ -806,7 +834,14 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
   // Memoize navigation to prevent recalculation - MUST be before early returns
   const navigation = useMemo(() => {
-    const navType = getNavigationForRole(displayUser || user);
+    const effectiveUser = displayUser || user;
+
+    // Demo users get sandbox navigation
+    if (effectiveUser?.role === 'demo') {
+      return demoNavigation;
+    }
+
+    const navType = getNavigationForRole(effectiveUser);
     return navType === 'admin' ? adminNavigation : employeeNavigation;
   }, [displayUser, user]);
 
