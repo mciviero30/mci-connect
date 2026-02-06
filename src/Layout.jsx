@@ -605,6 +605,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         icon: User,
         items: [
         { title: 'Client Portal Manager', url: createPageUrl("ClientManagement"), icon: Users },
+        { title: 'Client App Demo', url: createPageUrl("ClientAppDemo"), icon: User },
         ]
         }
   ];
