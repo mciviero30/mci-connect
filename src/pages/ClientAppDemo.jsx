@@ -23,7 +23,23 @@ export default function ClientAppDemo() {
       const pending = await base44.entities.PendingEmployee.filter({ 
         position: 'demo_user' 
       });
-      return pending;
+      
+      // Check if each has registered as User
+      const enriched = await Promise.all(
+        pending.map(async (p) => {
+          try {
+            const users = await base44.entities.User.filter({ email: p.email });
+            return {
+              ...p,
+              registered_user: users.length > 0 ? users[0] : null
+            };
+          } catch {
+            return { ...p, registered_user: null };
+          }
+        })
+      );
+      
+      return enriched;
     },
   });
 
@@ -227,7 +243,7 @@ export default function ClientAppDemo() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      {user.status === 'active' && (
+                      {user.registered_user && user.registered_user.role !== 'demo' && (
                         <Button
                           size="sm"
                           onClick={() => convertToDemo.mutate(user.email)}
@@ -247,9 +263,16 @@ export default function ClientAppDemo() {
                           )}
                         </Button>
                       )}
-                      <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
-                        Demo Access
-                      </Badge>
+                      {user.registered_user?.role === 'demo' ? (
+                        <Badge variant="outline" className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300">
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          Demo Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
+                          Demo Access
+                        </Badge>
+                      )}
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
