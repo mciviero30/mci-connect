@@ -555,6 +555,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Customers', url: createPageUrl("Clientes"), icon: Users },
         { title: 'Quotes', url: createPageUrl("Estimados"), icon: FileText },
         { title: 'Invoices', url: createPageUrl("Facturas"), icon: FileCheck },
+        { title: 'Recurring Invoices', url: createPageUrl("RecurringInvoices"), icon: RefreshCw },
         { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt },
         { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package },
         { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp },
