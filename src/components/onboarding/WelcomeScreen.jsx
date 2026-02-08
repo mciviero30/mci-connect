@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { 
   PartyPopper, CheckCircle2, MapPin, Briefcase, 
   Users, Clock, ArrowRight, Sparkles 
 } from 'lucide-react';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { base44 } from '@/api/base44Client';
-import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 
 export default function WelcomeScreen({ user, onComplete }) {
   const { t, language } = useLanguage();
+  const navigate = useNavigate();
   const [completing, setCompleting] = useState(false);
 
   const handleComplete = async () => {
@@ -172,15 +174,17 @@ export default function WelcomeScreen({ user, onComplete }) {
                   )}
                 </Button>
                 
-                <Link to={createPageUrl('MyProfile')} className="flex-1">
-                  <Button
-                    onClick={handleComplete}
-                    variant="outline"
-                    className="w-full h-12 border-slate-300 dark:border-slate-600"
-                  >
-                    {language === 'es' ? 'Ver Mi Perfil' : 'View My Profile'}
-                  </Button>
-                </Link>
+                <Button
+                  onClick={async () => {
+                    await handleComplete();
+                    navigate(createPageUrl('MyProfile'));
+                  }}
+                  variant="outline"
+                  disabled={completing}
+                  className="flex-1 h-12 border-slate-300 dark:border-slate-600"
+                >
+                  {language === 'es' ? 'Ver Mi Perfil' : 'View My Profile'}
+                </Button>
               </div>
             </div>
           </CardContent>
