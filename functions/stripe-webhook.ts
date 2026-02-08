@@ -1,110 +1,134 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import Stripe from 'npm:stripe@17.5.0';
 
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
-
+/**
+ * STRIPE WEBHOOK HANDLER
+ * Processes payment events from Stripe
+ * Events: checkout.session.completed
+ */
 Deno.serve(async (req) => {
   try {
-    // CRITICAL: Initialize base44 first BEFORE webhook validation
     const base44 = createClientFromRequest(req);
     
-    const signature = req.headers.get('stripe-signature');
+    // CRITICAL: Set token from request headers BEFORE any Stripe validation
+    const authHeader = req.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      base44.setToken(token);
+    }
+
+    // Get raw body for signature verification
     const body = await req.text();
+    const signature = req.headers.get('stripe-signature');
 
     if (!signature) {
-      console.error('Missing stripe-signature header');
-      return Response.json({ error: 'Missing signature' }, { status: 400 });
+      console.error('❌ No Stripe signature');
+      return Response.json({ error: 'No signature' }, { status: 400 });
     }
 
-    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY'), {
+      apiVersion: '2024-12-18.acacia',
+    });
 
-    if (!webhookSecret) {
-      console.error('STRIPE_WEBHOOK_SECRET not configured');
-      return Response.json({ error: 'Webhook secret not configured' }, { status: 500 });
-    }
+    // CRITICAL: Use async webhook verification for Deno
+    const event = await stripe.webhooks.constructEventAsync(
+      body,
+      signature,
+      Deno.env.get('STRIPE_WEBHOOK_SECRET')
+    );
 
-    // CRITICAL: Use async version for Deno
-    let event;
-    try {
-      event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
-    } catch (err) {
-      console.error('Webhook signature verification failed:', err.message);
-      return Response.json({ error: 'Invalid signature' }, { status: 400 });
-    }
+    console.log('✅ Webhook verified:', event.type);
 
-    console.log('Stripe webhook event:', event.type, event.id);
-
-    // Handle successful payment
+    // Handle checkout.session.completed
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      
-      const invoiceId = session.metadata?.invoice_id;
-      
+      const metadata = session.metadata;
+
+      console.log('💳 Payment completed:', session.id);
+      console.log('📋 Metadata:', metadata);
+
+      const invoiceId = metadata.invoice_id;
+      const invoiceNumber = metadata.invoice_number;
+
       if (!invoiceId) {
-        console.error('No invoice_id in metadata');
-        return Response.json({ error: 'Missing invoice_id' }, { status: 400 });
+        console.error('❌ No invoice_id in metadata');
+        return Response.json({ error: 'No invoice_id' }, { status: 400 });
       }
 
-      // Fetch invoice using service role (webhook has no user context)
-      const invoice = await base44.asServiceRole.entities.Invoice.get(invoiceId);
-
-      if (!invoice) {
-        console.error('Invoice not found:', invoiceId);
+      // Get invoice
+      const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoiceId });
+      if (invoices.length === 0) {
+        console.error('❌ Invoice not found:', invoiceId);
         return Response.json({ error: 'Invoice not found' }, { status: 404 });
       }
 
-      const paymentAmount = session.amount_total / 100; // Convert from cents
-      const newAmountPaid = (invoice.amount_paid || 0) + paymentAmount;
-      const newBalance = (invoice.total || 0) - newAmountPaid;
-      const newStatus = newBalance <= 0 ? 'paid' : 'partial';
+      const invoice = invoices[0];
+      const amountPaid = session.amount_total / 100; // Convert from cents
+      const newTotalPaid = (invoice.amount_paid || 0) + amountPaid;
+      const newBalance = invoice.total - newTotalPaid;
 
-      // Record transaction FIRST
-      const transaction = await base44.asServiceRole.entities.Transaction.create({
-        type: 'income',
-        amount: paymentAmount,
-        category: 'sales',
-        description: `Stripe payment for Invoice ${invoice.invoice_number} - ${invoice.customer_name}`,
-        date: new Date().toISOString().split('T')[0],
-        payment_method: 'stripe',
-        stripe_payment_intent_id: session.payment_intent,
-        reconciliation_status: 'matched',
-        matched_invoice_id: invoiceId,
-        matched_invoice_number: invoice.invoice_number,
-        reconciled_by: 'auto',
-        reconciled_at: new Date().toISOString()
-      });
+      // Update invoice
+      const newStatus = newBalance <= 0.01 ? 'paid' : 'partial';
 
-      // Update invoice with transaction reference
       await base44.asServiceRole.entities.Invoice.update(invoiceId, {
-        amount_paid: newAmountPaid,
-        balance: newBalance,
+        amount_paid: newTotalPaid,
+        balance: Math.max(0, newBalance),
         status: newStatus,
         payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date,
-        transaction_id: transaction.id
+        transaction_id: session.payment_intent,
       });
 
-      // Send confirmation email
+      console.log('✅ Invoice updated:', invoiceId, 'Status:', newStatus);
+
+      // Create Transaction record
+      await base44.asServiceRole.entities.Transaction.create({
+        type: 'income',
+        amount: amountPaid,
+        category: 'sales',
+        description: `Payment for Invoice ${invoiceNumber} - ${invoice.customer_name}`,
+        date: new Date().toISOString().split('T')[0],
+        payment_method: 'stripe',
+        reconciliation_status: 'matched',
+        matched_invoice_id: invoiceId,
+        matched_invoice_number: invoiceNumber,
+        stripe_payment_intent_id: session.payment_intent,
+      });
+
+      console.log('✅ Transaction created for invoice:', invoiceNumber);
+
+      // Send receipt email
+      const emailBody = language === 'es'
+        ? `Estimado(a) ${invoice.customer_name},\n\nHemos recibido tu pago de $${amountPaid.toFixed(2)} para la factura ${invoiceNumber}.\n\nGracias por tu pago.\n\nMCI Team`
+        : `Dear ${invoice.customer_name},\n\nWe have received your payment of $${amountPaid.toFixed(2)} for invoice ${invoiceNumber}.\n\nThank you for your payment.\n\nMCI Team`;
+
       if (invoice.customer_email) {
-        try {
-          await base44.asServiceRole.integrations.Core.SendEmail({
-            to: invoice.customer_email,
-            subject: `Payment Received - Invoice ${invoice.invoice_number}`,
-            body: `Dear ${invoice.customer_name},\n\nWe have received your payment of $${paymentAmount.toFixed(2)} for invoice ${invoice.invoice_number}.\n\nNew balance: $${newBalance.toFixed(2)}\n\nThank you for your payment!\n\nMODERN COMPONENTS INSTALLATION`
-          });
-        } catch (emailErr) {
-          console.error('Email send failed (non-critical):', emailErr);
-        }
+        await base44.asServiceRole.integrations.Core.SendEmail({
+          to: invoice.customer_email,
+          subject: language === 'es' 
+            ? `Recibo de Pago - ${invoiceNumber}` 
+            : `Payment Receipt - ${invoiceNumber}`,
+          body: emailBody,
+          from_name: 'MCI Connect',
+        });
+
+        console.log('✅ Receipt email sent to:', invoice.customer_email);
       }
 
-      console.log(`✅ Payment processed for Invoice ${invoice.invoice_number}: $${paymentAmount}`);
+      return Response.json({ 
+        success: true,
+        message: 'Payment processed successfully' 
+      });
     }
 
+    // Other events (future expansion)
+    console.log('ℹ️ Unhandled event type:', event.type);
     return Response.json({ received: true });
 
   } catch (error) {
-    console.error('Webhook processing error:', error);
-    return Response.json({ 
-      error: error.message || 'Webhook processing failed' 
+    console.error('❌ Webhook processing failed:', error);
+    return Response.json({
+      error: error.message,
+      success: false,
     }, { status: 500 });
   }
 });
