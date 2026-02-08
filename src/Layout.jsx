@@ -519,6 +519,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Control Tower', url: createPageUrl("ExecutiveControlTower"), icon: Shield },
         { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3 },
         { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
+        { title: 'Aging Report', url: createPageUrl("AgingReport"), icon: TrendingUp },
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'Bank Sync', url: createPageUrl("BankSync"), icon: Building2 },
         { title: 'Reconciliation', url: createPageUrl("PaymentReconciliation"), icon: CheckCircle2 },

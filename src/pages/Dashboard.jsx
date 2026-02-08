@@ -53,6 +53,7 @@ import { useUIVisibility, DebugUI, AdminOnlyUI } from "@/components/policies/UIV
 import FieldWorkIndicator from "@/components/dashboard/FieldWorkIndicator";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 import QuickStatsWidgets from "../components/dashboard/QuickStatsWidgets";
+import ARWidget from "../components/dashboard/ARWidget";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -854,6 +855,13 @@ export default function Dashboard() {
         <div className="mb-4 sm:mb-6 md:mb-8">
           <QuickStatsWidgets user={user} />
         </div>
+
+        {/* AR Widget - Admin Only */}
+        {isAdmin && (
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <ARWidget />
+          </div>
+        )}
 
         {/* Quick Actions for Employees - Mobile-First */}
         {!isAdmin && (
