@@ -182,6 +182,7 @@ import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
 import AgingReport from './pages/AgingReport';
+import PaymentSuccess from './pages/PaymentSuccess';
 import __Layout from './Layout.jsx';
 
 
@@ -321,6 +322,7 @@ export const PAGES = {
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
     "AgingReport": AgingReport,
+    "PaymentSuccess": PaymentSuccess,
 }
 
 export const pagesConfig = {
