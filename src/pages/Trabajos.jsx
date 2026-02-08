@@ -100,6 +100,22 @@ export default function Trabajos() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const createdJob = await base44.entities.Job.create(data);
+      
+      // Auto-generate job_number after creation
+      try {
+        const { generateJobNumber } = await import('@/functions/generateJobNumber');
+        const numberResponse = await generateJobNumber({ job_id: createdJob.id });
+        
+        if (numberResponse.data?.job_number) {
+          await base44.entities.Job.update(createdJob.id, { 
+            job_number: numberResponse.data.job_number 
+          });
+        }
+      } catch (error) {
+        console.error('Failed to generate job number:', error);
+        // Don't fail the whole operation - job is created, just without number
+      }
+      
       return createdJob;
     },
     onSuccess: (createdJob) => {
