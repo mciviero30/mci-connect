@@ -111,7 +111,14 @@ export default function CustomerForm({ customer, onSubmit, onClose, isProcessing
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Auto-generate consolidated 'name' field from first_name + last_name
+    const customerData = {
+      ...formData,
+      name: `${formData.first_name} ${formData.last_name}`.trim()
+    };
+    
+    onSubmit(customerData);
   };
 
   return (
