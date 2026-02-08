@@ -75,6 +75,8 @@ export default function MyProfile() {
   });
 
   const [formData, setFormData] = useState({
+    phone: user?.phone || '',
+    email: user?.email || '',
     address: user?.address || '',
     tshirt_size: user?.tshirt_size || '',
     emergency_contact_name: user?.emergency_contact_name || '',
@@ -86,6 +88,8 @@ export default function MyProfile() {
   React.useEffect(() => {
     if (user) {
       setFormData({
+        phone: user.phone || '',
+        email: user.email || '',
         address: user.address || '',
         tshirt_size: user.tshirt_size || '',
         emergency_contact_name: user.emergency_contact_name || '',
@@ -96,7 +100,18 @@ export default function MyProfile() {
   }, [user]);
 
   const updateProfileMutation = useMutation({
-    mutationFn: (data) => base44.auth.updateMe(data),
+    mutationFn: async (data) => {
+      // If email changed, need to update via admin endpoint
+      if (data.email && data.email !== user.email) {
+        const { updateUserEmail } = await import('@/functions/updateUserEmail');
+        await updateUserEmail({ 
+          user_id: user.id, 
+          new_email: data.email 
+        });
+      }
+      
+      return base44.auth.updateMe(data);
+    },
     onSuccess: async (updatedUser) => {
       // Direct cache update - NO INVALIDATION
       queryClient.setQueryData(['currentUser'], updatedUser);
@@ -168,6 +183,8 @@ export default function MyProfile() {
                   onClick={() => {
                     setEditing(false);
                     setFormData({
+                      phone: user?.phone || '',
+                      email: user?.email || '',
                       address: user?.address || '',
                       tshirt_size: user?.tshirt_size || '',
                       emergency_contact_name: user?.emergency_contact_name || '',
@@ -339,10 +356,10 @@ export default function MyProfile() {
                   {t('personalInformation')}
                 </h3>
 
-                <Alert className="mb-4 bg-amber-50 border-amber-200">
-                  <Lock className="w-4 h-4 text-amber-600" />
-                  <AlertDescription className="text-amber-900 text-sm">
-                    You can only edit <strong>Address</strong> and <strong>T-Shirt Size</strong>. For other changes, contact your administrator.
+                <Alert className="mb-4 bg-blue-50 border-blue-200">
+                  <Shield className="w-4 h-4 text-blue-600" />
+                  <AlertDescription className="text-blue-900 text-sm">
+                    You can edit: <strong>Phone</strong>, <strong>Email</strong>, <strong>Address</strong>, and <strong>T-Shirt Size</strong>. For other changes, contact your administrator.
                   </AlertDescription>
                 </Alert>
 
@@ -357,16 +374,36 @@ export default function MyProfile() {
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                       {t('email')}
-                      <Lock className="w-3 h-3 text-slate-400" />
+                      {editing && <Edit3 className="w-3 h-3 text-green-600" />}
                     </Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.email}</p>
+                    {editing ? (
+                      <Input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="your.email@example.com"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.email}</p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">
                       {t('phone')}
-                      <Lock className="w-3 h-3 text-slate-400" />
+                      {editing && <Edit3 className="w-3 h-3 text-green-600" />}
                     </Label>
-                    <p className="text-slate-900 dark:text-white font-medium mt-1">{user.phone || '—'}</p>
+                    {editing ? (
+                      <Input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="(000)000-0000"
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-slate-900 dark:text-white font-medium mt-1">{user.phone || '—'}</p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1">

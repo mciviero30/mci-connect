@@ -97,6 +97,7 @@ import TaxProfileGate from "@/components/tax/TaxProfileGate";
 import InvitationGate from "@/components/security/InvitationGate";
 import EmployeeDirectoryGuard from "@/components/security/EmployeeDirectoryGuard";
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
+import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
 import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
 import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
@@ -414,6 +415,29 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+
+  // LAYER 3 FALLBACK: Auto-sync EmployeeDirectory if missing
+  React.useEffect(() => {
+    if (!user || user.employment_status === 'deleted') return;
+
+    const checkAndSyncDirectory = async () => {
+      try {
+        const existing = await base44.entities.EmployeeDirectory.filter({ 
+          employee_email: user.email 
+        });
+
+        if (existing.length === 0) {
+          // Missing EmployeeDirectory - create it
+          const { syncUserToEmployeeDirectory } = await import('@/functions/syncUserToEmployeeDirectory');
+          await syncUserToEmployeeDirectory({ user_id: user.id });
+        }
+      } catch (error) {
+        console.error('Layout fallback sync failed:', error);
+      }
+    };
+
+    checkAndSyncDirectory();
+  }, [user?.id]);
   
 
 
@@ -987,6 +1011,24 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           </Link>
         </div>
       </div>
+    );
+  }
+
+  // DECLARATIVE GATE 4: Welcome Screen (first login for all users)
+  const shouldShowWelcome = user && 
+    !isClientOnly && 
+    user.employment_status !== 'deleted' &&
+    user.welcome_screen_shown !== true;
+
+  if (shouldShowWelcome) {
+    return (
+      <WelcomeScreen 
+        user={user} 
+        onComplete={() => {
+          // Force refresh to show main app
+          queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
+        }} 
+      />
     );
   }
 
