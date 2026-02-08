@@ -183,6 +183,7 @@ import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
 import AgingReport from './pages/AgingReport';
 import PaymentSuccess from './pages/PaymentSuccess';
+import EmployeeBenefits from './pages/EmployeeBenefits';
 import __Layout from './Layout.jsx';
 
 
@@ -323,6 +324,7 @@ export const PAGES = {
     "WorkAuthorizations": WorkAuthorizations,
     "AgingReport": AgingReport,
     "PaymentSuccess": PaymentSuccess,
+    "EmployeeBenefits": EmployeeBenefits,
 }
 
 export const pagesConfig = {

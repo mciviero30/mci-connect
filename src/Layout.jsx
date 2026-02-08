@@ -777,6 +777,15 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       ]
     },
     {
+      section: 'MY BENEFITS',
+      icon: Heart,
+      items: [
+        { title: 'Benefits Hub', url: createPageUrl("EmployeeBenefits"), icon: Building2 },
+        { title: 'My Payroll', url: createPageUrl("MyPayroll"), icon: Banknote },
+        { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
+      ]
+    },
+    {
       section: 'MY GROWTH',
       icon: Target,
       items: [

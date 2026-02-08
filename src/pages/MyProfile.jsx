@@ -16,6 +16,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { getDisplayName } from "@/components/utils/nameHelpers";
 import PhoneInput from "@/components/shared/PhoneInput";
 import PhotoAvatarManager from "../components/avatar/PhotoAvatarManager";
+import PTOTracker from "../components/employee/PTOTracker";
 import CertificationMonitor from "../components/certifications/CertificationMonitor";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
