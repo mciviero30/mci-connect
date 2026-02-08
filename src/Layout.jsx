@@ -48,6 +48,8 @@ import {
                     Link2,
                     Ruler,
                     ChevronRight,
+                    RefreshCw,
+                    Heart,
                   } from "lucide-react";
 import {
   Sidebar,

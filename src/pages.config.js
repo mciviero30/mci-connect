@@ -184,6 +184,7 @@ import WorkAuthorizations from './pages/WorkAuthorizations';
 import AgingReport from './pages/AgingReport';
 import PaymentSuccess from './pages/PaymentSuccess';
 import EmployeeBenefits from './pages/EmployeeBenefits';
+import RecurringInvoices from './pages/RecurringInvoices';
 import __Layout from './Layout.jsx';
 
 
@@ -325,6 +326,7 @@ export const PAGES = {
     "AgingReport": AgingReport,
     "PaymentSuccess": PaymentSuccess,
     "EmployeeBenefits": EmployeeBenefits,
+    "RecurringInvoices": RecurringInvoices,
 }
 
 export const pagesConfig = {
