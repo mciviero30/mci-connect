@@ -46,6 +46,7 @@ import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 import RetryProvisioningButton from "../components/invoices/RetryProvisioningButton";
 import { useUI } from "@/components/contexts/FieldModeContext";
 import CreateJobFromInvoiceDialog from "../components/trabajos/CreateJobFromInvoiceDialog";
+import StripePaymentButton from "../components/invoices/StripePaymentButton";
 
 export default function VerFactura() {
   const { t, language } = useLanguage();
@@ -559,6 +560,13 @@ export default function VerFactura() {
       <div id="invoice-printable" className="max-w-4xl mx-auto my-8 print:my-0 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
         <InvoiceDocument invoice={invoice} />
       </div>
+
+      {/* Online Payment Section - Below Invoice */}
+      {canRecordPayment && (
+        <div className="max-w-4xl mx-auto mb-8 no-print">
+          <StripePaymentButton invoice={invoice} />
+        </div>
+      )}
 
       {/* Payment Dialog */}
       <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>

@@ -1044,6 +1044,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           <UniversalNotificationEngine user={user} />
           <CustomerNotificationEngine user={user} />
           <UniversalPushManager user={user} />
+          <SessionTimeoutManager />
         </ErrorBoundary>
       )}
 
