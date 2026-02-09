@@ -50,6 +50,7 @@
 import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import AIScheduleCenter from './pages/AIScheduleCenter';
 import AdminCleanup from './pages/AdminCleanup';
+import AgingReport from './pages/AgingReport';
 import AgreementSignatures from './pages/AgreementSignatures';
 import ApprovalsHub from './pages/ApprovalsHub';
 import AuditTrail from './pages/AuditTrail';
@@ -91,6 +92,7 @@ import Dashboard from './pages/Dashboard';
 import Directory from './pages/Directory';
 import EditarEstimado from './pages/EditarEstimado';
 import Empleados from './pages/Empleados';
+import EmployeeBenefits from './pages/EmployeeBenefits';
 import EmployeeDataAudit from './pages/EmployeeDataAudit';
 import EmployeeImport from './pages/EmployeeImport';
 import EmployeeProfile from './pages/EmployeeProfile';
@@ -145,6 +147,7 @@ import OperationalModesDoc from './pages/OperationalModesDoc';
 import OrphanedQuoteCleanup from './pages/OrphanedQuoteCleanup';
 import Papelera from './pages/Papelera';
 import PaymentReconciliation from './pages/PaymentReconciliation';
+import PaymentSuccess from './pages/PaymentSuccess';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import PerDiem from './pages/PerDiem';
 import PerformanceManagement from './pages/PerformanceManagement';
@@ -152,6 +155,7 @@ import ProfitabilityDashboard from './pages/ProfitabilityDashboard';
 import QuoteImporter from './pages/QuoteImporter';
 import RFIs from './pages/RFIs';
 import Recognitions from './pages/Recognitions';
+import RecurringInvoices from './pages/RecurringInvoices';
 import Reportes from './pages/Reportes';
 import ReportingHub from './pages/ReportingHub';
 import RoleManagement from './pages/RoleManagement';
@@ -181,10 +185,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import AgingReport from './pages/AgingReport';
-import PaymentSuccess from './pages/PaymentSuccess';
-import EmployeeBenefits from './pages/EmployeeBenefits';
-import RecurringInvoices from './pages/RecurringInvoices';
 import __Layout from './Layout.jsx';
 
 
@@ -192,6 +192,7 @@ export const PAGES = {
     "AIAssistantPersonal": AIAssistantPersonal,
     "AIScheduleCenter": AIScheduleCenter,
     "AdminCleanup": AdminCleanup,
+    "AgingReport": AgingReport,
     "AgreementSignatures": AgreementSignatures,
     "ApprovalsHub": ApprovalsHub,
     "AuditTrail": AuditTrail,
@@ -233,6 +234,7 @@ export const PAGES = {
     "Directory": Directory,
     "EditarEstimado": EditarEstimado,
     "Empleados": Empleados,
+    "EmployeeBenefits": EmployeeBenefits,
     "EmployeeDataAudit": EmployeeDataAudit,
     "EmployeeImport": EmployeeImport,
     "EmployeeProfile": EmployeeProfile,
@@ -287,6 +289,7 @@ export const PAGES = {
     "OrphanedQuoteCleanup": OrphanedQuoteCleanup,
     "Papelera": Papelera,
     "PaymentReconciliation": PaymentReconciliation,
+    "PaymentSuccess": PaymentSuccess,
     "PayrollAutoFlow": PayrollAutoFlow,
     "PerDiem": PerDiem,
     "PerformanceManagement": PerformanceManagement,
@@ -294,6 +297,7 @@ export const PAGES = {
     "QuoteImporter": QuoteImporter,
     "RFIs": RFIs,
     "Recognitions": Recognitions,
+    "RecurringInvoices": RecurringInvoices,
     "Reportes": Reportes,
     "ReportingHub": ReportingHub,
     "RoleManagement": RoleManagement,
@@ -323,10 +327,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "AgingReport": AgingReport,
-    "PaymentSuccess": PaymentSuccess,
-    "EmployeeBenefits": EmployeeBenefits,
-    "RecurringInvoices": RecurringInvoices,
 }
 
 export const pagesConfig = {
