@@ -534,6 +534,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       icon: Briefcase,
       items: [
         { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
+        { title: 'Project Timeline', url: createPageUrl("JobTimeline"), icon: TrendingUp },
         {
           title: 'MCI Field',
           icon: MapPin,

@@ -152,6 +152,7 @@ import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import PerDiem from './pages/PerDiem';
 import PerformanceManagement from './pages/PerformanceManagement';
 import ProfitabilityDashboard from './pages/ProfitabilityDashboard';
+import QuickBooksExport from './pages/QuickBooksExport';
 import QuoteImporter from './pages/QuoteImporter';
 import RFIs from './pages/RFIs';
 import Recognitions from './pages/Recognitions';
@@ -185,7 +186,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import QuickBooksExport from './pages/QuickBooksExport';
+import JobTimeline from './pages/JobTimeline';
 import __Layout from './Layout.jsx';
 
 
@@ -295,6 +296,7 @@ export const PAGES = {
     "PerDiem": PerDiem,
     "PerformanceManagement": PerformanceManagement,
     "ProfitabilityDashboard": ProfitabilityDashboard,
+    "QuickBooksExport": QuickBooksExport,
     "QuoteImporter": QuoteImporter,
     "RFIs": RFIs,
     "Recognitions": Recognitions,
@@ -328,7 +330,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "QuickBooksExport": QuickBooksExport,
+    "JobTimeline": JobTimeline,
 }
 
 export const pagesConfig = {
