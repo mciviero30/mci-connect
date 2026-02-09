@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Gantt, Task, ViewMode } from 'gantt-task-react';
+import { Gantt, ViewMode } from 'gantt-task-react';
 import 'gantt-task-react/dist/index.css';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
