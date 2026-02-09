@@ -50,6 +50,7 @@ import {
                     ChevronRight,
                     RefreshCw,
                     Heart,
+                    FileSpreadsheet,
                   } from "lucide-react";
 import {
   Sidebar,
@@ -559,6 +560,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Recurring Invoices', url: createPageUrl("RecurringInvoices"), icon: RefreshCw },
         { title: 'Expenses', url: createPageUrl("Gastos"), icon: Receipt },
         { title: 'Items Catalog', url: createPageUrl("Items"), icon: Package },
+        { title: 'QuickBooks Export', url: createPageUrl("QuickBooksExport"), icon: FileSpreadsheet },
         { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp },
         { title: 'T&M Invoice Builder', url: createPageUrl('TMInvoiceBuilder'), icon: Clock },
         ]
