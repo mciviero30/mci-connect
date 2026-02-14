@@ -48,6 +48,18 @@ export default function ExecutiveDashboard() {
     enabled: isAdmin,
   });
 
+  const { data: jobs = [] } = useQuery({
+    queryKey: ['all-jobs'],
+    queryFn: () => base44.entities.Job.list('-created_date', 1000),
+    enabled: isAdmin,
+  });
+
+  const { data: expenses = [] } = useQuery({
+    queryKey: ['all-expenses'],
+    queryFn: () => base44.entities.Expense.list('-created_date', 1000),
+    enabled: isAdmin,
+  });
+
   // Filter by date range
   const filterByDate = (items, dateField) => {
     let filtered = items;
@@ -87,6 +99,25 @@ export default function ExecutiveDashboard() {
   const taxComplianceRate = activeEmployees.length > 0 
     ? ((taxCompliant / activeEmployees.length) * 100).toFixed(1)
     : 0;
+
+  // Job pipeline metrics
+  const activeJobs = jobs.filter(j => j.status === 'active' && !j.deleted_at);
+  const completedJobs = jobs.filter(j => j.status === 'completed' && !j.deleted_at);
+  const avgJobProfit = completedJobs.length > 0 
+    ? completedJobs.reduce((sum, j) => {
+        const revenue = j.contract_amount || 0;
+        const cost = j.estimated_cost || 0;
+        return sum + (revenue - cost);
+      }, 0) / completedJobs.length
+    : 0;
+
+  // Cost breakdown
+  const approvedExpenses = expenses.filter(e => e.status === 'approved');
+  const totalExpenses = approvedExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  
+  // Net profit
+  const netProfit = totalRevenue - totalPayrollExposure - totalCommissionsPaid - totalExpenses;
+  const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
 
   if (!isAdmin) {
     return (
@@ -271,6 +302,122 @@ export default function ExecutiveDashboard() {
             <p className="text-sm text-slate-600 mt-2">
               From {filteredPayroll.length} payroll entr{filteredPayroll.length !== 1 ? 'ies' : 'y'}
             </p>
+          </CardContent>
+        </Card>
+
+        {/* Job Pipeline Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card className="border-blue-200 bg-blue-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-700 text-sm">
+                <TrendingUp className="w-4 h-4" />
+                Active Jobs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-blue-700">{activeJobs.length}</p>
+              <p className="text-xs text-slate-600 mt-1">In progress</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-green-200 bg-green-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-700 text-sm">
+                <CheckCircle className="w-4 h-4" />
+                Completed Jobs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-green-700">{completedJobs.length}</p>
+              <p className="text-xs text-slate-600 mt-1">Total delivered</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-purple-200 bg-purple-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-700 text-sm">
+                <DollarSign className="w-4 h-4" />
+                Avg Job Profit
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-purple-700">
+                ${avgJobProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </p>
+              <p className="text-xs text-slate-600 mt-1">Per completed job</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Net Profit & Margin */}
+        <Card className={`border-2 ${
+          netProfit > 0 ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'
+        }`}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-6 h-6" />
+              Net Profit & Margin
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Net Profit</p>
+                <p className={`text-4xl font-bold ${netProfit > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                  ${netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  Revenue - Payroll - Commissions - Expenses
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600 mb-1">Profit Margin</p>
+                <p className={`text-4xl font-bold ${parseFloat(profitMargin) > 0 ? 'text-green-700' : 'text-red-700'}`}>
+                  {profitMargin}%
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  (Net Profit / Revenue) × 100
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cost Breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-6 h-6" />
+              Cost Breakdown
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-medium">Payroll</span>
+                <span className="text-lg font-bold text-slate-900">
+                  ${totalPayrollExposure.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-medium">Commissions Paid</span>
+                <span className="text-lg font-bold text-slate-900">
+                  ${totalCommissionsPaid.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                <span className="text-sm font-medium">Expenses</span>
+                <span className="text-lg font-bold text-slate-900">
+                  ${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-100 rounded-lg border-t-2 border-slate-300">
+                <span className="text-sm font-bold">Total Costs</span>
+                <span className="text-xl font-bold text-red-700">
+                  ${(totalPayrollExposure + totalCommissionsPaid + totalExpenses).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
