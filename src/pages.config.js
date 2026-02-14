@@ -188,6 +188,7 @@ import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
 import TwoFactorSettings from './pages/TwoFactorSettings';
+import ClientApprovals from './pages/ClientApprovals';
 import __Layout from './Layout.jsx';
 
 
@@ -333,6 +334,7 @@ export const PAGES = {
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
     "TwoFactorSettings": TwoFactorSettings,
+    "ClientApprovals": ClientApprovals,
 }
 
 export const pagesConfig = {

@@ -35,6 +35,7 @@ import ClientTasksView from '@/components/client/ClientTasksView';
 import JobChatView from '@/components/client/JobChatView';
 import BlueprintViewer from '@/components/field/BlueprintViewer';
 import DailyFieldReportView from '@/components/field/DailyFieldReportView';
+import ClientApprovalsView from '@/components/client/ClientApprovalsView';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -285,6 +286,10 @@ export default function ClientPortal() {
         {/* Tabs - Enhanced mobile-friendly design */}
         <Tabs defaultValue="timeline" className="space-y-6">
           <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-1.5 rounded-xl flex-wrap h-auto gap-1.5 shadow-sm">
+            <TabsTrigger value="approvals" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
+              <CheckCircle2 className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Approvals</span>
+            </TabsTrigger>
             <TabsTrigger value="timeline" className="rounded-lg min-h-[44px] data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white">
               <Activity className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Timeline</span>
@@ -351,6 +356,13 @@ export default function ClientPortal() {
               )}
             </TabsTrigger>
           </TabsList>
+
+          {/* Approvals Tab */}
+          <TabsContent value="approvals">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
+              <ClientApprovalsView customerEmail={user?.email} />
+            </div>
+          </TabsContent>
 
           {/* Timeline Tab */}
           <TabsContent value="timeline">
