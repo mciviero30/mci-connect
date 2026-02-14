@@ -64,6 +64,7 @@ import CashFlowReport from './pages/CashFlowReport';
 import ChangeOrders from './pages/ChangeOrders';
 import Chat from './pages/Chat';
 import ClientAppDemo from './pages/ClientAppDemo';
+import ClientApprovals from './pages/ClientApprovals';
 import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
 import Clientes from './pages/Clientes';
@@ -90,6 +91,7 @@ import CrossAppSync from './pages/CrossAppSync';
 import CustomerDetails from './pages/CustomerDetails';
 import Dashboard from './pages/Dashboard';
 import Directory from './pages/Directory';
+import DocumentSignatures from './pages/DocumentSignatures';
 import EditarEstimado from './pages/EditarEstimado';
 import Empleados from './pages/Empleados';
 import EmployeeBenefits from './pages/EmployeeBenefits';
@@ -163,6 +165,7 @@ import ReportingHub from './pages/ReportingHub';
 import RoleManagement from './pages/RoleManagement';
 import SafetyIncidents from './pages/SafetyIncidents';
 import SetupPassword from './pages/SetupPassword';
+import SignDocument from './pages/SignDocument';
 import SkillMatrix from './pages/SkillMatrix';
 import Submittals from './pages/Submittals';
 import SystemHealthCheck from './pages/SystemHealthCheck';
@@ -179,6 +182,7 @@ import TimeReports from './pages/TimeReports';
 import TimeTracking from './pages/TimeTracking';
 import Trabajos from './pages/Trabajos';
 import TravelBookings from './pages/TravelBookings';
+import TwoFactorSettings from './pages/TwoFactorSettings';
 import VerChangeOrder from './pages/VerChangeOrder';
 import VerEstimado from './pages/VerEstimado';
 import VerFactura from './pages/VerFactura';
@@ -187,10 +191,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import TwoFactorSettings from './pages/TwoFactorSettings';
-import ClientApprovals from './pages/ClientApprovals';
-import SignDocument from './pages/SignDocument';
-import DocumentSignatures from './pages/DocumentSignatures';
 import __Layout from './Layout.jsx';
 
 
@@ -212,6 +212,7 @@ export const PAGES = {
     "ChangeOrders": ChangeOrders,
     "Chat": Chat,
     "ClientAppDemo": ClientAppDemo,
+    "ClientApprovals": ClientApprovals,
     "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
     "Clientes": Clientes,
@@ -238,6 +239,7 @@ export const PAGES = {
     "CustomerDetails": CustomerDetails,
     "Dashboard": Dashboard,
     "Directory": Directory,
+    "DocumentSignatures": DocumentSignatures,
     "EditarEstimado": EditarEstimado,
     "Empleados": Empleados,
     "EmployeeBenefits": EmployeeBenefits,
@@ -311,6 +313,7 @@ export const PAGES = {
     "RoleManagement": RoleManagement,
     "SafetyIncidents": SafetyIncidents,
     "SetupPassword": SetupPassword,
+    "SignDocument": SignDocument,
     "SkillMatrix": SkillMatrix,
     "Submittals": Submittals,
     "SystemHealthCheck": SystemHealthCheck,
@@ -327,6 +330,7 @@ export const PAGES = {
     "TimeTracking": TimeTracking,
     "Trabajos": Trabajos,
     "TravelBookings": TravelBookings,
+    "TwoFactorSettings": TwoFactorSettings,
     "VerChangeOrder": VerChangeOrder,
     "VerEstimado": VerEstimado,
     "VerFactura": VerFactura,
@@ -335,10 +339,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "TwoFactorSettings": TwoFactorSettings,
-    "ClientApprovals": ClientApprovals,
-    "SignDocument": SignDocument,
-    "DocumentSignatures": DocumentSignatures,
 }
 
 export const pagesConfig = {

@@ -13,6 +13,8 @@ import { FileSignature, Send, CheckCircle2, Clock, XCircle, Copy, AlertTriangle 
 import { format } from 'date-fns';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { sendDocumentForSignature } from '@/functions/sendDocumentForSignature';
+import { sendDocuSignEnvelope } from '@/functions/sendDocuSignEnvelope';
+import { syncDocuSignStatus } from '@/functions/syncDocuSignStatus';
 
 export default function DocumentSignatures() {
   const { toast } = useToast();
@@ -23,6 +25,8 @@ export default function DocumentSignatures() {
   const [signerEmail, setSignerEmail] = useState('');
   const [signerName, setSignerName] = useState('');
   const [message, setMessage] = useState('');
+  const [useDocuSign, setUseDocuSign] = useState(false);
+  const [documentPdfUrl, setDocumentPdfUrl] = useState('');
 
   const { data: user } = useQuery({
     queryKey: ['currentUser'],
@@ -54,14 +58,30 @@ export default function DocumentSignatures() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      const response = await sendDocumentForSignature({
-        document_type: selectedDocType,
-        document_id: selectedDocId,
-        signer_email: signerEmail,
-        signer_name: signerName,
-        message_to_signer: message
-      });
-      return response.data;
+      if (useDocuSign) {
+        // Send via DocuSign
+        const response = await sendDocuSignEnvelope({
+          document_id: selectedDocId,
+          document_type: selectedDocType,
+          signer_email: signerEmail,
+          signer_name: signerName,
+          document_pdf_url: documentPdfUrl,
+          document_title: selectedDocType === 'quote' 
+            ? quotes.find(q => q.id === selectedDocId)?.quote_number 
+            : 'Document'
+        });
+        return response.data;
+      } else {
+        // Send via internal system
+        const response = await sendDocumentForSignature({
+          document_type: selectedDocType,
+          document_id: selectedDocId,
+          signer_email: signerEmail,
+          signer_name: signerName,
+          message_to_signer: message
+        });
+        return response.data;
+      }
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries(['document-signatures']);
@@ -70,13 +90,21 @@ export default function DocumentSignatures() {
       setSignerEmail('');
       setSignerName('');
       setMessage('');
+      setUseDocuSign(false);
+      setDocumentPdfUrl('');
       
       // Copy signature URL
       if (data.signature_url) {
         navigator.clipboard.writeText(data.signature_url);
         toast({
           title: 'Signature Request Sent!',
-          description: 'Link copied to clipboard',
+          description: useDocuSign ? 'Sent via DocuSign' : 'Link copied to clipboard',
+          variant: 'success'
+        });
+      } else if (data.envelope_id) {
+        toast({
+          title: 'Sent via DocuSign!',
+          description: `Envelope ID: ${data.envelope_id}`,
           variant: 'success'
         });
       }
@@ -86,6 +114,21 @@ export default function DocumentSignatures() {
         title: 'Error',
         description: error.message,
         variant: 'destructive'
+      });
+    }
+  });
+
+  const syncDocuSignMutation = useMutation({
+    mutationFn: async () => {
+      const response = await syncDocuSignStatus({});
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(['document-signatures']);
+      toast({
+        title: 'DocuSign Synced',
+        description: `Checked ${data.checked} envelopes, updated ${data.updated}`,
+        variant: 'success'
       });
     }
   });
@@ -118,10 +161,19 @@ export default function DocumentSignatures() {
           description={`${pendingSignatures.length} pending, ${completedSignatures.length} signed`}
           icon={FileSignature}
           actions={
-            <Button onClick={() => setShowSendDialog(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Send className="w-4 h-4 mr-2" />
-              Send for Signature
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={() => syncDocuSignMutation.mutate()} 
+                variant="outline"
+                disabled={syncDocuSignMutation.isPending}
+              >
+                {syncDocuSignMutation.isPending ? 'Syncing...' : 'Sync DocuSign'}
+              </Button>
+              <Button onClick={() => setShowSendDialog(true)} className="bg-blue-600 hover:bg-blue-700">
+                <Send className="w-4 h-4 mr-2" />
+                Send for Signature
+              </Button>
+            </div>
           }
         />
 
@@ -194,9 +246,12 @@ export default function DocumentSignatures() {
                         <p className="text-sm text-slate-600 mb-2">{sig.signer_name} ({sig.signer_email})</p>
                         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
                           <span>Sent: {format(new Date(sig.requested_at), 'MMM dd, yyyy')}</span>
-                          <span>Expires: {format(new Date(sig.expires_at), 'MMM dd')}</span>
+                          {sig.expires_at && <span>Expires: {format(new Date(sig.expires_at), 'MMM dd')}</span>}
                           {sig.view_count > 0 && (
                             <span className="text-blue-600 font-semibold">Viewed {sig.view_count}x</span>
+                          )}
+                          {sig.docusign_envelope_id && (
+                            <span className="text-purple-600 font-semibold">📄 DocuSign</span>
                           )}
                         </div>
                       </div>
@@ -298,14 +353,43 @@ export default function DocumentSignatures() {
                 />
               </div>
 
-              <div>
-                <label className="text-sm font-medium mb-2 block">Message (Optional)</label>
-                <Textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Please review and sign this document..."
-                  rows={3}
+              {!useDocuSign && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Message (Optional)</label>
+                  <Textarea
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Please review and sign this document..."
+                    rows={3}
+                  />
+                </div>
+              )}
+
+              {useDocuSign && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Document PDF URL</label>
+                  <Input
+                    value={documentPdfUrl}
+                    onChange={(e) => setDocumentPdfUrl(e.target.value)}
+                    placeholder="https://example.com/document.pdf"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    DocuSign requires a publicly accessible PDF URL
+                  </p>
+                </div>
+              )}
+
+              <div className="flex items-center gap-2 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <input
+                  type="checkbox"
+                  id="useDocuSign"
+                  checked={useDocuSign}
+                  onChange={(e) => setUseDocuSign(e.target.checked)}
+                  className="w-4 h-4"
                 />
+                <label htmlFor="useDocuSign" className="text-sm font-medium text-purple-900">
+                  📄 Send via DocuSign (requires PDF URL)
+                </label>
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
@@ -314,13 +398,18 @@ export default function DocumentSignatures() {
                 </Button>
                 <Button
                   onClick={() => sendMutation.mutate()}
-                  disabled={!selectedDocId || !signerEmail || sendMutation.isPending}
+                  disabled={
+                    !selectedDocId || 
+                    !signerEmail || 
+                    (useDocuSign && !documentPdfUrl) || 
+                    sendMutation.isPending
+                  }
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   {sendMutation.isPending ? 'Sending...' : (
                     <>
                       <Send className="w-4 h-4 mr-2" />
-                      Send for Signature
+                      {useDocuSign ? 'Send via DocuSign' : 'Send for Signature'}
                     </>
                   )}
                 </Button>
