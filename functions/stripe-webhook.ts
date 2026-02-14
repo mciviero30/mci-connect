@@ -96,6 +96,19 @@ Deno.serve(async (req) => {
 
       console.log('✅ Transaction created for invoice:', invoiceNumber);
 
+      // Detect customer language preference
+      let language = 'en'; // Default to English
+      if (invoice.customer_id) {
+        try {
+          const customers = await base44.asServiceRole.entities.Customer.filter({ id: invoice.customer_id });
+          if (customers.length > 0 && customers[0].preferred_language) {
+            language = customers[0].preferred_language;
+          }
+        } catch (error) {
+          console.warn('Could not fetch customer language, using default:', error);
+        }
+      }
+
       // Send receipt email
       const emailBody = language === 'es'
         ? `Estimado(a) ${invoice.customer_name},\n\nHemos recibido tu pago de $${amountPaid.toFixed(2)} para la factura ${invoiceNumber}.\n\nGracias por tu pago.\n\nMCI Team`
@@ -111,7 +124,7 @@ Deno.serve(async (req) => {
           from_name: 'MCI Connect',
         });
 
-        console.log('✅ Receipt email sent to:', invoice.customer_email);
+        console.log('✅ Receipt email sent to:', invoice.customer_email, 'in', language);
       }
 
       return Response.json({ 
