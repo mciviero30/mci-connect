@@ -611,6 +611,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Approvals Hub', url: createPageUrl("ApprovalsHub"), icon: CheckCircle2 },
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
         { title: 'Client Approvals', url: createPageUrl("ClientApprovals"), icon: CheckCircle2 },
+        { title: 'E-Signatures', url: createPageUrl("DocumentSignatures"), icon: FileText },
         { title: 'Change Orders', url: createPageUrl("ChangeOrders"), icon: FileText },
         { title: 'RFIs', url: createPageUrl("RFIs"), icon: FileText },
         { title: 'Submittals', url: createPageUrl("Submittals"), icon: FileCheck },
