@@ -212,6 +212,21 @@ Deno.serve(async (req) => {
       if (import.meta.env?.DEV) {
         console.error('❌ Drive step error:', error);
       }
+      
+      // B4 FIX: Notify admin of Drive folder creation failure
+      try {
+        const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+        await Promise.all(admins.map(admin =>
+          base44.asServiceRole.integrations.Core.SendEmail({
+            to: admin.email,
+            subject: '🚨 Job Provisioning Failed - Drive Folder',
+            body: `Job provisioning failed for:\n\nJob: ${job.name} (${job.job_number})\nInvoice: ${invoice.invoice_number}\nCustomer: ${invoice.customer_name}\n\nError: ${error.message}\n\nPlease manually create Drive folder or retry provisioning.`,
+            from_name: 'MCI Connect System'
+          })
+        ));
+      } catch (notifyError) {
+        console.error('Failed to send failure notification:', notifyError);
+      }
     }
 
     // ========================================

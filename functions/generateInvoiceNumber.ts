@@ -26,12 +26,23 @@ Deno.serve(async (req) => {
       throw new Error(`Format validation failed: ${formattedNumber}`);
     }
 
-    console.log(`✅ Generated invoice number: ${formattedNumber} (counter: ${nextNumber})`);
+    // B3 FIX: Check for existing invoice with this number (race condition safety)
+    const existing = await base44.asServiceRole.entities.Invoice.filter({ 
+      invoice_number: formattedNumber 
+    });
+    
+    if (existing.length > 0) {
+      console.error(`❌ COLLISION DETECTED: Invoice number ${formattedNumber} already exists (id: ${existing[0].id})`);
+      throw new Error(`Invoice number ${formattedNumber} already exists. Retry generation.`);
+    }
+
+    console.log(`✅ Generated unique invoice number: ${formattedNumber} (counter: ${nextNumber})`);
     
     return Response.json({ 
       invoice_number: formattedNumber,
       next_sequence: nextNumber,
-      formatted: true
+      formatted: true,
+      validated_unique: true
     });
   } catch (error) {
     if (error instanceof Response) throw error;

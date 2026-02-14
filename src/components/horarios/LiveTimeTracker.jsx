@@ -123,6 +123,34 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   const jobOptions = jobs.map(j => ({ value: j.id, label: j.name }));
 
   useEffect(() => {
+    // B5 FIX: Cleanup old sessions (>7 days) to prevent localStorage bloat
+    try {
+      const cleanupOldSessions = () => {
+        const keys = Object.keys(localStorage);
+        const now = Date.now();
+        const sevenDays = 7 * 24 * 60 * 60 * 1000;
+        
+        keys.forEach(key => {
+          if (key.startsWith('liveTimeTracker_')) {
+            try {
+              const session = JSON.parse(localStorage.getItem(key));
+              if (session?.startTime && (now - session.startTime) > sevenDays) {
+                localStorage.removeItem(key);
+                console.log(`🧹 Cleaned up old session: ${key}`);
+              }
+            } catch (e) {
+              // Invalid session data - remove it
+              localStorage.removeItem(key);
+            }
+          }
+        });
+      };
+      
+      cleanupOldSessions();
+    } catch (error) {
+      console.warn('Session cleanup failed:', error);
+    }
+    
     const savedSession = JSON.parse(localStorage.getItem(storageKey));
     if (savedSession) {
       setActiveSession(savedSession);
