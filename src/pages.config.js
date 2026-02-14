@@ -120,6 +120,7 @@ import JobDetails from './pages/JobDetails';
 import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
 import JobPhotos from './pages/JobPhotos';
 import JobQuoteCleanup from './pages/JobQuoteCleanup';
+import JobTimeline from './pages/JobTimeline';
 import KnowledgeAdmin from './pages/KnowledgeAdmin';
 import KnowledgeLibrary from './pages/KnowledgeLibrary';
 import KnowledgeSubmit from './pages/KnowledgeSubmit';
@@ -186,7 +187,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import JobTimeline from './pages/JobTimeline';
+import TwoFactorSettings from './pages/TwoFactorSettings';
 import __Layout from './Layout.jsx';
 
 
@@ -264,6 +265,7 @@ export const PAGES = {
     "JobPerformanceAnalysis": JobPerformanceAnalysis,
     "JobPhotos": JobPhotos,
     "JobQuoteCleanup": JobQuoteCleanup,
+    "JobTimeline": JobTimeline,
     "KnowledgeAdmin": KnowledgeAdmin,
     "KnowledgeLibrary": KnowledgeLibrary,
     "KnowledgeSubmit": KnowledgeSubmit,
@@ -330,7 +332,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "JobTimeline": JobTimeline,
+    "TwoFactorSettings": TwoFactorSettings,
 }
 
 export const pagesConfig = {

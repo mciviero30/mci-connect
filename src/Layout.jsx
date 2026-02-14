@@ -98,6 +98,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import AgreementGate from "@/components/agreements/AgreementGate";
 import TaxProfileGate from "@/components/tax/TaxProfileGate";
 import InvitationGate from "@/components/security/InvitationGate";
+import TwoFactorGate from "@/components/security/TwoFactorGate";
 import EmployeeDirectoryGuard from "@/components/security/EmployeeDirectoryGuard";
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import SessionTimeoutManager from "@/components/security/SessionTimeoutManager";
@@ -620,6 +621,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
         { title: 'Work Authorizations', url: createPageUrl("WorkAuthorizations"), icon: Shield },
+        { title: '2FA Security', url: createPageUrl("TwoFactorSettings"), icon: Shield },
         { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Review', url: createPageUrl("CommissionReview"), icon: TrendingUp },
@@ -1448,13 +1450,15 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           <PermissionsProvider>
             <UIProvider>
               <InvitationGate user={user}>
-                <AgreementGate>
-                  <TaxProfileGate>
-                    <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                      {children}
-                    </LayoutContentWrapper>
-                  </TaxProfileGate>
-                </AgreementGate>
+                <TwoFactorGate user={user}>
+                  <AgreementGate>
+                    <TaxProfileGate>
+                      <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                        {children}
+                      </LayoutContentWrapper>
+                    </TaxProfileGate>
+                  </AgreementGate>
+                </TwoFactorGate>
               </InvitationGate>
             </UIProvider>
           </PermissionsProvider>
