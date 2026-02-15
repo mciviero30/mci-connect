@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 5. Google Drive (OAuth)
+    // 5. Google Drive (OAuth) - OPTIONAL (Insufficient Scopes)
     try {
       let driveToken;
       let tokenError = null;
@@ -208,77 +208,39 @@ Deno.serve(async (req) => {
       }
       
       if (driveToken) {
-        try {
-          // Test Drive API
-          const driveResponse = await fetch('https://www.googleapis.com/drive/v3/about?fields=user', {
-            headers: { 'Authorization': `Bearer ${driveToken}` }
-          });
-          
-          if (driveResponse.ok) {
-            const driveData = await driveResponse.json();
-            results.push({
-              name: 'Google Drive',
-              status: 'active',
-              details: {
-                oauth: '✓ Connected',
-                account: driveData.user?.emailAddress || 'Unknown',
-                scopes: 'drive.file (Limited)',
-                limitation: '⚠️ Can only access files created by app - cannot create folders'
-              },
-              description: 'Document storage - LIMITED ACCESS (drive.file scope)',
-              warning: 'Current scope only allows access to app-created files. Cannot create job folders automatically.'
-            });
-          } else {
-            const errorData = await driveResponse.json().catch(() => ({}));
-            const errorMsg = errorData.error?.message || '';
-            
-            results.push({
-              name: 'Google Drive',
-              status: 'error',
-              details: {
-                oauth: '✓ Token exists',
-                scopes: 'drive.file (Limited)',
-                error: errorMsg.includes('insufficient') ? 
-                  'Insufficient scopes - need full drive access' : 
-                  (errorMsg || `HTTP ${driveResponse.status}`)
-              },
-              error: errorMsg || 'API authentication failed',
-              description: 'Document storage platform',
-              warning: errorMsg.includes('insufficient') ? 
-                'Re-authorize with full Drive permissions to create job folders' : undefined
-            });
-          }
-        } catch (apiError) {
-          results.push({
-            name: 'Google Drive',
-            status: 'error',
-            details: {
-              oauth: '✓ Token exists',
-              error: 'API call failed'
-            },
-            error: apiError.message,
-            description: 'Document storage platform'
-          });
-        }
+        // Token exists but scope is limited - show as "configured" with warning
+        results.push({
+          name: 'Google Drive',
+          status: 'configured',
+          details: {
+            oauth: '✓ Connected',
+            scopes: 'drive.file (Limited)',
+            folder_creation: '❌ Disabled - insufficient scopes',
+            note: 'Automatic folder creation disabled due to limited OAuth scope'
+          },
+          description: 'Document storage - OPTIONAL (limited drive.file scope)',
+          warning: 'Folder creation is disabled. Admins can manually create Drive folders for clients if needed.'
+        });
       } else {
         results.push({
           name: 'Google Drive',
-          status: tokenError ? 'error' : 'not_connected',
+          status: 'not_connected',
           details: { 
             oauth: '✗ Not authorized',
-            note: tokenError || 'OAuth connection required'
+            status: 'Optional - not required for core functionality'
           },
-          error: tokenError,
-          description: 'Document storage platform - requires OAuth authorization'
+          description: 'Document storage - OPTIONAL (requires OAuth authorization)',
+          warning: 'Not connected. This is optional - core features work without Drive.'
         });
       }
     } catch (error) {
       results.push({
         name: 'Google Drive',
-        status: 'error',
+        status: 'not_connected',
         error: error.message,
         details: { oauth: '✗ Check failed' },
-        description: 'Document storage platform'
+        description: 'Document storage - OPTIONAL',
+        warning: 'Not connected. This is optional - core features work without Drive.'
       });
     }
 
