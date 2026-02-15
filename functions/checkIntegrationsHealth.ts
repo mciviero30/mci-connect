@@ -18,17 +18,49 @@ Deno.serve(async (req) => {
       const docusignAccountId = Deno.env.get('DOCUSIGN_ACCOUNT_ID');
       const docusignIntegrationKey = Deno.env.get('DOCUSIGN_INTEGRATION_KEY');
       const docusignSecretKey = Deno.env.get('DOCUSIGN_SECRET_KEY');
+      const docusignUserId = Deno.env.get('DOCUSIGN_USER_ID');
       
-      results.push({
-        name: 'DocuSign',
-        status: (docusignAccountId && docusignIntegrationKey && docusignSecretKey) ? 'configured' : 'missing_keys',
-        details: {
-          account_id: docusignAccountId ? '✓ Set' : '✗ Missing',
-          integration_key: docusignIntegrationKey ? '✓ Set' : '✗ Missing',
-          secret_key: docusignSecretKey ? '✓ Set' : '✗ Missing'
-        },
-        description: 'Electronic signature platform for quotes, contracts, and work authorizations'
-      });
+      if (docusignAccountId && docusignIntegrationKey && docusignSecretKey) {
+        // Test DocuSign API connection
+        const authResponse = await fetch('https://account-d.docusign.com/oauth/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: new URLSearchParams({
+            grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            assertion: 'test' // Simplified test - just checking if endpoint responds
+          })
+        });
+        
+        // Even if auth fails, if we get a response it means API is reachable
+        const apiReachable = authResponse.status === 400 || authResponse.status === 401; // Expected for test
+        
+        results.push({
+          name: 'DocuSign',
+          status: apiReachable ? 'active' : 'error',
+          details: {
+            account_id: docusignAccountId ? '✓ Set' : '✗ Missing',
+            integration_key: docusignIntegrationKey ? '✓ Set' : '✗ Missing',
+            secret_key: docusignSecretKey ? '✓ Set' : '✗ Missing',
+            user_id: docusignUserId ? '✓ Set' : '✗ Missing',
+            api_status: apiReachable ? 'Reachable' : 'Unreachable'
+          },
+          description: 'Electronic signature platform for quotes, contracts, and work authorizations'
+        });
+      } else {
+        results.push({
+          name: 'DocuSign',
+          status: 'missing_keys',
+          details: {
+            account_id: docusignAccountId ? '✓ Set' : '✗ Missing',
+            integration_key: docusignIntegrationKey ? '✓ Set' : '✗ Missing',
+            secret_key: docusignSecretKey ? '✓ Set' : '✗ Missing',
+            user_id: docusignUserId ? '✓ Set' : '✗ Missing'
+          },
+          description: 'Electronic signature platform for quotes, contracts, and work authorizations'
+        });
+      }
     } catch (error) {
       results.push({
         name: 'DocuSign',
