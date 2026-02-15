@@ -92,6 +92,7 @@ import UniversalNotificationEngine from "@/components/notifications/UniversalNot
 import CustomerNotificationEngine from "@/components/notifications/CustomerNotificationEngine";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import UniversalPushManager from "@/components/notifications/IOSPushManager";
+import RecentlyViewed from "@/components/shared/RecentlyViewed";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
 import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
 import BottomNav from "@/components/navigation/BottomNav";
@@ -1313,37 +1314,38 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                   </SidebarTrigger>
                 )}
                 <div className="flex-shrink-0 flex items-center gap-2">
-                  {!isFieldMode && !isFocusMode && (
-                    <button
-                      onClick={toggleFocusMode}
-                      className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[40px] min-h-[40px]"
-                      title="Focus Mode"
-                    >
-                      <Maximize2 className="w-5 h-5 text-[#1E3A8A]" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      const newTheme = theme === 'light' ? 'dark' : 'light';
-                      setTheme(newTheme);
-                      if (newTheme === 'dark') {
-                        document.documentElement.classList.add('dark');
-                      } else {
-                        document.documentElement.classList.remove('dark');
-                      }
-                      localStorage.setItem('theme', newTheme);
-                    }}
-                    className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[40px] min-h-[40px]"
-                    title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-                  >
-                    {theme === 'light' ? (
-                      <Moon className="w-5 h-5 text-[#1E3A8A]" />
-                    ) : (
-                      <Sun className="w-5 h-5 text-yellow-400" />
-                    )}
-                  </button>
-                  <NotificationBell user={user} />
-                </div>
+                      <RecentlyViewed />
+                      {!isFieldMode && !isFocusMode && (
+                        <button
+                          onClick={toggleFocusMode}
+                          className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[40px] min-h-[40px]"
+                          title="Focus Mode"
+                        >
+                          <Maximize2 className="w-5 h-5 text-[#1E3A8A]" />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          const newTheme = theme === 'light' ? 'dark' : 'light';
+                          setTheme(newTheme);
+                          if (newTheme === 'dark') {
+                            document.documentElement.classList.add('dark');
+                          } else {
+                            document.documentElement.classList.remove('dark');
+                          }
+                          localStorage.setItem('theme', newTheme);
+                        }}
+                        className="p-2 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[40px] min-h-[40px]"
+                        title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                      >
+                        {theme === 'light' ? (
+                          <Moon className="w-5 h-5 text-[#1E3A8A]" />
+                        ) : (
+                          <Sun className="w-5 h-5 text-yellow-400" />
+                        )}
+                      </button>
+                      <NotificationBell user={user} />
+                    </div>
               </div>
             </motion.header>
           )}

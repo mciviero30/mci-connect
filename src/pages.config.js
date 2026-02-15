@@ -67,6 +67,7 @@ import ClientAppDemo from './pages/ClientAppDemo';
 import ClientApprovals from './pages/ClientApprovals';
 import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
+import ClientProfitabilityReport from './pages/ClientProfitabilityReport';
 import Clientes from './pages/Clientes';
 import CodebaseExport from './pages/CodebaseExport';
 import CommissionAgreements from './pages/CommissionAgreements';
@@ -175,6 +176,7 @@ import TMInvoiceBuilder from './pages/TMInvoiceBuilder';
 import TaxOnboarding from './pages/TaxOnboarding';
 import TeamDetails from './pages/TeamDetails';
 import TeamGoals from './pages/TeamGoals';
+import TeamUtilizationReport from './pages/TeamUtilizationReport';
 import Teams from './pages/Teams';
 import TestingChecklist from './pages/TestingChecklist';
 import TimeOffRequests from './pages/TimeOffRequests';
@@ -191,8 +193,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import TeamUtilizationReport from './pages/TeamUtilizationReport';
-import ClientProfitabilityReport from './pages/ClientProfitabilityReport';
 import __Layout from './Layout.jsx';
 
 
@@ -217,6 +217,7 @@ export const PAGES = {
     "ClientApprovals": ClientApprovals,
     "ClientManagement": ClientManagement,
     "ClientPortal": ClientPortal,
+    "ClientProfitabilityReport": ClientProfitabilityReport,
     "Clientes": Clientes,
     "CodebaseExport": CodebaseExport,
     "CommissionAgreements": CommissionAgreements,
@@ -325,6 +326,7 @@ export const PAGES = {
     "TaxOnboarding": TaxOnboarding,
     "TeamDetails": TeamDetails,
     "TeamGoals": TeamGoals,
+    "TeamUtilizationReport": TeamUtilizationReport,
     "Teams": Teams,
     "TestingChecklist": TestingChecklist,
     "TimeOffRequests": TimeOffRequests,
@@ -341,8 +343,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "TeamUtilizationReport": TeamUtilizationReport,
-    "ClientProfitabilityReport": ClientProfitabilityReport,
 }
 
 export const pagesConfig = {
