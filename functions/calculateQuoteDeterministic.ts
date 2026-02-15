@@ -96,20 +96,15 @@ Deno.serve(async (req) => {
     }
 
     // IDEMPOTENCY CHECK - Return cached result if exists
-    if (request_id) {
-      const existing = await base44.entities.IdempotencyRecord.filter({
-        request_id: request_id
+    const cachedResult = await engine.checkIdempotency(base44, request_id);
+    if (cachedResult) {
+      return new Response(JSON.stringify({
+        status: 'cached',
+        result: cachedResult
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
       });
-
-      if (existing.length > 0 && existing[0].status === 'completed') {
-        return new Response(JSON.stringify({
-          status: 'cached',
-          result: existing[0].cached_result
-        }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      }
     }
 
     // ============================================
