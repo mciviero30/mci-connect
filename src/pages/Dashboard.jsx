@@ -56,6 +56,7 @@ import QuickStatsWidgets from "../components/dashboard/QuickStatsWidgets";
 import ARWidget from "../components/dashboard/ARWidget";
 import { FileSpreadsheet } from "lucide-react";
 import { exportToExcel } from "@/components/shared/UniversalExcelExport";
+import ActualVsEstimatedChart from "../components/dashboard/ActualVsEstimatedChart";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
