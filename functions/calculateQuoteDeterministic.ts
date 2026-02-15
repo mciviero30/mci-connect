@@ -134,29 +134,28 @@ Deno.serve(async (req) => {
     };
 
     // ============================================
-    // TRANSACTION-SAFE VERSION CREATION
+    // CONCURRENCY-SAFE VERSION CREATION
+    // (Uses DB constraints + retry logic, not transactions)
     // ============================================
     
+    const entityId = quote_id || 'temp';
+    
     // Get next version number (with retry for race conditions)
-    const { nextVersion } = await getNextVersionNumber(base44, quote_id || 'temp');
+    const { nextVersion } = await engine.getNextVersionNumber(base44, entityId);
 
-    // Create version record (will fail if concurrent creation occurred)
-    const calcVersion = await createCalculationVersionWithRetry(
-      base44,
-      quote_id || 'temp',
-      {
-        entity_type: 'Quote',
-        entity_id: quote_id || 'temp',
-        calculation_version: nextVersion,
-        calculation_input_hash: inputHash,
-        calculation_output_hash: outputHash,
-        backend_totals_snapshot: snapshot,
-        recalculated_at: new Date().toISOString(),
-        calculated_by_user_id: user.id,
-        reason_for_recalculation: 'manual_edit',
-        is_current: true
-      }
-    );
+    // Create version record (will retry on UNIQUE constraint violation)
+    const calcVersion = await engine.createVersionWithRetry(base44, entityId, {
+      entity_type: 'Quote',
+      entity_id: entityId,
+      calculation_version: nextVersion,
+      calculation_input_hash: inputHash,
+      calculation_output_hash: outputHash,
+      backend_totals_snapshot: snapshot,
+      recalculated_at: new Date().toISOString(),
+      calculated_by_user_id: user.id,
+      reason_for_recalculation: 'manual_edit',
+      is_current: true
+    });
 
     const result = {
       calculation_version_id: calcVersion.id,
