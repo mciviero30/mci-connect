@@ -24,6 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { trackRecentlyViewed } from "@/components/shared/RecentlyViewed";
 
 export default function CustomerDetails() {
   const navigate = useNavigate();
@@ -36,7 +37,14 @@ export default function CustomerDetails() {
 
   const { data: customer, isLoading } = useQuery({
     queryKey: ['customer', id],
-    queryFn: () => base44.entities.Customer.get(id),
+    queryFn: async () => {
+      const c = await base44.entities.Customer.get(id);
+      // I7 - Track recently viewed
+      if (c) {
+        trackRecentlyViewed('customer', c.id, getCustomerDisplayName(c));
+      }
+      return c;
+    },
   });
 
   const { data: quotes = [] } = useQuery({

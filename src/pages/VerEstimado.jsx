@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import QuoteDocument from "../components/documentos/QuoteDocument";
 import QuoteInternalNotes from "@/components/quotes/QuoteInternalNotes";
+import { trackRecentlyViewed } from "@/components/shared/RecentlyViewed";
 import QuoteChangeHistory from "@/components/quotes/QuoteChangeHistory";
 import QuoteReminder from "@/components/quotes/QuoteReminder";
 import QuoteSignature from "@/components/quotes/QuoteSignature";
@@ -62,7 +63,14 @@ export default function VerEstimado() {
 
   const { data: quote, isLoading } = useQuery({
     queryKey: ['quote', quoteId],
-    queryFn: () => base44.entities.Quote.get(quoteId),
+    queryFn: async () => {
+      const q = await base44.entities.Quote.get(quoteId);
+      // I7 - Track recently viewed
+      if (q) {
+        trackRecentlyViewed('quote', q.id, q.quote_number);
+      }
+      return q;
+    },
     enabled: !!quoteId,
   });
 

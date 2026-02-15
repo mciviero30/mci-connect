@@ -41,6 +41,7 @@ import StatsCard from "../components/shared/StatsCard";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import CommentThread from "../components/comments/CommentThread";
+import { trackRecentlyViewed } from "@/components/shared/RecentlyViewed";
 import JobTimeline from "../components/jobs/JobTimeline";
 import CostAccumulationChart from "../components/jobs/CostAccumulationChart";
 import { useToast } from "@/components/ui/toast";
@@ -68,7 +69,14 @@ export default function JobDetails() {
 
   const { data: rawJob, isLoading: jobLoading } = useQuery({
     queryKey: ['job', jobId],
-    queryFn: () => base44.entities.Job.get(jobId),
+    queryFn: async () => {
+      const job = await base44.entities.Job.get(jobId);
+      // I7 - Track recently viewed
+      if (job) {
+        trackRecentlyViewed('job', job.id, job.name);
+      }
+      return job;
+    },
     enabled: !!jobId
   });
 

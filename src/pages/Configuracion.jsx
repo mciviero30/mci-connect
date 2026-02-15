@@ -19,14 +19,16 @@ import {
   DollarSign,
   HardDrive,
   Loader2,
-  AlertTriangle, // New import
-  Receipt,       // New import
-  Clock,         // New import
-  Briefcase,     // New import
-  Calendar as CalendarIcon, // Alias to avoid conflict with Calendar from date-fns
-  CalendarClock,  // New import
+  AlertTriangle,
+  Receipt,
+  Clock,
+  Briefcase,
+  Calendar as CalendarIcon,
+  CalendarClock,
   Info,
-  Camera
+  Camera,
+  Sun,
+  Moon
 } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

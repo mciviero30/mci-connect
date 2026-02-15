@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import InvoiceDocument from "../components/documentos/InvoiceDocument";
 import { downloadInvoicePDF } from "../components/pdf/generateInvoicePDF";
+import { trackRecentlyViewed } from "@/components/shared/RecentlyViewed";
 import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 import RetryProvisioningButton from "../components/invoices/RetryProvisioningButton";
 import { useUI } from "@/components/contexts/FieldModeContext";
@@ -71,7 +72,14 @@ export default function VerFactura() {
 
   const { data: rawInvoice, isLoading } = useQuery({
     queryKey: ['invoice', invoiceId],
-    queryFn: () => base44.entities.Invoice.get(invoiceId),
+    queryFn: async () => {
+      const inv = await base44.entities.Invoice.get(invoiceId);
+      // I7 - Track recently viewed
+      if (inv) {
+        trackRecentlyViewed('invoice', inv.id, inv.invoice_number);
+      }
+      return inv;
+    },
     enabled: !!invoiceId,
   });
 
