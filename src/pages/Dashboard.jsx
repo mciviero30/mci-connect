@@ -54,6 +54,8 @@ import FieldWorkIndicator from "@/components/dashboard/FieldWorkIndicator";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 import QuickStatsWidgets from "../components/dashboard/QuickStatsWidgets";
 import ARWidget from "../components/dashboard/ARWidget";
+import { FileSpreadsheet } from "lucide-react";
+import { exportToExcel } from "@/components/shared/UniversalExcelExport";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
