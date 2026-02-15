@@ -21,16 +21,56 @@ function sleep(ms) {
 }
 
 /**
+ * Normalize item: extract only relevant financial fields
+ * Ensures deterministic serialization regardless of extra properties
+ */
+function normalizeItem(item) {
+  if (!item || typeof item !== 'object') return null;
+  
+  return {
+    item_name: item.item_name || '',
+    quantity: item.quantity ?? 0,
+    unit: item.unit || '',
+    unit_price: item.unit_price ?? 0,
+    description: item.description || '',
+    calculation_type: item.calculation_type || '',
+    installation_time: item.installation_time ?? 0,
+    tech_count: item.tech_count ?? 0,
+    duration_value: item.duration_value ?? 0,
+    is_travel_item: item.is_travel_item || false,
+    travel_item_type: item.travel_item_type || ''
+  };
+}
+
+/**
  * Canonical sorting for items array (determinism under reordering)
+ * Sorts by full normalized item content for stable ordering
  */
 function canonicalSort(items) {
   if (!Array.isArray(items)) return items;
   
-  return [...items].sort((a, b) => {
-    // Try to sort by stable key: id > item_name > JSON stringified
-    const keyA = (a.id || a.item_name || JSON.stringify(a)).toString();
-    const keyB = (b.id || b.item_name || JSON.stringify(b)).toString();
-    return keyA.localeCompare(keyB);
+  const normalized = items.map(normalizeItem);
+  
+  return normalized.sort((a, b) => {
+    // Primary sort: by item_name (most stable identifier)
+    if (a.item_name !== b.item_name) {
+      return a.item_name.localeCompare(b.item_name);
+    }
+    
+    // Secondary sort: by quantity (if name is same)
+    if (a.quantity !== b.quantity) {
+      return a.quantity - b.quantity;
+    }
+    
+    // Tertiary sort: by unit_price (if name and qty are same)
+    if (a.unit_price !== b.unit_price) {
+      return a.unit_price - b.unit_price;
+    }
+    
+    // Final tie-breaker: full JSON serialization
+    const jsonA = JSON.stringify(a);
+    const jsonB = JSON.stringify(b);
+    return jsonA.localeCompare(jsonB);
   });
 }
 
