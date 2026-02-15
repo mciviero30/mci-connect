@@ -167,27 +167,8 @@ Deno.serve(async (req) => {
       recalculated_at: new Date().toISOString()
     };
 
-    // SAVE IDEMPOTENCY RECORD (idempotent operation)
-    if (request_id) {
-      try {
-        await base44.entities.IdempotencyRecord.create({
-          request_id: request_id,
-          mutation_id: inputHash,
-          mutation_type: 'update_quote',
-          user_id: user.id,
-          entity_type: 'Quote',
-          entity_id: quote_id || 'temp',
-          cached_result: result,
-          created_at: new Date().toISOString(),
-          is_permanent: false,
-          status: 'completed'
-        });
-      } catch (err) {
-        // Idempotency record might already exist (duplicate request after success)
-        // This is OK - we'll just return the result
-        console.warn('Idempotency record create failed (may be duplicate):', err.message);
-      }
-    }
+    // SAVE IDEMPOTENCY RECORD for future deduplication
+    await engine.saveIdempotency(base44, request_id, inputHash, entityId, result, false);
 
     return new Response(JSON.stringify({
       success: true,
