@@ -122,12 +122,12 @@ Deno.serve(async (req) => {
       pricing_version: 'v1.0'
     };
 
-    // Hash inputs (deterministic, no timestamps)
-    const inputHash = calculateQuoteHash({ items, customer_id: null, tax_rate }, ruleVersions);
+    // Hash inputs (deterministic, canonical sorted items, no timestamps)
+    const inputHash = engine.calculateHash({ items, customer_id: null, tax_rate }, ruleVersions);
     
-    // Calculate totals (server authority)
-    const totals = calculateTotals(items, tax_rate);
-    const outputHash = createHash('sha256').update(JSON.stringify(totals)).digest('hex');
+    // Calculate totals (server authority, frontend values ignored)
+    const totals = calculateQuoteTotals(items, tax_rate);
+    const outputHash = engine.calculateOutputHash(totals);
 
     // Snapshot for audit trail
     const snapshot = {
