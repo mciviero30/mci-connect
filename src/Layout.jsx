@@ -524,6 +524,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Executive Dashboard', url: createPageUrl("ExecutiveDashboard"), icon: TrendingUp },
         { title: 'Control Tower', url: createPageUrl("ExecutiveControlTower"), icon: Shield },
         { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3 },
+        { title: 'Advanced Analytics', url: createPageUrl("AdvancedAnalytics"), icon: Zap },
         { title: 'Cash Flow', url: createPageUrl("CashFlowReport"), icon: Wallet },
         { title: 'Aging Report', url: createPageUrl("AgingReport"), icon: TrendingUp },
         { title: 'Team Utilization', url: createPageUrl("TeamUtilizationReport"), icon: Users },
