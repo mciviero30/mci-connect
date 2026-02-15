@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import CreateJobFromInvoiceDialog from "../components/trabajos/CreateJobFromInvoiceDialog";
 import ExcelExporter, { transformInvoicesForExport } from "@/components/shared/ExcelExporter";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { FileSpreadsheet } from "lucide-react";
 import ViewModeToggle from "@/components/shared/ViewModeToggle";
 import SavedFilters from "@/components/shared/SavedFilters";
 import CompactListView from "@/components/shared/CompactListView";

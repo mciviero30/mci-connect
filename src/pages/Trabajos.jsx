@@ -25,6 +25,7 @@ import FilterBar from "../components/shared/FilterBar";
 import { useJobClosureValidation } from "../components/trabajos/JobStatusValidator";
 import ExcelExporter, { transformJobsForExport } from "@/components/shared/ExcelExporter";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { FileSpreadsheet } from "lucide-react";
 import ViewModeToggle from "@/components/shared/ViewModeToggle";
 import SavedFilters from "@/components/shared/SavedFilters";
 import CompactListView from "@/components/shared/CompactListView";

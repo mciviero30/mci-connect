@@ -25,6 +25,7 @@ import { SkeletonDocumentList } from "@/components/shared/SkeletonComponents";
 import { useNavigate } from "react-router-dom";
 import ExcelExporter, { transformQuotesForExport } from "@/components/shared/ExcelExporter";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { FileSpreadsheet } from "lucide-react";
 import ViewModeToggle from "@/components/shared/ViewModeToggle";
 import SavedFilters from "@/components/shared/SavedFilters";
 import CompactListView from "@/components/shared/CompactListView";
