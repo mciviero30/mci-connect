@@ -124,7 +124,10 @@ export default function Facturas() {
       
       return base44.entities.Invoice.filter(filters, 'invoice_number');
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 120000,
+    gcTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: teams = [] } = useQuery({

@@ -10,16 +10,32 @@ import * as XLSX from 'xlsx';
 
 export function exportToExcel(data, filename, sheetName = 'Data') {
   try {
-    const worksheet = XLSX.utils.json_to_sheet(data);
+    // Process in chunks for large datasets
+    const chunkSize = 1000;
+    const chunks = [];
+    
+    for (let i = 0; i < data.length; i += chunkSize) {
+      chunks.push(data.slice(i, i + chunkSize));
+    }
+
+    // Process first chunk to create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(chunks[0] || []);
+    
+    // Append remaining chunks
+    for (let i = 1; i < chunks.length; i++) {
+      XLSX.utils.sheet_add_json(worksheet, chunks[i], { skipHeader: true, origin: -1 });
+    }
+
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
     
-    // Auto-size columns
+    // Auto-size columns (optimized)
     const maxWidth = 50;
+    const sampleSize = Math.min(100, data.length); // Only check first 100 rows for performance
     const colWidths = Object.keys(data[0] || {}).map(key => {
       const maxLen = Math.max(
         key.length,
-        ...data.map(row => String(row[key] || '').length)
+        ...data.slice(0, sampleSize).map(row => String(row[key] || '').length)
       );
       return { wch: Math.min(maxLen + 2, maxWidth) };
     });

@@ -59,7 +59,10 @@ export default function Estimados() {
       
       return base44.entities.Quote.filter(filters, 'quote_number');
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 120000,
+    gcTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: teams = [] } = useQuery({
