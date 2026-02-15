@@ -50,6 +50,7 @@
 import AIAssistantPersonal from './pages/AIAssistantPersonal';
 import AIScheduleCenter from './pages/AIScheduleCenter';
 import AdminCleanup from './pages/AdminCleanup';
+import AdvancedAnalytics from './pages/AdvancedAnalytics';
 import AgingReport from './pages/AgingReport';
 import AgreementSignatures from './pages/AgreementSignatures';
 import ApprovalsHub from './pages/ApprovalsHub';
@@ -193,7 +194,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import AdvancedAnalytics from './pages/AdvancedAnalytics';
+import ClockInTests from './pages/ClockInTests';
 import __Layout from './Layout.jsx';
 
 
@@ -201,6 +202,7 @@ export const PAGES = {
     "AIAssistantPersonal": AIAssistantPersonal,
     "AIScheduleCenter": AIScheduleCenter,
     "AdminCleanup": AdminCleanup,
+    "AdvancedAnalytics": AdvancedAnalytics,
     "AgingReport": AgingReport,
     "AgreementSignatures": AgreementSignatures,
     "ApprovalsHub": ApprovalsHub,
@@ -344,7 +346,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "AdvancedAnalytics": AdvancedAnalytics,
+    "ClockInTests": ClockInTests,
 }
 
 export const pagesConfig = {
