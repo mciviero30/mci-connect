@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import RecurringInvoiceDialog from '../components/invoices/RecurringInvoiceDialog';
+import SubscriptionButton from '../components/invoices/SubscriptionButton';
 
 export default function RecurringInvoices() {
   const queryClient = useQueryClient();
@@ -246,7 +247,9 @@ export default function RecurringInvoices() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <SubscriptionButton template={template} />
+                      
                       <Button
                         onClick={() => {
                           setEditingTemplate(template);

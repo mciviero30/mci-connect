@@ -39,6 +39,80 @@ Deno.serve(async (req) => {
 
     console.log('✅ Webhook verified:', event.type);
 
+    // Handle subscription invoice payment
+    if (event.type === 'invoice.paid') {
+      const invoice = event.data.object;
+      const subscriptionId = invoice.subscription;
+
+      if (subscriptionId) {
+        console.log('💰 Subscription payment received:', invoice.id);
+        
+        // Find recurring invoice template
+        const templates = await base44.asServiceRole.entities.RecurringInvoice.filter({
+          stripe_subscription_id: subscriptionId
+        });
+
+        if (templates.length > 0) {
+          const template = templates[0];
+          
+          // Get next invoice number
+          const counterRes = await base44.asServiceRole.functions.invoke('getNextCounter', { 
+            counter_key: 'invoice_number' 
+          });
+          const invoiceNumber = `INV-${String(counterRes.next_value).padStart(5, '0')}`;
+
+          // Create invoice record in MCI Connect
+          const newInvoice = await base44.asServiceRole.entities.Invoice.create({
+            invoice_number: invoiceNumber,
+            customer_id: template.customer_id,
+            customer_name: template.customer_name,
+            customer_email: template.customer_email,
+            job_id: template.job_id,
+            job_name: template.job_name,
+            invoice_date: new Date().toISOString().split('T')[0],
+            due_date: new Date().toISOString().split('T')[0],
+            items: template.items,
+            subtotal: template.subtotal,
+            tax_rate: template.tax_rate,
+            tax_amount: template.tax_amount,
+            total: template.total,
+            notes: template.notes,
+            terms: template.terms,
+            status: 'paid',
+            amount_paid: template.total,
+            balance: 0,
+            payment_date: new Date().toISOString().split('T')[0],
+            transaction_id: invoice.payment_intent,
+          });
+
+          // Create transaction
+          await base44.asServiceRole.entities.Transaction.create({
+            type: 'income',
+            amount: template.total,
+            category: 'sales',
+            description: `Recurring payment: ${template.template_name} - ${invoiceNumber}`,
+            date: new Date().toISOString().split('T')[0],
+            payment_method: 'stripe',
+            reconciliation_status: 'matched',
+            matched_invoice_id: newInvoice.id,
+            matched_invoice_number: invoiceNumber,
+            stripe_payment_intent_id: invoice.payment_intent,
+          });
+
+          // Update template stats
+          await base44.asServiceRole.entities.RecurringInvoice.update(template.id, {
+            invoices_generated: (template.invoices_generated || 0) + 1,
+            last_invoice_id: newInvoice.id,
+            last_generated_date: new Date().toISOString().split('T')[0],
+          });
+
+          console.log('✅ Recurring invoice created:', invoiceNumber);
+        }
+      }
+
+      return Response.json({ success: true });
+    }
+
     // Handle checkout.session.completed
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
