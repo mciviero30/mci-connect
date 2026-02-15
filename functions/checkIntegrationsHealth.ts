@@ -222,21 +222,30 @@ Deno.serve(async (req) => {
               details: {
                 oauth: '✓ Connected',
                 account: driveData.user?.emailAddress || 'Unknown',
-                scopes: 'drive.file'
+                scopes: 'drive.file (Limited)',
+                limitation: '⚠️ Can only access files created by app - cannot create folders'
               },
-              description: 'Document storage for job folders, blueprints, and photos'
+              description: 'Document storage - LIMITED ACCESS (drive.file scope)',
+              warning: 'Current scope only allows access to app-created files. Cannot create job folders automatically.'
             });
           } else {
             const errorData = await driveResponse.json().catch(() => ({}));
+            const errorMsg = errorData.error?.message || '';
+            
             results.push({
               name: 'Google Drive',
               status: 'error',
               details: {
-                oauth: '✗ API call failed',
-                error: errorData.error?.message || `HTTP ${driveResponse.status}`
+                oauth: '✓ Token exists',
+                scopes: 'drive.file (Limited)',
+                error: errorMsg.includes('insufficient') ? 
+                  'Insufficient scopes - need full drive access' : 
+                  (errorMsg || `HTTP ${driveResponse.status}`)
               },
-              error: errorData.error?.message || 'API authentication failed',
-              description: 'Document storage platform'
+              error: errorMsg || 'API authentication failed',
+              description: 'Document storage platform',
+              warning: errorMsg.includes('insufficient') ? 
+                'Re-authorize with full Drive permissions to create job folders' : undefined
             });
           }
         } catch (apiError) {
