@@ -805,12 +805,23 @@ export default function Dashboard() {
             ) : (
               <>
                 {/* I5 - Universal Excel Export */}
-                <ExcelExportButton
-                  data={isAdmin ? exportData.jobs : exportData.myHours}
-                  filename={isAdmin ? 'dashboard_jobs' : 'my_hours'}
-                  sheetName={isAdmin ? 'Jobs' : 'Hours'}
-                  buttonText="Excel"
-                />
+                {exportData && (
+                  <Button
+                    onClick={() => {
+                      const data = isAdmin ? exportData.jobs : exportData.myHours;
+                      if (data && data.length > 0) {
+                        const { exportToExcel } = require('@/components/shared/UniversalExcelExport');
+                        exportToExcel(data, isAdmin ? 'dashboard_jobs' : 'my_hours', isAdmin ? 'Jobs' : 'Hours');
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="border-green-200 text-green-600 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Excel</span>
+                  </Button>
+                )}
                 {isAdmin && (
                   <Link to={createPageUrl('CodebaseExport')}>
                     <Button

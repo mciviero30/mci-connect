@@ -17,7 +17,8 @@ import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView"
 import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
 import MobileTimeTracker from "@/components/horarios/MobileTimeTracker";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
-import { ExcelExportButton } from "@/components/shared/UniversalExcelExport";
+import { exportToExcel } from "@/components/shared/UniversalExcelExport";
+import { FileSpreadsheet } from "lucide-react";
 import { buildUserQuery } from "@/components/utils/userResolution";
 import PageHeader from "@/components/shared/PageHeader";
 
@@ -252,19 +253,25 @@ export default function TimeTracking() {
           icon={Clock}
           actions={
             <div className="flex gap-2">
-              <ExcelExportButton
-                data={weekEntries.map(e => ({
-                  Date: e.date,
-                  Job: e.job_name,
-                  'Check In': e.check_in,
-                  'Check Out': e.check_out,
-                  Hours: e.hours_worked,
-                  Status: e.status
-                }))}
-                filename="time_entries"
-                sheetName="Hours"
-                buttonText="Excel"
-              />
+              <Button
+                onClick={() => {
+                  const data = weekEntries.map(e => ({
+                    Date: e.date,
+                    Job: e.job_name,
+                    'Check In': e.check_in,
+                    'Check Out': e.check_out,
+                    Hours: e.hours_worked,
+                    Status: e.status
+                  }));
+                  exportToExcel(data, 'time_entries', 'Hours');
+                }}
+                variant="outline"
+                size="sm"
+                className="border-green-200 text-green-600 hover:bg-green-50"
+              >
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Excel
+              </Button>
               {isManager && (
                 <Button onClick={() => setActiveTab('approvals')} variant="outline" className="h-10 md:h-12 px-3 md:px-6 rounded-xl font-bold shadow-md w-full md:w-auto min-h-[44px]">
                   <Users className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
