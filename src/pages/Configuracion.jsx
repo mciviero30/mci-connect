@@ -69,6 +69,8 @@ export default function Configuracion() {
     profile_photo_url: user?.profile_photo_url || ''
   });
 
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+
   const [settings, setSettings] = useState({
     company_name: '',
     company_logo_url: '',
@@ -774,10 +776,47 @@ export default function Configuracion() {
                     />
                   </div>
 
+                  {/* I6 - Dark Mode Toggle */}
+                  <div className="space-y-2 mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">
+                      {language === 'es' ? 'Tema de Apariencia' : 'Appearance Theme'}
+                    </Label>
+                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        {theme === 'dark' ? (
+                          <Moon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                        ) : (
+                          <Sun className="w-5 h-5 text-slate-600" />
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">
+                            {theme === 'dark' ? (language === 'es' ? 'Modo Oscuro' : 'Dark Mode') : (language === 'es' ? 'Modo Claro' : 'Light Mode')}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {language === 'es' ? 'Cambia entre tema claro y oscuro' : 'Switch between light and dark theme'}
+                          </p>
+                        </div>
+                      </div>
+                      <Switch
+                        checked={theme === 'dark'}
+                        onCheckedChange={(checked) => {
+                          const newTheme = checked ? 'dark' : 'light';
+                          setTheme(newTheme);
+                          if (newTheme === 'dark') {
+                            document.documentElement.classList.add('dark');
+                          } else {
+                            document.documentElement.classList.remove('dark');
+                          }
+                          localStorage.setItem('theme', newTheme);
+                        }}
+                      />
+                    </div>
+                  </div>
+
                   <Button
                     onClick={() => updateProfileMutation.mutate(profileForm)}
                     disabled={updateProfileMutation.isPending}
-                    className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full"
+                    className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full mt-6"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     {updateProfileMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}

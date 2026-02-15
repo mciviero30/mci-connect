@@ -804,6 +804,13 @@ export default function Dashboard() {
               </>
             ) : (
               <>
+                {/* I5 - Universal Excel Export */}
+                <ExcelExportButton
+                  data={isAdmin ? exportData.jobs : exportData.myHours}
+                  filename={isAdmin ? 'dashboard_jobs' : 'my_hours'}
+                  sheetName={isAdmin ? 'Jobs' : 'Hours'}
+                  buttonText="Excel"
+                />
                 {isAdmin && (
                   <Link to={createPageUrl('CodebaseExport')}>
                     <Button
@@ -874,6 +881,13 @@ export default function Dashboard() {
         {!isAdmin && (
           <div className="mb-4 sm:mb-6 md:mb-8">
             <LiveClock />
+          </div>
+        )}
+
+        {/* I1 - Actual vs Estimated Chart (Admin Only) */}
+        {isAdmin && jobs.length > 0 && quotes.length > 0 && (
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <ActualVsEstimatedChart jobs={jobs} quotes={quotes} />
           </div>
         )}
 
