@@ -15,7 +15,9 @@ import WeeklyTimeView from "@/components/time-tracking/WeeklyTimeView";
 import TimeReportsView from "@/components/time-tracking/TimeReportsView";
 import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView";
 import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
+import MobileTimeTracker from "@/components/horarios/MobileTimeTracker";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
+import { ExcelExportButton } from "@/components/shared/UniversalExcelExport";
 import { buildUserQuery } from "@/components/utils/userResolution";
 import PageHeader from "@/components/shared/PageHeader";
 
@@ -227,6 +229,9 @@ export default function TimeTracking() {
 
   const activeBreak = todayEntry?.breaks?.find(b => !b.end_time);
 
+  // I4 - Detect mobile device
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+
   return (
     <SectionErrorBoundary 
       section={language === 'es' ? 'Control de Tiempo' : 'Time Tracking'} 
@@ -246,13 +251,28 @@ export default function TimeTracking() {
           }
           icon={Clock}
           actions={
-            isManager && (
-              <Button onClick={() => setActiveTab('approvals')} variant="outline" className="h-10 md:h-12 px-3 md:px-6 rounded-xl font-bold shadow-md w-full md:w-auto min-h-[44px]">
-                <Users className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
-                <span className="hidden sm:inline">{language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}</span>
-                <span className="sm:hidden">{language === 'es' ? 'Aprobar' : 'Approve'}</span>
-              </Button>
-            )
+            <div className="flex gap-2">
+              <ExcelExportButton
+                data={weekEntries.map(e => ({
+                  Date: e.date,
+                  Job: e.job_name,
+                  'Check In': e.check_in,
+                  'Check Out': e.check_out,
+                  Hours: e.hours_worked,
+                  Status: e.status
+                }))}
+                filename="time_entries"
+                sheetName="Hours"
+                buttonText="Excel"
+              />
+              {isManager && (
+                <Button onClick={() => setActiveTab('approvals')} variant="outline" className="h-10 md:h-12 px-3 md:px-6 rounded-xl font-bold shadow-md w-full md:w-auto min-h-[44px]">
+                  <Users className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+                  <span className="hidden sm:inline">{language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}</span>
+                  <span className="sm:hidden">{language === 'es' ? 'Aprobar' : 'Approve'}</span>
+                </Button>
+              )}
+            </div>
           }
         />
 
@@ -283,14 +303,37 @@ export default function TimeTracking() {
           </CardContent>
         </Card>
 
-        {/* Live Time Tracker with Geofencing */}
-        <LiveTimeTracker 
-          trackingType="work"
-          onSave={(timeEntryData) => {
-            clockInMutation.mutate(timeEntryData);
-          }}
-          isLoading={clockInMutation.isPending}
-        />
+        {/* I4 - Mobile vs Desktop Time Tracker */}
+        {isMobile ? (
+          <MobileTimeTracker
+            jobs={[]} 
+            activeSession={todayEntry ? {
+              startTime: new Date(`${todayEntry.date}T${todayEntry.check_in}`).getTime(),
+              selectedJob: { id: todayEntry.job_id, name: todayEntry.job_name },
+              breaks: todayEntry.breaks || []
+            } : null}
+            onCheckIn={(job) => {
+              clockInMutation.mutate({
+                job_id: job?.id,
+                job_name: job?.name,
+                date: format(new Date(), 'yyyy-MM-dd'),
+                check_in: format(new Date(), 'HH:mm:ss')
+              });
+            }}
+            onCheckOut={() => clockOutMutation.mutate()}
+            onBreakStart={() => startBreakMutation.mutate('lunch')}
+            onBreakEnd={() => endBreakMutation.mutate()}
+            isLoading={clockInMutation.isPending || clockOutMutation.isPending}
+          />
+        ) : (
+          <LiveTimeTracker 
+            trackingType="work"
+            onSave={(timeEntryData) => {
+              clockInMutation.mutate(timeEntryData);
+            }}
+            isLoading={clockInMutation.isPending}
+          />
+        )}
 
         {/* Week Summary - Mobile Optimized */}
         <Card className="bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border-slate-200/60 dark:border-slate-700/60 shadow-xl">

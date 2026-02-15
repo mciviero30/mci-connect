@@ -41,38 +41,33 @@ Deno.serve(async (req) => {
     const reminders = [];
     for (const quote of needsFollowUp) {
       try {
-        // Get customer email
-        const customer = await base44.asServiceRole.entities.Customer.get(quote.customer_id);
-        
-        if (!customer?.email) {
-          console.log(`Skipping quote ${quote.quote_number} - no customer email`);
-          continue;
-        }
-
-        // Get quote creator for CC
-        const creator = await base44.asServiceRole.entities.User.filter({ 
-          id: quote.created_by_user_id 
-        });
-
         const daysSince = Math.floor((Date.now() - new Date(quote.updated_date)) / (1000 * 60 * 60 * 24));
 
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: customer.email,
-          subject: `Follow-up: Quote ${quote.quote_number} - ${quote.job_name}`,
-          body: `Hi ${customer.name || 'there'},\n\nWe wanted to follow up on the quote we sent you ${daysSince} days ago for:\n\n${quote.job_name}\nQuote #: ${quote.quote_number}\nTotal: $${quote.total.toFixed(2)}\n\nDo you have any questions or need any clarification? We're here to help!\n\nBest regards,\nMCI Team`,
-          from_name: 'MCI Connect'
-        });
+        // Create internal notification for quote owner/creator
+        if (quote.created_by_user_id) {
+          await base44.asServiceRole.entities.Notification.create({
+            user_id: quote.created_by_user_id,
+            type: 'quote_followup',
+            title: `Follow-up: ${quote.quote_number}`,
+            message: `Quote for ${quote.customer_name} has been sent ${daysSince} days ago with no activity. Consider following up.`,
+            link: `/VerEstimado?id=${quote.id}`,
+            priority: 'medium',
+            read: false
+          });
 
-        reminders.push({
-          quote_number: quote.quote_number,
-          customer: customer.name,
-          days_since: daysSince
-        });
+          reminders.push({
+            quote_number: quote.quote_number,
+            customer: quote.customer_name,
+            days_since: daysSince
+          });
 
-        console.log(`✅ Sent follow-up for ${quote.quote_number} to ${customer.email}`);
+          console.log(`✅ Created follow-up notification for ${quote.quote_number}`);
+        } else {
+          console.log(`Skipping quote ${quote.quote_number} - no creator`);
+        }
 
       } catch (error) {
-        console.error(`Failed to send reminder for ${quote.quote_number}:`, error.message);
+        console.error(`Failed to create reminder for ${quote.quote_number}:`, error.message);
       }
     }
 
