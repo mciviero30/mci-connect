@@ -340,6 +340,17 @@ export default function Dashboard() {
     initialData: [],
   });
 
+  const { data: quotes = [] } = useQuery({
+    queryKey: ['quotes'],
+    queryFn: () => base44.entities.Quote.list('-created_date', 100),
+    enabled: isAdmin,
+    staleTime: 600000,
+    gcTime: 900000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    initialData: [],
+  });
+
   // CALCULATIONS - Heavily memoized for optimal performance
   const calculations = useMemo(() => {
     const today = new Date();
@@ -805,23 +816,34 @@ export default function Dashboard() {
             ) : (
               <>
                 {/* I5 - Universal Excel Export */}
-                {exportData && (
-                  <Button
-                    onClick={() => {
-                      const data = isAdmin ? exportData.jobs : exportData.myHours;
-                      if (data && data.length > 0) {
-                        const { exportToExcel } = require('@/components/shared/UniversalExcelExport');
-                        exportToExcel(data, isAdmin ? 'dashboard_jobs' : 'my_hours', isAdmin ? 'Jobs' : 'Hours');
-                      }
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="border-green-200 text-green-600 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
-                  >
-                    <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Excel</span>
-                  </Button>
-                )}
+                <Button
+                  onClick={() => {
+                    const data = isAdmin 
+                      ? jobs.map(j => ({
+                          'Job #': j.job_number,
+                          'Name': j.name,
+                          'Customer': j.customer_name,
+                          'Status': j.status,
+                          'Contract': j.contract_amount || 0
+                        }))
+                      : timeEntries.map(e => ({
+                          'Date': e.date,
+                          'Job': e.job_name,
+                          'Hours': e.hours_worked,
+                          'Status': e.status
+                        }));
+                    if (data && data.length > 0) {
+                      exportToExcel(data, isAdmin ? 'dashboard_jobs' : 'my_hours', isAdmin ? 'Jobs' : 'Hours');
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="border-green-200 text-green-600 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
+                  disabled={(isAdmin ? jobs.length : timeEntries.length) === 0}
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Excel</span>
+                </Button>
                 {isAdmin && (
                   <Link to={createPageUrl('CodebaseExport')}>
                     <Button
