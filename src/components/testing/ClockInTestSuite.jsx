@@ -2,19 +2,23 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Play, Clock, MapPin, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Play, Clock, MapPin, AlertTriangle, RefreshCw, Trash2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { calculateDistance, getCurrentLocation } from '@/components/utils/geolocation';
+import { calculateDistance } from '@/components/utils/geolocation';
+import { getLocationWithFallback } from '@/components/time-tracking/EnhancedGeolocation';
 import { toast } from 'sonner';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 /**
  * Clock In/Out Testing Suite
  * Tests geofencing, GPS accuracy, and time tracking functionality
  */
 export default function ClockInTestSuite({ user }) {
+  const { language, t } = useLanguage();
   const [results, setResults] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [currentLocation, setCurrentLocation] = useState(null);
+  const [gpsWatchActive, setGpsWatchActive] = useState(false);
 
   const addResult = (test, status, message, details = {}) => {
     setResults(prev => [...prev, {
@@ -47,21 +51,36 @@ export default function ClockInTestSuite({ user }) {
         addResult('GPS Permissions', 'fail', `❌ Permission check failed: ${error.message}`);
       }
 
-      // TEST 2: Get Current Location
-      addResult('GPS Location', 'running', 'Getting current location...');
+      // TEST 2: Get Current Location with Enhanced Fallback
+      addResult('GPS Location', 'running', 'Getting current location with fallback...');
       try {
-        const location = await getCurrentLocation('en');
+        const location = await getLocationWithFallback(language, {
+          onProgress: (status, message) => {
+            addResult('GPS Progress', 'running', message);
+          },
+          useCachedIfAvailable: true,
+          maxRetries: 3,
+          timeout: 10000
+        });
+        
         setCurrentLocation(location);
         addResult('GPS Location', 'pass', `✅ Location obtained: ${location.lat.toFixed(6)}, ${location.lng.toFixed(6)}`, {
           accuracy: location.accuracy,
           lat: location.lat,
-          lng: location.lng
+          lng: location.lng,
+          source: location.source
         });
 
         if (location.accuracy > 100) {
           addResult('GPS Accuracy', 'warn', `⚠️ Low accuracy: ${Math.round(location.accuracy)}m (should be <100m)`);
+        } else if (location.accuracy <= 20) {
+          addResult('GPS Accuracy', 'pass', `✅ Excellent accuracy: ${Math.round(location.accuracy)}m`);
         } else {
           addResult('GPS Accuracy', 'pass', `✅ Good accuracy: ${Math.round(location.accuracy)}m`);
+        }
+
+        if (location.source === 'cached') {
+          addResult('GPS Cache', 'pass', '✅ Used pre-warmed location (instant)');
         }
       } catch (error) {
         addResult('GPS Location', 'fail', `❌ Failed to get location: ${error}`);
@@ -155,7 +174,16 @@ export default function ClockInTestSuite({ user }) {
         addResult('Local Storage', 'fail', `❌ localStorage check failed: ${error.message}`);
       }
 
-      toast.success('Tests completed!');
+      // TEST 8: Backend Validation Function Health
+      addResult('Backend Validator', 'running', 'Testing geofence validation function...');
+      try {
+        const { validateTimeEntryGeofence } = await import('@/functions/validateTimeEntryGeofence');
+        addResult('Backend Validator', 'pass', '✅ Backend validation function available');
+      } catch (error) {
+        addResult('Backend Validator', 'fail', `❌ Backend function error: ${error.message}`);
+      }
+
+      toast.success(language === 'es' ? 'Pruebas completadas!' : 'Tests completed!');
 
     } catch (error) {
       addResult('Test Suite', 'fail', `❌ Test suite failed: ${error.message}`);
@@ -188,25 +216,52 @@ export default function ClockInTestSuite({ user }) {
   const failCount = results.filter(r => r.status === 'fail').length;
   const warnCount = results.filter(r => r.status === 'warn').length;
 
+  const clearResults = () => {
+    setResults([]);
+    setCurrentLocation(null);
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4">
       <Card className="mb-6 border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl">
-            <Clock className="w-6 h-6 text-blue-600" />
-            Clock In/Out Test Suite
+          <CardTitle className="flex items-center justify-between text-2xl">
+            <div className="flex items-center gap-2">
+              <Clock className="w-6 h-6 text-blue-600" />
+              {language === 'es' ? 'Suite de Pruebas Clock In/Out' : 'Clock In/Out Test Suite'}
+            </div>
+            {results.length > 0 && (
+              <Button
+                onClick={clearResults}
+                variant="ghost"
+                size="sm"
+                className="text-slate-600"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {language === 'es' ? 'Limpiar' : 'Clear'}
+              </Button>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 flex-wrap">
               <Button
                 onClick={runTests}
                 disabled={isRunning}
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white"
               >
-                <Play className="w-4 h-4 mr-2" />
-                {isRunning ? 'Running Tests...' : 'Run All Tests'}
+                {isRunning ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    {language === 'es' ? 'Ejecutando...' : 'Running...'}
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Ejecutar Todas las Pruebas' : 'Run All Tests'}
+                  </>
+                )}
               </Button>
 
               {results.length > 0 && (

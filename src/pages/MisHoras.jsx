@@ -11,10 +11,15 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import { buildUserQuery } from "@/components/utils/userResolution";
+import { Button } from "@/components/ui/button";
+import GPSDiagnosticPanel from "@/components/time-tracking/GPSDiagnosticPanel";
+import { createPageUrl } from "@/utils";
+import { Link } from "react-router-dom";
 
 export default function MisHoras() {
   const { t, language } = useLanguage();
   const [editingEntry, setEditingEntry] = useState(null);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
@@ -131,7 +136,31 @@ export default function MisHoras() {
       title={t('myHours')}
       subtitle={t('trackYourWorkHours')}
       stats={pageStats}
+      actions={
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowDiagnostics(!showDiagnostics)}
+            variant="outline"
+            size="sm"
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            {language === 'es' ? 'Diagnóstico GPS' : 'GPS Diagnostic'}
+          </Button>
+          <Link to={createPageUrl('ClockInTests')}>
+            <Button variant="outline" size="sm">
+              <Clock className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Suite de Pruebas' : 'Test Suite'}
+            </Button>
+          </Link>
+        </div>
+      }
     >
+      {showDiagnostics && (
+        <div className="mb-6">
+          <GPSDiagnosticPanel language={language} />
+        </div>
+      )}
+
       {openClockAlert && (
         <Alert className="mb-6 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
           <AlertTriangle className="h-5 w-5 text-red-600" />

@@ -70,6 +70,7 @@ import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
 import ClientProfitabilityReport from './pages/ClientProfitabilityReport';
 import Clientes from './pages/Clientes';
+import ClockInTests from './pages/ClockInTests';
 import CodebaseExport from './pages/CodebaseExport';
 import CommissionAgreements from './pages/CommissionAgreements';
 import CommissionDashboard from './pages/CommissionDashboard';
@@ -194,7 +195,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import ClockInTests from './pages/ClockInTests';
 import __Layout from './Layout.jsx';
 
 
@@ -222,6 +222,7 @@ export const PAGES = {
     "ClientPortal": ClientPortal,
     "ClientProfitabilityReport": ClientProfitabilityReport,
     "Clientes": Clientes,
+    "ClockInTests": ClockInTests,
     "CodebaseExport": CodebaseExport,
     "CommissionAgreements": CommissionAgreements,
     "CommissionDashboard": CommissionDashboard,
@@ -346,7 +347,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "ClockInTests": ClockInTests,
 }
 
 export const pagesConfig = {

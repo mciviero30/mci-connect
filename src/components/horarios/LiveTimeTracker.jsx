@@ -22,6 +22,10 @@ import telemetry from '@/components/telemetry/GeofenceTelemetry';
 import { usePerformanceMonitor } from '@/components/field/hooks/usePerformanceMonitor';
 import { buildUserQuery } from '@/components/utils/userResolution';
 import { SyncStatusBadge } from '@/components/feedback/SyncStatusBadge';
+import GPSHealthMonitor from '@/components/time-tracking/GPSHealthMonitor';
+import { useGPSPreWarmer } from '@/components/time-tracking/GPSPreWarmer';
+import { getLocationWithFallback } from '@/components/time-tracking/EnhancedGeolocation';
+import ClockInButton from '@/components/time-tracking/ClockInButton';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -46,6 +50,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   // FASE 10: Performance monitoring (only in field mode)
   usePerformanceMonitor('LiveTimeTracker', true);
   
+  // GPS Pre-warming for instant location
+  const { getCachedLocation } = useGPSPreWarmer(true);
+  
   const storageKey = `liveTimeTracker_${trackingType}`;
 
   const [activeSession, setActiveSession] = useState(null);
@@ -53,6 +60,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   const [showJobSelector, setShowJobSelector] = useState(false);
   const [showWorkTypeDialog, setShowWorkTypeDialog] = useState(false);
   const [locationError, setLocationError] = useState(null);
+  const [gpsProgress, setGpsProgress] = useState(null);
+  const [nearestJob, setNearestJob] = useState(null);
   
   // PASO 3: GPS Permission state
   const [showLocationDenied, setShowLocationDenied] = useState(false);
@@ -121,6 +130,29 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   const { sendNotification } = useNotificationService(user);
 
   const jobOptions = jobs.map(j => ({ value: j.id, label: j.name }));
+
+  // Find nearest job for GPS health monitor
+  useEffect(() => {
+    const findNearest = async () => {
+      const cached = getCachedLocation();
+      if (!cached || !jobs.length) return;
+
+      const jobsWithGPS = jobs.filter(j => j.latitude && j.longitude);
+      if (jobsWithGPS.length === 0) return;
+
+      const distances = jobsWithGPS.map(job => ({
+        job,
+        distance: calculateDistance(cached.lat, cached.lng, job.latitude, job.longitude)
+      }));
+
+      distances.sort((a, b) => a.distance - b.distance);
+      setNearestJob(distances[0].job);
+    };
+
+    findNearest();
+    const interval = setInterval(findNearest, 5000);
+    return () => clearInterval(interval);
+  }, [jobs, getCachedLocation]);
 
   useEffect(() => {
     // B5 FIX: Cleanup old sessions (>7 days) to prevent localStorage bloat
@@ -203,8 +235,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     }
   }, [activeSession?.startTime, user?.email]); // STABLE DEPS - only primitives
 
-  const getLocation = useCallback(() => {
-    return getCurrentLocation(language);
+  const getLocation = useCallback(async (progressCallback = null) => {
+    return getLocationWithFallback(language, {
+      onProgress: progressCallback,
+      useCachedIfAvailable: true,
+      maxRetries: 3,
+      timeout: 10000
+    });
   }, [language]);
 
   const handleClockIn = async () => {
@@ -248,9 +285,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     }
     
     setLocationError(null);
+    setGpsProgress('acquiring');
     
     try {
-      const location = await getLocation();
+      const location = await getLocation((status, message) => {
+        setGpsProgress(message);
+      });
+      setGpsProgress(null);
+      
       const job = jobs.find(j => j.id === selectedJobForStart);
       
       // Find scheduled shift for this job today
@@ -404,6 +446,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     } catch (error) {
       setLocationError(error);
       setShowWorkTypeDialog(false);
+      setGpsProgress(null);
     }
   };
 
@@ -433,9 +476,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     }
     
     setLocationError(null);
+    setGpsProgress('acquiring');
     
     try {
-      const location = await getLocation();
+      const location = await getLocation((status, message) => {
+        setGpsProgress(message);
+      });
+      setGpsProgress(null);
+      
       let clockOutTime = new Date();
       
       // SCHEDULED HOURS CONTROL: Adjust clock-out time if shift enforces hours
@@ -632,6 +680,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       setLocationError(null);
     } catch (error) {
       setLocationError(error);
+      setGpsProgress(null);
     }
   };
 
@@ -967,6 +1016,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         </div>
       )}
 
+      {/* GPS Health Monitor - Real-time */}
+      {!activeSession && (
+        <GPSHealthMonitor 
+          nearestJob={nearestJob} 
+          language={language}
+        />
+      )}
+
       {/* Real-time Geofence Monitor */}
       <GeofenceMonitor 
         activeSession={activeSession} 
@@ -981,19 +1038,19 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
             </div>
           )}
           <div className="relative inline-block">
-            <Button
-              onClick={handleClockIn}
-              size="lg"
-              className="h-32 w-32 rounded-full bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-2xl shadow-blue-500/30 hover:scale-110 transition-all duration-300"
+            <ClockInButton
+              onClick={(progressCallback) => {
+                setGpsProgress('starting');
+                return new Promise((resolve, reject) => {
+                  handleClockIn()
+                    .then(resolve)
+                    .catch(reject);
+                });
+              }}
               disabled={isLoading}
-            >
-              <Play className="w-12 h-12"/>
-            </Button>
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-              <Badge className="bg-green-500 text-white font-bold text-xs shadow-lg">
-                {language === 'es' ? 'LISTO' : 'READY'}
-              </Badge>
-            </div>
+              isLoading={isLoading}
+              language={language}
+            />
           </div>
           <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
             {language === 'es' ? 'Iniciar Jornada' : 'Start Work Day'}
