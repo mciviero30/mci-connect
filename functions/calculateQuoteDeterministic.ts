@@ -1,43 +1,35 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { createHash } from 'node:crypto';
+import { createDeterminismEngine } from './FinancialDeterminismFactory.js';
 
 /**
- * TASK #1: FINANCIAL DETERMINISM ENGINE - CONCURRENCY-SAFE VERSION
+ * TASK #1: QUOTE CALCULATION ENGINE
  * 
- * Features:
- * - Atomic version increment via DB constraints
- * - Optimistic locking (collision detection + retry)
- * - Max 3 retries on constraint collision
- * - Transaction-safe operations (all-or-nothing)
- * - No calculations outside transaction boundary
- * 
- * Concurrency Safety:
- * 1. DB enforces UNIQUE(entity_id, calculation_version) - prevents duplicate versions
- * 2. DB enforces UNIQUE(entity_id, is_current=true) - ensures single current version
- * 3. Retry logic handles race conditions gracefully
- * 4. Previous version is_current=false ALWAYS happens before new version committed
+ * Uses unified FinancialDeterminismFactory for:
+ * - Deterministic hashing (with canonical item sorting)
+ * - Atomic version increment (DB constraint-based)
+ * - Concurrency-safe retries
+ * - Permission scoping
+ * - Idempotency deduplication
  */
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 50; // Exponential backoff
+const engine = createDeterminismEngine('Quote');
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function calculateQuoteHash(inputs, ruleVersions) {
-  // DETERMINISTIC: No timestamps, no random data
-  const data = JSON.stringify({
-    items: inputs.items,
-    customer_id: inputs.customer_id,
-    tax_rate: inputs.tax_rate,
-    margin_rule_version: ruleVersions.margin_version || 'v1.0',
-    commission_rule_version: ruleVersions.commission_version || 'v1.0',
-    tax_config_version: ruleVersions.tax_version || 'v1.0',
-    pricing_config_version: ruleVersions.pricing_version || 'v1.0'
+// Calculate quote totals (server authority, no frontend values accepted)
+const calculateQuoteTotals = (items, taxRate) => {
+  let subtotal = 0;
+  items.forEach(item => {
+    const lineTotal = (item.quantity || 0) * (item.unit_price || 0);
+    subtotal += lineTotal;
   });
-  return createHash('sha256').update(data).digest('hex');
-}
+  const taxAmount = subtotal * (taxRate / 100);
+  const total = subtotal + taxAmount;
+
+  return {
+    subtotal: Math.round(subtotal * 100) / 100,
+    tax_amount: Math.round(taxAmount * 100) / 100,
+    total: Math.round(total * 100) / 100
+  };
+};
 
 function calculateLineTotals(items) {
   let subtotal = 0;
