@@ -174,59 +174,13 @@ Deno.serve(async (req) => {
     }
 
     // ========================================
-    // STEP 2: Ensure Drive Folder Exists (IDEMPOTENT)
+    // STEP 2: Drive Folder - DISABLED (Insufficient Scopes)
     // ========================================
-    try {
-      if (job.drive_folder_id && job.drive_folder_url) {
-        // Drive folder already exists - NEVER create duplicate
-        steps.drive = 'existing';
-        if (import.meta.env?.DEV) {
-          console.log(`✅ Drive folder exists: ${job.drive_folder_id} - skipping creation`);
-        }
-      } else {
-        // Create folder via existing function
-        if (import.meta.env?.DEV) {
-          console.log('📂 Creating Google Drive folder...');
-        }
-        
-        const driveResult = await base44.asServiceRole.functions.invoke('createJobDriveFolder', {
-          job_id: jobId,
-          job_name: job.name
-        });
-        
-        if (driveResult?.folder_id) {
-          steps.drive = 'created';
-          // Reload job to get updated drive info
-          const updatedJobs = await base44.asServiceRole.entities.Job.filter({ id: jobId });
-          job = updatedJobs[0];
-          if (import.meta.env?.DEV) {
-            console.log(`✅ Drive folder created: ${driveResult.folder_id}`);
-          }
-        } else {
-          throw new Error('No folder_id returned');
-        }
-      }
-    } catch (error) {
-      steps.drive = 'error';
-      errors.push(`Drive: ${error.message}`);
-      if (import.meta.env?.DEV) {
-        console.error('❌ Drive step error:', error);
-      }
-      
-      // B4 FIX: Notify admin of Drive folder creation failure
-      try {
-        const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
-        await Promise.all(admins.map(admin =>
-          base44.asServiceRole.integrations.Core.SendEmail({
-            to: admin.email,
-            subject: '🚨 Job Provisioning Failed - Drive Folder',
-            body: `Job provisioning failed for:\n\nJob: ${job.name} (${job.job_number})\nInvoice: ${invoice.invoice_number}\nCustomer: ${invoice.customer_name}\n\nError: ${error.message}\n\nPlease manually create Drive folder or retry provisioning.`,
-            from_name: 'MCI Connect System'
-          })
-        ));
-      } catch (notifyError) {
-        console.error('Failed to send failure notification:', notifyError);
-      }
+    // Google Drive integration has limited scope (drive.file)
+    // Cannot create folders automatically - admin must create manually
+    steps.drive = 'skipped';
+    if (import.meta.env?.DEV) {
+      console.log('⏭️ Drive folder creation skipped - insufficient OAuth scopes');
     }
 
     // ========================================
