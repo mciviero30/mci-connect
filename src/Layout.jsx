@@ -85,6 +85,9 @@ import ServiceWorkerRegistration from "@/components/pwa/ServiceWorkerRegistratio
 import { SyncQueueProvider } from "@/components/pwa/SyncQueueManager";
 import OfflineIndicator from "@/components/pwa/OfflineIndicator";
 import EnhancedOfflineSync from "@/components/offline/EnhancedOfflineSync";
+import BackgroundSyncManager from "@/components/mobile/BackgroundSyncManager";
+import InstallPrompt from "@/components/mobile/InstallPrompt";
+import NetworkSpeedIndicator from "@/components/mobile/NetworkSpeedIndicator";
 import AIAssistant from "@/components/ai/AIAssistant";
 import NotificationService from "@/components/notifications/NotificationService";
 import NotificationEngine from "@/components/notifications/NotificationEngine";
@@ -1060,6 +1063,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   return (
     <SidebarProvider>
       <ServiceWorkerRegistration />
+      <BackgroundSyncManager />
+      <InstallPrompt />
       <MobileOptimizations />
       <SyncQueueProvider>
 
@@ -1315,6 +1320,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                   </SidebarTrigger>
                 )}
                 <div className="flex-shrink-0 flex items-center gap-2">
+                      <NetworkSpeedIndicator />
                       <RecentlyViewed />
                       {!isFieldMode && !isFocusMode && (
                         <button
