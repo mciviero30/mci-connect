@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
+import { useSmartPagination, PaginationControls } from "@/components/hooks/useSmartPagination";
+import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
 import { Receipt, CheckCircle, XCircle, Plus, AlertTriangle } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
@@ -31,26 +32,27 @@ export default function Gastos() {
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    gcTime: Infinity
   });
 
+  const { handleError } = useErrorHandler();
 
-
-  const { 
-    items: expenses = [], 
+  // Smart pagination for expenses
+  const {
+    items: expenses,
     isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    loadMore,
-    totalLoaded
-  } = usePaginatedEntityList({
-    queryKey: 'expenses',
-    fetchFn: async ({ skip, limit }) => {
-      const allExpenses = await base44.entities.Expense.list('-date', limit + skip);
-      return allExpenses.slice(skip, skip + limit);
-    },
-    pageSize: 50,
-    staleTime: 5 * 60 * 1000,
+    page,
+    hasMore,
+    hasPrevious,
+    nextPage,
+    prevPage,
+    resetPagination
+  } = useSmartPagination({
+    entityName: 'Expense',
+    sortBy: '-date',
+    pageSize: 20,
+    enabled: !!user
   });
 
   // Memoize expensive filters
@@ -196,15 +198,15 @@ export default function Gastos() {
           )}
         />
 
-        {hasNextPage && (
-          <LoadMoreButton 
-            onLoadMore={loadMore}
-            hasMore={hasNextPage}
-            isLoading={isFetchingNextPage}
-            totalLoaded={totalLoaded}
-            language={t('language')}
-          />
-        )}
+        <PaginationControls
+          page={page}
+          hasMore={hasMore}
+          hasPrevious={hasPrevious}
+          onNext={nextPage}
+          onPrevious={prevPage}
+          isLoading={isLoading}
+          language={language}
+        />
 
         {/* Expense Form Dialog */}
         <Dialog open={showExpenseForm} onOpenChange={setShowExpenseForm}>

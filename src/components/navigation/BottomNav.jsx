@@ -63,47 +63,50 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
 
   return (
     <>
-      {/* Bottom Navigation Bar - Fixed at bottom - FIELD OPTIMIZED */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[40] bg-white dark:bg-slate-900 border-t-2 border-slate-300 dark:border-slate-700 shadow-2xl pb-safe">
-        <div className="grid grid-cols-5 h-20 px-2">
+      {/* Bottom Navigation Bar - Fixed at bottom - OPTIMIZED */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-[40] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 shadow-lg pb-safe">
+        <div className="grid grid-cols-5 h-16 px-1">
           {mainNavItems.map((item) => {
             const active = isActive(item.url);
             return (
               <Link
                  key={item.title}
                  to={item.url}
-                 className={`flex flex-col items-center justify-center gap-1 relative transition-all duration-150 min-h-[60px] min-w-[60px] rounded-xl active:scale-90 active:bg-blue-100/50 dark:active:bg-slate-800 ${
+                 className={`flex flex-col items-center justify-center gap-0.5 relative transition-all duration-200 rounded-lg active:scale-95 ${
                    active 
-                     ? 'text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/80 dark:bg-blue-900/30' 
-                     : 'text-slate-700 dark:text-slate-400'
+                     ? 'text-[#507DB4] dark:text-[#6B9DD8]' 
+                     : 'text-slate-600 dark:text-slate-400'
                  }`}
                >
                 <div className="relative">
-                  <item.icon className={`w-6 h-6 ${active ? 'scale-110' : ''} transition-transform`} strokeWidth={active ? 2.5 : 2} />
+                  <item.icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} strokeWidth={active ? 2.5 : 2} />
                   {item.badge && (
-                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1 text-[10px] bg-red-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
+                    <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px] bg-red-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
                       {item.badge > 9 ? '9+' : item.badge}
                     </Badge>
                   )}
+                  {active && (
+                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#507DB4] dark:bg-[#6B9DD8]" />
+                  )}
                 </div>
-                <span className={`text-[11px] ${active ? 'font-bold' : 'font-semibold'} truncate max-w-full px-1 text-center`}>
+                <span className={`text-[10px] ${active ? 'font-bold' : 'font-medium'} truncate max-w-full text-center leading-tight`}>
                   {item.title}
                 </span>
               </Link>
             );
           })}
 
-          {/* STEP 2: Persistent Pending Actions Counter */}
+          {/* Sync indicator - only when syncing */}
           {pendingCount > 0 && (
-            <div className="flex flex-col items-center justify-center gap-1 min-h-[60px] min-w-[60px] relative">
+            <div className="flex flex-col items-center justify-center gap-0.5 relative">
               <div className="relative">
-                <Cloud className="w-6 h-6 text-blue-600 dark:text-blue-400" strokeWidth={2.5} />
-                <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1 text-[10px] bg-blue-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
+                <Cloud className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-pulse" strokeWidth={2.5} />
+                <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px] bg-blue-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
                   {pendingCount > 9 ? '9+' : pendingCount}
                 </Badge>
               </div>
-              <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 truncate max-w-full px-1 text-center">
-                Syncing
+              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 truncate max-w-full text-center leading-tight">
+                Sync
               </span>
             </div>
           )}
@@ -111,9 +114,9 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
           {/* More Menu */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="flex flex-col items-center justify-center gap-1 text-slate-700 dark:text-slate-400 min-h-[60px] min-w-[60px] rounded-xl active:scale-90 active:bg-slate-100/50 dark:active:bg-slate-800 transition-all duration-150">
-                <Menu className="w-6 h-6" strokeWidth={2} />
-                <span className="text-[11px] font-semibold truncate max-w-full px-1">More</span>
+              <button className="flex flex-col items-center justify-center gap-0.5 text-slate-600 dark:text-slate-400 rounded-lg active:scale-95 transition-all duration-200">
+                <Menu className="w-5 h-5" strokeWidth={2} />
+                <span className="text-[10px] font-medium truncate max-w-full text-center leading-tight">More</span>
               </button>
             </SheetTrigger>
             <SheetContent side="bottom" className="bg-white dark:bg-slate-900 h-[85vh] rounded-t-3xl">
@@ -165,7 +168,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
       </div>
 
       {/* Spacer to prevent content from being hidden behind bottom nav */}
-      <div className="md:hidden h-20" />
+      <div className="md:hidden h-16" />
     </>
   );
 });

@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSmartPagination, PaginationControls } from "@/components/hooks/useSmartPagination";
+import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,19 +52,29 @@ export default function Estimados() {
     refetchOnWindowFocus: false,
     gcTime: Infinity
   });
-  const { data: quotes = [], isLoading } = useQuery({
-    queryKey: ['quotes', statusFilter, teamFilter],
-    queryFn: async () => {
-      const filters = { deleted_at: null };
-      if (statusFilter !== 'all') filters.status = statusFilter;
-      if (teamFilter !== 'all') filters.team_id = teamFilter;
-      
-      return base44.entities.Quote.filter(filters, 'quote_number');
-    },
-    staleTime: 120000,
-    gcTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+
+  const { handleError } = useErrorHandler();
+
+  // Smart pagination for quotes
+  const paginationFilters = { deleted_at: null };
+  if (statusFilter !== 'all') paginationFilters.status = statusFilter;
+  if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
+
+  const {
+    items: quotes,
+    isLoading,
+    page,
+    hasMore,
+    hasPrevious,
+    nextPage,
+    prevPage,
+    resetPagination
+  } = useSmartPagination({
+    entityName: 'Quote',
+    filters: paginationFilters,
+    sortBy: '-quote_number',
+    pageSize: 20,
+    enabled: !!user
   });
 
   const { data: teams = [] } = useQuery({
@@ -81,17 +93,14 @@ export default function Estimados() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Quote'] });
       toast({
         title: language === 'es' ? 'Cotización marcada como enviada (precios bloqueados)' : 'Quote marked as sent (prices locked)',
         variant: 'success'
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      });
+      handleError(error, 'Quote sent');
     }
   });
 
@@ -105,17 +114,15 @@ export default function Estimados() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Quote'] });
+      resetPagination();
       toast({
         title: language === 'es' ? 'Movido a papelera' : 'Moved to trash',
         variant: 'success'
       });
     },
     onError: (error) => {
-      toast({
-        title: language === 'es' ? 'Error al eliminar' : 'Delete failed',
-        description: error?.message,
-        variant: 'destructive'
-      });
+      handleError(error, language === 'es' ? 'Eliminar' : 'Delete');
     }
   });
 
@@ -144,17 +151,15 @@ export default function Estimados() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Quote'] });
+      resetPagination();
       toast({
         title: language === 'es' ? '✅ Estimado duplicado' : '✅ Quote duplicated',
         variant: 'success'
       });
     },
     onError: (error) => {
-      toast({
-        title: language === 'es' ? 'Error al duplicar' : 'Failed to duplicate',
-        description: error.message,
-        variant: 'destructive'
-      });
+      handleError(error, language === 'es' ? 'Duplicar' : 'Duplicate');
     }
   });
 
@@ -216,6 +221,7 @@ export default function Estimados() {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated'] });
       toast({
         title: t('convertedToInvoice'),
         variant: 'success'
@@ -223,11 +229,7 @@ export default function Estimados() {
       window.open(createPageUrl(`VerFactura?id=${newInvoice.id}`), '_blank');
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error?.message || 'Failed to convert quote',
-        variant: 'destructive'
-      });
+      handleError(error, t('convertedToInvoice'));
     }
   });
 
@@ -367,39 +369,61 @@ export default function Estimados() {
         {isLoading ? (
           <SkeletonDocumentList count={6} />
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-            {filteredQuotes.length > 0 && filteredQuotes.map(quote => (
-              <ModernQuoteCard
-                key={quote.id}
-                quote={quote}
-                onDuplicate={(q) => duplicateMutation.mutate(q)}
-                onDelete={(q) => deleteMutation.mutate(q.id)}
-                onConvert={(q) => convertToInvoiceMutation.mutate(q)}
-                onSend={(q) => sendMutation.mutate(q)}
-                isAdmin={isAdmin}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+              {filteredQuotes.length > 0 && filteredQuotes.map(quote => (
+                <ModernQuoteCard
+                  key={quote.id}
+                  quote={quote}
+                  onDuplicate={(q) => duplicateMutation.mutate(q)}
+                  onDelete={(q) => deleteMutation.mutate(q.id)}
+                  onConvert={(q) => convertToInvoiceMutation.mutate(q)}
+                  onSend={(q) => sendMutation.mutate(q)}
+                  isAdmin={isAdmin}
+                />
+              ))}
+            </div>
+            <PaginationControls
+              page={page}
+              hasMore={hasMore}
+              hasPrevious={hasPrevious}
+              onNext={nextPage}
+              onPrevious={prevPage}
+              isLoading={isLoading}
+              language={language}
+            />
+          </>
         ) : (
-          <CompactListView
-            items={filteredQuotes}
-            entityType="quote"
-            user={user}
-            getTitle={(quote) => quote.customer_name}
-            getSubtitle={(quote) => `${quote.quote_number} • ${quote.job_name}`}
-            getBadges={(quote) => (
-              <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                quote.status === 'draft' ? 'bg-slate-50 text-slate-700 border border-slate-200' :
-                quote.status === 'sent' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                quote.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' :
-                'bg-purple-50 text-purple-700 border border-purple-200'
-              }`}>
-                {getQuoteStatusMeta(quote.status, language).label}
-              </span>
-            )}
-            getAmount={(quote) => `$${quote.total?.toLocaleString() || 0}`}
-            onItemClick={(quote) => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
-          />
+          <>
+            <CompactListView
+              items={filteredQuotes}
+              entityType="quote"
+              user={user}
+              getTitle={(quote) => quote.customer_name}
+              getSubtitle={(quote) => `${quote.quote_number} • ${quote.job_name}`}
+              getBadges={(quote) => (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                  quote.status === 'draft' ? 'bg-slate-50 text-slate-700 border border-slate-200' :
+                  quote.status === 'sent' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                  quote.status === 'approved' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  'bg-purple-50 text-purple-700 border border-purple-200'
+                }`}>
+                  {getQuoteStatusMeta(quote.status, language).label}
+                </span>
+              )}
+              getAmount={(quote) => `$${quote.total?.toLocaleString() || 0}`}
+              onItemClick={(quote) => navigate(createPageUrl(`VerEstimado?id=${quote.id}`))}
+            />
+            <PaginationControls
+              page={page}
+              hasMore={hasMore}
+              hasPrevious={hasPrevious}
+              onNext={nextPage}
+              onPrevious={prevPage}
+              isLoading={isLoading}
+              language={language}
+            />
+          </>
         )}
 
         {filteredQuotes.length === 0 && !isLoading && (
