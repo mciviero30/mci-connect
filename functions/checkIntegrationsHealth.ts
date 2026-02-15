@@ -198,32 +198,69 @@ Deno.serve(async (req) => {
 
     // 5. Google Drive (OAuth)
     try {
-      const driveToken = await base44.asServiceRole.connectors.getAccessToken('googledrive');
+      let driveToken;
+      let tokenError = null;
+      
+      try {
+        driveToken = await base44.asServiceRole.connectors.getAccessToken('googledrive');
+      } catch (err) {
+        tokenError = err.message;
+      }
       
       if (driveToken) {
-        // Test Drive API
-        const driveResponse = await fetch('https://www.googleapis.com/drive/v3/about?fields=user', {
-          headers: { 'Authorization': `Bearer ${driveToken}` }
-        });
-        
-        const driveData = await driveResponse.json();
-        
-        results.push({
-          name: 'Google Drive',
-          status: driveResponse.ok ? 'active' : 'error',
-          details: {
-            oauth: '✓ Connected',
-            account: driveData.user?.emailAddress || 'Unknown',
-            scopes: 'drive.file'
-          },
-          description: 'Document storage for job folders, blueprints, and photos'
-        });
+        try {
+          // Test Drive API
+          const driveResponse = await fetch('https://www.googleapis.com/drive/v3/about?fields=user', {
+            headers: { 'Authorization': `Bearer ${driveToken}` }
+          });
+          
+          if (driveResponse.ok) {
+            const driveData = await driveResponse.json();
+            results.push({
+              name: 'Google Drive',
+              status: 'active',
+              details: {
+                oauth: '✓ Connected',
+                account: driveData.user?.emailAddress || 'Unknown',
+                scopes: 'drive.file'
+              },
+              description: 'Document storage for job folders, blueprints, and photos'
+            });
+          } else {
+            const errorData = await driveResponse.json().catch(() => ({}));
+            results.push({
+              name: 'Google Drive',
+              status: 'error',
+              details: {
+                oauth: '✗ API call failed',
+                error: errorData.error?.message || `HTTP ${driveResponse.status}`
+              },
+              error: errorData.error?.message || 'API authentication failed',
+              description: 'Document storage platform'
+            });
+          }
+        } catch (apiError) {
+          results.push({
+            name: 'Google Drive',
+            status: 'error',
+            details: {
+              oauth: '✓ Token exists',
+              error: 'API call failed'
+            },
+            error: apiError.message,
+            description: 'Document storage platform'
+          });
+        }
       } else {
         results.push({
           name: 'Google Drive',
-          status: 'not_connected',
-          details: { oauth: '✗ Not authorized' },
-          description: 'Document storage platform'
+          status: tokenError ? 'error' : 'not_connected',
+          details: { 
+            oauth: '✗ Not authorized',
+            note: tokenError || 'OAuth connection required'
+          },
+          error: tokenError,
+          description: 'Document storage platform - requires OAuth authorization'
         });
       }
     } catch (error) {
@@ -231,6 +268,7 @@ Deno.serve(async (req) => {
         name: 'Google Drive',
         status: 'error',
         error: error.message,
+        details: { oauth: '✗ Check failed' },
         description: 'Document storage platform'
       });
     }
