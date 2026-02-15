@@ -195,6 +195,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
+import SystemDiagnostics from './pages/SystemDiagnostics';
 import __Layout from './Layout.jsx';
 
 
@@ -347,6 +348,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
+    "SystemDiagnostics": SystemDiagnostics,
 }
 
 export const pagesConfig = {

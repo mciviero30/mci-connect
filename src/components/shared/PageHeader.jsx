@@ -71,7 +71,8 @@ export default function PageHeader({
             {actions}
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </FadeInUp>
   );
 }

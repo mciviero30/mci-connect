@@ -57,6 +57,9 @@ import ARWidget from "../components/dashboard/ARWidget";
 import { FileSpreadsheet } from "lucide-react";
 import { exportToExcel } from "@/components/shared/UniversalExcelExport";
 import ActualVsEstimatedChart from "../components/dashboard/ActualVsEstimatedChart";
+import { AIPredictor } from "@/components/advanced/AIPredictor";
+import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
+import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/advanced/MicroInteractions";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -922,47 +925,75 @@ export default function Dashboard() {
 
         {/* I1 - Actual vs Estimated Chart (Admin Only) */}
         {isAdmin && jobs.length > 0 && quotes.length > 0 && (
-          <div className="mb-4 sm:mb-6 md:mb-8">
-            <ActualVsEstimatedChart jobs={jobs} quotes={quotes} />
-          </div>
+          <FadeInUp delay={0.1}>
+            <div className="mb-4 sm:mb-6 md:mb-8">
+              <ActualVsEstimatedChart jobs={jobs} quotes={quotes} />
+            </div>
+          </FadeInUp>
         )}
 
-        {/* Widgets Grid */}
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="dashboard" direction="horizontal">
-            {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
-              >
-                <AnimatePresence>
-                  {widgets.filter(w => w.visible).sort((a, b) => a.position - b.position).map((widget, index) => (
-                    <Draggable key={widget.id} draggableId={widget.id} index={index} isDragDisabled={!isEditMode}>
-                      {(provided) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                        >
-                          <DashboardWidget
-                            widget={widget}
-                            isEditing={isEditMode}
-                            onRemove={handleRemoveWidget}
-                            onResize={handleResizeWidget}
-                            dragHandleProps={provided.dragHandleProps}
-                          >
-                            {renderWidget(widget)}
-                          </DashboardWidget>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                </AnimatePresence>
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        {/* AI Predictions (Admin Only) */}
+        {isAdmin && (
+          <FadeInUp delay={0.2}>
+            <div className="mb-4 sm:mb-6 md:mb-8">
+              <AIPredictor 
+                jobs={Array.isArray(jobs) ? jobs : []} 
+                timeEntries={allTimeEntries} 
+                invoices={[]} 
+              />
+            </div>
+          </FadeInUp>
+        )}
+
+        {/* Performance Monitor (Admin Only - Dev) */}
+        {isAdmin && import.meta.env?.DEV && (
+          <FadeInUp delay={0.3}>
+            <div className="mb-4 sm:mb-6 md:mb-8">
+              <PerformanceMonitor />
+            </div>
+          </FadeInUp>
+        )}
+
+        {/* Widgets Grid with Stagger Animation */}
+        <StaggerContainer staggerDelay={0.05}>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="dashboard" direction="horizontal">
+              {(provided) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
+                >
+                  <AnimatePresence>
+                    {widgets.filter(w => w.visible).sort((a, b) => a.position - b.position).map((widget, index) => (
+                      <Draggable key={widget.id} draggableId={widget.id} index={index} isDragDisabled={!isEditMode}>
+                        {(provided) => (
+                          <StaggerItem>
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                            >
+                              <DashboardWidget
+                                widget={widget}
+                                isEditing={isEditMode}
+                                onRemove={handleRemoveWidget}
+                                onResize={handleResizeWidget}
+                                dragHandleProps={provided.dragHandleProps}
+                              >
+                                {renderWidget(widget)}
+                              </DashboardWidget>
+                            </div>
+                          </StaggerItem>
+                        )}
+                      </Draggable>
+                    ))}
+                  </AnimatePresence>
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </StaggerContainer>
 
         {/* Actions for Employees */}
         {!isAdmin && (
