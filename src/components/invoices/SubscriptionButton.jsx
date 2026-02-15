@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Loader2, ExternalLink, CreditCard } from 'lucide-react';
+import { RefreshCw, Loader2, ExternalLink, CreditCard, CheckCircle } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/components/i18n/LanguageContext';
