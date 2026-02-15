@@ -171,6 +171,7 @@ import SetupPassword from './pages/SetupPassword';
 import SignDocument from './pages/SignDocument';
 import SkillMatrix from './pages/SkillMatrix';
 import Submittals from './pages/Submittals';
+import SystemDiagnostics from './pages/SystemDiagnostics';
 import SystemHealthCheck from './pages/SystemHealthCheck';
 import SystemReadiness from './pages/SystemReadiness';
 import SystemTest from './pages/SystemTest';
@@ -195,7 +196,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import SystemDiagnostics from './pages/SystemDiagnostics';
+import IntegrationsStatus from './pages/IntegrationsStatus';
 import __Layout from './Layout.jsx';
 
 
@@ -324,6 +325,7 @@ export const PAGES = {
     "SignDocument": SignDocument,
     "SkillMatrix": SkillMatrix,
     "Submittals": Submittals,
+    "SystemDiagnostics": SystemDiagnostics,
     "SystemHealthCheck": SystemHealthCheck,
     "SystemReadiness": SystemReadiness,
     "SystemTest": SystemTest,
@@ -348,7 +350,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "SystemDiagnostics": SystemDiagnostics,
+    "IntegrationsStatus": IntegrationsStatus,
 }
 
 export const pagesConfig = {

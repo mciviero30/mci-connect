@@ -613,6 +613,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       section: 'COMPLIANCE',
       icon: Shield,
       items: [
+      { title: 'Integrations Status', url: createPageUrl("IntegrationsStatus"), icon: Link2 },
       { title: 'System Diagnostics', url: createPageUrl("SystemDiagnostics"), icon: Zap },
       { title: 'System Readiness', url: createPageUrl("SystemReadiness"), icon: Rocket },
       { title: 'Go-Live Playbook', url: createPageUrl("GoLivePlaybook"), icon: Rocket },
