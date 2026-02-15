@@ -114,28 +114,38 @@ Deno.serve(async (req) => {
       const sendgridFrom = Deno.env.get('SENDGRID_FROM_EMAIL');
       
       if (sendgridKey) {
-        // Test API key validity
-        const response = await fetch('https://api.sendgrid.com/v3/user/account', {
+        // Test API key validity using /scopes endpoint (more reliable)
+        const response = await fetch('https://api.sendgrid.com/v3/scopes', {
           headers: {
-            'Authorization': `Bearer ${sendgridKey}`
+            'Authorization': `Bearer ${sendgridKey}`,
+            'Content-Type': 'application/json'
           }
         });
         
+        const isValid = response.status === 200;
+        let errorDetail = '';
+        
+        if (!isValid) {
+          const errorData = await response.json().catch(() => ({}));
+          errorDetail = errorData.errors?.[0]?.message || `HTTP ${response.status}`;
+        }
+        
         results.push({
           name: 'SendGrid',
-          status: response.ok ? 'active' : 'invalid_key',
+          status: isValid ? 'active' : 'invalid_key',
           details: {
-            api_key: '✓ Set',
+            api_key: isValid ? '✓ Valid' : '✗ Invalid',
             from_email: sendgridFrom || '✗ Missing',
-            account_status: response.ok ? 'Valid' : 'Invalid'
+            account_status: isValid ? 'Valid' : errorDetail
           },
-          description: 'Transactional email delivery for notifications and invitations'
+          description: 'Transactional email delivery for notifications and invitations',
+          error: !isValid ? errorDetail : undefined
         });
       } else {
         results.push({
           name: 'SendGrid',
           status: 'missing_keys',
-          details: { api_key: '✗ Missing' },
+          details: { api_key: '✗ Missing', from_email: sendgridFrom || '✗ Missing' },
           description: 'Email delivery platform'
         });
       }
