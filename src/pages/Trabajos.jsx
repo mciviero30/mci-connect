@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSmartPagination, PaginationControls } from "@/components/hooks/useSmartPagination";
+import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,27 +56,26 @@ export default function Trabajos() {
     refetchOnWindowFocus: false
   });
   
-  // Direct jobs list - ONLY authorized jobs
-  const { data: jobs = [], isLoading } = useQuery({
-    queryKey: ['jobs', statusFilter, teamFilter],
-    queryFn: async () => {
-      const filters = {};
-      if (statusFilter !== 'all') filters.status = statusFilter;
-      if (teamFilter !== 'all') filters.team_id = teamFilter;
-      
-      // Fetch all matching jobs
-      let allJobs = [];
-      if (Object.keys(filters).length > 0) {
-        allJobs = await base44.entities.Job.filter(filters, '-created_date');
-      } else {
-        allJobs = await base44.entities.Job.list('-created_date');
-      }
-      
-      // ENFORCEMENT: Only show jobs with authorization_id (operational jobs)
-      return allJobs.filter(job => job.authorization_id);
-    },
-    enabled: !!user,
-    staleTime: 5 * 60 * 1000,
+  // Smart pagination - Only fetch 20 jobs at a time
+  const paginationFilters = {};
+  if (statusFilter !== 'all') paginationFilters.status = statusFilter;
+  if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
+  
+  const {
+    items: jobs,
+    isLoading,
+    page,
+    hasMore,
+    hasPrevious,
+    nextPage,
+    prevPage,
+    resetPagination
+  } = useSmartPagination({
+    entityName: 'Job',
+    filters: paginationFilters,
+    sortBy: '-created_date',
+    pageSize: 20,
+    enabled: !!user
   });
 
   const { data: teams = [] } = useQuery({
@@ -83,8 +84,11 @@ export default function Trabajos() {
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    gcTime: Infinity
   });
+
+  const { handleError } = useErrorHandler();
 
   // Fetch all time entries for validation
   const { data: allTimeEntries = [] } = useQuery({
@@ -121,6 +125,8 @@ export default function Trabajos() {
     },
     onSuccess: (createdJob) => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Job'] });
+      resetPagination();
       setShowForm(false);
       setShowAIWizard(false);
       setEditingJob(null);
@@ -130,11 +136,7 @@ export default function Trabajos() {
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      });
+      handleError(error, t('jobCreated'));
     }
   });
 
@@ -158,7 +160,9 @@ export default function Trabajos() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      setShowForm(false); // Changed from setShowDialog to setShowForm for consistency
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Job'] });
+      resetPagination();
+      setShowForm(false);
       setEditingJob(null);
       toast({
         title: t('jobUpdated'),
@@ -166,11 +170,7 @@ export default function Trabajos() {
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      });
+      handleError(error, t('jobUpdated'));
     }
   });
 
@@ -178,17 +178,15 @@ export default function Trabajos() {
     mutationFn: (id) => base44.entities.Job.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Job'] });
+      resetPagination();
       toast({
         title: language === 'es' ? 'Trabajo eliminado' : 'Job deleted',
         variant: 'success'
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      });
+      handleError(error, language === 'es' ? 'Trabajo eliminado' : 'Job deleted');
     }
   });
 
@@ -359,30 +357,52 @@ export default function Trabajos() {
         </div>
 
         {viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
-            {filteredJobs.map(job => (
-              <ModernJobCard key={job.id} job={job} onEdit={handleEdit} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+              {filteredJobs.map(job => (
+                <ModernJobCard key={job.id} job={job} onEdit={handleEdit} />
+              ))}
+            </div>
+            <PaginationControls
+              page={page}
+              hasMore={hasMore}
+              hasPrevious={hasPrevious}
+              onNext={nextPage}
+              onPrevious={prevPage}
+              isLoading={isLoading}
+              language={language}
+            />
+          </>
         ) : (
-          <CompactListView
-            items={filteredJobs}
-            entityType="job"
-            user={user}
-            getTitle={(job) => job.name || job.job_name_field}
-            getSubtitle={(job) => job.customer_name}
-            getBadges={(job) => (
-              <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                job.status === 'active' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                job.status === 'completed' ? 'bg-green-50 text-green-700 border border-green-200' :
-                'bg-slate-50 text-slate-700 border border-slate-200'
-              }`}>
-                {job.status}
-              </span>
-            )}
-            getAmount={(job) => job.contract_amount ? `$${job.contract_amount.toLocaleString()}` : null}
-            onItemClick={(job) => navigate(createPageUrl(`JobDetails?id=${job.id}`))}
-          />
+          <>
+            <CompactListView
+              items={filteredJobs}
+              entityType="job"
+              user={user}
+              getTitle={(job) => job.name || job.job_name_field}
+              getSubtitle={(job) => job.customer_name}
+              getBadges={(job) => (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                  job.status === 'active' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                  job.status === 'completed' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  'bg-slate-50 text-slate-700 border border-slate-200'
+                }`}>
+                  {job.status}
+                </span>
+              )}
+              getAmount={(job) => job.contract_amount ? `$${job.contract_amount.toLocaleString()}` : null}
+              onItemClick={(job) => navigate(createPageUrl(`JobDetails?id=${job.id}`))}
+            />
+            <PaginationControls
+              page={page}
+              hasMore={hasMore}
+              hasPrevious={hasPrevious}
+              onNext={nextPage}
+              onPrevious={prevPage}
+              isLoading={isLoading}
+              language={language}
+            />
+          </>
         )}
 
         {filteredJobs.length === 0 && !isLoading && (

@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
+import { useSubscription } from "@/components/hooks/useMemoryLeakPrevention";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,7 +82,8 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       onClose();
     },
     onError: (error) => {
-      toast.error(error.message || 'Could not save employee');
+      const { handleError } = useErrorHandler();
+      handleError(error, employee ? 'Employee updated' : 'Employee created');
     }
   });
 
@@ -125,11 +128,14 @@ export default function Empleados() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: Infinity
+    staleTime: Infinity,
+    gcTime: Infinity
   });
   
   const userRole = (currentUser?.role || 'employee').toLowerCase();
   const hasFullAccess = userRole === 'admin' || userRole === 'ceo';
+
+  const { handleError } = useErrorHandler();
 
   if (currentUser && !hasFullAccess) {
     return (
@@ -286,7 +292,7 @@ export default function Empleados() {
       toast.success('Invitation sent!');
     },
     onError: (error) => {
-      toast.error('Error: ' + error.message);
+      handleError(error, 'Invitation sent');
     }
   });
 

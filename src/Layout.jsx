@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { useSubscription, useEventListener } from "@/components/hooks/useMemoryLeakPrevention";
 import {
                     LayoutDashboard,
                     DollarSign,

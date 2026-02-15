@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSmartPagination, PaginationControls } from "@/components/hooks/useSmartPagination";
+import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileCheck, Plus, Eye, Trash2, DollarSign, Copy, Search, X, MapPin, Users, Trash as TrashIcon } from "lucide-react";
@@ -54,6 +56,8 @@ export default function Facturas() {
     refetchOnWindowFocus: false,
     gcTime: Infinity
   });
+
+  const { handleError } = useErrorHandler();
 
   // Mutation: Create Job + Work Authorization
   const createJobFromInvoiceMutation = useMutation({
@@ -115,19 +119,26 @@ export default function Facturas() {
       });
     }
   });
-  const { data: invoices = [], isLoading } = useQuery({
-    queryKey: ['invoices', statusFilter, teamFilter],
-    queryFn: async () => {
-      const filters = { deleted_at: null };
-      if (statusFilter !== 'all') filters.status = statusFilter;
-      if (teamFilter !== 'all') filters.team_id = teamFilter;
-      
-      return base44.entities.Invoice.filter(filters, 'invoice_number');
-    },
-    staleTime: 120000,
-    gcTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+  // Smart pagination for invoices
+  const paginationFilters = { deleted_at: null };
+  if (statusFilter !== 'all') paginationFilters.status = statusFilter;
+  if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
+
+  const {
+    items: invoices,
+    isLoading,
+    page,
+    hasMore,
+    hasPrevious,
+    nextPage,
+    prevPage,
+    resetPagination
+  } = useSmartPagination({
+    entityName: 'Invoice',
+    filters: paginationFilters,
+    sortBy: '-invoice_number',
+    pageSize: 20,
+    enabled: !!user
   });
 
   const { data: teams = [] } = useQuery({
@@ -147,17 +158,15 @@ export default function Facturas() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Invoice'] });
+      resetPagination();
       toast({
         title: language === 'es' ? 'Movido a papelera' : 'Moved to trash',
         variant: 'success'
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: safeErrorMessage(error, 'Failed to delete invoice'),
-        variant: 'destructive'
-      });
+      handleError(error, language === 'es' ? 'Movido a papelera' : 'Moved to trash');
     }
   });
 
@@ -190,17 +199,15 @@ export default function Facturas() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Invoice'] });
+      resetPagination();
       toast({
         title: language === 'es' ? '✅ Factura duplicada' : '✅ Invoice duplicated',
         variant: 'success'
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: safeErrorMessage(error, 'Failed to duplicate invoice'),
-        variant: 'destructive'
-      });
+      handleError(error, language === 'es' ? '✅ Factura duplicada' : '✅ Invoice duplicated');
     }
   });
 
@@ -235,6 +242,8 @@ export default function Facturas() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Invoice'] });
+      resetPagination();
       toast({
         title: language === 'es' ? 'Pago registrado exitosamente' : 'Payment registered successfully',
         variant: 'success'
@@ -244,11 +253,7 @@ export default function Facturas() {
       setPaymentAmount("");
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: safeErrorMessage(error, 'Failed to record payment'),
-        variant: 'destructive'
-      });
+      handleError(error, language === 'es' ? 'Pago registrado' : 'Payment registered');
     }
   });
 
@@ -426,46 +431,68 @@ export default function Facturas() {
             <SkeletonDocumentList count={6} />
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-            {filteredInvoices.map(invoice => (
-              <ModernInvoiceCard
-                key={invoice.id}
-                invoice={invoice}
-                onDuplicate={(inv) => duplicateMutation.mutate(inv)}
-                onDelete={(inv) => deleteMutation.mutate(inv.id)}
-                onRegisterPayment={(inv) => {
-                  setPaymentInvoice(inv);
-                  setPaymentAmount(((inv.balance || inv.total) > 0 ? (inv.balance || inv.total) : 0).toFixed(2));
-                  setPaymentDialogOpen(true);
-                }}
-                onCreateJob={(inv) => {
-                  setSelectedInvoiceForJob(inv);
-                  setCreateJobDialogOpen(true);
-                }}
-                isAdmin={isAdmin}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+              {filteredInvoices.map(invoice => (
+                <ModernInvoiceCard
+                  key={invoice.id}
+                  invoice={invoice}
+                  onDuplicate={(inv) => duplicateMutation.mutate(inv)}
+                  onDelete={(inv) => deleteMutation.mutate(inv.id)}
+                  onRegisterPayment={(inv) => {
+                    setPaymentInvoice(inv);
+                    setPaymentAmount(((inv.balance || inv.total) > 0 ? (inv.balance || inv.total) : 0).toFixed(2));
+                    setPaymentDialogOpen(true);
+                  }}
+                  onCreateJob={(inv) => {
+                    setSelectedInvoiceForJob(inv);
+                    setCreateJobDialogOpen(true);
+                  }}
+                  isAdmin={isAdmin}
+                />
+              ))}
+            </div>
+            <PaginationControls
+              page={page}
+              hasMore={hasMore}
+              hasPrevious={hasPrevious}
+              onNext={nextPage}
+              onPrevious={prevPage}
+              isLoading={isLoading}
+              language={language}
+            />
+          </>
         ) : (
-          <CompactListView
-            items={filteredInvoices}
-            entityType="invoice"
-            user={user}
-            getTitle={(invoice) => invoice.customer_name}
-            getSubtitle={(invoice) => `${invoice.invoice_number} • ${invoice.job_name}`}
-            getBadges={(invoice) => (
-              <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                invoice.status === 'paid' ? 'bg-green-50 text-green-700 border border-green-200' :
-                invoice.status === 'sent' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
-                invoice.status === 'overdue' ? 'bg-red-50 text-red-700 border border-red-200' :
-                'bg-slate-50 text-slate-700 border border-slate-200'
-              }`}>
-                {getInvoiceStatusMeta(invoice.status, language).label}
-              </span>
-            )}
-            getAmount={(invoice) => `$${invoice.total?.toLocaleString() || 0}`}
-            onItemClick={(invoice) => navigate(createPageUrl(`VerFactura?id=${invoice.id}`))}
-          />
+          <>
+            <CompactListView
+              items={filteredInvoices}
+              entityType="invoice"
+              user={user}
+              getTitle={(invoice) => invoice.customer_name}
+              getSubtitle={(invoice) => `${invoice.invoice_number} • ${invoice.job_name}`}
+              getBadges={(invoice) => (
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                  invoice.status === 'paid' ? 'bg-green-50 text-green-700 border border-green-200' :
+                  invoice.status === 'sent' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                  invoice.status === 'overdue' ? 'bg-red-50 text-red-700 border border-red-200' :
+                  'bg-slate-50 text-slate-700 border border-slate-200'
+                }`}>
+                  {getInvoiceStatusMeta(invoice.status, language).label}
+                </span>
+              )}
+              getAmount={(invoice) => `$${invoice.total?.toLocaleString() || 0}`}
+              onItemClick={(invoice) => navigate(createPageUrl(`VerFactura?id=${invoice.id}`))}
+            />
+            <PaginationControls
+              page={page}
+              hasMore={hasMore}
+              hasPrevious={hasPrevious}
+              onNext={nextPage}
+              onPrevious={prevPage}
+              isLoading={isLoading}
+              language={language}
+            />
+          </>
         )}
 
         {filteredInvoices.length === 0 && !isLoading && (
