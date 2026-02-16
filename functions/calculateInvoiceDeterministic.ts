@@ -78,7 +78,8 @@ Deno.serve(async (req) => {
       request_id,
       billing_type = 'fixed',
       billable_time_entries = [],
-      billable_expenses = []
+      billable_expenses = [],
+      shadow_mode = false
     } = body;
 
     // PERMISSION CHECK
@@ -118,16 +119,19 @@ Deno.serve(async (req) => {
       }
     }
 
-    // IDEMPOTENCY CHECK - Return cached result if exists
-    const cachedResult = await engine.checkIdempotency(base44, request_id);
-    if (cachedResult) {
-      return new Response(JSON.stringify({
-        status: 'cached',
-        result: cachedResult
-      }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
+    // SHADOW MODE: Skip idempotency check (read-only mode)
+    if (!shadow_mode) {
+      // IDEMPOTENCY CHECK - Return cached result if exists
+      const cachedResult = await engine.checkIdempotency(base44, request_id);
+      if (cachedResult) {
+        return new Response(JSON.stringify({
+          status: 'cached',
+          result: cachedResult
+        }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
     }
 
     // ============================================
@@ -167,12 +171,34 @@ Deno.serve(async (req) => {
     };
 
     // ============================================
-    // CONCURRENCY-SAFE VERSION CREATION
+    // SHADOW MODE: READ-ONLY EXECUTION (no persistence)
+    // ============================================
+
+    if (shadow_mode) {
+      // Return calculation result WITHOUT creating CalculationVersion or IdempotencyRecord
+      return new Response(JSON.stringify({
+        success: true,
+        shadow_mode: true,
+        result: {
+          input_hash: inputHash,
+          output_hash: outputHash,
+          backend_totals_snapshot: snapshot,
+          totals: totals,
+          recalculated_at: new Date().toISOString()
+        }
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // ============================================
+    // PRODUCTION MODE: VERSION CREATION + PERSISTENCE
     // (Uses DB constraints + retry logic, not transactions)
     // ============================================
-    
+
     const entityId = invoice_id || 'temp';
-    
+
     // Get next version number (with retry for race conditions)
     const { nextVersion } = await engine.getNextVersionNumber(base44, entityId);
 
