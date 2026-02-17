@@ -73,7 +73,7 @@ export default function Estimados() {
     entityName: 'Quote',
     filters: paginationFilters,
     sortBy: '-created_date',
-    pageSize: 20,
+    pageSize: 18,
     enabled: !!user
   });
 

@@ -137,7 +137,7 @@ export default function Facturas() {
     entityName: 'Invoice',
     filters: paginationFilters,
     sortBy: '-created_date',
-    pageSize: 20,
+    pageSize: 18,
     enabled: !!user
   });
 
