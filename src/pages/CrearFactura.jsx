@@ -164,6 +164,9 @@ export default function CrearFactura() {
         item_name: (item.item_name ?? item.name ?? ''),
         description: (item.description ?? ''),
         unit: (item.unit ?? item.uom ?? 'pcs'),
+        // REMOVE auto-calculation flags - invoices are editable snapshots
+        auto_calculated: false,
+        manual_override: false
       }));
 
       // Lock prices if invoice was sent
