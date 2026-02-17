@@ -1,9 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
+
+// Backend paginator function names per entity
+const BACKEND_PAGINATORS = {
+  Quote: 'listQuotesPaginated',
+  Invoice: 'listInvoicesPaginated',
+  Job: 'listJobsPaginated',
+};
 
 /**
- * Smart Pagination Hook - Loads all records, paginates on frontend
+ * Smart Pagination Hook
+ * - Uses backend cursor-based pagination if a paginator function exists for the entity
+ * - Falls back to loading all records (up to 500) for entities without a paginator
  */
 export function useSmartPagination({
   entityName,
@@ -13,31 +22,68 @@ export function useSmartPagination({
   enabled = true
 }) {
   const [page, setPage] = useState(1);
+  // Stack of cursors: index 0 = page 1 cursor (null), index N = cursor to fetch page N+1
+  const cursorsRef = useRef([null]);
 
-  // Fetch ALL records (no skip - SDK doesn't support it)
-  const { data: allItems = [], isLoading, error, refetch } = useQuery({
+  const backendFn = BACKEND_PAGINATORS[entityName];
+
+  // ── Backend cursor pagination (Quote, Invoice, Job) ──────────────────────
+  const backendQuery = useQuery({
+    queryKey: ['paginated-cursor', entityName, filters, page],
+    queryFn: async () => {
+      const cursor = cursorsRef.current[page - 1] ?? null;
+      const activeFilters = { ...filters };
+      delete activeFilters.deleted_at; // handled server-side
+
+      const res = await base44.functions.invoke(backendFn, {
+        limit: pageSize,
+        cursor,
+        filters: activeFilters,
+      });
+      const data = res?.data ?? res;
+
+      // Store next cursor for the next page
+      if (data.nextCursor) {
+        cursorsRef.current[page] = data.nextCursor;
+      }
+
+      return data;
+    },
+    enabled: !!backendFn && enabled,
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+    keepPreviousData: true,
+  });
+
+  // ── Fallback: load all (entities without a backend paginator) ────────────
+  const fallbackQuery = useQuery({
     queryKey: ['paginated', entityName, filters, sortBy],
     queryFn: async () => {
-      const results = Object.keys(filters).length > 0
+      return Object.keys(filters).length > 0
         ? await base44.entities[entityName].filter(filters, sortBy, 500)
         : await base44.entities[entityName].list(sortBy, 500);
-      return results;
     },
-    enabled: !!entityName && enabled,
+    enabled: !backendFn && !!entityName && enabled,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   });
 
-  // Paginate on the frontend
-  const { items, hasMore, hasPrevious } = useMemo(() => {
+  const fallbackItems = fallbackQuery.data ?? [];
+  const fallbackPaged = useMemo(() => {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     return {
-      items: allItems.slice(start, end),
-      hasMore: end < allItems.length,
-      hasPrevious: page > 1,
+      items: fallbackItems.slice(start, end),
+      hasMore: end < fallbackItems.length,
     };
-  }, [allItems, page, pageSize]);
+  }, [fallbackItems, page, pageSize]);
+
+  // ── Unified return ───────────────────────────────────────────────────────
+  const items     = backendFn ? (backendQuery.data?.items ?? [])   : fallbackPaged.items;
+  const hasMore   = backendFn ? (backendQuery.data?.hasMore ?? false) : fallbackPaged.hasMore;
+  const isLoading = backendFn ? backendQuery.isLoading : fallbackQuery.isLoading;
+  const error     = backendFn ? backendQuery.error     : fallbackQuery.error;
+  const refetch   = backendFn ? backendQuery.refetch   : fallbackQuery.refetch;
 
   const nextPage = useCallback(() => {
     if (hasMore) setPage(p => p + 1);
@@ -52,6 +98,7 @@ export function useSmartPagination({
   }, []);
 
   const resetPagination = useCallback(() => {
+    cursorsRef.current = [null];
     setPage(1);
     refetch();
   }, [refetch]);
@@ -62,15 +109,18 @@ export function useSmartPagination({
     error,
     page,
     hasMore,
-    hasPrevious,
+    hasPrevious: page > 1,
     nextPage,
     prevPage,
     goToPage,
     resetPagination,
     totalDisplayed: items.length,
-    totalCount: allItems.length,
+    totalCount: fallbackFallback,
   };
 }
+
+// tiny internal shim to avoid undefined
+const fallbackFallback = undefined;
 
 /**
  * Pagination Controls Component
