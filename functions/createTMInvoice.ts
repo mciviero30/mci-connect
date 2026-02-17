@@ -177,6 +177,8 @@ Deno.serve(async (req) => {
       invoice_number: invoiceNumber.invoice_number,
       customer_id: job.customer_id,
       customer_name: job.customer_name,
+      customer_email: manual_mode ? body.customer_email : job.customer_email,
+      customer_phone: manual_mode ? body.customer_phone : job.customer_phone,
       job_id: job.id || null, // NULL for manual mode (no job yet)
       job_name: job.name,
       job_address: job.address,
@@ -202,7 +204,11 @@ Deno.serve(async (req) => {
       },
       billed_time_entry_ids: unbilledTimeEntries.map(e => e.id),
       notes: `T&M Invoice for period ${start_date} to ${end_date}`,
-      created_by_user_id: user.id
+      terms: '• Payment: Due 30 days from invoice date (unless otherwise specified).\n• Late Fee: 1.5% monthly interest on overdue balance.\n• Collection: Client responsible for all collection costs including attorney fees.\n• Disputes: Report discrepancies within 5 days in writing. Undisputed amounts due by due date.\n• Scope: Final cost includes all approved Change Orders.',
+      created_by_user_id: user.id,
+      approval_status: 'approved',
+      approved_by: user.email,
+      approved_at: new Date().toISOString()
     };
 
     const invoice = await base44.asServiceRole.entities.Invoice.create(invoiceData);
