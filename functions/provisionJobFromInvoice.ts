@@ -141,7 +141,8 @@ Deno.serve(async (req) => {
             provisioning_status: 'in_progress',
             provisioning_attempts: 1,
             provisioning_last_attempt_at: new Date().toISOString(),
-            provisioning_steps: { job: 'created', drive: 'unknown', field: 'unknown' }
+            provisioning_steps: { job: 'created', drive: 'unknown', field: 'unknown' },
+            field_accepted_at: new Date().toISOString() // Invoice creation = client acceptance proof
           });
           
           jobId = job.id;
