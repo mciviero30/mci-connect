@@ -27,6 +27,9 @@ import { canCreateFinancialDocs, needsApproval, canSendDocument } from "@/compon
 import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import UnifiedOutOfAreaCalculator from "../components/quotes/UnifiedOutOfAreaCalculator";
+import { Badge } from "@/components/ui/badge";
 /**
  * ============================================================================
  * CAPA 7 - INVOICE SNAPSHOT (NO RECALCULATION)
