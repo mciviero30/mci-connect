@@ -1,15 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 /**
- * Smart Pagination Hook - Server-side pagination with intelligent caching
- * Optimized for large datasets (1000+ records)
- * 
- * @param {string} entityName - Entity name
- * @param {object} filters - Query filters
- * @param {number} pageSize - Items per page (default: 20)
- * @returns {object} Pagination controls and data
+ * Smart Pagination Hook - Loads all records, paginates on frontend
  */
 export function useSmartPagination({
   entityName,
@@ -20,38 +14,34 @@ export function useSmartPagination({
 }) {
   const [page, setPage] = useState(1);
 
-  // Fetch only the current page
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['paginated', entityName, filters, sortBy, page, pageSize],
+  // Fetch ALL records (no skip - SDK doesn't support it)
+  const { data: allItems = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['paginated', entityName, filters, sortBy],
     queryFn: async () => {
-      const skip = (page - 1) * pageSize;
-      
-      // Fetch pageSize + 1 to check if there's a next page
       const results = Object.keys(filters).length > 0
-        ? await base44.entities[entityName].filter(filters, sortBy, pageSize + 1, skip)
-        : await base44.entities[entityName].list(sortBy, pageSize + 1, skip);
-
-      const hasMore = results.length > pageSize;
-      const items = hasMore ? results.slice(0, pageSize) : results;
-
-      return {
-        items,
-        hasMore,
-        currentPage: page,
-        pageSize
-      };
+        ? await base44.entities[entityName].filter(filters, sortBy, 500)
+        : await base44.entities[entityName].list(sortBy, 500);
+      return results;
     },
     enabled: !!entityName && enabled,
-    staleTime: 2 * 60 * 1000, // 2 min cache
+    staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    keepPreviousData: true, // Smooth transitions between pages
   });
 
+  // Paginate on the frontend
+  const { items, hasMore, hasPrevious } = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return {
+      items: allItems.slice(start, end),
+      hasMore: end < allItems.length,
+      hasPrevious: page > 1,
+    };
+  }, [allItems, page, pageSize]);
+
   const nextPage = useCallback(() => {
-    if (data?.hasMore) {
-      setPage(p => p + 1);
-    }
-  }, [data?.hasMore]);
+    if (hasMore) setPage(p => p + 1);
+  }, [hasMore]);
 
   const prevPage = useCallback(() => {
     setPage(p => Math.max(1, p - 1));
@@ -67,17 +57,18 @@ export function useSmartPagination({
   }, [refetch]);
 
   return {
-    items: data?.items || [],
+    items,
     isLoading,
     error,
     page,
-    hasMore: data?.hasMore || false,
-    hasPrevious: page > 1,
+    hasMore,
+    hasPrevious,
     nextPage,
     prevPage,
     goToPage,
     resetPagination,
-    totalDisplayed: data?.items?.length || 0
+    totalDisplayed: items.length,
+    totalCount: allItems.length,
   };
 }
 
