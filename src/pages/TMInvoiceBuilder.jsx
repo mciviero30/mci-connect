@@ -13,6 +13,10 @@ export default function TMInvoiceBuilder() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedJobId, setSelectedJobId] = useState('');
+  const [manualMode, setManualMode] = useState(false);
+  const [customerId, setCustomerId] = useState('');
+  const [jobName, setJobName] = useState('');
+  const [jobAddress, setJobAddress] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [preview, setPreview] = useState(null);
@@ -37,47 +41,65 @@ export default function TMInvoiceBuilder() {
     },
   });
 
+  // Fetch customers for manual mode
+  const { data: customers = [] } = useQuery({
+    queryKey: ['customers'],
+    queryFn: () => base44.entities.Customer.list('-created_date'),
+    enabled: manualMode,
+  });
+
   // Preview unbilled items
   const previewMutation = useMutation({
     mutationFn: async ({ job_id, start_date, end_date }) => {
-      // Fetch unbilled time entries
-      const allTimeEntries = await base44.entities.TimeEntry.filter({ job_id });
-      const unbilledTime = allTimeEntries.filter(e => 
-        !e.billed_at && 
-        e.billable !== false &&
-        e.date >= start_date && 
-        e.date <= end_date &&
-        e.status === 'approved'
-      );
+      if (job_id) {
+        // Existing job mode
+        const allTimeEntries = await base44.entities.TimeEntry.filter({ job_id });
+        const unbilledTime = allTimeEntries.filter(e => 
+          !e.billed_at && 
+          e.billable !== false &&
+          e.date >= start_date && 
+          e.date <= end_date &&
+          e.status === 'approved'
+        );
 
-      // Fetch unbilled expenses
-      const allExpenses = await base44.entities.Expense.filter({ job_id });
-      const unbilledExpenses = allExpenses.filter(e =>
-        !e.billed_at &&
-        e.billable === true &&
-        e.date >= start_date &&
-        e.date <= end_date &&
-        e.status === 'approved'
-      );
+        const allExpenses = await base44.entities.Expense.filter({ job_id });
+        const unbilledExpenses = allExpenses.filter(e =>
+          !e.billed_at &&
+          e.billable === true &&
+          e.date >= start_date &&
+          e.date <= end_date &&
+          e.status === 'approved'
+        );
 
-      const job = jobs.find(j => j.id === job_id);
-      const rate = job?.regular_hourly_rate || 60;
+        const job = jobs.find(j => j.id === job_id);
+        const rate = job?.regular_hourly_rate || 60;
 
-      const laborTotal = unbilledTime.reduce((sum, e) => 
-        sum + (e.hours_worked || 0) * (e.rate_snapshot || rate), 0
-      );
-      const expensesTotal = unbilledExpenses.reduce((sum, e) => {
-        const markup = e.markup || 0;
-        return sum + (e.amount || 0) * (1 + markup / 100);
-      }, 0);
+        const laborTotal = unbilledTime.reduce((sum, e) => 
+          sum + (e.hours_worked || 0) * (e.rate_snapshot || rate), 0
+        );
+        const expensesTotal = unbilledExpenses.reduce((sum, e) => {
+          const markup = e.markup || 0;
+          return sum + (e.amount || 0) * (1 + markup / 100);
+        }, 0);
 
-      return {
-        time_entries: unbilledTime,
-        expenses: unbilledExpenses,
-        labor_total: laborTotal,
-        expenses_total: expensesTotal,
-        total: laborTotal + expensesTotal
-      };
+        return {
+          time_entries: unbilledTime,
+          expenses: unbilledExpenses,
+          labor_total: laborTotal,
+          expenses_total: expensesTotal,
+          total: laborTotal + expensesTotal
+        };
+      } else {
+        // Manual mode - empty preview (manual entry)
+        return {
+          time_entries: [],
+          expenses: [],
+          labor_total: 0,
+          expenses_total: 0,
+          total: 0,
+          manual: true
+        };
+      }
     },
     onSuccess: (data) => {
       setPreview(data);
@@ -87,12 +109,28 @@ export default function TMInvoiceBuilder() {
   // Create T&M invoice
   const createMutation = useMutation({
     mutationFn: async () => {
-      const result = await base44.functions.invoke('createTMInvoice', {
-        job_id: selectedJobId,
-        start_date: startDate,
-        end_date: endDate
-      });
-      return result;
+      if (manualMode) {
+        // Manual invoice creation (no pre-existing job)
+        const customer = customers.find(c => c.id === customerId);
+        const result = await base44.functions.invoke('createTMInvoice', {
+          manual_mode: true,
+          customer_id: customerId,
+          customer_name: customer?.name || '',
+          job_name: jobName,
+          job_address: jobAddress,
+          start_date: startDate,
+          end_date: endDate
+        });
+        return result;
+      } else {
+        // Existing job mode
+        const result = await base44.functions.invoke('createTMInvoice', {
+          job_id: selectedJobId,
+          start_date: startDate,
+          end_date: endDate
+        });
+        return result;
+      }
     },
     onSuccess: (result) => {
       // I4 — Post-Invoice Lock Confirmation
@@ -121,19 +159,31 @@ export default function TMInvoiceBuilder() {
   });
 
   const handlePreview = () => {
-    if (!selectedJobId || !startDate || !endDate) {
-      toast({ title: 'Please select job and date range', variant: 'destructive' });
-      return;
+    if (manualMode) {
+      if (!customerId || !jobName || !startDate || !endDate) {
+        toast({ title: 'Please fill all required fields', variant: 'destructive' });
+        return;
+      }
+    } else {
+      if (!selectedJobId || !startDate || !endDate) {
+        toast({ title: 'Please select job and date range', variant: 'destructive' });
+        return;
+      }
     }
     previewMutation.mutate({ job_id: selectedJobId, start_date: startDate, end_date: endDate });
   };
 
   const handleCreate = () => {
-    if (!preview || preview.time_entries.length === 0 && preview.expenses.length === 0) {
-      toast({ title: 'No unbilled items to invoice', variant: 'destructive' });
-      return;
+    if (manualMode) {
+      // Manual mode - allow empty invoice (user adds line items later)
+      createMutation.mutate();
+    } else {
+      if (!preview || preview.time_entries.length === 0 && preview.expenses.length === 0) {
+        toast({ title: 'No unbilled items to invoice', variant: 'destructive' });
+        return;
+      }
+      createMutation.mutate();
     }
-    createMutation.mutate();
   };
 
   return (
@@ -152,25 +202,78 @@ export default function TMInvoiceBuilder() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="w-5 h-5" />
-              Select Job & Date Range
+              Invoice Setup
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <Label>T&M Job</Label>
-              <Select value={selectedJobId} onValueChange={setSelectedJobId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select T&M job" />
-                </SelectTrigger>
-                <SelectContent>
-                  {jobs.map((job) => (
-                    <SelectItem key={job.id} value={job.id}>
-                      {job.name} - {job.customer_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex gap-2 mb-4">
+              <Button 
+                variant={!manualMode ? 'default' : 'outline'}
+                onClick={() => setManualMode(false)}
+                className="flex-1"
+              >
+                Existing Job
+              </Button>
+              <Button 
+                variant={manualMode ? 'default' : 'outline'}
+                onClick={() => setManualMode(true)}
+                className="flex-1"
+              >
+                Manual Entry
+              </Button>
             </div>
+
+            {!manualMode ? (
+              <div>
+                <Label>T&M Job</Label>
+                <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select T&M job" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {jobs.map((job) => (
+                      <SelectItem key={job.id} value={job.id}>
+                        {job.name} - {job.customer_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <>
+                <div>
+                  <Label>Customer *</Label>
+                  <Select value={customerId} onValueChange={setCustomerId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((customer) => (
+                        <SelectItem key={customer.id} value={customer.id}>
+                          {customer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Job Name *</Label>
+                  <Input 
+                    value={jobName} 
+                    onChange={(e) => setJobName(e.target.value)}
+                    placeholder="Enter job name"
+                  />
+                </div>
+                <div>
+                  <Label>Job Address</Label>
+                  <Input 
+                    value={jobAddress} 
+                    onChange={(e) => setJobAddress(e.target.value)}
+                    placeholder="Enter job address (optional)"
+                  />
+                </div>
+              </>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -192,7 +295,7 @@ export default function TMInvoiceBuilder() {
             </div>
 
             <Button onClick={handlePreview} disabled={previewMutation.isPending}>
-              {previewMutation.isPending ? 'Loading...' : 'Preview Unbilled Items'}
+              {previewMutation.isPending ? 'Loading...' : manualMode ? 'Create Draft Invoice' : 'Preview Unbilled Items'}
             </Button>
           </CardContent>
         </Card>
@@ -232,7 +335,13 @@ export default function TMInvoiceBuilder() {
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">Expenses: ${preview.expenses_total.toFixed(2)}</p>
               </div>
 
-              {preview.time_entries.length === 0 && preview.expenses.length === 0 ? (
+              {preview.manual ? (
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 rounded-lg mb-4">
+                  <p className="text-sm text-blue-900 dark:text-blue-300 mb-2">
+                    Manual T&M invoice will be created as a <strong>draft</strong>. You can add line items manually in the invoice editor.
+                  </p>
+                </div>
+              ) : preview.time_entries.length === 0 && preview.expenses.length === 0 ? (
                 <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
                   <AlertCircle className="w-5 h-5" />
                   <span>No unbilled items in this date range</span>
@@ -256,7 +365,7 @@ export default function TMInvoiceBuilder() {
                   </div>
                   
                   <Button onClick={handleCreate} disabled={createMutation.isPending} className="w-full bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg">
-                    {createMutation.isPending ? 'Creating...' : 'Create Invoice (Lock Records)'}
+                    {createMutation.isPending ? 'Creating...' : preview.manual ? 'Create Draft Invoice' : 'Create Invoice (Lock Records)'}
                   </Button>
                 </>
               )}

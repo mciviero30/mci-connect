@@ -119,6 +119,7 @@ import Goals from './pages/Goals';
 import Home from './pages/Home';
 import Horarios from './pages/Horarios';
 import HorasManejo from './pages/HorasManejo';
+import IntegrationsStatus from './pages/IntegrationsStatus';
 import Inventario from './pages/Inventario';
 import Items from './pages/Items';
 import JobDetails from './pages/JobDetails';
@@ -196,7 +197,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import IntegrationsStatus from './pages/IntegrationsStatus';
 import __Layout from './Layout.jsx';
 
 
@@ -273,6 +273,7 @@ export const PAGES = {
     "Home": Home,
     "Horarios": Horarios,
     "HorasManejo": HorasManejo,
+    "IntegrationsStatus": IntegrationsStatus,
     "Inventario": Inventario,
     "Items": Items,
     "JobDetails": JobDetails,
@@ -350,7 +351,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "IntegrationsStatus": IntegrationsStatus,
 }
 
 export const pagesConfig = {
