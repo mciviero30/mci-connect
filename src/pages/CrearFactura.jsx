@@ -505,29 +505,16 @@ export default function CrearFactura() {
 
       console.log('Final invoice data (normalized):', finalData);
       
-      // HARDENING: BLOCK Job auto-creation without WorkAuthorization
-      // Jobs MUST have authorization_id per business rules
-      let jobId = finalData.job_id;
-      if (!jobId && finalData.job_name) {
-        // Check if job already exists
+      // Try to auto-link to existing job if job_name provided but no job_id
+      if (!finalData.job_id && finalData.job_name) {
         const duplicateJobs = await base44.entities.Job.filter({
           name: finalData.job_name,
           customer_id: finalData.customer_id || ''
         });
-
         if (duplicateJobs.length > 0) {
-          // Use existing job
-          jobId = duplicateJobs[0].id;
-          finalData.job_id = jobId;
-          console.log('✅ Linked to existing Job:', jobId, duplicateJobs[0].job_number, '(duplicate prevented)');
-        } else {
-          // BLOCK: Cannot auto-create Jobs without WorkAuthorization
-          throw new Error(
-            language === 'es'
-              ? '❌ Este trabajo no existe. Por favor créalo primero desde la página de Trabajos con su autorización correspondiente.'
-              : '❌ This job does not exist. Please create it first from the Jobs page with its work authorization.'
-          );
+          finalData.job_id = duplicateJobs[0].id;
         }
+        // If no job found, save draft anyway without job_id (user can link later)
       }
       
       const result = await base44.entities.Invoice.create(finalData);
