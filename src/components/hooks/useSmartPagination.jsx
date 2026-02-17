@@ -28,14 +28,30 @@ export function useSmartPagination({
     gcTime: 5 * 60 * 1000,
   });
 
+  // Sort by document number (descending numerically) then by date
+  const sortedItems = useMemo(() => {
+    return [...allItems].sort((a, b) => {
+      // Extract numeric part from document numbers like EST-00003, INV-00002, JOB-00001
+      const numA = parseInt((a.quote_number || a.invoice_number || a.job_number || '').replace(/\D/g, '')) || 0;
+      const numB = parseInt((b.quote_number || b.invoice_number || b.job_number || '').replace(/\D/g, '')) || 0;
+
+      if (numA !== numB) return numB - numA; // Highest number first
+
+      // Fallback: sort by date descending
+      const dateA = new Date(a.quote_date || a.invoice_date || a.created_date || 0).getTime();
+      const dateB = new Date(b.quote_date || b.invoice_date || b.created_date || 0).getTime();
+      return dateB - dateA;
+    });
+  }, [allItems]);
+
   const { items, hasMore } = useMemo(() => {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
     return {
-      items: allItems.slice(start, end),
-      hasMore: end < allItems.length,
+      items: sortedItems.slice(start, end),
+      hasMore: end < sortedItems.length,
     };
-  }, [allItems, page, pageSize]);
+  }, [sortedItems, page, pageSize]);
 
   const nextPage = useCallback(() => {
     if (hasMore) setPage(p => p + 1);
