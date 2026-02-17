@@ -3,11 +3,14 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 /**
  * REPAIR: Missing Job Work Authorizations
  * 
- * Creates legacy WorkAuthorization records for 28 Jobs missing authorization_id
+ * Creates legacy WorkAuthorization records for Jobs missing authorization_id
  * Marks them as backfilled for audit trail
  */
 
 Deno.serve(async (req) => {
+  if (req.method !== 'POST') {
+    return Response.json({ error: 'Method not allowed' }, { status: 405 });
+  }
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
