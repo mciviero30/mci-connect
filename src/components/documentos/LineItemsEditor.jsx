@@ -279,7 +279,7 @@ export default function LineItemsEditor({
                 <Grid3x3 className="absolute left-2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
                 <Input
                   type="number"
-                  value={baseQuantity}
+                  value={item.quantity || 0}
                   onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                   min="0"
                   step="0.01"
