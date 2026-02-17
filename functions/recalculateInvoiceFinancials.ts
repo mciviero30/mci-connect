@@ -1,9 +1,73 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { 
-  recalculateInvoiceFinancials, 
-  lockInvoiceOnSent, 
-  validateFinancialLocks 
-} from '../components/domain/financials/invoiceProfitCalculations.js';
+
+// Profit calculation - inline to avoid component imports in backend
+function calculateInvoiceProfit(params) {
+  const { subtotal = 0, tax_amount = 0, cost_amount = 0 } = params;
+  const revenue = subtotal + tax_amount;
+  const profit = revenue - cost_amount;
+  const profit_margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+  return {
+    revenue: Number(revenue.toFixed(2)),
+    cost_amount: Number(cost_amount.toFixed(2)),
+    profit: Number(profit.toFixed(2)),
+    profit_margin: Number(profit_margin.toFixed(2))
+  };
+}
+
+function calculateInvoiceCommission(params) {
+  const { profit = 0 } = params;
+  const commission_pct = profit > 0 ? 10 : 0;
+  const commission_amount = (profit * commission_pct) / 100;
+  return {
+    profit: Number(profit.toFixed(2)),
+    commission_pct: Number(commission_pct.toFixed(2)),
+    commission_amount: Number(commission_amount.toFixed(2))
+  };
+}
+
+function recalculateInvoiceFinancials(params) {
+  const { invoice, cost_amount, margin_locked = false, commission_locked = false } = params;
+  
+  if (margin_locked || commission_locked) {
+    return {
+      can_recalculate: false,
+      locked_fields: { margin: margin_locked, commission: commission_locked },
+      reason: 'Invoice is locked. Admin unlock required.',
+      current_profit: invoice.profit || 0,
+      current_commission: invoice.commission_amount || 0
+    };
+  }
+  
+  const profitCalc = calculateInvoiceProfit({
+    subtotal: invoice.subtotal || 0,
+    tax_amount: invoice.tax_amount || 0,
+    cost_amount: cost_amount || invoice.cost_amount || 0
+  });
+  
+  const commissionCalc = calculateInvoiceCommission({ profit: profitCalc.profit });
+  
+  const changes_detected = {
+    profit_changed: invoice.profit !== profitCalc.profit,
+    commission_changed: invoice.commission_amount !== commissionCalc.commission_amount,
+    cost_changed: invoice.cost_amount !== cost_amount
+  };
+  
+  const any_changes = Object.values(changes_detected).some(v => v === true);
+  
+  return {
+    can_recalculate: true,
+    any_changes,
+    changes_detected,
+    profit: profitCalc.profit,
+    profit_margin: profitCalc.profit_margin,
+    revenue: profitCalc.revenue,
+    commission_amount: commissionCalc.commission_amount,
+    commission_pct: commissionCalc.commission_pct,
+    version_needed: any_changes,
+    current_profit: invoice.profit || 0,
+    current_commission: invoice.commission_amount || 0
+  };
+}
 
 /**
  * ============================================================================
