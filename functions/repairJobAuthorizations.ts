@@ -34,15 +34,18 @@ Deno.serve(async (req) => {
       try {
         // Create legacy WorkAuthorization
         const auth = await base44.asServiceRole.entities.WorkAuthorization.create({
-          job_id: job.id,
-          job_name: job.name,
-          customer_name: job.customer_name,
-          approval_method: 'backfill_legacy',
-          status: 'approved',
-          approved_date: job.created_date,
-          notes: `Auto-created during data repair for legacy job (${new Date().toISOString()})`,
-          is_backfilled: true,
-          backfill_reason: 'Missing authorization for pre-existing job'
+          customer_id: job.customer_id || 'unknown',
+          customer_name: job.customer_name || 'Unknown Customer',
+          authorization_type: job.billing_type || 'fixed',
+          approval_source: 'verbal',
+          approved_at: job.created_date,
+          verified_by_user_id: user.id,
+          verified_by_email: user.email,
+          verified_by_name: user.full_name,
+          verification_notes: `Auto-created during data repair for legacy job (${new Date().toISOString()})`,
+          backfill_auto_generated: true,
+          backfill_confidence: 50,
+          linked_quote_id: job.quote_id
         });
 
         results.created_authorizations++;
