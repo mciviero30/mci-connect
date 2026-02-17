@@ -97,7 +97,26 @@ export default function JobDetails() {
   } : null;
 
   const updateJobMutation = useMutation({
-    mutationFn: (data) => base44.entities.Job.update(jobId, data),
+    mutationFn: async (data) => {
+      // VERIFICATION LOG - Job update
+      console.log('📊 [JOB VERIFICATION] UPDATE PAYLOAD:', {
+        job_id: jobId,
+        fields_updating: Object.keys(data),
+        contract_amount: data.contract_amount,
+        estimated_hours: data.estimated_hours
+      });
+      
+      const result = await base44.entities.Job.update(jobId, data);
+      
+      // VERIFICATION LOG - Job after update
+      console.log('📊 [JOB VERIFICATION] AFTER UPDATE:', {
+        job_id: result.id,
+        contract_amount: result.contract_amount,
+        estimated_hours: result.estimated_hours
+      });
+      
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job', jobId] });
       toast.success(language === 'es' ? 'Trabajo actualizado' : 'Job updated');

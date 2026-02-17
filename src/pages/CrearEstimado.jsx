@@ -293,8 +293,24 @@ export default function CrearEstimado() {
     mutationFn: async (quoteData) => {
       console.log('Creating quote with data:', quoteData);
       
+      // VERIFICATION LOG - Quote before normalization
+      console.log('📊 [QUOTE VERIFICATION] RAW PAYLOAD:', quoteData.items.map(i => ({
+        item_name: i.item_name,
+        quantity_sent: i.quantity,
+        auto_calculated: i.auto_calculated,
+        manual_override: i.manual_override
+      })));
+      
       // Step 1: Normalize and validate data
       const normalizedData = normalizeQuoteForSave(quoteData);
+      
+      // VERIFICATION LOG - Quote after normalization
+      console.log('📊 [QUOTE VERIFICATION] NORMALIZED PAYLOAD:', normalizedData.items.map(i => ({
+        item_name: i.item_name,
+        quantity_normalized: i.quantity,
+        auto_calculated: i.auto_calculated,
+        manual_override: i.manual_override
+      })));
       
       // Step 2: Generate quote number via backend function (thread-safe)
       const response = await generateQuoteNumber({});
@@ -331,6 +347,15 @@ export default function CrearEstimado() {
 
       console.log('Final quote data (normalized):', finalData);
       const result = await base44.entities.Quote.create(finalData);
+      
+      // VERIFICATION LOG - Quote after DB save
+      console.log('📊 [QUOTE VERIFICATION] LOADED FROM DB:', result.items.map(i => ({
+        item_name: i.item_name,
+        quantity_loaded: i.quantity,
+        auto_calculated: i.auto_calculated,
+        manual_override: i.manual_override
+      })));
+      
       console.log('Quote created successfully:', result);
       return result;
     },
@@ -369,8 +394,22 @@ export default function CrearEstimado() {
         normalizedData.status = 'sent';
       }
 
+      // VERIFICATION LOG - Quote update
+      console.log('📊 [QUOTE VERIFICATION] UPDATE PAYLOAD:', normalizedData.items.map(i => ({
+        item_name: i.item_name,
+        quantity_update: i.quantity
+      })));
+      
       console.log('Final quote data (normalized):', normalizedData);
-      return await base44.entities.Quote.update(editId, normalizedData);
+      const result = await base44.entities.Quote.update(editId, normalizedData);
+      
+      // VERIFICATION LOG - Quote after update reload
+      console.log('📊 [QUOTE VERIFICATION] RELOADED AFTER UPDATE:', result.items.map(i => ({
+        item_name: i.item_name,
+        quantity_reloaded: i.quantity
+      })));
+      
+      return result;
     },
     onSuccess: async (data) => {
       clearDraft(); // Clear draft after successful save
