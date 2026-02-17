@@ -147,7 +147,11 @@ export default function UnifiedOutOfAreaCalculator({
         round_trips: roundTrips,
         account_category: 'expense_travel_per_diem',
         duration_value: totalDrivingHours,
-        tech_count: 1
+        tech_count: 1,
+        // HYBRID OVERRIDE ARCHITECTURE
+        auto_calculated: true,
+        derived_quantity_snapshot: totalDrivingHours,
+        manual_override: false
       });
 
       // Miles per Vehicle item
@@ -163,7 +167,11 @@ export default function UnifiedOutOfAreaCalculator({
         team_id: metric.teamId,
         vehicle_count: vehicleCount,
         round_trips: roundTrips,
-        account_category: 'expense_travel_per_diem'
+        account_category: 'expense_travel_per_diem',
+        // HYBRID OVERRIDE ARCHITECTURE
+        auto_calculated: true,
+        derived_quantity_snapshot: totalMiles,
+        manual_override: false
       });
     });
 
@@ -201,12 +209,16 @@ export default function UnifiedOutOfAreaCalculator({
         unit: hotelItem?.unit || 'night',
         unit_price: hotelRate,
         total: totalHotelRooms * hotelRate,
-        is_travel_item: false,  // NOT a travel item - already includes all trips
+        is_travel_item: false,
         travel_item_type: 'hotel',
         account_category: 'expense_travel_per_diem',
-        round_trips: 1,  // Don't multiply - quantity already includes all trips
+        round_trips: 1,
         nights_per_trip: nightsPerTrip,
-        rooms_per_night: roomsPerNight
+        rooms_per_night: roomsPerNight,
+        // HYBRID OVERRIDE ARCHITECTURE
+        auto_calculated: true,
+        derived_quantity_snapshot: totalHotelRooms,
+        manual_override: false
       });
 
       // Per-Diem - derivedValues.totalCalendarDays already includes all trips
@@ -219,12 +231,16 @@ export default function UnifiedOutOfAreaCalculator({
         unit: perDiemItem?.unit || 'day',
         unit_price: perDiemRate,
         total: totalPerDiemDays * perDiemRate,
-        is_travel_item: false,  // NOT a travel item - already includes all trips
+        is_travel_item: false,
         travel_item_type: 'per_diem',
         account_category: 'expense_travel_per_diem',
-        round_trips: 1,  // Don't multiply - quantity already includes all trips
+        round_trips: 1,
         days_per_trip: daysPerTrip,
-        tech_count: techCount
+        tech_count: techCount,
+        // HYBRID OVERRIDE ARCHITECTURE
+        auto_calculated: true,
+        derived_quantity_snapshot: totalPerDiemDays,
+        manual_override: false
       });
     }
 
