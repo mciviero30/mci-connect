@@ -814,7 +814,7 @@ export default function CrearFactura() {
   const canSend = canSendDocument({ approval_status: effectiveApprovalStatus });
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-emerald-50">
       <div className="max-w-5xl mx-auto">
         <PageHeader
           title={editId ? t('editInvoice') : (billingType === 'time_materials' ? (language === 'es' ? 'Factura T&M' : 'T&M Invoice') : t('newInvoice'))}
@@ -822,7 +822,7 @@ export default function CrearFactura() {
         />
 
         {/* Fixed Total Bar */}
-        <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-[#3B9FF3] to-blue-600 rounded-2xl shadow-xl border-2 border-blue-300">
+        <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl shadow-xl border-2 border-emerald-300">
           <div className="flex items-center justify-between">
             <div className="text-white">
               <p className="text-sm opacity-90">{language === 'es' ? 'Total de la Factura' : 'Invoice Total'}</p>
@@ -1003,7 +1003,7 @@ export default function CrearFactura() {
                               key={team.id}
                               onClick={() => handleTeamToggle(team.id)}
                               className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                                isSelected ? 'bg-blue-100 text-blue-900' : 'hover:bg-slate-100'
+                                isSelected ? 'bg-emerald-100 text-emerald-900' : 'hover:bg-slate-100'
                               }`}
                             >
                               <Check className={`h-4 w-4 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
