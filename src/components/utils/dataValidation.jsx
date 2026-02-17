@@ -102,7 +102,7 @@ export function normalizeInvoiceForSave(invoiceData) {
   normalized.amount_paid = totals.amount_paid;
   normalized.balance = totals.balance;
   
-  // Step 5: Validate (throws if invalid)
+  // Step 6: Validate (throws if invalid)
   const validation = validateDocument(normalized);
   if (!validation.valid) {
     throw new Error(`Invoice validation failed: ${validation.errors.join(', ')}`);
