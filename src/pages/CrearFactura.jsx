@@ -930,128 +930,139 @@ export default function CrearFactura() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card shadow-xl border-slate-200">
+          <Card className="glass-card shadow-xl border-slate-200 mb-6">
             <CardHeader className="border-b border-slate-200">
               <CardTitle className="text-slate-900">{t('jobDetails')}</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label>{t('jobName')} *</Label>
+                  <Label className="text-slate-700">{t('selectExistingJob')} ({t('optional')})</Label>
+                  <Select value={formData.job_id} onValueChange={handleJobSelect}>
+                    <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                      <SelectValue placeholder={t('selectExistingJob')} />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-slate-200">
+                      {jobs.map(job => (
+                        <SelectItem key={job.id} value={job.id} className="text-slate-900">
+                          {job.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-slate-700">{t('jobName')} *</Label>
                   <Input
                     value={formData.job_name}
                     onChange={e => setFormData({ ...formData, job_name: e.target.value })}
-                    placeholder={t('jobDescription')}
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
-                <div>
-                  <Label>{t('jobAddress')}</Label>
+
+                <div className="md:col-span-2">
+                  <Label className="text-slate-700">{t('jobAddress')}</Label>
                   <AddressAutocomplete
                     value={formData.job_address}
                     onChange={(value) => setFormData({ ...formData, job_address: value })}
                     onPlaceSelected={(placeData) => {
-                      setFormData({
-                        ...formData,
-                        job_address: placeData.full_address || placeData.address
-                      });
+                      setFormData({ ...formData, job_address: placeData.full_address || placeData.address });
                     }}
                     placeholder={language === 'es' ? 'Ej: 123 Main St, Los Angeles, CA 90001' : 'e.g., 123 Main St, Los Angeles, CA 90001'}
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
+
                 <div className="md:col-span-2">
-                  <Label>{language === 'es' ? 'Detalles del Trabajo' : 'Work Details'} ({t('optional')})</Label>
+                  <Label className="text-slate-700">{language === 'es' ? 'Detalles del Trabajo' : 'Work Details'} ({t('optional')})</Label>
                   <Textarea
                     value={formData.work_details || ''}
                     onChange={e => setFormData({ ...formData, work_details: e.target.value })}
-                    className="h-20"
+                    className="h-20 bg-white border-slate-300 text-slate-900"
                     placeholder={language === 'es' ? 'Ej: Piso 2, Habitación 205, lado norte...' : 'e.g., Floor 2, Room 205, north side...'}
                   />
                 </div>
+
+                <div className="md:col-span-2">
+                  <Label className="text-slate-700">Teams {(formData.team_ids || []).length > 0 && <span className="text-blue-600">({(formData.team_ids || []).length} selected)</span>}</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full justify-between bg-white border-slate-300 text-slate-900 h-10"
+                      >
+                        <span className="truncate">
+                          {(formData.team_ids || []).length === 0
+                            ? (language === 'es' ? 'Seleccionar equipos' : 'Select teams')
+                            : (formData.team_names || []).join(', ')}
+                        </span>
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-2 bg-white border-slate-200" align="start">
+                      <div className="space-y-1 max-h-60 overflow-y-auto">
+                        {teams.map(team => {
+                          const isSelected = (formData.team_ids || []).includes(team.id);
+                          return (
+                            <div
+                              key={team.id}
+                              onClick={() => handleTeamToggle(team.id)}
+                              className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                                isSelected ? 'bg-blue-100 text-blue-900' : 'hover:bg-slate-100'
+                              }`}
+                            >
+                              <Check className={`h-4 w-4 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+                              <div className="flex-1">
+                                <div className="font-medium text-sm">{team.team_name}</div>
+                                {team.base_address && (
+                                  <div className="text-xs text-slate-500">📍 {team.base_address}</div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="md:col-span-2">
+                  <UnifiedOutOfAreaCalculator
+                    jobAddress={formData.job_address}
+                    selectedTeamIds={formData.team_ids || []}
+                    onAddAllItems={handleAddTravelItems}
+                    derivedValues={null}
+                    techCount={2}
+                    onTechCountChange={() => {}}
+                    roomsPerNight={1}
+                    onRoomsPerNightChange={() => {}}
+                    onStayConfigChange={() => {}}
+                  />
+                </div>
+
                 <div>
-                  <Label>{t('invoiceDate')}</Label>
+                  <Label className="text-slate-700">{t('invoiceDate')}</Label>
                   <Input
                     type="date"
                     value={formData.invoice_date}
                     onChange={e => setFormData({ ...formData, invoice_date: e.target.value })}
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
                 <div>
-                  <Label>{t('dueDate')}</Label>
+                  <Label className="text-slate-700">{t('dueDate')}</Label>
                   <Input
                     type="date"
                     value={formData.due_date}
                     onChange={e => setFormData({ ...formData, due_date: e.target.value })}
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Team Selection Card */}
-          <Card className="glass-card shadow-xl border-slate-200">
-            <CardHeader className="border-b border-slate-200">
-              <CardTitle className="text-slate-900">{language === 'es' ? 'Equipos Asignados' : 'Assigned Teams'}</CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                {teams.map(team => {
-                  const isSelected = (formData.team_ids || []).includes(team.id);
-                  return (
-                    <div
-                      key={team.id}
-                      className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Checkbox
-                          id={`team-${team.id}`}
-                          checked={isSelected}
-                          onCheckedChange={() => handleTeamToggle(team.id)}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm text-slate-900 dark:text-white truncate">
-                            {team.team_name}
-                          </p>
-                          <p className="text-xs text-slate-600 dark:text-slate-400 truncate">
-                            {team.location}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Out of Area Travel Section */}
-          {formData.job_address && (formData.team_ids || []).length > 0 && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id="out-of-area"
-                  checked={outOfAreaEnabled}
-                  onCheckedChange={setOutOfAreaEnabled}
-                />
-                <Label htmlFor="out-of-area" className="text-sm font-medium cursor-pointer">
-                  {language === 'es' ? 'Calcular viaje fuera de área' : 'Calculate out of area travel'}
-                </Label>
-              </div>
-
-              {outOfAreaEnabled && (
-                <OutOfAreaCalculator
-                  jobAddress={formData.job_address}
-                  selectedTeamIds={formData.team_ids || []}
-                  onAddTravelItems={handleAddTravelItems}
-                  isCalculating={isCalculatingTravel}
-                  setIsCalculating={setIsCalculatingTravel}
-                />
-              )}
-            </div>
-          )}
 
           <Card className="glass-card shadow-xl border-slate-200">
             <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between py-3">
