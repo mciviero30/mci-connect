@@ -170,21 +170,16 @@ export default function CrearFactura() {
   // Invoices display snapshot values only
 
   const handleAddTravelItems = (travelItems) => {
-    // Remove existing travel items first
+    // Accept either (allItems, stayData) from UnifiedOutOfAreaCalculator or (travelItems) directly
+    const items = Array.isArray(travelItems) ? travelItems : [];
     const nonTravelItems = formData.items.filter(item => !item.is_travel_item);
-    
-    // Add new travel items
-    const updatedItems = [...nonTravelItems, ...travelItems];
-    
-    setFormData(prev => ({
-      ...prev,
-      items: updatedItems
-    }));
+    const updatedItems = [...nonTravelItems, ...items];
 
-    toast({
-      title: language === 'es' ? `${travelItems.length} items de viaje agregados` : `${travelItems.length} travel items added`,
-      variant: 'success'
-    });
+    setFormData(prev => ({ ...prev, items: updatedItems }));
+
+    toast.success(
+      language === 'es' ? `${items.length} items de viaje agregados` : `${items.length} travel items added`
+    );
   };
 
   useEffect(() => {
