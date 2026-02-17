@@ -219,18 +219,18 @@ export default function ModernJobCard({ job, onEdit }) {
 
         {/* Financial Info - Enhanced visual hierarchy */}
         <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-4 shadow-sm">
+          <div className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 rounded-xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
                 {language === 'es' ? 'Contrato' : 'Contract'}
               </span>
-              <span className="text-lg font-bold text-[#507DB4] dark:text-[#6B9DD8]">
+              <span className="text-lg font-bold text-red-600 dark:text-red-400">
                 {formatCurrency(contractAmount)}
               </span>
             </div>
             
             {estimatedCost > 0 && (
-              <div className="flex items-center justify-between pt-3 border-t border-blue-100 dark:border-blue-800/30 mt-2">
+              <div className="flex items-center justify-between pt-3 border-t border-red-100 dark:border-red-800/30 mt-2">
                 <div className="flex items-center gap-1.5">
                   <TrendingUp className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
@@ -247,7 +247,7 @@ export default function ModernJobCard({ job, onEdit }) {
       </div>
 
         {/* Gradient Line at Bottom - More prominent */}
-        <div className={`h-1 bg-gradient-to-r from-${colorIndicator}-500 to-${colorIndicator}-600`} />
+        <div className="h-1 bg-gradient-to-r from-red-500 to-rose-600" />
       </Card>
     </SwipeableListItem>
   );
