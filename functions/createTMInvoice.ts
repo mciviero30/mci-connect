@@ -9,59 +9,111 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized: Admin access required' }, { status: 403 });
     }
 
-    const { job_id, start_date, end_date } = await req.json();
+    const { 
+      job_id, 
+      start_date, 
+      end_date,
+      manual_mode = false,
+      customer_id,
+      customer_name,
+      job_name,
+      job_address
+    } = await req.json();
 
-    if (!job_id || !start_date || !end_date) {
-      return Response.json({ error: 'Missing required fields: job_id, start_date, end_date' }, { status: 400 });
+    if (!start_date || !end_date) {
+      return Response.json({ error: 'Missing required fields: start_date, end_date' }, { status: 400 });
     }
 
-    // 1. Fetch Job
-    const jobs = await base44.asServiceRole.entities.Job.filter({ id: job_id });
-    if (jobs.length === 0) {
-      return Response.json({ error: 'Job not found' }, { status: 404 });
-    }
-    const job = jobs[0];
-
-    if (!job.authorization_id) {
-      return Response.json({ error: 'Job has no WorkAuthorization' }, { status: 400 });
+    if (manual_mode && (!customer_id || !job_name)) {
+      return Response.json({ error: 'Manual mode requires customer_id and job_name' }, { status: 400 });
     }
 
-    // 2. Fetch WorkAuthorization
-    const auths = await base44.asServiceRole.entities.WorkAuthorization.filter({ id: job.authorization_id });
-    if (auths.length === 0) {
-      return Response.json({ error: 'WorkAuthorization not found' }, { status: 404 });
-    }
-    const auth = auths[0];
-
-    // 3. ELIGIBILITY CHECK: Must be T&M authorization
-    if (auth.authorization_type !== 'tm') {
-      return Response.json({ 
-        error: 'T&M invoicing not allowed: Authorization type must be "tm"',
-        authorization_type: auth.authorization_type
-      }, { status: 400 });
+    if (!manual_mode && !job_id) {
+      return Response.json({ error: 'job_id required for existing job mode' }, { status: 400 });
     }
 
-    // 4. Fetch unbilled TimeEntries
-    const allTimeEntries = await base44.asServiceRole.entities.TimeEntry.filter({ job_id });
-    const unbilledTimeEntries = allTimeEntries.filter(entry => 
-      !entry.billed_at &&
-      entry.billable !== false &&
-      entry.date >= start_date &&
-      entry.date <= end_date &&
-      entry.status === 'approved'
-    );
+    let job = null;
+    let auth = null;
 
-    // 5. Fetch unbilled Expenses
-    const allExpenses = await base44.asServiceRole.entities.Expense.filter({ job_id });
-    const unbilledExpenses = allExpenses.filter(expense =>
-      !expense.billed_at &&
-      expense.billable === true &&
-      expense.date >= start_date &&
-      expense.date <= end_date &&
-      expense.status === 'approved'
-    );
+    if (manual_mode) {
+      // MANUAL MODE: Create WorkAuthorization on-the-fly
+      const customer = await base44.asServiceRole.entities.Customer.filter({ id: customer_id }).then(r => r[0]);
+      
+      auth = await base44.asServiceRole.entities.WorkAuthorization.create({
+        customer_id: customer_id,
+        customer_name: customer_name || customer?.name || '',
+        authorization_type: 'tm',
+        approval_source: 'verbal',
+        approved_at: new Date().toISOString(),
+        verified_by_user_id: user.id,
+        verified_by_email: user.email,
+        verified_by_name: user.full_name,
+        verification_notes: 'Created automatically from T&M Invoice Builder (manual mode)'
+      });
 
-    if (unbilledTimeEntries.length === 0 && unbilledExpenses.length === 0) {
+      job = {
+        id: null, // No job yet - will create on invoice save
+        customer_id: customer_id,
+        customer_name: customer_name || customer?.name || '',
+        name: job_name,
+        address: job_address || '',
+        authorization_id: auth.id,
+        regular_hourly_rate: 60
+      };
+    } else {
+      // EXISTING JOB MODE
+      const jobs = await base44.asServiceRole.entities.Job.filter({ id: job_id });
+      if (jobs.length === 0) {
+        return Response.json({ error: 'Job not found' }, { status: 404 });
+      }
+      job = jobs[0];
+
+      if (!job.authorization_id) {
+        return Response.json({ error: 'Job has no WorkAuthorization' }, { status: 400 });
+      }
+
+      // Fetch WorkAuthorization
+      const auths = await base44.asServiceRole.entities.WorkAuthorization.filter({ id: job.authorization_id });
+      if (auths.length === 0) {
+        return Response.json({ error: 'WorkAuthorization not found' }, { status: 404 });
+      }
+      auth = auths[0];
+
+      // ELIGIBILITY CHECK: Must be T&M authorization
+      if (auth.authorization_type !== 'tm') {
+        return Response.json({ 
+          error: 'T&M invoicing not allowed: Authorization type must be "tm"',
+          authorization_type: auth.authorization_type
+        }, { status: 400 });
+      }
+    }
+
+    let unbilledTimeEntries = [];
+    let unbilledExpenses = [];
+
+    if (job.id) {
+      // EXISTING JOB: Fetch unbilled time/expenses
+      const allTimeEntries = await base44.asServiceRole.entities.TimeEntry.filter({ job_id: job.id });
+      unbilledTimeEntries = allTimeEntries.filter(entry => 
+        !entry.billed_at &&
+        entry.billable !== false &&
+        entry.date >= start_date &&
+        entry.date <= end_date &&
+        entry.status === 'approved'
+      );
+
+      const allExpenses = await base44.asServiceRole.entities.Expense.filter({ job_id: job.id });
+      unbilledExpenses = allExpenses.filter(expense =>
+        !expense.billed_at &&
+        expense.billable === true &&
+        expense.date >= start_date &&
+        expense.date <= end_date &&
+        expense.status === 'approved'
+      );
+    }
+
+    // MANUAL MODE: Allow empty invoice (user will add line items later)
+    if (!manual_mode && unbilledTimeEntries.length === 0 && unbilledExpenses.length === 0) {
       return Response.json({ error: 'No unbilled time or expenses in date range' }, { status: 400 });
     }
 
@@ -125,10 +177,10 @@ Deno.serve(async (req) => {
       invoice_number: invoiceNumber.invoice_number,
       customer_id: job.customer_id,
       customer_name: job.customer_name,
-      job_id: job.id,
+      job_id: job.id || null, // NULL for manual mode (no job yet)
       job_name: job.name,
       job_address: job.address,
-      authorization_id: job.authorization_id,
+      authorization_id: job.authorization_id || auth.id,
       invoice_date: new Date().toISOString().split('T')[0],
       due_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       billing_type: 'tm',
@@ -155,21 +207,23 @@ Deno.serve(async (req) => {
 
     const invoice = await base44.asServiceRole.entities.Invoice.create(invoiceData);
 
-    // 9. Mark TimeEntries as billed (LOCK)
-    const now = new Date().toISOString();
-    for (const entry of unbilledTimeEntries) {
-      await base44.asServiceRole.entities.TimeEntry.update(entry.id, {
-        billed_at: now,
-        invoice_id: invoice.id
-      });
-    }
+    // 9. Mark TimeEntries as billed (LOCK) - only if not manual mode
+    if (!manual_mode && unbilledTimeEntries.length > 0) {
+      const now = new Date().toISOString();
+      for (const entry of unbilledTimeEntries) {
+        await base44.asServiceRole.entities.TimeEntry.update(entry.id, {
+          billed_at: now,
+          invoice_id: invoice.id
+        });
+      }
 
-    // 10. Mark Expenses as billed (LOCK)
-    for (const expense of unbilledExpenses) {
-      await base44.asServiceRole.entities.Expense.update(expense.id, {
-        billed_at: now,
-        invoice_id: invoice.id
-      });
+      // 10. Mark Expenses as billed (LOCK)
+      for (const expense of unbilledExpenses) {
+        await base44.asServiceRole.entities.Expense.update(expense.id, {
+          billed_at: now,
+          invoice_id: invoice.id
+        });
+      }
     }
 
     return Response.json({
