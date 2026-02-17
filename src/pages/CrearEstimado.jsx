@@ -1074,7 +1074,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-blue-50">
+    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-sky-50">
       <div className="max-w-5xl mx-auto">
         <PageHeader
           title={editId ? t('editQuote') : t('newQuote')}
@@ -1092,7 +1092,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
         )}
 
         {/* NEW: Fixed Total Bar */}
-        <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-[#3B9FF3] to-blue-600 rounded-2xl shadow-xl border-2 border-blue-300">
+        <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-xl border-2 border-blue-300">
           <div className="flex items-center justify-between">
             <div className="text-white">
               <p className="text-sm opacity-90">{language === 'es' ? 'Total de la Cotización' : 'Quote Total'}</p>
@@ -1252,7 +1252,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                               onClick={() => handleTeamToggle(team.id)}
                               className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors ${
                                 isSelected 
-                                  ? 'bg-blue-100 text-blue-900' 
+                                  ? 'bg-blue-100 text-blue-900'
                                   : 'hover:bg-slate-100'
                               }`}
                             >
@@ -1379,7 +1379,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                   <FileText className="w-4 h-4 mr-2" />
                   Items Match
                 </Button>
-                <Button type="button" onClick={addItem} size="sm" className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white">
+                <Button type="button" onClick={addItem} size="sm" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white">
                   <Plus className="w-4 h-4 mr-2" />
                   {t('addItem')}
                 </Button>
@@ -1523,7 +1523,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
             <Button
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
-              className="bg-gradient-to-r from-[#3B9FF3] to-[#2A8FE3] text-white"
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white"
             >
               <Save className="w-4 h-4 mr-2" />
               {(createMutation.isPending || updateMutation.isPending) ? t('saving') : t('save')}

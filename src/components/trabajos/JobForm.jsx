@@ -712,7 +712,7 @@ export default function JobForm({ job, onSubmit, onCancel, isProcessing }) {
           <Button
             type="submit"
             disabled={isProcessing || isGeocodingAddress}
-            className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white shadow-lg"
+            className="bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-lg"
           >
             {isGeocodingAddress ? (language === 'es' ? 'Obteniendo GPS...' : 'Getting GPS...') : 
              isProcessing ? (language === 'es' ? 'Guardando...' : 'Saving...') : 
