@@ -1,5 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { lockInvoiceOnSent } from '../components/domain/financials/invoiceProfitCalculations.js';
+
+function lockInvoiceOnSent(invoice) {
+  return {
+    ...invoice,
+    margin_locked: true,
+    commission_locked: true,
+    locked_at: new Date().toISOString(),
+    locked_reason: 'Invoice sent to customer - financial data frozen'
+  };
+}
 
 /**
  * ============================================================================
