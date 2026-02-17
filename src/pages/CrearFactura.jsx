@@ -160,9 +160,9 @@ export default function CrearFactura() {
   // These states exist ONLY for legacy support during manual creation
   // When Invoice is created from Quote, these are ignored
   // Invoice uses snapshot quantities from Quote, never recalculates
-  const [projectTechCount] = useState(2);
+  const [projectTechCount, setProjectTechCount] = useState(2);
   const [travelTimeHours] = useState(0);
-  const [roomsPerNight] = useState(1);
+  const [roomsPerNight, setRoomsPerNight] = useState(1);
   
   // ⚠️ WARNING: DO NOT add useMemo with computeQuoteDerived here
   // Invoices display snapshot values only
@@ -968,13 +968,13 @@ export default function CrearFactura() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label className="text-slate-700">{language === 'es' ? 'Detalles del Trabajo' : 'Work Details'} ({t('optional')})</Label>
-                  <Textarea
-                    value={formData.work_details || ''}
-                    onChange={e => setFormData({ ...formData, work_details: e.target.value })}
-                    className="h-20 bg-white border-slate-300 text-slate-900"
-                    placeholder={language === 'es' ? 'Ej: Piso 2, Habitación 205, lado norte...' : 'e.g., Floor 2, Room 205, north side...'}
-                  />
+                   <Label className="text-slate-700">{language === 'es' ? 'Detalles del Trabajo' : 'Work Details'} ({t('optional')})</Label>
+                   <Textarea
+                     value={formData.work_details || ''}
+                     onChange={e => setFormData({ ...formData, work_details: e.target.value })}
+                     className="h-20 bg-white border-slate-300 text-slate-900"
+                     placeholder={language === 'es' ? 'Ej: Piso 2, Habitación 205, lado norte...' : 'e.g., Floor 2, Room 205, north side...'}
+                   />
                 </div>
 
                 <div className="md:col-span-2">
@@ -1022,17 +1022,17 @@ export default function CrearFactura() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <UnifiedOutOfAreaCalculator
-                    jobAddress={formData.job_address}
-                    selectedTeamIds={formData.team_ids || []}
-                    onAddAllItems={handleAddTravelItems}
-                    derivedValues={null}
-                    techCount={2}
-                    onTechCountChange={() => {}}
-                    roomsPerNight={1}
-                    onRoomsPerNightChange={() => {}}
-                    onStayConfigChange={() => {}}
-                  />
+                   <UnifiedOutOfAreaCalculator
+                     jobAddress={formData.job_address}
+                     selectedTeamIds={formData.team_ids || []}
+                     onAddAllItems={handleAddTravelItems}
+                     derivedValues={null}
+                     techCount={projectTechCount}
+                     onTechCountChange={setProjectTechCount}
+                     roomsPerNight={roomsPerNight}
+                     onRoomsPerNightChange={setRoomsPerNight}
+                     onStayConfigChange={() => {}}
+                   />
                 </div>
 
                 <div>
