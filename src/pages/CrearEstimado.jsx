@@ -133,11 +133,7 @@ export default function CrearEstimado() {
 
   const [stayConfig, setStayConfig] = useState({ roundTrips: 1, daysPerTrip: 2, nightsPerTrip: 2, total_nights: null, total_calendar_days: null });
 
-  // Auto-calculate rooms per night based on tech count (max 2 techs per room)
-  useEffect(() => {
-    const calculatedRooms = Math.ceil(projectTechCount / 2);
-    setRoomsPerNight(calculatedRooms);
-  }, [projectTechCount]);
+
   
   // Draft persistence - auto-save to localStorage
   const { clearDraft } = useDraftPersistence({
