@@ -1035,17 +1035,28 @@ export default function CrearFactura() {
 
                 <div className="md:col-span-2">
                    <UnifiedOutOfAreaCalculator
-                     jobAddress={formData.job_address}
-                     selectedTeamIds={formData.team_ids || []}
-                     onAddAllItems={handleAddTravelItems}
-                     derivedValues={null}
-                     techCount={projectTechCount}
-                     onTechCountChange={setProjectTechCount}
-                     roomsPerNight={roomsPerNight}
-                     onRoomsPerNightChange={setRoomsPerNight}
-                     onStayConfigChange={() => {}}
-                   />
-                </div>
+                      jobAddress={formData.job_address}
+                      selectedTeamIds={formData.team_ids || []}
+                      onAddAllItems={handleAddTravelItems}
+                      derivedValues={null}
+                      techCount={projectTechCount}
+                      onTechCountChange={(newCount) => {
+                        setProjectTechCount(newCount);
+                        // CRITICAL: Update tech_count in all existing travel items when technicians change
+                        const updatedItems = formData.items.map(item => {
+                          if (item.is_travel_item && item.travel_item_type === 'driving_time') {
+                            // Preserve the travel_item data, just update tech_count
+                            return { ...item, tech_count: newCount };
+                          }
+                          return item;
+                        });
+                        setFormData(prev => ({ ...prev, items: updatedItems }));
+                      }}
+                      roomsPerNight={roomsPerNight}
+                      onRoomsPerNightChange={setRoomsPerNight}
+                      onStayConfigChange={() => {}}
+                    />
+                 </div>
 
                 <div>
                   <Label className="text-slate-700">{t('invoiceDate')}</Label>
