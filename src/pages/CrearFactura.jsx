@@ -27,7 +27,7 @@ import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
-import UnifiedOutOfAreaCalculator from "../components/quotes/UnifiedOutOfAreaCalculator";
+
 import { Badge } from "@/components/ui/badge";
 /**
  * ============================================================================
@@ -154,31 +154,7 @@ export default function CrearFactura() {
   const [generatingFromHours, setGeneratingFromHours] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
   
-  // ============================================================================
-  // CAPA 7 - NO DERIVED CALCULATIONS IN INVOICE
-  // ============================================================================
-  // These states exist ONLY for legacy support during manual creation
-  // When Invoice is created from Quote, these are ignored
-  // Invoice uses snapshot quantities from Quote, never recalculates
-  const [projectTechCount, setProjectTechCount] = useState(2);
-  const [travelTimeHours] = useState(0);
-  const [roomsPerNight, setRoomsPerNight] = useState(1);
-  
-  // ⚠️ WARNING: DO NOT add useMemo with computeQuoteDerived here
-  // Invoices display snapshot values only
 
-  const handleAddTravelItems = (allItemsOrTravel, _stayData) => {
-    // UnifiedOutOfAreaCalculator calls onAddAllItems(allItems, stayData)
-    const items = Array.isArray(allItemsOrTravel) ? allItemsOrTravel : [];
-    const nonTravelItems = formData.items.filter(item => !item.is_travel_item);
-    const updatedItems = [...nonTravelItems, ...items];
-
-    setFormData(prev => ({ ...prev, items: updatedItems }));
-
-    toast.success(
-      language === 'es' ? `${items.length} items de viaje agregados` : `${items.length} travel items added`
-    );
-  };
 
   useEffect(() => {
     if (existingInvoice && !loadingInvoice) {
@@ -1033,30 +1009,7 @@ export default function CrearFactura() {
                   </Popover>
                 </div>
 
-                <div className="md:col-span-2">
-                   <UnifiedOutOfAreaCalculator
-                      jobAddress={formData.job_address}
-                      selectedTeamIds={formData.team_ids || []}
-                      onAddAllItems={handleAddTravelItems}
-                      derivedValues={null}
-                      techCount={projectTechCount}
-                      onTechCountChange={(newCount) => {
-                        setProjectTechCount(newCount);
-                        // CRITICAL: Update tech_count in all existing travel items when technicians change
-                        const updatedItems = formData.items.map(item => {
-                          if (item.is_travel_item && item.travel_item_type === 'driving_time') {
-                            // Preserve the travel_item data, just update tech_count
-                            return { ...item, tech_count: newCount };
-                          }
-                          return item;
-                        });
-                        setFormData(prev => ({ ...prev, items: updatedItems }));
-                      }}
-                      roomsPerNight={roomsPerNight}
-                      onRoomsPerNightChange={setRoomsPerNight}
-                      onStayConfigChange={() => {}}
-                    />
-                 </div>
+
 
                 <div>
                   <Label className="text-slate-700">{t('invoiceDate')}</Label>
