@@ -533,32 +533,15 @@ export default function CrearFactura() {
       
       return result;
     },
-    onSuccess: async (data) => {
-      console.log('Invoice creation successful, invalidating queries...');
-      
-      // DEV LOG: Verify item_name persistence after save
-      if (import.meta.env.DEV) {
-        const saved = await base44.entities.Invoice.filter({ id: data.id }).then(r => r[0]);
-        console.log("[Invoice after save DB read]", saved.items.map(i => ({
-          item_name: i.item_name,
-          description: i.description,
-          calculation_type: i.calculation_type,
-          tech_count: i.tech_count,
-          duration_value: i.duration_value,
-          is_travel_item: i.is_travel_item
-        })));
-      }
-      
-      await queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      await queryClient.invalidateQueries({ queryKey: ['jobs'] });
-      await queryClient.refetchQueries({ queryKey: ['invoices'] });
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Invoice'] });
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
       toast({
         title: language === 'es' ? 'Factura creada exitosamente' : 'Invoice created successfully',
         variant: 'success'
       });
-      setTimeout(() => {
-        navigate(createPageUrl(`VerFactura?id=${data.id}`));
-      }, 800);
+      navigate(createPageUrl(`VerFactura?id=${data.id}`));
     },
     onError: (error) => {
       console.error('Error creating invoice:', error);
