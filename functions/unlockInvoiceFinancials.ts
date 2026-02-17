@@ -1,5 +1,22 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { unlockInvoiceForEditing } from '../components/domain/financials/invoiceProfitCalculations.js';
+
+function unlockInvoiceForEditing(invoice, unlocked_by_user_id, unlock_reason) {
+  return {
+    ...invoice,
+    margin_locked: false,
+    commission_locked: false,
+    unlocked_at: new Date().toISOString(),
+    unlocked_by_user_id,
+    unlock_reason,
+    unlock_audit: {
+      timestamp: new Date().toISOString(),
+      user_id: unlocked_by_user_id,
+      reason: unlock_reason,
+      previous_profit: invoice.profit,
+      previous_commission: invoice.commission_amount
+    }
+  };
+}
 
 /**
  * ============================================================================
