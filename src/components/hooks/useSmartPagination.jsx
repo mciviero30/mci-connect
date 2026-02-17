@@ -28,8 +28,8 @@ export function useSmartPagination({
       
       // Fetch pageSize + 1 to check if there's a next page
       const results = Object.keys(filters).length > 0
-        ? await base44.entities[entityName].filter(filters, sortBy, pageSize + 1)
-        : await base44.entities[entityName].list(sortBy, pageSize + 1);
+        ? await base44.entities[entityName].filter(filters, sortBy, pageSize + 1, skip)
+        : await base44.entities[entityName].list(sortBy, pageSize + 1, skip);
 
       const hasMore = results.length > pageSize;
       const items = hasMore ? results.slice(0, pageSize) : results;
