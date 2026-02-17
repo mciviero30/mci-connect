@@ -978,6 +978,15 @@ export default function CrearFactura() {
                     placeholder={language === 'es' ? 'Ej: 123 Main St, Los Angeles, CA 90001' : 'e.g., 123 Main St, Los Angeles, CA 90001'}
                   />
                 </div>
+                <div className="md:col-span-2">
+                  <Label>{language === 'es' ? 'Detalles del Trabajo' : 'Work Details'} ({t('optional')})</Label>
+                  <Textarea
+                    value={formData.work_details || ''}
+                    onChange={e => setFormData({ ...formData, work_details: e.target.value })}
+                    className="h-20"
+                    placeholder={language === 'es' ? 'Ej: Piso 2, Habitación 205, lado norte...' : 'e.g., Floor 2, Room 205, north side...'}
+                  />
+                </div>
                 <div>
                   <Label>{t('invoiceDate')}</Label>
                   <Input
