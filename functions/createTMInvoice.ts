@@ -186,12 +186,12 @@ Deno.serve(async (req) => {
       billing_type: 'tm',
       period_start: start_date,
       period_end: end_date,
-      items: [...laborItems, ...expenseItems],
-      subtotal,
-      tax_rate,
-      tax_amount,
-      total,
-      balance: total,
+      items: manual_mode ? (body.items || []) : [...laborItems, ...expenseItems],
+      subtotal: manual_mode ? (body.subtotal || subtotal) : subtotal,
+      tax_rate: manual_mode ? (body.tax_rate || 0) : tax_rate,
+      tax_amount: manual_mode ? (body.tax_amount || 0) : tax_amount,
+      total: manual_mode ? (body.total || total) : total,
+      balance: manual_mode ? (body.total || total) : total,
       time_entries_summary: {
         total_hours: totalHours,
         total_labor_cost: laborTotal
