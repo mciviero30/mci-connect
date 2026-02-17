@@ -169,9 +169,9 @@ export default function CrearFactura() {
   // ⚠️ WARNING: DO NOT add useMemo with computeQuoteDerived here
   // Invoices display snapshot values only
 
-  const handleAddTravelItems = (travelItems) => {
-    // Accept either (allItems, stayData) from UnifiedOutOfAreaCalculator or (travelItems) directly
-    const items = Array.isArray(travelItems) ? travelItems : [];
+  const handleAddTravelItems = (allItemsOrTravel, _stayData) => {
+    // UnifiedOutOfAreaCalculator calls onAddAllItems(allItems, stayData)
+    const items = Array.isArray(allItemsOrTravel) ? allItemsOrTravel : [];
     const nonTravelItems = formData.items.filter(item => !item.is_travel_item);
     const updatedItems = [...nonTravelItems, ...items];
 
