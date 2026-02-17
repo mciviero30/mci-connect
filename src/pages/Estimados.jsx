@@ -72,7 +72,7 @@ export default function Estimados() {
   } = useSmartPagination({
     entityName: 'Quote',
     filters: paginationFilters,
-    sortBy: '-quote_number',
+    sortBy: '-created_date',
     pageSize: 20,
     enabled: !!user
   });

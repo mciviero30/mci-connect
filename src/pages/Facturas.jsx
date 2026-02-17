@@ -136,7 +136,7 @@ export default function Facturas() {
   } = useSmartPagination({
     entityName: 'Invoice',
     filters: paginationFilters,
-    sortBy: '-invoice_number',
+    sortBy: '-created_date',
     pageSize: 20,
     enabled: !!user
   });
