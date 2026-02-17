@@ -829,7 +829,7 @@ export default function CrearFactura() {
         />
 
         {/* Fixed Total Bar */}
-        <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-emerald-600 to-green-600 rounded-2xl shadow-xl border-2 border-emerald-300">
+        <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-[#3B9FF3] to-blue-600 rounded-2xl shadow-xl border-2 border-blue-300">
           <div className="flex items-center justify-between">
             <div className="text-white">
               <p className="text-sm opacity-90">{language === 'es' ? 'Total de la Factura' : 'Invoice Total'}</p>
