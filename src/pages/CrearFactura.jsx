@@ -132,6 +132,7 @@ export default function CrearFactura() {
     job_name: "",
     job_id: "",
     job_address: "",
+    work_details: "",
     team_id: "",
     team_name: "",
     team_ids: [],
