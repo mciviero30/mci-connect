@@ -879,30 +879,21 @@ export default function CrearFactura() {
         {/* Wrap all content in a form. For existing invoices, prevent default submission, as buttons handle mutations. */}
         {/* For new invoices (editId is null), onSubmit will trigger handleSubmit for initial draft creation. */}
         <form onSubmit={editId ? (e) => e.preventDefault() : handleSubmit} className="space-y-6">
-          <Card className="glass-card shadow-xl border-slate-200">
+          <Card className="glass-card shadow-xl border-slate-200 mb-6">
             <CardHeader className="border-b border-slate-200">
               <CardTitle className="text-slate-900">{t('customerInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="md:col-span-2">
-                  <Label>{t('selectCustomer')} ({t('optional')})</Label>
+                <div>
+                  <Label className="text-slate-700">{t('selectCustomer')}</Label>
                   <Select value={formData.customer_id || ""} onValueChange={handleCustomerSelect}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('selectExistingCustomer')}>
-                        {formData.customer_id ? (() => {
-                          const selected = customers.find(c => c.id === formData.customer_id);
-                          if (!selected) return t('selectExistingCustomer');
-                          // ONLY show first and last name (no company)
-                          return (selected.first_name || selected.last_name)
-                            ? `${selected.first_name || ''} ${selected.last_name || ''}`.trim()
-                            : selected.email || 'Sin nombre';
-                        })() : t('selectExistingCustomer')}
-                      </SelectValue>
+                    <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                      <SelectValue placeholder={t('selectCustomer')} />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white border-slate-200">
                       {sortCustomersByName(customers.filter(c => c.status === 'active')).map(customer => (
-                        <SelectItem key={customer.id} value={customer.id}>
+                        <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
                           {getCustomerDisplayName(customer)}
                         </SelectItem>
                       ))}
@@ -911,44 +902,29 @@ export default function CrearFactura() {
                 </div>
 
                 <div>
-                  <Label>{t('customerName')} *</Label>
+                  <Label className="text-slate-700">{t('customerName')} *</Label>
                   <Input
                     value={formData.customer_name}
                     onChange={e => setFormData({ ...formData, customer_name: e.target.value })}
-                    placeholder={t('fullName')}
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
                 <div>
-                  <Label>{t('customerEmail')} *</Label>
+                  <Label className="text-slate-700">{t('customerEmail')}</Label>
                   <Input
                     type="email"
                     value={formData.customer_email}
                     onChange={e => setFormData({ ...formData, customer_email: e.target.value })}
-                    placeholder="customer@example.com"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
                 </div>
                 <div>
-                  <Label>{t('phone')}</Label>
+                  <Label className="text-slate-700">{t('customerPhone')}</Label>
                   <Input
                     value={formData.customer_phone}
                     onChange={e => setFormData({ ...formData, customer_phone: e.target.value })}
-                    placeholder="(555) 123-4567"
+                    className="bg-white border-slate-300 text-slate-900"
                   />
-                </div>
-                <div>
-                  <Label>{t('job')} ({t('optional')})</Label>
-                  <Select value={formData.job_id} onValueChange={handleJobSelect}>
-                    <SelectTrigger>
-                      <SelectValue placeholder={t('selectExistingJob')} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {jobs.map(job => (
-                        <SelectItem key={job.id} value={job.id}>
-                          {job.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
             </CardContent>
