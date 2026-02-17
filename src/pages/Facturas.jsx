@@ -185,15 +185,20 @@ export default function Facturas() {
         invoice_number: newInvoiceNumber,
         status: 'draft',
         invoice_date: new Date().toISOString().split('T')[0],
-        due_date: '',
+        due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
         amount_paid: 0,
         balance: invoice.total,
+        created_by_user_id: user?.id,
+        approval_status: 'approved',
+        approved_by: user?.email,
+        approved_at: new Date().toISOString()
       };
       delete newInvoice.id;
       delete newInvoice.created_date;
       delete newInvoice.updated_date;
       delete newInvoice.created_by;
       delete newInvoice.payment_date;
+      delete newInvoice.transaction_id;
       
       return base44.entities.Invoice.create(newInvoice);
     },
