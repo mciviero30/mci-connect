@@ -150,7 +150,6 @@ export default function CrearFactura() {
     quote_id: quoteId || null
   });
 
-  const [outOfAreaEnabled, setOutOfAreaEnabled] = useState(false);
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
   const [generatingFromHours, setGeneratingFromHours] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
