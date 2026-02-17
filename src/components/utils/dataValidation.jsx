@@ -67,25 +67,30 @@ export function normalizeInvoiceForSave(invoiceData) {
   // Step 1: Normalize common document fields (preserves ALL fields)
   const normalized = normalizeDocumentBase(invoiceData);
   
-  // Step 2: Filter out invalid items BEFORE normalization
-  normalized.items = (normalized.items || []).filter(isValidLineItem);
+  // Step 2: Normalize items FIRST to ensure quantity is numeric
+  normalized.items = (normalized.items || []).map(item => ({
+    ...item,
+    quantity: Number(item.quantity) || 0,
+    unit_price: Number(item.unit_price) || 0,
+    item_name: String(item.item_name || ''),
+    description: String(item.description || '')
+  }));
+  
+  // Step 3: Filter out invalid items AFTER normalization
+  normalized.items = normalized.items.filter(isValidLineItem);
   
   // Sanity check: Must have at least one valid item
   if (normalized.items.length === 0) {
     throw new Error('Invoice must have at least one valid line item');
   }
   
-  // Step 3: Normalize remaining valid items
-  normalized.items = normalizeInvoiceItems(normalized.items);
-  
-  // Sanity check: Ensure item_name and description are strings (never null)
+  // Step 4: Recalculate item totals
   normalized.items = normalized.items.map(item => ({
     ...item,
-    item_name: String(item.item_name || ''),
-    description: String(item.description || '')
+    total: (item.quantity || 0) * (item.unit_price || 0)
   }));
   
-  // Step 4: Recalculate totals (invoice-specific with amount_paid)
+  // Step 5: Recalculate totals (invoice-specific with amount_paid)
   const totals = calculateInvoiceTotals(
     normalized.items, 
     normalized.tax_rate,
