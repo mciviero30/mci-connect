@@ -252,7 +252,10 @@ export default function CrearFactura() {
           unit: (item.unit ?? item.uom ?? 'pcs'),
           // SNAPSHOT: Keep quantity as-is from quote
           quantity: item.quantity,
-          total: item.quantity * (item.unit_price || 0)
+          total: item.quantity * (item.unit_price || 0),
+          // REMOVE auto-calculation flags in invoices - they're editable snapshots
+          auto_calculated: false,
+          manual_override: false
         }));
 
         setFormData(prevFormData => ({
