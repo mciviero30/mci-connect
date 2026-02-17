@@ -303,10 +303,10 @@ export default function CrearFactura() {
   // ============================================================================
   // Invoice uses snapshot quantities from Quote
   // NO enrichment, NO recalculation of derived values
-  const calculateTotals = () => {
+  const totals = useMemo(() => {
     // Use items as-is (snapshot from quote or manual entry)
     return calculateInvoiceTotals(formData.items, formData.tax_rate, formData.amount_paid || 0);
-  };
+  }, [formData.items, formData.tax_rate, formData.amount_paid]);
 
   const handleItemChange = (index, field, value) => {
     const newItems = [...formData.items];
@@ -474,10 +474,14 @@ export default function CrearFactura() {
       // Step 3: Build final data with generated number + approval workflow
       const approvalStatus = requiresApproval ? 'pending_approval' : 'approved';
       
+      // CRITICAL: Recalculate balance from totals
+      const recalculatedBalance = normalizedData.total - (normalizedData.amount_paid || 0);
+      
       // WRITE GUARD — STRICT MODE for Invoice (blocks without user_id)
       const finalData = {
         ...normalizedData,
         invoice_number,
+        balance: recalculatedBalance,
         status: 'draft',
         approval_status: approvalStatus,
         created_by_user_id: user?.id,
@@ -619,6 +623,10 @@ export default function CrearFactura() {
         amount_paid: existingInvoice?.amount_paid || 0, // Preserve existing payments
       });
 
+      // CRITICAL: Recalculate balance from updated totals
+      const recalculatedBalance = normalizedData.total - (normalizedData.amount_paid || 0);
+      normalizedData.balance = recalculatedBalance;
+
       console.log('Final invoice data (normalized):', normalizedData);
       return base44.entities.Invoice.update(editId, normalizedData);
     },
@@ -671,6 +679,10 @@ export default function CrearFactura() {
         estimated_hours,
         amount_paid: editId ? existingInvoice?.amount_paid || 0 : 0,
       });
+
+      // CRITICAL: Recalculate balance from updated totals
+      const recalculatedBalance = normalizedData.total - (normalizedData.amount_paid || 0);
+      normalizedData.balance = recalculatedBalance;
 
       // Ensure we have an invoice number
       let invoice_number = normalizedData.invoice_number;
@@ -775,7 +787,7 @@ export default function CrearFactura() {
     }
   });
 
-  const { subtotal, tax_amount, total } = calculateTotals();
+  const { subtotal, tax_amount, total, balance } = totals;
 
   if (editId && loadingInvoice) {
     return <div className="p-8">{t('loading')}...</div>;
