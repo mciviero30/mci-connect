@@ -430,6 +430,15 @@ export default function CrearFactura() {
       // Step 1: Normalize and validate data
       const normalizedData = normalizeInvoiceForSave(invoiceData);
       
+      // DEBUG: Log quantities BEFORE save
+      if (import.meta.env.DEV) {
+        console.log('[QUANTITY SNAPSHOT] BEFORE SAVE:', normalizedData.items.map(i => ({
+          item_name: i.item_name,
+          sent_quantity: invoiceData.items[normalizedData.items.indexOf(i)]?.quantity,
+          saved_quantity: i.quantity
+        })));
+      }
+      
       // Step 2: Generate invoice number via backend function (thread-safe)
       if (import.meta.env.DEV) {
         console.log('[InvoiceNumber] calling backend generateInvoiceNumber()');
@@ -501,6 +510,16 @@ export default function CrearFactura() {
       }
       
       const result = await base44.entities.Invoice.create(finalData);
+      
+      // DEBUG: Log quantities AFTER reload
+      if (import.meta.env.DEV) {
+        console.log('[QUANTITY SNAPSHOT] AFTER SAVE & RELOAD:', result.items.map(i => ({
+          item_name: i.item_name,
+          loaded_quantity: i.quantity,
+          invoice_total: result.total
+        })));
+      }
+      
       console.log('Invoice created successfully:', result);
       
       // TRIGGER 2: Manual Invoice Creation Provisioning (ONLY IF APPROVED)
@@ -610,6 +629,15 @@ export default function CrearFactura() {
       normalizedData.balance = recalculatedBalance;
 
       console.log('Final invoice data (normalized):', normalizedData);
+      
+      // DEBUG: Log quantities on UPDATE
+      if (import.meta.env.DEV) {
+        console.log('[QUANTITY SNAPSHOT] UPDATE:', normalizedData.items.map(i => ({
+          item_name: i.item_name,
+          update_quantity: i.quantity
+        })));
+      }
+      
       return base44.entities.Invoice.update(editId, normalizedData);
     },
     onSuccess: () => {
