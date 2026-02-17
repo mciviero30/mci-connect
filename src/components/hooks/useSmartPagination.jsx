@@ -115,12 +115,9 @@ export function useSmartPagination({
     goToPage,
     resetPagination,
     totalDisplayed: items.length,
-    totalCount: fallbackFallback,
+    totalCount: backendFn ? undefined : fallbackItems.length,
   };
 }
-
-// tiny internal shim to avoid undefined
-const fallbackFallback = undefined;
 
 /**
  * Pagination Controls Component
