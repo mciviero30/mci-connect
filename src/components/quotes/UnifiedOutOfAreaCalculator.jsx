@@ -265,36 +265,57 @@ export default function UnifiedOutOfAreaCalculator({
           </div>
         )}
 
-        {/* SECTION 1: Tech Count & Round Trips - Always visible */}
-        <div className="grid grid-cols-2 gap-2">
+        {/* SECTION 1: Tech Count, Round Trips & Rooms per Night - Always visible */}
+        <div className="grid grid-cols-3 gap-2">
           <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-blue-200">
-            <Users className="w-4 h-4 text-blue-600" />
-            <Label className="text-xs font-semibold whitespace-nowrap">
-              {language === 'es' ? 'Técnicos:' : 'Technicians:'}
-            </Label>
-            <Input
-              type="number"
-              min="1"
-              max="20"
-              value={techCount}
-              onChange={(e) => onTechCountChange(parseInt(e.target.value) || 1)}
-              className="w-16 h-7 text-sm"
-            />
+            <Users className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <Label className="text-[10px] font-semibold whitespace-nowrap block">
+                {language === 'es' ? 'Técnicos' : 'Technicians'}
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                max="20"
+                value={techCount}
+                onChange={(e) => onTechCountChange(parseInt(e.target.value) || 1)}
+                className="w-full h-7 text-sm"
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-blue-200">
-            <MapPin className="w-4 h-4 text-blue-600" />
-            <Label className="text-xs font-semibold whitespace-nowrap">
-              {language === 'es' ? 'Viajes:' : 'Round Trips:'}
-            </Label>
-            <Input
-              type="number"
-              min="1"
-              max="10"
-              value={roundTrips}
-              onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
-              className="w-16 h-7 text-sm"
-            />
+            <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <Label className="text-[10px] font-semibold whitespace-nowrap block">
+                {language === 'es' ? 'Viajes' : 'Round Trips'}
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                max="10"
+                value={roundTrips}
+                onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
+                className="w-full h-7 text-sm"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 p-2 bg-white rounded-lg border border-blue-200">
+            <Bed className="w-4 h-4 text-blue-600 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <Label className="text-[10px] font-semibold whitespace-nowrap block">
+                {language === 'es' ? 'Cuartos/Noche' : 'Rooms/Night'}
+              </Label>
+              <Input
+                type="number"
+                min="1"
+                max="20"
+                value={roomsPerNight}
+                onChange={(e) => onRoomsPerNightChange(parseInt(e.target.value) || 1)}
+                className="w-full h-7 text-sm"
+              />
+            </div>
           </div>
         </div>
 
