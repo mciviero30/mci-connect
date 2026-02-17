@@ -739,28 +739,14 @@ export default function CrearFactura() {
         status: 'sent'
       };
 
-      // HARDENING: BLOCK Job auto-creation without WorkAuthorization
-      // Jobs MUST have authorization_id per business rules
-      let jobId = invoiceData.job_id;
-      if (!jobId && invoiceData.job_name) {
-        // Check if job already exists
+      // Try to auto-link to existing job if job_name provided but no job_id
+      if (!invoiceData.job_id && invoiceData.job_name) {
         const duplicateJobs = await base44.entities.Job.filter({
           name: invoiceData.job_name,
           customer_id: invoiceData.customer_id || ''
         });
-
         if (duplicateJobs.length > 0) {
-          // Use existing job
-          jobId = duplicateJobs[0].id;
-          invoiceData.job_id = jobId;
-          console.log('✅ Linked to existing Job:', jobId, duplicateJobs[0].job_number, '(duplicate prevented)');
-        } else {
-          // BLOCK: Cannot auto-create Jobs without WorkAuthorization
-          throw new Error(
-            language === 'es'
-              ? '❌ Este trabajo no existe. Por favor créalo primero desde la página de Trabajos con su autorización correspondiente.'
-              : '❌ This job does not exist. Please create it first from the Jobs page with its work authorization.'
-          );
+          invoiceData.job_id = duplicateJobs[0].id;
         }
       }
 
