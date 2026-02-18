@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSubscription } from "@/components/hooks/useMemoryLeakPrevention";
 import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
 import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Calendar, TrendingUp, DollarSign, AlertTriangle } from "lucide-react";
+import { Clock, Calendar, TrendingUp, DollarSign, AlertTriangle, Activity } from "lucide-react";
 import LiveTimeTracker from "../components/horarios/LiveTimeTracker";
 import TimeEntryList from "../components/horarios/TimeEntryList";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isToday } from "date-fns";
