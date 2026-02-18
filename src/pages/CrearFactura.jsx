@@ -388,8 +388,8 @@ export default function CrearFactura() {
         job_id: jobId,
         job_name: job.name,
         job_address: job.address || "",
-        team_id: job.team_id || "",
-        team_name: job.team_name || ""
+        team_ids: job.team_id ? [job.team_id] : formData.team_ids,
+        team_names: job.team_name ? [job.team_name] : formData.team_names,
       });
     }
   };
