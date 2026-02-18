@@ -658,8 +658,8 @@ export default function CrearEstimado() {
         
         toast({
           title: language === 'es' 
-            ? `Ítem "${selectedItem.name}" cargado` 
-            : `Item "${selectedItem.name}" loaded`,
+            ? `Ítem "${selectedItem.name || selectedItem.item_name}" cargado` 
+            : `Item "${selectedItem.name || selectedItem.item_name}" loaded`,
           description: language === 'es'
             ? `Precio unitario: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Tiempo: ${selectedItem.installation_time}h` : ''}`
             : `Unit price: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Time: ${selectedItem.installation_time}h` : ''}`,
