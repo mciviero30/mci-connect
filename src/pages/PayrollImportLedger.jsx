@@ -137,7 +137,7 @@ export default function PayrollImportLedger() {
   const confirmMutation = useMutation({
     mutationFn: async () => {
       const { batch_id } = await base44.functions.invoke("confirmPayrollBatch", {
-        employee_id: user.id,
+        employee_id: formData.employee_id || user.id,
         employee_name: formData.employee_name,
         period_start: formData.period_start,
         period_end: formData.period_end,
@@ -152,12 +152,18 @@ export default function PayrollImportLedger() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payrollBatches"] });
-      toast.success("Payroll batch confirmed and applied");
+      queryClient.invalidateQueries({ queryKey: ["Jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["Invoices"] });
+      toast.success("✅ Payroll batch confirmed and locked");
       setStep("history");
       resetForm();
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to confirm batch");
+      if (error.message?.includes("Duplicate")) {
+        toast.error("Duplicate batch detected - file already imported");
+      } else {
+        toast.error(error.message || "Failed to confirm batch");
+      }
     },
   });
 
