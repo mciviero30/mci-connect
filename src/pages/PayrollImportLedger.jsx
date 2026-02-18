@@ -170,14 +170,20 @@ export default function PayrollImportLedger() {
   // Reverse batch
   const reverseMutation = useMutation({
     mutationFn: async (batch_id) => {
+      const batch = batches.find(b => b.id === batch_id);
       await base44.functions.invoke("reversePayrollBatch", {
         batch_id,
-        reason: `Reversed by ${user.email}`,
+        reason: `Reversed by ${user.full_name || user.email}`,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payrollBatches"] });
-      toast.success("Batch reversed successfully");
+      queryClient.invalidateQueries({ queryKey: ["batchAllocations"] });
+      queryClient.invalidateQueries({ queryKey: ["Jobs"] });
+      queryClient.invalidateQueries({ queryKey: ["Invoices"] });
+      toast.success("✅ Batch reversed and unlocked");
+      setReverseDialogOpen(false);
+      setStep("history");
     },
     onError: (error) => {
       toast.error(error.message || "Failed to reverse batch");
