@@ -16,7 +16,9 @@ export default function Horarios() {
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   const isAdmin = user?.role === 'admin' || 
     ['CEO', 'administrator', 'manager'].includes(user?.position) ||
