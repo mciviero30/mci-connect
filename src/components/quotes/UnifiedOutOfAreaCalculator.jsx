@@ -133,15 +133,17 @@ export default function UnifiedOutOfAreaCalculator({
       // metric.totalMiles = round-trip miles for 1 trip (already ida+vuelta)
       // metric.drivingHours = round-trip hours for 1 trip (already ida+vuelta)
       const milesPerTrip = parseFloat(metric.totalMiles) * vehicleCount; // miles for 1 trip, all vehicles
-      const hoursPerTrip = parseFloat(metric.drivingHours); // hours for 1 trip
-
-      const totalDrivingHours = hoursPerTrip * roundTrips;
+      const hoursPerTrip = parseFloat(metric.drivingHours); // round-trip hours for 1 trip (already ida+vuelta)
+      // Total = hours × techs × trips
+      const totalDrivingHours = hoursPerTrip * techCount * roundTrips;
       const totalMiles = milesPerTrip * roundTrips;
+      // base_qty_per_trip = hours × techs for 1 round trip (so round_trips field scales correctly)
+      const drivingBasePerTrip = hoursPerTrip * techCount;
 
       // Driving Time item
       travelItems.push({
         item_name: `Driving Time - ${metric.teamName}`,
-        description: `${roundTrips} round trip${roundTrips > 1 ? 's' : ''} from ${metric.teamLocation} to job site (${metric.roundTripMiles} mi each)`,
+        description: `${roundTrips} round trip${roundTrips > 1 ? 's' : ''} from ${metric.teamLocation} to job site (${metric.roundTripMiles} mi each)\nTechs traveling = ${techCount}`,
         quantity: totalDrivingHours,
         unit: 'hours',
         unit_price: drivingRate,
@@ -150,10 +152,10 @@ export default function UnifiedOutOfAreaCalculator({
         travel_item_type: 'driving_time',
         team_id: metric.teamId,
         round_trips: roundTrips,
-        base_qty_per_trip: hoursPerTrip, // hours for exactly 1 trip
+        base_qty_per_trip: drivingBasePerTrip, // hours × techs for 1 trip — used by editor to scale
         account_category: 'expense_travel_per_diem',
         duration_value: hoursPerTrip,
-        tech_count: 1,
+        tech_count: techCount,
         auto_calculated: false,
         manual_override: false
       });
