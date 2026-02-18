@@ -127,7 +127,8 @@ export default function CrearEstimado() {
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
   const [projectTechCount, setProjectTechCount] = useState(2);
   const [travelTimeHours, setTravelTimeHours] = useState(0);
-  const [roomsPerNight, setRoomsPerNight] = useState(Math.ceil(2 / 2)); // Auto-calculated
+  // I6 FIX: rooms default derived from techCount (2 per room), not hardcoded
+  const [roomsPerNight, setRoomsPerNight] = useState(Math.ceil(projectTechCount / 2));
   const [showItemsMatcher, setShowItemsMatcher] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
 
