@@ -102,13 +102,18 @@ export default function Dashboard() {
   // UI Visibility Policy
   const { canSeeDebug, canSeeAdmin } = useUIVisibility();
 
-  // Load dashboard preferences
+  // Load dashboard preferences — C4 FIX: use user_id as primary key, fallback to email
   const { data: dashboardPrefs, isLoading: prefsLoading } = useQuery({
-    queryKey: ['dashboardPreferences', user?.email],
+    queryKey: ['dashboardPreferences', user?.id || user?.email],
     queryFn: async () => {
-      if (!user?.email) return null;
-      const prefs = await base44.entities.DashboardPreferences.filter({ user_email: user.email });
-      return prefs[0] || null;
+      if (!user?.id && !user?.email) return null;
+      // Try by user_id first (SSOT), then fallback to email for legacy records
+      if (user?.id) {
+        const byId = await base44.entities.DashboardPreferences.filter({ user_id: user.id });
+        if (byId.length > 0) return byId[0];
+      }
+      const byEmail = await base44.entities.DashboardPreferences.filter({ user_email: user.email });
+      return byEmail[0] || null;
     },
     enabled: !!user?.email,
     staleTime: Infinity,
