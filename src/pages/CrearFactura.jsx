@@ -18,7 +18,7 @@ import { es } from "date-fns/locale";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "../components/shared/PageHeader";
 import { useLanguage } from "@/components/i18n/LanguageContext";
-import { toast } from 'sonner';
+import { useToast } from "@/components/ui/toast";
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import { Checkbox } from "@/components/ui/checkbox";
