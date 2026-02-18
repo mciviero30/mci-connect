@@ -985,16 +985,22 @@ export default function CrearFactura() {
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label className="text-slate-700">{t('selectExistingJob')} ({t('optional')})</Label>
-                  <Select value={formData.job_id} onValueChange={handleJobSelect}>
-                    <SelectTrigger className="bg-white border-slate-300 text-slate-900">
+                  <Select value={formData.job_id || ""} onValueChange={handleJobSelect}>
+                    <SelectTrigger className="bg-white border-slate-300 text-slate-900 h-10">
                       <SelectValue placeholder={t('selectExistingJob')} />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-200">
-                     {jobs.map(job => (
-                       <SelectItem key={job.id} value={job.id} className="text-slate-900">
-                         {job.name}
-                       </SelectItem>
-                     ))}
+                    <SelectContent className="bg-white border-slate-200 max-h-[300px] overflow-y-auto">
+                     {jobs && jobs.length > 0 ? (
+                       jobs.map(job => (
+                         <SelectItem key={job.id} value={job.id} className="text-slate-900">
+                           {job.name}
+                         </SelectItem>
+                       ))
+                     ) : (
+                       <div className="p-2 text-sm text-slate-500 text-center">
+                         {language === 'es' ? 'Sin trabajos disponibles' : 'No jobs available'}
+                       </div>
+                     )}
                     </SelectContent>
                   </Select>
                 </div>
