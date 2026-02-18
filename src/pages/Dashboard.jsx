@@ -135,9 +135,11 @@ export default function Dashboard() {
   const savePreferencesMutation = useMutation({
     mutationFn: async (layout) => {
       if (dashboardPrefs) {
-        await base44.entities.DashboardPreferences.update(dashboardPrefs.id, { layout });
+        await base44.entities.DashboardPreferences.update(dashboardPrefs.id, { layout, user_id: user.id });
       } else {
+        // C4 FIX: save with user_id as SSOT
         await base44.entities.DashboardPreferences.create({
+          user_id: user.id,
           user_email: user.email,
           layout
         });
