@@ -104,13 +104,17 @@ export default function CrearFactura() {
     refetchOnWindowFocus: false
   });
 
-  const { data: customers } = useQuery({
+  const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
-    initialData: [],
-    staleTime: 300000,
+    queryFn: async () => {
+      const result = await base44.entities.Customer.list();
+      console.log('Customers loaded:', result?.length || 0);
+      return result;
+    },
+    staleTime: 0,
     refetchOnMount: true,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    retry: 3
   });
 
   const { data: quoteItems = [] } = useQuery({
