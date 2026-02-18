@@ -75,19 +75,38 @@ export default function LineItemsEditor({
     
     if (field === 'round_trips') {
       const newTrips = parseFloat(value) || 1;
-      // CRITICAL: Read from ORIGINAL items array (before any mutation above)
+      // Read base from the ORIGINAL item (pre-mutation snapshot)
       const originalItem = items[index];
       const oldTrips = originalItem.round_trips || 1;
-      // base_qty_per_trip stores the quantity for exactly 1 trip
-      const baseQtyPerTrip = originalItem.base_qty_per_trip != null
+      const baseQtyPerTrip = (originalItem.base_qty_per_trip != null && originalItem.base_qty_per_trip > 0)
         ? originalItem.base_qty_per_trip
         : parseFloat((originalItem.quantity / oldTrips).toFixed(4));
-      newItems[index].round_trips = newTrips;
-      newItems[index].base_qty_per_trip = baseQtyPerTrip;
-      newItems[index].quantity = parseFloat((baseQtyPerTrip * newTrips).toFixed(4));
-      newItems[index].total = parseFloat((newItems[index].quantity * (newItems[index].unit_price || 0)).toFixed(2));
-      onItemsChange(newItems);
-      return; // prevent double-call below
+      
+      console.log('[round_trips change]', {
+        item: originalItem.item_name,
+        oldTrips,
+        newTrips,
+        base_qty_per_trip: baseQtyPerTrip,
+        newQty: baseQtyPerTrip * newTrips
+      });
+      
+      const newQty = parseFloat((baseQtyPerTrip * newTrips).toFixed(4));
+      const newTotal = parseFloat((newQty * (originalItem.unit_price || 0)).toFixed(2));
+      
+      // Build entirely fresh array so React detects the change
+      const finalItems = items.map((it, i) => {
+        if (i !== index) return it;
+        return {
+          ...it,
+          round_trips: newTrips,
+          base_qty_per_trip: baseQtyPerTrip,
+          quantity: newQty,
+          total: newTotal
+        };
+      });
+      
+      onItemsChange(finalItems);
+      return;
     }
 
     if (field === 'quantity' || field === 'unit_price') {
