@@ -21,7 +21,9 @@ export default function Capacitacion() {
   const { data: user } = useQuery({ 
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: 30000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
   const { data: courses, isLoading } = useQuery({
     queryKey: ['courses'],
