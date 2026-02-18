@@ -181,9 +181,11 @@ export default function UnifiedOutOfAreaCalculator({
     });
 
     // PART 2: Stay items (hotel + per diem)
+    // C3 FIX: always add hotel/perdiem using derivedValues when available,
+    // otherwise fall back to manual nightsPerTrip/daysPerTrip inputs.
     const stayItems = [];
     
-    if (derivedValues && derivedValues.totalLaborHours > 0) {
+    {
       const hotelItem = quoteItems.find(qi => 
         qi.name?.toLowerCase().includes('hotel') || 
         qi.name === 'Hotel Rooms'
@@ -267,8 +269,11 @@ export default function UnifiedOutOfAreaCalculator({
     });
   };
 
+  // C3 FIX: allow adding travel items even if there are no labor items yet.
+  // Hotel/PerDiem will show with manually entered days/nights configuration.
   const hasCalculations = derivedValues && derivedValues.totalLaborHours > 0;
-  const canAddToQuote = travelMetrics.length > 0 && hasCalculations;
+  // Can always add once distances are calculated — hotel/perdiem use nightsPerTrip/daysPerTrip as fallback
+  const canAddToQuote = travelMetrics.length > 0 && travelMetrics.some(m => m.success);
 
   return (
     <Card className="bg-gradient-to-br from-blue-50/40 via-purple-50/30 to-pink-50/20 border-2 border-blue-300">
