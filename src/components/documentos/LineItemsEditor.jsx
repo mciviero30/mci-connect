@@ -345,19 +345,15 @@ export default function LineItemsEditor({
                         </div>
                       </TooltipTrigger>
                       <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
-                        {isAutoCalc ? (
-                          <>
-                            <p>🔒 <strong>Derived Value</strong></p>
-                            {item.calculation_type === 'hotel' && (
-                              <p className="mt-1">Hotel rooms = roomsPerNight × nights</p>
-                            )}
-                            {item.calculation_type === 'per_diem' && (
-                              <p className="mt-1">Per diem = techs × totalCalendarDays</p>
-                            )}
-                            {item.manual_override && (
-                              <p className="text-amber-400 mt-1">⚠️ Manual override active - auto-sync disabled</p>
-                            )}
-                          </>
+                        <p>🔒 <strong>Derived Value</strong></p>
+                        {item.calculation_type === 'hotel' && (
+                          <p className="mt-1">Hotel rooms = roomsPerNight × nights</p>
+                        )}
+                        {item.calculation_type === 'per_diem' && (
+                          <p className="mt-1">Per diem = techs × totalCalendarDays</p>
+                        )}
+                        {item.manual_override && (
+                          <p className="text-amber-400 mt-1">⚠️ Manual override active - auto-sync disabled</p>
                         )}
                       </TooltipContent>
                     </Tooltip>
