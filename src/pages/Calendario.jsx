@@ -116,9 +116,10 @@ export default function Calendario() {
       return data || [];
     },
     initialData: [],
-    staleTime: 300000,
+    staleTime: 600000,
     refetchOnMount: false,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    gcTime: Infinity
   });
 
   // 🚫 EMPLOYEE SSOT: EmployeeDirectory is canonical source
