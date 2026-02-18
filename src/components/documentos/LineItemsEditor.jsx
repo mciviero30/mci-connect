@@ -251,10 +251,6 @@ export default function LineItemsEditor({
                         <CommandEmpty className="text-slate-500 p-4 text-xs">No items found</CommandEmpty>
                         <CommandGroup className="max-h-[300px] overflow-y-auto">
                           {[...catalogItems]
-                            .filter(ci => {
-                              const itemName = getCatalogName(ci);
-                              return itemName && itemName.trim().length > 0;
-                            })
                             .sort((a, b) => getCatalogName(a).localeCompare(getCatalogName(b)))
                             .map((ci, idx) => {
                               const itemName = getCatalogName(ci);
