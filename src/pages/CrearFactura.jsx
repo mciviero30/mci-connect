@@ -62,6 +62,7 @@ export default function CrearFactura() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const urlParams = new URLSearchParams(window.location.search);
   const editId = urlParams.get('id');
   const quoteId = urlParams.get('quote_id');
