@@ -233,53 +233,33 @@ export default function LineItemsEditor({
               {/* Select Item / Item Name */}
               <div>
                 {allowCatalogSelect && catalogItems.length > 0 ? (
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className="w-full justify-between h-9 font-semibold text-xs bg-white border-slate-300 text-slate-900 hover:bg-slate-50"
-                      >
-                        <span className="truncate">{item.item_name || "Select item"}</span>
-                        <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-70" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[350px] p-0 bg-white border shadow-xl z-50">
-                      <Command className="bg-white">
-                        <CommandInput placeholder="Search items..." className="text-slate-900" />
-                        <CommandEmpty className="text-slate-500 p-4 text-xs">No items found</CommandEmpty>
-                        <CommandGroup className="max-h-[300px] overflow-y-auto">
-                          {[...catalogItems]
-                            .sort((a, b) => getCatalogName(a).localeCompare(getCatalogName(b)))
-                            .map((ci, idx) => {
-                              const itemName = getCatalogName(ci);
-                              return (
-                                <CommandItem
-                                  key={ci.id || itemName || idx}
-                                  value={itemName}
-                                  onSelect={() => updateItem(index, 'item_name', itemName)}
-                                  className="text-slate-900 cursor-pointer hover:bg-slate-100 py-2 border-b border-slate-100"
-                                >
-                                  <Check className={`mr-2 h-4 w-4 text-blue-600 ${item.item_name === itemName ? 'opacity-100' : 'opacity-0'}`} />
-                                  <div className="flex-1">
-                                    <div className="font-semibold text-xs">{itemName}</div>
-                                    <div className="text-[10px] text-slate-500 truncate">{ci.description}</div>
-                                    <div className="text-[10px] text-blue-600 font-bold">${ci.unit_price} / {ci.unit || ci.uom}</div>
-                                  </div>
-                                </CommandItem>
-                              );
-                            })}
-                        </CommandGroup>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
+                   <Select value={item.item_name || ""} onValueChange={(value) => updateItem(index, 'item_name', value)}>
+                     <SelectTrigger className="h-9 font-semibold text-xs bg-white border-slate-300 text-slate-900 z-50">
+                       <SelectValue placeholder="Select item" />
+                     </SelectTrigger>
+                     <SelectContent className="bg-white border-slate-200 z-50">
+                       {[...catalogItems]
+                         .sort((a, b) => getCatalogName(a).localeCompare(getCatalogName(b)))
+                         .map((ci, idx) => {
+                           const itemName = getCatalogName(ci);
+                           return (
+                             <SelectItem key={ci.id || itemName || idx} value={itemName} className="text-slate-900">
+                               <div className="flex flex-col gap-0.5">
+                                 <div className="font-semibold text-xs">{itemName}</div>
+                                 <div className="text-[10px] text-slate-500">${ci.unit_price} / {ci.unit || ci.uom}</div>
+                               </div>
+                             </SelectItem>
+                           );
+                         })}
+                     </SelectContent>
+                   </Select>
                 ) : (
-                  <Input
-                    value={item.item_name || ''}
-                    onChange={(e) => updateItem(index, 'item_name', e.target.value)}
-                    placeholder="Item name"
-                    className="h-9 font-semibold text-xs bg-white border-slate-300 text-slate-900"
-                  />
+                   <Input
+                     value={item.item_name || ''}
+                     onChange={(e) => updateItem(index, 'item_name', e.target.value)}
+                     placeholder="Item name"
+                     className="h-9 font-semibold text-xs bg-white border-slate-300 text-slate-900"
+                   />
                 )}
               </div>
 
