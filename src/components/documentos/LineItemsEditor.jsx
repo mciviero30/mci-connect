@@ -267,17 +267,21 @@ export default function LineItemsEditor({
                 )}
               </div>
 
-              {/* Round Trips (only for travel items) */}
+              {/* Round Trips (only for hotel/per_diem travel items) */}
               {item.is_travel_item && (
                 <div className="flex items-center justify-center">
-                  <Input
-                    type="number"
-                    value={item.round_trips || 1}
-                    onChange={(e) => updateItem(index, 'round_trips', parseFloat(e.target.value) || 1)}
-                    min="1"
-                    step="1"
-                    className="h-9 text-sm text-center font-semibold bg-white border-slate-200 text-slate-900"
-                  />
+                  {(item.calculation_type === 'hotel' || item.calculation_type === 'per_diem') ? (
+                    <Input
+                      type="number"
+                      value={item.round_trips || 1}
+                      onChange={(e) => updateItem(index, 'round_trips', parseFloat(e.target.value) || 1)}
+                      min="1"
+                      step="1"
+                      className="h-9 text-sm text-center font-semibold bg-white border-slate-200 text-slate-900"
+                    />
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
                 </div>
               )}
 
