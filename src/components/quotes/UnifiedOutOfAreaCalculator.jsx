@@ -147,16 +147,16 @@ export default function UnifiedOutOfAreaCalculator({
         travel_item_type: 'driving_time',
         team_id: metric.teamId,
         round_trips: roundTrips,
+        base_qty_per_trip: drivingHours, // hours per single trip (no tech multiplier)
         account_category: 'expense_travel_per_diem',
-        duration_value: totalDrivingHours,
+        duration_value: drivingHours,
         tech_count: 1,
-        // HYBRID OVERRIDE ARCHITECTURE
-        auto_calculated: true,
-        derived_quantity_snapshot: totalDrivingHours,
+        auto_calculated: false,
         manual_override: false
       });
 
       // Miles per Vehicle item
+      const milesPerTrip = milesPerVehicle * vehicleCount;
       travelItems.push({
         item_name: `Miles per Vehicle - ${metric.teamName}`,
         description: `${vehicleCount} vehicle${vehicleCount > 1 ? 's' : ''} × ${milesPerVehicle} miles × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`,
@@ -169,10 +169,9 @@ export default function UnifiedOutOfAreaCalculator({
         team_id: metric.teamId,
         vehicle_count: vehicleCount,
         round_trips: roundTrips,
+        base_qty_per_trip: milesPerTrip, // miles per single trip
         account_category: 'expense_travel_per_diem',
-        // HYBRID OVERRIDE ARCHITECTURE
-        auto_calculated: true,
-        derived_quantity_snapshot: totalMiles,
+        auto_calculated: false,
         manual_override: false
       });
     });
