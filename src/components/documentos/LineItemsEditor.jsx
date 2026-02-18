@@ -75,11 +75,26 @@ export default function LineItemsEditor({
       newItems[index].total = (newItems[index].quantity || 0) * (newItems[index].unit_price || 0);
     }
     
-    if (field === 'quantity' || field === 'unit_price' || field === 'round_trips') {
+    if (field === 'round_trips') {
+      // When round_trips changes, recalculate quantity for travel items
+      const item = newItems[index];
+      const trips = parseFloat(value) || 1;
+      if (item.travel_item_type === 'driving_time' || item.calculation_type === 'hours') {
+        // driving time: duration_value * tech_count * trips
+        const baseQty = (item.duration_value || 1) * (item.tech_count || 1);
+        newItems[index].quantity = baseQty * trips;
+      } else if (item.is_travel_item) {
+        // mileage or other travel: use base quantity per trip stored or derive from current qty
+        const baseQtyPerTrip = item.quantity_per_trip || (item.quantity / (item.round_trips || 1));
+        newItems[index].quantity_per_trip = baseQtyPerTrip;
+        newItems[index].quantity = baseQtyPerTrip * trips;
+      }
+      newItems[index].total = newItems[index].quantity * (newItems[index].unit_price || 0);
+    }
+
+    if (field === 'quantity' || field === 'unit_price') {
       const qty = newItems[index].quantity || 0;
       const price = newItems[index].unit_price || 0;
-      // quantity is always the FINAL quantity (round_trips already baked in when added)
-      // do NOT multiply by round_trips again here — it causes double-counting on save
       newItems[index].total = qty * price;
     }
     
