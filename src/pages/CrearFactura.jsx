@@ -348,7 +348,7 @@ export default function CrearFactura() {
     const updatedItems = formData.items.map(item => {
       if (!item.item_name) return item;
       
-      const catalogItem = quoteItems.find(qi => qi.name === item.item_name);
+      const catalogItem = quoteItems.find(qi => (qi.name || qi.item_name) === item.item_name);
       if (catalogItem) {
         return {
           ...item,
