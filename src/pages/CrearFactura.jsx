@@ -89,10 +89,15 @@ export default function CrearFactura() {
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: async () => {
+      const result = await base44.entities.Job.list();
+      console.log('📋 Jobs loaded in CrearFactura:', result?.length || 0, 'jobs');
+      console.log('📋 Jobs data sample:', result?.slice(0, 3)?.map(j => ({ id: j.id, name: j.name })));
+      return result;
+    },
     initialData: [],
-    staleTime: 300000,
-    refetchOnMount: false,
+    staleTime: 0,
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
 
