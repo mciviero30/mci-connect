@@ -130,10 +130,13 @@ export default function UnifiedOutOfAreaCalculator({
       if (!metric.success) return;
 
       const vehicleCount = vehicleCounts[metric.teamId] || 1;
-      const milesPerVehicle = parseFloat(metric.totalMiles);
-      const drivingHours = parseFloat(metric.drivingHours);
-      const totalDrivingHours = drivingHours * roundTrips;
-      const totalMiles = milesPerVehicle * vehicleCount * roundTrips;
+      // metric.totalMiles = round-trip miles for 1 trip (already ida+vuelta)
+      // metric.drivingHours = round-trip hours for 1 trip (already ida+vuelta)
+      const milesPerTrip = parseFloat(metric.totalMiles) * vehicleCount; // miles for 1 trip, all vehicles
+      const hoursPerTrip = parseFloat(metric.drivingHours); // hours for 1 trip
+
+      const totalDrivingHours = hoursPerTrip * roundTrips;
+      const totalMiles = milesPerTrip * roundTrips;
 
       // Driving Time item
       travelItems.push({
@@ -147,19 +150,18 @@ export default function UnifiedOutOfAreaCalculator({
         travel_item_type: 'driving_time',
         team_id: metric.teamId,
         round_trips: roundTrips,
-        base_qty_per_trip: drivingHours, // hours per single trip (no tech multiplier)
+        base_qty_per_trip: hoursPerTrip, // hours for exactly 1 trip
         account_category: 'expense_travel_per_diem',
-        duration_value: drivingHours,
+        duration_value: hoursPerTrip,
         tech_count: 1,
         auto_calculated: false,
         manual_override: false
       });
 
       // Miles per Vehicle item
-      const milesPerTrip = milesPerVehicle * vehicleCount;
       travelItems.push({
         item_name: `Miles per Vehicle - ${metric.teamName}`,
-        description: `${vehicleCount} vehicle${vehicleCount > 1 ? 's' : ''} × ${milesPerVehicle} miles × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`,
+        description: `${vehicleCount} vehicle${vehicleCount > 1 ? 's' : ''} × ${parseFloat(metric.totalMiles)} miles × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`,
         quantity: totalMiles,
         unit: 'miles',
         unit_price: mileageRate,
@@ -169,7 +171,7 @@ export default function UnifiedOutOfAreaCalculator({
         team_id: metric.teamId,
         vehicle_count: vehicleCount,
         round_trips: roundTrips,
-        base_qty_per_trip: milesPerTrip, // miles per single trip
+        base_qty_per_trip: milesPerTrip, // miles for exactly 1 trip
         account_category: 'expense_travel_per_diem',
         auto_calculated: false,
         manual_override: false
