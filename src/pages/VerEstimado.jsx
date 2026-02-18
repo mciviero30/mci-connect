@@ -44,7 +44,6 @@ import QuoteSignature from "@/components/quotes/QuoteSignature";
 import QuoteVersions from "@/components/quotes/QuoteVersions";
 import QuoteCompare from "@/components/quotes/QuoteCompare";
 import { SaveAsTemplateButton } from "@/components/quotes/QuoteTemplates";
-import PDFDownloadButton from "@/components/pdf/PDFDownloadButton";
 import { downloadQuotePDF } from "@/components/pdf/generateQuotePDF";
 import { getQuoteStatusMeta } from "../components/core/statusConfig";
 import { useUI } from "@/components/contexts/FieldModeContext";
@@ -382,46 +381,9 @@ Lawrenceville, Georgia 30043, U.S.A`
     window.print();
   };
 
-  const handleDownloadPDF = async () => {
-    if (!quote?.id) return;
-    
-    try {
-      console.log('🔄 Downloading Quote PDF...');
-      const response = await base44.functions.invoke('generateQuotePDFFile', { 
-        quoteId: quote.id 
-      });
-
-      if (!response.base64 || !response.fileName) {
-        throw new Error('Invalid PDF response');
-      }
-
-      const byteCharacters = atob(response.base64);
-      const byteNumbers = new Array(byteCharacters.length)
-        .fill(0)
-        .map((_, i) => byteCharacters.charCodeAt(i));
-
-      const blob = new Blob([new Uint8Array(byteNumbers)], {
-        type: 'application/pdf'
-      });
-
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = response.fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      console.log('✅ PDF downloaded successfully');
-    } catch (error) {
-      console.error('PDF download error:', error);
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      });
-    }
+  const handleDownloadPDF = () => {
+    if (!quote) return;
+    downloadQuotePDF(quote);
   };
 
   const handleShare = async () => {
