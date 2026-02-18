@@ -140,11 +140,9 @@ export default function Trabajos() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
-      // VALIDATION: If changing status to completed/archived, check for pending time entries
-      // Ensure the status is actually changing to avoid unnecessary checks and errors if already completed/archived
+      // I2 FIX: Lazy load validation - only query when status change to completed/archived
       if ((data.status === 'completed' || data.status === 'archived') && data.status !== editingJob?.status) {
-        const jobTimeEntries = allTimeEntries.filter(entry => entry.job_id === id);
-        const pendingEntries = jobTimeEntries.filter(entry => entry.status === 'pending');
+        const pendingEntries = await fetchJobTimeEntries(id);
 
         if (pendingEntries.length > 0) {
           throw new Error(
