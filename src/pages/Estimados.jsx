@@ -185,6 +185,9 @@ export default function Estimados() {
         job_address: quote.job_address,
         team_id: quote.team_id,
         team_name: quote.team_name,
+        // FIN-I2 FIX: also copy multi-team arrays
+        team_ids: quote.team_ids || (quote.team_id ? [quote.team_id] : []),
+        team_names: quote.team_names || (quote.team_name ? [quote.team_name] : []),
         invoice_date: new Date().toISOString().split('T')[0],
         due_date: '',
         items: quote.items,
