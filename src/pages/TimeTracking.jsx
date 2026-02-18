@@ -221,8 +221,17 @@ export default function TimeTracking() {
 
   const activeBreak = todayEntry?.breaks?.find(b => !b.end_time);
 
-  // I4 - Detect mobile device
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+  // O2 FIX: Use useState + useEffect for mobile detection to prevent hydration mismatch
+  const [isMobile, setIsMobile] = useState(false);
+  
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <SectionErrorBoundary 
