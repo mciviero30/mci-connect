@@ -928,8 +928,8 @@ export default function CrearFactura() {
                     <SelectTrigger className="bg-white border-slate-300 text-slate-900">
                       <SelectValue placeholder={t('selectCustomer')} />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-200">
-                      {sortCustomersByName(customers.filter(c => c.status === 'active')).map(customer => (
+                    <SelectContent className="bg-white border-slate-200 max-h-[300px] overflow-y-auto">
+                      {sortCustomersByName(customers.filter(c => !c.status || c.status === 'active')).map(customer => (
                         <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
                           {getCustomerDisplayName(customer)}
                         </SelectItem>
