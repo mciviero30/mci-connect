@@ -272,21 +272,20 @@ export default function LineItemsEditor({
 
               {/* Quantity */}
               <div className="relative flex items-center justify-center">
-                <Grid3x3 className="absolute left-2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                <Input
-                  type="number"
-                  value={item.quantity || 0}
-                  onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                  min="0"
-                  step="0.01"
-                  required
-                  disabled={isAutoCalc && !item.manual_override}
-                  className={`h-9 text-sm text-center font-semibold pl-7 ${
-                    isAutoCalc && !item.manual_override
-                      ? 'bg-blue-50 border-blue-200 text-blue-900 cursor-not-allowed'
-                      : 'bg-white border-slate-200 text-slate-900'
-                  }`}
-                />
+                 <Grid3x3 className="absolute left-2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                 <Input
+                   type="number"
+                   value={item.quantity || 0}
+                   onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                   min="0"
+                   step="0.01"
+                   required
+                   className={`h-9 text-sm text-center font-semibold pl-7 ${
+                     isAutoCalc && !item.manual_override
+                       ? 'bg-amber-50 border-amber-200 text-amber-900'
+                       : 'bg-white border-slate-200 text-slate-900'
+                   }`}
+                 />
               </div>
 
               {/* Unit */}
