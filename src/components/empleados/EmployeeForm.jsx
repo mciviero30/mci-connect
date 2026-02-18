@@ -190,10 +190,17 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pendingEmployees'] });
       onClose();
-      alert('✅ Employee deleted successfully');
+      toast({
+        title: '✅ Employee deleted successfully',
+        variant: 'success'
+      });
     },
     onError: (error) => {
-      alert(`❌ Error: ${error.message}`);
+      toast({
+        title: '❌ Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
