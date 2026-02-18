@@ -65,6 +65,7 @@ export default function LineItemsEditor({
       newItems[index].manual_override = true;
     }
     
+    // Set the field value FIRST (before any recalculations)
     newItems[index][field] = value;
     
     if (field === 'tech_count' || field === 'duration_value' || field === 'calculation_type') {
