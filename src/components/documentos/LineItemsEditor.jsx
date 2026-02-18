@@ -358,11 +358,6 @@ export default function LineItemsEditor({
                               <p className="text-amber-400 mt-1">⚠️ Manual override active - auto-sync disabled</p>
                             )}
                           </>
-                        ) : (
-                          <p>
-                            <strong>Round trips calculation:</strong><br />
-                            {baseQuantity} {item.unit} × {roundTrips} trips = {displayQuantity} {item.unit}
-                          </p>
                         )}
                       </TooltipContent>
                     </Tooltip>
