@@ -354,16 +354,17 @@ Deno.serve(async (req) => {
 
     // Generate PDF
     const doc = await generateQuotePDF(quote);
-    const pdfBytes = doc.output('arraybuffer');
-
-    // Return as binary file with correct headers
-    return new Response(pdfBytes, {
+    // Return as base64 string instead of binary
+    const pdfBase64 = doc.output('dataurlstring').split(',')[1];
+    
+    return new Response(JSON.stringify({ 
+      success: true,
+      pdf: pdfBase64,
+      filename: `${quote.quote_number || 'quote'}.pdf`
+    }), {
       status: 200,
       headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${quote.quote_number || 'quote'}.pdf"`,
-        'Content-Length': pdfBytes.byteLength.toString(),
-        'Cache-Control': 'no-cache, no-store, must-revalidate'
+        'Content-Type': 'application/json'
       }
     });
   } catch (error) {
