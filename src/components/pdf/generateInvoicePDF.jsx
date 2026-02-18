@@ -452,7 +452,18 @@ export async function downloadInvoicePDF(invoice) {
   const customerName = (invoice.customer_name || 'Customer').replace(/[^a-zA-Z0-9]/g, '-');
   const invoiceNumber = (invoice.invoice_number || 'DRAFT').replace(/[^a-zA-Z0-9]/g, '-');
   const filename = `Invoice-${invoiceNumber}-${customerName}.pdf`;
-  doc.save(filename);
+  
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 /**

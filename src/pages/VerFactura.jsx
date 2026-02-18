@@ -306,39 +306,9 @@ export default function VerFactura() {
     window.print();
   };
 
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = () => {
     if (!invoice) return;
-    
-    try {
-      console.log('🔄 Generating Invoice PDF using backend function...');
-      const response = await base44.functions.invoke('generateInvoicePDF', { invoiceId: invoice.id });
-      console.log('✅ PDF generated, downloading...');
-      
-      const blob = new Blob([response.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Invoice-${invoice.invoice_number}-${invoice.customer_name}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        a.remove();
-      }, 100);
-      
-      toast({
-        title: 'PDF downloaded successfully',
-        variant: 'success'
-      });
-    } catch (error) {
-      console.error('PDF generation error:', error);
-      toast({
-        title: 'Error',
-        description: safeErrorMessage(error, 'Failed to generate PDF'),
-        variant: 'destructive'
-      });
-    }
+    downloadInvoicePDF(invoice);
   };
 
   const handleShare = async () => {
@@ -526,7 +496,7 @@ export default function VerFactura() {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer text-white hover:bg-slate-800">
                   <Download className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Descargar PDF (Backend)' : 'Download PDF (Backend)'}
+                  {language === 'es' ? 'Descargar PDF' : 'Download PDF'}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-slate-800" />
                 <DropdownMenuItem onClick={handleShare} className="cursor-pointer text-white hover:bg-slate-800">
