@@ -181,9 +181,9 @@ export default function LineItemsEditor({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-[9px] px-2 py-0.5 cursor-help">
-                        {item.calculation_type === 'hotel' && '🏨 🔒 Auto'}
-                        {item.calculation_type === 'per_diem' && '🍽️ 🔒 Auto'}
-                        {item.calculation_type === 'hours' && '⏱️ 🔒 Auto'}
+                        {item.calculation_type === 'hotel' && '🏨 Auto'}
+                        {item.calculation_type === 'per_diem' && '🍽️ Auto'}
+                        {item.calculation_type === 'hours' && '⏱️ Auto'}
                       </Badge>
                     </TooltipTrigger>
                     <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
