@@ -125,10 +125,15 @@ export default function CrearFactura() {
 
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
-    queryFn: () => base44.entities.QuoteItem.list(),
+    queryFn: async () => {
+      const result = await base44.entities.QuoteItem.list();
+      console.log('📦 QuoteItems loaded in CrearFactura:', result?.length || 0, 'items');
+      console.log('📦 QuoteItems sample:', result?.slice(0, 3)?.map(qi => ({ id: qi.id, name: qi.name })));
+      return result;
+    },
     initialData: [],
-    staleTime: 600000,
-    refetchOnMount: false,
+    staleTime: 0,
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
 
