@@ -44,6 +44,7 @@ const getTeamIdByState = (state, teams) => {
 
 export default function EmployeeForm({ employee, onClose, isPending = false }) {
   const queryClient = useQueryClient();
+  const toast = useToast(); // I1 FIX: Add toast for consistency
   
   const { data: teams } = useQuery({
     queryKey: ['teams'],
