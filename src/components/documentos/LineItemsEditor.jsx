@@ -58,13 +58,10 @@ export default function LineItemsEditor({
   const updateItem = (index, field, value) => {
     if (field === 'item_name' && (value === null || value === undefined)) return;
     
-    const newItems = [...items];
+    const newItems = items.map((item, i) => i === index ? { ...item } : item);
     
     if (field === 'quantity' && newItems[index].auto_calculated && !newItems[index].manual_override) {
-      // Mode C: Save derived snapshot before override (silent - no toast)
-      if (!newItems[index].derived_quantity_snapshot) {
-        newItems[index].derived_quantity_snapshot = newItems[index].quantity;
-      }
+      newItems[index].derived_quantity_snapshot = newItems[index].quantity;
       newItems[index].manual_override = true;
     }
     
