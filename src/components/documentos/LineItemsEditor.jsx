@@ -75,15 +75,19 @@ export default function LineItemsEditor({
     
     if (field === 'round_trips') {
       const newTrips = parseFloat(value) || 1;
-      // Read base_qty_per_trip from the ORIGINAL item (before any mutation)
+      // CRITICAL: Read from ORIGINAL items array (before any mutation above)
       const originalItem = items[index];
-      // base_qty_per_trip is quantity for 1 round trip
-      const baseQtyPerTrip = originalItem.base_qty_per_trip 
-        || (originalItem.quantity / (originalItem.round_trips || 1));
+      const oldTrips = originalItem.round_trips || 1;
+      // base_qty_per_trip stores the quantity for exactly 1 trip
+      const baseQtyPerTrip = originalItem.base_qty_per_trip != null
+        ? originalItem.base_qty_per_trip
+        : parseFloat((originalItem.quantity / oldTrips).toFixed(4));
       newItems[index].round_trips = newTrips;
       newItems[index].base_qty_per_trip = baseQtyPerTrip;
       newItems[index].quantity = parseFloat((baseQtyPerTrip * newTrips).toFixed(4));
-      newItems[index].total = newItems[index].quantity * (newItems[index].unit_price || 0);
+      newItems[index].total = parseFloat((newItems[index].quantity * (newItems[index].unit_price || 0)).toFixed(2));
+      onItemsChange(newItems);
+      return; // prevent double-call below
     }
 
     if (field === 'quantity' || field === 'unit_price') {
