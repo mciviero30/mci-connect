@@ -60,16 +60,12 @@ export default function LineItemsEditor({
     
     const newItems = [...items];
     
-    if (field === 'quantity' && isAutoCalculatedItem(newItems[index]) && !newItems[index].manual_override) {
-      newItems[index].manual_override = true;
-      
-      if (onToast) {
-        onToast({
-          title: '⚠️ Manual Override Enabled',
-          description: 'This value will no longer update automatically with project changes.',
-          variant: 'warning'
-        });
+    if (field === 'quantity' && newItems[index].auto_calculated && !newItems[index].manual_override) {
+      // Mode C: Save derived snapshot before override (silent - no toast)
+      if (!newItems[index].derived_quantity_snapshot) {
+        newItems[index].derived_quantity_snapshot = newItems[index].quantity;
       }
+      newItems[index].manual_override = true;
     }
     
     newItems[index][field] = value;
