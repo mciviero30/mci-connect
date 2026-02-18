@@ -255,12 +255,12 @@ export default function CrearEstimado() {
         setProjectTechCount(hotelItem.tech_count);
       } else if (perDiemItem?.tech_count) {
         setProjectTechCount(perDiemItem.tech_count);
-      } else if (drivingItem?.tech_count) {
+      } else if (drivingItem?.tech_count && !drivingItem.manual_override) {
         setProjectTechCount(drivingItem.tech_count);
       }
-      
-      // Extract travel time from driving items
-      if (drivingItem?.duration_value) {
+
+      // Extract travel time from driving items — skip if manually overridden
+      if (drivingItem?.duration_value && !drivingItem.manual_override) {
         setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
       }
 
