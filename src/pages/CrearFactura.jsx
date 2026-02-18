@@ -929,11 +929,17 @@ export default function CrearFactura() {
                       <SelectValue placeholder={t('selectCustomer')} />
                     </SelectTrigger>
                     <SelectContent className="bg-white border-slate-200 max-h-[300px] overflow-y-auto">
-                      {sortCustomersByName(customers.filter(c => !c.status || c.status === 'active')).map(customer => (
-                        <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
-                          {getCustomerDisplayName(customer)}
-                        </SelectItem>
-                      ))}
+                      {customers && customers.length > 0 ? (
+                        sortCustomersByName(customers).map(customer => (
+                          <SelectItem key={customer.id} value={customer.id} className="text-slate-900">
+                            {getCustomerDisplayName(customer)}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className="p-2 text-sm text-slate-500 text-center">
+                          {language === 'es' ? 'Sin clientes disponibles' : 'No customers available'}
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
