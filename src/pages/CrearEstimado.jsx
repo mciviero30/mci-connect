@@ -186,31 +186,34 @@ export default function CrearEstimado() {
       const itemNameLower = item.item_name?.toLowerCase() || '';
       const isHotel = itemNameLower.includes('hotel');
       const isPerDiem = itemNameLower.includes('per') && itemNameLower.includes('diem');
-      // FIXED: Only remove completely empty items (no item_name AND no quantity)
       const isCompletelyEmpty = !item.item_name && (!item.quantity || item.quantity === 0);
       return !item.is_travel_item && !isHotel && !isPerDiem && !isCompletelyEmpty;
     });
-    
-    // DO NOT update travelTimeHours here - it causes derivedValues to recalculate with wrong values
-    // travelTimeHours should only be set from calculateMetrics (initial calculation)
-    
-    // Update all items with tech count
+
+    // Update all items with tech count AND ensure total is always computed
     const updatedItems = allItems.map(item => {
       if (item.travel_item_type === 'driving_time') {
+        const qty = (item.duration_value || 0) * stayData.tech_count;
+        const price = item.unit_price || 0;
         return {
           ...item,
           tech_count: stayData.tech_count,
-          quantity: (item.duration_value || 0) * stayData.tech_count,
-          total: (item.duration_value || 0) * stayData.tech_count * (item.unit_price || 0),
+          quantity: qty,
+          total: qty * price,
           description: `${item.description}\nTechs traveling = ${stayData.tech_count}`
         };
       }
-      return item;
+      // ISSUE 1 FIX: Always recompute total from quantity × unit_price
+      const qty = item.quantity || 0;
+      const price = item.unit_price || 0;
+      return {
+        ...item,
+        total: qty * price
+      };
     });
-    
-    // Add all items
+
     const finalItems = [...filteredItems, ...updatedItems];
-    
+
     // CRITICAL: Update stayConfig with the values from the calculator
     setStayConfig({
       roundTrips: stayData.round_trips,
@@ -219,7 +222,7 @@ export default function CrearEstimado() {
       total_nights: stayData.total_nights,
       total_calendar_days: stayData.total_calendar_days
     });
-    
+
     setFormData(prev => ({
       ...prev,
       items: finalItems
