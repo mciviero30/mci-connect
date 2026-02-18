@@ -34,7 +34,7 @@ import ApprovalBanner from "@/components/shared/ApprovalBanner";
 import AddressAutocomplete from "@/components/shared/AddressAutocomplete";
 import { calculateLineItemQuantity } from "@/components/domain/calculations/quantityCalculations";
 import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculations/derivedItemQuantities";
-import { computeQuoteDerived, createComputeInput, getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDerived";
+import { computeQuoteDerived, createComputeInput } from "@/components/domain/quotes/computeQuoteDerived";
 import ItemsMatchImporter from "@/components/quotes/ItemsMatchImporter";
 import { useDraftPersistence } from "@/components/hooks/useDraftPersistence";
 
