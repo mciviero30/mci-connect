@@ -6,6 +6,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
  * - Updates allocations to 'reversed'
  * - Restores Job.total_cost by subtracting allocated amounts
  * - Triggers financial recalculations
+ * - AUDIT LOGS the reversal with reason
  */
 Deno.serve(async (req) => {
   try {
@@ -51,54 +52,118 @@ Deno.serve(async (req) => {
     });
 
     console.log(`🔄 Reversing batch ${batch_id} with ${allocations.length} allocations`);
+    console.log(`   Reason: ${reason}`);
 
-    // Reverse job costs and trigger recalculations
-    const jobs = await base44.entities.Job.list();
+    // ATOMIC TRANSACTION - Reverse job costs
+    const jobReverseErrors = [];
+    const appliedReverals = [];
+    
+    // Get all jobs once
+    const allJobs = await base44.entities.Job.list();
+    
     for (const alloc of allocations) {
-      const job = jobs.find(j => j.id === alloc.job_id);
+      const job = allJobs.find(j => j.id === alloc.job_id);
       if (job) {
-        const newTotalCost = Math.max(0, (job.total_cost || 0) - alloc.allocated_amount);
+        const oldCost = job.total_cost || 0;
+        const newTotalCost = Math.max(0, oldCost - alloc.allocated_amount);
         
-        // Update job (subtract the allocated amount)
-        await base44.entities.Job.update(alloc.job_id, {
-          total_cost: newTotalCost
-        });
-
-        console.log(`✅ Reversed Job ${alloc.job_id}: total_cost = $${newTotalCost.toFixed(2)}`);
-
-        // Trigger financial recalculations
         try {
-          await base44.functions.invoke('recalculateInvoiceFinancials', {
-            job_id: alloc.job_id
+          // Update job (subtract the allocated amount)
+          await base44.entities.Job.update(alloc.job_id, {
+            total_cost: newTotalCost
           });
-          console.log(`✅ Triggered recalculateInvoiceFinancials for Job ${alloc.job_id}`);
-        } catch (err) {
-          console.warn(`⚠️ recalculateInvoiceFinancials failed for Job ${alloc.job_id}:`, err.message);
-        }
 
-        // Update allocation status
-        await base44.entities.PayrollAllocation.update(alloc.id, {
-          status: 'reversed',
-          financial_recalc_triggered: true
-        });
+          appliedReverals.push({
+            job_id: alloc.job_id,
+            oldCost,
+            newCost: newTotalCost,
+            allocation: alloc
+          });
+
+          console.log(`✅ Reversed Job ${alloc.job_id}: total_cost ${oldCost} → ${newTotalCost}`);
+
+          // Trigger financial recalculations (non-critical)
+          try {
+            await base44.functions.invoke('recalculateInvoiceFinancials', {
+              job_id: alloc.job_id
+            });
+            console.log(`✅ Triggered recalculateInvoiceFinancials for Job ${alloc.job_id}`);
+          } catch (err) {
+            console.warn(`⚠️ recalculateInvoiceFinancials failed for Job ${alloc.job_id}:`, err.message);
+          }
+
+          // Update allocation status (MODIFY, not delete)
+          await base44.entities.PayrollAllocation.update(alloc.id, {
+            status: 'reversed',
+            financial_recalc_triggered: true
+          });
+
+        } catch (err) {
+          jobReverseErrors.push({
+            job_id: alloc.job_id,
+            error: err.message
+          });
+          console.error(`❌ Job reversal failed for ${alloc.job_id}:`, err.message);
+        }
       }
+    }
+
+    // If ANY job reversal failed, warn but continue to mark batch as reversed
+    if (jobReverseErrors.length > 0) {
+      console.warn(`⚠️ ${jobReverseErrors.length} job reversals failed, but continuing to mark batch as reversed`);
     }
 
     // Update batch status
     await base44.entities.PayrollBatch.update(batch_id, {
       status: 'reversed',
       reversed_at: new Date().toISOString(),
-      reversed_reason: reason
+      reversed_reason: reason,
+      is_locked: false  // Unlock after reversal so it can be re-confirmed if needed
     });
 
-    console.log(`✅ Reversed PayrollBatch ${batch_id}`);
+    console.log(`✅ Marked PayrollBatch ${batch_id} as reversed`);
+
+    // ==========================================
+    // 4️⃣ AUDIT LOGGING - Reversal
+    // ==========================================
+    try {
+      await base44.entities.AuditLog.create({
+        event_type: 'payroll_batch_reversed',
+        entity_type: 'PayrollBatch',
+        entity_id: batch_id,
+        performed_by: user.email,
+        performed_by_name: user.full_name || user.email,
+        action_description: `Reversed payroll batch for ${batch.employee_name} (originally confirmed for ${batch.period_start} to ${batch.period_end}): $${batch.total_paid.toFixed(2)} across ${allocations.length} jobs`,
+        before_state: {
+          status: 'confirmed',
+          is_locked: true
+        },
+        after_state: {
+          status: 'reversed',
+          is_locked: false
+        },
+        metadata: {
+          batch_id,
+          employee_id: batch.employee_id,
+          reversal_reason: reason,
+          job_reversal_count: appliedReverals.length,
+          job_reversal_errors: jobReverseErrors.length
+        }
+      });
+      console.log(`📋 Audit log created for reversal of batch ${batch_id}`);
+    } catch (auditErr) {
+      console.warn(`⚠️ Audit logging failed (non-critical):`, auditErr.message);
+    }
 
     return Response.json({
       success: true,
       batch_id: batch_id,
       allocation_count: allocations.length,
-      message: `Reversed payroll batch for ${batch.employee_name}`
+      job_reversals_applied: appliedReverals.length,
+      job_reversals_failed: jobReverseErrors.length,
+      message: `✅ REVERSED: Payroll batch for ${batch.employee_name}. Is now UNLOCKED.`
     });
+
   } catch (error) {
     console.error('❌ reversePayrollBatch error:', error);
     return Response.json({
