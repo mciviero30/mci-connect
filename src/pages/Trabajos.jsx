@@ -92,15 +92,11 @@ export default function Trabajos() {
 
   const { handleError } = useErrorHandler();
 
-  // Fetch all time entries for validation
-  const { data: allTimeEntries = [] } = useQuery({
-    queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date', 1000), // Assuming 1000 is a sufficient limit for validation
-    initialData: [],
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
-  });
+  // I2 FIX: Only fetch time entries when actually needed for validation (lazy load)
+  // Instead of loading 1000 entries on mount, we'll query on-demand when status changes
+  const fetchJobTimeEntries = async (jobId) => {
+    return base44.entities.TimeEntry.filter({ job_id: jobId, status: 'pending' });
+  };
 
 
 
