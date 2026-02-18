@@ -74,37 +74,33 @@ export default function LineItemsEditor({
     }
     
     if (field === 'round_trips') {
-      const newTrips = parseFloat(value) || 1;
-      // Read base from the ORIGINAL item (pre-mutation snapshot)
+      const newTrips = Math.max(1, parseFloat(value) || 1); // I5 FIX: min 1
       const originalItem = items[index];
       const oldTrips = originalItem.round_trips || 1;
       const baseQtyPerTrip = (originalItem.base_qty_per_trip != null && originalItem.base_qty_per_trip > 0)
         ? originalItem.base_qty_per_trip
         : parseFloat((originalItem.quantity / oldTrips).toFixed(4));
-      
-      console.log('[round_trips change]', {
-        item: originalItem.item_name,
-        oldTrips,
-        newTrips,
-        base_qty_per_trip: baseQtyPerTrip,
-        newQty: baseQtyPerTrip * newTrips
-      });
-      
+
       const newQty = parseFloat((baseQtyPerTrip * newTrips).toFixed(4));
       const newTotal = parseFloat((newQty * (originalItem.unit_price || 0)).toFixed(2));
-      
-      // Build entirely fresh array so React detects the change
+
+      // I1 FIX: also scale hotel & per-diem items proportionally when trips change
       const finalItems = items.map((it, i) => {
-        if (i !== index) return it;
-        return {
-          ...it,
-          round_trips: newTrips,
-          base_qty_per_trip: baseQtyPerTrip,
-          quantity: newQty,
-          total: newTotal
-        };
+        if (i === index) {
+          return { ...it, round_trips: newTrips, base_qty_per_trip: baseQtyPerTrip, quantity: newQty, total: newTotal };
+        }
+        // Scale hotel and per-diem items by the same trip ratio
+        if (!it.manual_override && (it.travel_item_type === 'hotel' || it.travel_item_type === 'per_diem')) {
+          const itBase = (it.base_qty_per_trip != null && it.base_qty_per_trip > 0)
+            ? it.base_qty_per_trip
+            : parseFloat(((it.quantity || 0) / oldTrips).toFixed(4));
+          const itQty = parseFloat((itBase * newTrips).toFixed(4));
+          const itTotal = parseFloat((itQty * (it.unit_price || 0)).toFixed(2));
+          return { ...it, round_trips: newTrips, base_qty_per_trip: itBase, quantity: itQty, total: itTotal };
+        }
+        return it;
       });
-      
+
       onItemsChange(finalItems);
       return;
     }
