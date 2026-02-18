@@ -45,7 +45,7 @@ import QuoteVersions from "@/components/quotes/QuoteVersions";
 import QuoteCompare from "@/components/quotes/QuoteCompare";
 import { SaveAsTemplateButton } from "@/components/quotes/QuoteTemplates";
 import PDFDownloadButton from "@/components/pdf/PDFDownloadButton";
-import { downloadQuotePDF } from "@/components/pdf/generateQuotePDF";
+import { getQuotePDFBlob } from "@/components/pdf/generateQuotePDF";
 import { getQuoteStatusMeta } from "../components/core/statusConfig";
 import { useUI } from "@/components/contexts/FieldModeContext";
 import { Maximize2 } from "lucide-react";
