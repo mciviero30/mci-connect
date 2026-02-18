@@ -1305,6 +1305,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
                       roomsPerNight={roomsPerNight}
                       onRoomsPerNightChange={setRoomsPerNight}
                       onStayConfigChange={setStayConfig}
+                      editMode={!!editId}
                     />
                     
                     <ProjectDurationSummary
