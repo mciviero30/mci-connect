@@ -58,7 +58,37 @@ export default function PayrollImportLedger() {
   const { data: batches = [] } = useQuery({
     queryKey: ["payrollBatches"],
     queryFn: () => base44.entities.PayrollBatch.list(),
-    staleTime: 0,
+    staleTime: 300000,
+    refetchOnMount: false,
+  });
+
+  // Get employees
+  const { data: employees = [] } = useQuery({
+    queryKey: ["employeeDirectory"],
+    queryFn: () => base44.entities.EmployeeDirectory.list(),
+    staleTime: 600000,
+    refetchOnMount: false,
+  });
+
+  // Get allocations for selected batch
+  const { data: batchAllocations = [] } = useQuery({
+    queryKey: ["batchAllocations", selectedBatchId],
+    queryFn: () =>
+      base44.entities.PayrollAllocation.filter({
+        payroll_batch_id: selectedBatchId,
+      }),
+    enabled: !!selectedBatchId,
+  });
+
+  // Get audit log for selected batch
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ["auditLogs", selectedBatchId],
+    queryFn: () =>
+      base44.entities.AuditLog.filter({
+        entity_id: selectedBatchId,
+        entity_type: "PayrollBatch",
+      }, "-created_date"),
+    enabled: !!selectedBatchId,
   });
 
   // Upload and parse file
