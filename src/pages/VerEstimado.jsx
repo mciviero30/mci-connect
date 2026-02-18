@@ -551,14 +551,15 @@ Lawrenceville, Georgia 30043, U.S.A`
               {language === 'es' ? 'Enviar' : 'Send'}
             </Button>
 
-            <PDFDownloadButton 
-              data={quote} 
-              type="quote" 
+            <Button
               variant="outline"
+              size="sm"
+              onClick={handleDownloadPDF}
               className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs px-3 h-9"
             >
+              <Download className="w-3.5 h-3.5 mr-1.5" />
               PDF
-            </PDFDownloadButton>
+            </Button>
 
             {quote.status === 'sent' && <QuoteReminder quote={quote} />}
 
