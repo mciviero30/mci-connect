@@ -383,14 +383,37 @@ Lawrenceville, Georgia 30043, U.S.A`
   };
 
   const handleDownloadPDF = async () => {
-    if (!quote || !quote.id) return;
+    if (!quote?.id) return;
     
     try {
-      console.log('🔄 Downloading Quote PDF from backend...');
-      // Use backend endpoint to avoid Safari iframe blob restrictions
-      const pdfUrl = `${window.location.origin}/api/functions/generateQuotePDFFile?quoteId=${quote.id}`;
-      window.location.href = pdfUrl;
-      console.log('✅ PDF download initiated');
+      console.log('🔄 Downloading Quote PDF...');
+      const response = await base44.functions.invoke('generateQuotePDFFile', { 
+        quoteId: quote.id 
+      });
+
+      if (!response.base64 || !response.fileName) {
+        throw new Error('Invalid PDF response');
+      }
+
+      const byteCharacters = atob(response.base64);
+      const byteNumbers = new Array(byteCharacters.length)
+        .fill(0)
+        .map((_, i) => byteCharacters.charCodeAt(i));
+
+      const blob = new Blob([new Uint8Array(byteNumbers)], {
+        type: 'application/pdf'
+      });
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = response.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      console.log('✅ PDF downloaded successfully');
     } catch (error) {
       console.error('PDF download error:', error);
       toast({
