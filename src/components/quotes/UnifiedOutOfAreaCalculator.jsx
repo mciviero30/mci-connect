@@ -389,7 +389,8 @@ export default function UnifiedOutOfAreaCalculator({
                           <Clock className="w-3 h-3 text-blue-600" />
                           <div className="w-full">
                             <p className="text-[10px] text-slate-600 mb-0.5">{language === 'es' ? 'Tiempo Total' : 'Total Time'}</p>
-                            <p className="font-bold text-slate-900">{metric.drivingHours}H x {roundTrips} = {(parseFloat(metric.drivingHours) * roundTrips).toFixed(1)}H</p>
+                            {/* I3 FIX: show full breakdown including techs */}
+                        <p className="font-bold text-slate-900">{metric.drivingHours}H × {techCount}T × {roundTrips} = {(parseFloat(metric.drivingHours) * techCount * roundTrips).toFixed(1)}H</p>
                           </div>
                         </div>
 
