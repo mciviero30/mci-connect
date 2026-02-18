@@ -252,24 +252,17 @@ export const sortCustomersByName = (customers) => {
  */
 export const sortEmployeesByName = (employees) => {
   return [...employees].sort((a, b) => {
-    // Get display name to extract first and last parts
-    const aDisplay = getDisplayName(a).toLowerCase();
-    const bDisplay = getDisplayName(b).toLowerCase();
+    const aFirst = (a.first_name || '').toLowerCase();
+    const bFirst = (b.first_name || '').toLowerCase();
+    const aLast = (a.last_name || '').toLowerCase();
+    const bLast = (b.last_name || '').toLowerCase();
     
-    // Extract first name (everything before first space)
-    const aFirst = aDisplay.split(' ')[0] || '';
-    const bFirst = bDisplay.split(' ')[0] || '';
-    
-    // Extract last name (everything after first space)
-    const aLast = aDisplay.split(' ').slice(1).join(' ') || '';
-    const bLast = bDisplay.split(' ').slice(1).join(' ') || '';
-    
-    // First compare by first name
+    // First compare by first_name
     if (aFirst !== bFirst) {
-      return aFirst.localeCompare(aFirst);
+      return aFirst.localeCompare(bFirst);
     }
     
-    // If first name is same, compare by last name
+    // If first_name is same, compare by last_name
     return aLast.localeCompare(bLast);
   });
 };
