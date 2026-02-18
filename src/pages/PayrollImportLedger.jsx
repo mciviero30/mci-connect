@@ -195,13 +195,13 @@ export default function PayrollImportLedger() {
     setParsedData(null);
     setAllocations(null);
     setFormData({
+      employee_id: "",
       employee_name: "",
       period_start: "",
       period_end: "",
       total_paid: "",
       notes: "",
     });
-    setStep("history");
   };
 
   const handleFileUpload = (e) => {
