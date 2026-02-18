@@ -36,6 +36,9 @@ export default function Capacitacion() {
     queryFn: () => user ? base44.entities.CourseProgress.filter({ employee_email: user.email }) : [],
     initialData: [],
     enabled: !!user,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const startCourseMutation = useMutation({
