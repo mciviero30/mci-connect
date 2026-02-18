@@ -272,14 +272,15 @@ export default function Dashboard() {
       
       // Map to standardized format
       return directory.map(d => ({
-        id: d.user_id || d.id,
-        email: d.employee_email,
-        full_name: d.full_name,
-        position: d.position,
-        department: d.department,
-        employment_status: 'active',
-        dob: null
-      }));
+          id: d.user_id || d.id,
+          email: d.employee_email,
+          full_name: d.full_name,
+          position: d.position,
+          department: d.department,
+          employment_status: 'active',
+          // I4 FIX: preserve dob from directory record
+          dob: d.dob || null
+        }));
     },
     enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
     staleTime: 1800000,
