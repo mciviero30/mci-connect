@@ -169,12 +169,19 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: isPending ? ['pendingEmployees'] : ['currentUser'] });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      alert('✅ Employee information updated successfully');
+      toast({
+        title: '✅ Employee information updated successfully',
+        variant: 'success'
+      });
       onClose();
     },
     onError: (error) => {
       console.error('Save employee error:', error);
-      alert(`❌ Error: ${error.message}`);
+      toast({
+        title: '❌ Error',
+        description: error.message,
+        variant: 'destructive'
+      });
     }
   });
 
