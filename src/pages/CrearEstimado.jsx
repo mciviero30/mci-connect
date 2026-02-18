@@ -975,6 +975,8 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
     }
 
     // Enrich items with derived quantities before validation
+    // ISSUE 3 FIX: Only re-derive if auto_calculated=true AND manual_override=false
+    // If manual_override=true, always preserve the user's quantity untouched
     const enrichedItems = formData.items.map(item => {
       if (item.auto_calculated && !item.manual_override) {
         const quantity = getDerivedQuantity(derivedValues, item.calculation_type);
@@ -984,7 +986,11 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
           total: quantity * (item.unit_price || 0)
         };
       }
-      return item;
+      // manual_override=true OR not auto_calculated: preserve stored quantity exactly
+      return {
+        ...item,
+        total: (item.quantity || 0) * (item.unit_price || 0)
+      };
     });
 
     // Unified validation using isValidLineItem
