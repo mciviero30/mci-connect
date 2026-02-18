@@ -149,11 +149,10 @@ export default function Facturas() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      // Use cached user instead of re-fetching
-      const currentUser = user || await base44.auth.me();
+      // I3 FIX: user is always present (comes from enabled query), no fallback needed
       await base44.entities.Invoice.update(id, {
         deleted_at: new Date().toISOString(),
-        deleted_by: currentUser?.email
+        deleted_by: user?.email
       });
     },
     onSuccess: () => {
