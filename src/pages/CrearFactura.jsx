@@ -989,7 +989,7 @@ export default function CrearFactura() {
                     <SelectTrigger className="bg-white border-slate-300 text-slate-900">
                       <SelectValue placeholder={t('selectExistingJob')} />
                     </SelectTrigger>
-                    <SelectContent className="bg-white border-slate-200">
+                    <SelectContent className="bg-white border-slate-200 z-50">
                       {jobs.map(job => (
                         <SelectItem key={job.id} value={job.id} className="text-slate-900">
                           {job.name}
