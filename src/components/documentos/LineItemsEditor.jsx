@@ -77,11 +77,10 @@ export default function LineItemsEditor({
     
     if (field === 'quantity' || field === 'unit_price' || field === 'round_trips') {
       const qty = newItems[index].quantity || 0;
-      const trips = newItems[index].round_trips || 1;
       const price = newItems[index].unit_price || 0;
-      
-      const finalQty = newItems[index].is_travel_item ? qty * trips : qty;
-      newItems[index].total = finalQty * price;
+      // quantity is always the FINAL quantity (round_trips already baked in when added)
+      // do NOT multiply by round_trips again here — it causes double-counting on save
+      newItems[index].total = qty * price;
     }
     
     if (field === 'item_name' && catalogItems.length > 0) {
