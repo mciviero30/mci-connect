@@ -1053,30 +1053,14 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
   // ============================================================================
   
   const { subtotal, tax_amount: taxAmount, total } = useMemo(() => {
-    // Enrich items with derived quantities from computeQuoteDerived
-    const enrichedItems = formData.items.map(item => {
-      // If auto-calculated, use derived quantity
-      if (item.auto_calculated && !item.manual_override) {
-        const quantity = getDerivedQuantity(derivedValues, item.calculation_type);
-        return {
-          ...item,
-          quantity,
-          total: quantity * (item.unit_price || 0)
-        };
-      }
-      
-      // Otherwise use stored quantity
-      return item;
-    });
-    
-    // Calculate totals
-    const totals = calculateQuoteTotals(enrichedItems, formData.tax_rate);
+    // formData.items is the single source of truth — no re-derivation
+    const totals = calculateQuoteTotals(formData.items, formData.tax_rate);
     return {
       subtotal: totals.subtotal,
       tax_amount: totals.tax_amount,
       total: totals.total
     };
-  }, [formData.items, formData.tax_rate, derivedValues]);
+  }, [formData.items, formData.tax_rate]);
 
   // Block non-authorized users
   if (user && !canCreate) {
