@@ -640,7 +640,7 @@ export default function CrearEstimado() {
       const selectedItem = quoteItems.find(qi => qi.name === value);
       if (selectedItem) {
         // CRITICAL: Keep item_name in addition to description
-        newItems[index].item_name = selectedItem.name;
+        newItems[index].item_name = selectedItem.name || selectedItem.item_name;
         newItems[index].description = selectedItem.description || '';
         newItems[index].unit = selectedItem.unit || 'pcs';
         newItems[index].unit_price = selectedItem.unit_price || 0;
