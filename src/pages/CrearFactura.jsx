@@ -1048,7 +1048,7 @@ export default function CrearFactura() {
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-2 bg-white border-slate-200" align="start">
+                    <PopoverContent className="w-full p-2 bg-white border-slate-200 z-50" align="start">
                       <div className="space-y-1 max-h-60 overflow-y-auto">
                         {teams.map(team => {
                           const isSelected = (formData.team_ids || []).includes(team.id);
