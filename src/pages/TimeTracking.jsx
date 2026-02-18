@@ -27,23 +27,14 @@ export default function TimeTracking() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  
+  // C1 FIX: useLanguage moved to top-level (React Hooks rule)
+  const { language = 'en', t = (key) => key } = useLanguage() || {};
 
   const { data: user } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
   });
-
-  let language = 'en';
-  let t = (key) => key;
-  try {
-    const langCtx = useLanguage();
-    if (langCtx) {
-      language = langCtx.language || 'en';
-      t = langCtx.t || ((key) => key);
-    }
-  } catch (e) {
-    // Fallback if useLanguage fails
-  }
 
   const isManager = user?.role === 'admin' || 
     ['manager', 'CEO', 'supervisor', 'administrator'].includes(user?.position) ||
