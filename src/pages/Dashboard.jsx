@@ -95,9 +95,8 @@ export default function Dashboard() {
     refetchOnWindowFocus: false,
   });
 
-  const isAdmin = user?.role === 'admin' || 
-    ['CEO', 'administrator', 'manager'].includes(user?.position) ||
-    user?.department === 'HR';
+  // I5 FIX: Use hasFullAccess from roleRules for consistency
+  const isAdmin = hasFullAccess(user);
 
   // UI Visibility Policy
   const { canSeeDebug, canSeeAdmin } = useUIVisibility();
