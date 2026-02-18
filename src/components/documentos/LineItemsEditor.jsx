@@ -335,7 +335,7 @@ export default function LineItemsEditor({
                   <DollarSign className="w-4 h-4 text-slate-600" />
                   {displayTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
-                {(isAutoCalc || (item.is_travel_item && roundTrips > 1)) && (
+                {isAutoCalc && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
