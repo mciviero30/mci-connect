@@ -109,7 +109,7 @@ export default function CrearFactura() {
     queryFn: () => base44.entities.Customer.list(),
     initialData: [],
     staleTime: 300000,
-    refetchOnMount: false,
+    refetchOnMount: true,
     refetchOnWindowFocus: false
   });
 
