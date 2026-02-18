@@ -466,7 +466,18 @@ export async function downloadQuotePDF(quote) {
   const customerName = (quote.customer_name || 'Customer').replace(/[^a-zA-Z0-9]/g, '-');
   const quoteNumber = (quote.quote_number || 'DRAFT').replace(/[^a-zA-Z0-9]/g, '-');
   const filename = `Quote-${quoteNumber}-${customerName}.pdf`;
-  doc.save(filename);
+  
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 /**
