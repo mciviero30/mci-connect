@@ -106,7 +106,7 @@ export default function Estimados() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      const user = await base44.auth.me();
+      // FIN-I1 FIX: use already-cached user, no extra auth.me() call
       await base44.entities.Quote.update(id, { 
         deleted_at: new Date().toISOString(),
         deleted_by: user?.email
