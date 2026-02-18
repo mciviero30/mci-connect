@@ -245,7 +245,7 @@ export default function LineItemsEditor({
                         <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-70" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[350px] p-0 bg-white border shadow-xl">
+                    <PopoverContent className="w-[350px] p-0 bg-white border shadow-xl z-50">
                       <Command className="bg-white">
                         <CommandInput placeholder="Search items..." className="text-slate-900" />
                         <CommandEmpty className="text-slate-500 p-4 text-xs">No items found</CommandEmpty>
