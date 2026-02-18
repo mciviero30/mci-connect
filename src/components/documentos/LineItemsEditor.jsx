@@ -73,20 +73,14 @@ export default function LineItemsEditor({
     }
     
     if (field === 'round_trips') {
-      // When round_trips changes, recalculate quantity for travel items
       const item = newItems[index];
-      const trips = parseFloat(value) || 1;
-      if (item.travel_item_type === 'driving_time' || item.calculation_type === 'hours') {
-        // driving time: duration_value * tech_count * trips
-        const baseQty = (item.duration_value || 1) * (item.tech_count || 1);
-        newItems[index].quantity = baseQty * trips;
-      } else if (item.is_travel_item) {
-        // mileage or other travel: use base quantity per trip stored or derive from current qty
-        const baseQtyPerTrip = item.quantity_per_trip || (item.quantity / (item.round_trips || 1));
-        newItems[index].quantity_per_trip = baseQtyPerTrip;
-        newItems[index].quantity = baseQtyPerTrip * trips;
-      }
-      newItems[index].total = newItems[index].quantity * (newItems[index].unit_price || 0);
+      const newTrips = parseFloat(value) || 1;
+      const oldTrips = item.round_trips || 1;
+      // Store base qty per trip on first change so we don't compound
+      const baseQtyPerTrip = item.base_qty_per_trip || (item.quantity / oldTrips);
+      newItems[index].base_qty_per_trip = baseQtyPerTrip;
+      newItems[index].quantity = baseQtyPerTrip * newTrips;
+      newItems[index].total = newItems[index].quantity * (item.unit_price || 0);
     }
 
     if (field === 'quantity' || field === 'unit_price') {
