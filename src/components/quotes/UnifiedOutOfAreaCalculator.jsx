@@ -539,7 +539,10 @@ export default function UnifiedOutOfAreaCalculator({
                   <p className="text-[10px] font-semibold text-slate-600 mb-0.5">Per Diems {language === 'es' ? 'Total' : 'Total'}</p>
                   <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
                     <Users className="w-3.5 h-3.5 text-purple-600" />
-                    {techCount} × {derivedValues?.totalCalendarDays || 0} = {techCount * (derivedValues?.totalCalendarDays || 0)}
+                    {(() => {
+                      const days = hasCalculations ? derivedValues.totalCalendarDays : daysPerTrip * roundTrips;
+                      return `${techCount} × ${days} = ${techCount * days}`;
+                    })()}
                   </p>
                 </div>
 
@@ -547,7 +550,10 @@ export default function UnifiedOutOfAreaCalculator({
                   <p className="text-[10px] font-semibold text-slate-600 mb-0.5">{language === 'es' ? 'Cuartos Total' : 'Total Rooms'}</p>
                   <p className="text-sm font-bold text-purple-900 flex items-center gap-1">
                     <Bed className="w-3.5 h-3.5 text-purple-600" />
-                    {roomsPerNight} × {derivedValues?.nights || 0} = {roomsPerNight * (derivedValues?.nights || 0)}
+                    {(() => {
+                      const nights = hasCalculations ? derivedValues.nights : nightsPerTrip * roundTrips;
+                      return `${roomsPerNight} × ${nights} = ${roomsPerNight * nights}`;
+                    })()}
                   </p>
                 </div>
               </div>
