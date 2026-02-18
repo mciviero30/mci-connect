@@ -295,25 +295,39 @@ export default function PayrollImportLedger() {
         )}
 
         {/* PREVIEW STEP */}
-        {step === "preview" && parsedData && (
-          <div className="space-y-6">
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle>Payroll Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Employee Name *</Label>
-                    <Input
-                      value={formData.employee_name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, employee_name: e.target.value })
-                      }
-                      placeholder="Full name"
-                      className="mt-1"
-                    />
-                  </div>
+         {step === "preview" && parsedData && (
+           <div className="space-y-6">
+             <Card className="shadow-lg">
+               <CardHeader>
+                 <CardTitle>Payroll Details</CardTitle>
+               </CardHeader>
+               <CardContent className="space-y-4">
+                 <div className="grid md:grid-cols-2 gap-4">
+                   <div>
+                     <Label>Employee *</Label>
+                     <Select
+                       value={formData.employee_id}
+                       onValueChange={(value) => {
+                         const emp = employees.find(e => e.id === value);
+                         setFormData({
+                           ...formData,
+                           employee_id: value,
+                           employee_name: emp?.full_name || emp?.employee_name || ""
+                         });
+                       }}
+                     >
+                       <SelectTrigger className="mt-1">
+                         <SelectValue placeholder="Select employee" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         {employees.map((emp) => (
+                           <SelectItem key={emp.id} value={emp.id}>
+                             {emp.full_name || emp.employee_name}
+                           </SelectItem>
+                         ))}
+                       </SelectContent>
+                     </Select>
+                   </div>
                   <div>
                     <Label>Total Paid *</Label>
                     <Input
