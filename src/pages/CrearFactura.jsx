@@ -76,34 +76,50 @@ export default function CrearFactura() {
   const canCreate = canCreateFinancialDocs(user);
   const requiresApproval = needsApproval(user);
 
+  // QUERY OPTIMIZATION: Add staleTime and refetch config to all lookups
   const { data: invoices } = useQuery({
     queryKey: ['invoices'],
     queryFn: () => base44.entities.Invoice.list(),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
     queryFn: () => base44.entities.Job.list(),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: quotes } = useQuery({
     queryKey: ['quotes'],
     queryFn: () => base44.entities.Quote.list(),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: customers } = useQuery({
     queryKey: ['customers'],
     queryFn: () => base44.entities.Customer.list(),
     initialData: [],
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
     queryFn: () => base44.entities.QuoteItem.list(),
     initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: companySettings } = useQuery({
@@ -112,12 +128,18 @@ export default function CrearFactura() {
       const data = await base44.entities.CompanySettings.list();
       return data[0] || {};
     },
+    staleTime: 900000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
     queryFn: () => base44.entities.Team.list('team_name'),
-    initialData: []
+    initialData: [],
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const { data: existingInvoice, isLoading: loadingInvoice } = useQuery({
