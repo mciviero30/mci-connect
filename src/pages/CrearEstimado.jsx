@@ -190,20 +190,8 @@ export default function CrearEstimado() {
       return !item.is_travel_item && !isHotel && !isPerDiem && !isCompletelyEmpty;
     });
 
-    // Update all items with tech count AND ensure total is always computed
+    // Preserve items exactly as calculated by the calculator, just fix total
     const updatedItems = allItems.map(item => {
-      if (item.travel_item_type === 'driving_time') {
-        const qty = (item.duration_value || 0) * stayData.tech_count;
-        const price = item.unit_price || 0;
-        return {
-          ...item,
-          tech_count: stayData.tech_count,
-          quantity: qty,
-          total: qty * price,
-          description: `${item.description}\nTechs traveling = ${stayData.tech_count}`
-        };
-      }
-      // ISSUE 1 FIX: Always recompute total from quantity × unit_price
       const qty = item.quantity || 0;
       const price = item.unit_price || 0;
       return {
