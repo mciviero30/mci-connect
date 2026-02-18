@@ -18,46 +18,68 @@ export default function ExecutiveDashboard() {
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
 
   // Fetch data
+  // STRATEGY FIX: add staleTime to prevent refetch on every mount
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices-revenue'],
     queryFn: () => base44.entities.Invoice.list('-created_date', 1000),
     enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: commissions = [] } = useQuery({
     queryKey: ['all-commissions'],
     queryFn: () => base44.entities.CommissionResult.list('-created_date', 1000),
     enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: payrollEntries = [] } = useQuery({
     queryKey: ['payroll-entries'],
     queryFn: () => base44.entities.WeeklyPayroll.list('-created_date', 1000),
     enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: taxProfiles = [] } = useQuery({
     queryKey: ['all-tax-profiles'],
     queryFn: () => base44.entities.TaxProfile.list(),
     enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['all-employees'],
     queryFn: () => base44.entities.EmployeeDirectory.list(),
     enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['all-jobs'],
     queryFn: () => base44.entities.Job.list('-created_date', 1000),
     enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['all-expenses'],
     queryFn: () => base44.entities.Expense.list('-created_date', 1000),
     enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   // Filter by date range
