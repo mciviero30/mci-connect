@@ -386,26 +386,11 @@ Lawrenceville, Georgia 30043, U.S.A`
     if (!quote) return;
     
     try {
-      console.log('🔄 Generating Quote PDF...');
-      const blob = await getQuotePDFBlob(quote);
-      
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${quote.quote_number || 'Quote'}-${quote.customer_name || 'Customer'}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
+      console.log('🔄 Downloading Quote PDF...');
+      await downloadQuotePDF(quote);
       console.log('✅ PDF downloaded successfully');
-      
-      toast({
-        title: 'PDF downloaded successfully',
-        variant: 'success'
-      });
     } catch (error) {
-      console.error('PDF generation error:', error);
+      console.error('PDF download error:', error);
       toast({
         title: 'Error',
         description: error.message,
