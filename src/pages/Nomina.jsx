@@ -40,7 +40,9 @@ export default function Nomina() {
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
-    staleTime: 300000
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   // PERFORMANCE: Single aggregated query instead of 7 separate entities
