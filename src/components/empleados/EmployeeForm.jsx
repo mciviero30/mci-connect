@@ -52,13 +52,17 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
 
   // 🚫 EMPLOYEE SSOT: EmployeeDirectory is canonical source
   // DO NOT USE User.list() or User.filter() for employee lists
+  // C2 FIX: Filter by position on server-side, not loading all employees
   const { data: managers } = useQuery({
     queryKey: ['managers'],
     queryFn: async () => {
-      const directory = await base44.entities.EmployeeDirectory.list();
+      // Query for managers only (position = 'CEO'|'manager'|'supervisor' AND status = 'active')
+      const managers = await base44.entities.EmployeeDirectory.filter({
+        status: 'active'
+      }, 'full_name', 100);
       
-      // DEFENSIVE: Validate manager records
-      const validManagers = directory.filter(d => {
+      // Client-side filter for position (small set after server filter)
+      const validManagers = managers.filter(d => {
         if (!d.user_id) {
           console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ Manager missing user_id', {
             component: 'EmployeeForm',
@@ -66,7 +70,7 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
           });
           return false;
         }
-        return ['CEO', 'manager', 'supervisor'].includes(d.position) && d.status === 'active';
+        return ['CEO', 'manager', 'supervisor'].includes(d.position);
       });
       
       return validManagers;
