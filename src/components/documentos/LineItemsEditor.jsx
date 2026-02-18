@@ -250,26 +250,32 @@ export default function LineItemsEditor({
                         <CommandInput placeholder="Search items..." className="text-slate-900" />
                         <CommandEmpty className="text-slate-500 p-4 text-xs">No items found</CommandEmpty>
                         <CommandGroup className="max-h-[300px] overflow-y-auto">
-                          {[...catalogItems]
-                            .sort((a, b) => getCatalogName(a).localeCompare(getCatalogName(b)))
-                            .map((ci, idx) => {
-                              const itemName = getCatalogName(ci);
-                              return (
-                                <CommandItem
-                                  key={ci.id || itemName || idx}
-                                  value={itemName}
-                                  onSelect={() => updateItem(index, 'item_name', itemName)}
-                                  className="text-slate-900 cursor-pointer hover:bg-slate-100 py-2 border-b border-slate-100"
-                                >
-                                  <Check className={`mr-2 h-4 w-4 text-blue-600 ${item.item_name === itemName ? 'opacity-100' : 'opacity-0'}`} />
-                                  <div className="flex-1">
-                                    <div className="font-semibold text-xs">{itemName}</div>
-                                    <div className="text-[10px] text-slate-500 truncate">{ci.description}</div>
-                                    <div className="text-[10px] text-blue-600 font-bold">${ci.unit_price} / {ci.unit || ci.uom}</div>
-                                  </div>
-                                </CommandItem>
-                              );
-                            })}
+                          {catalogItems && catalogItems.length > 0 ? (
+                            [...catalogItems]
+                              .sort((a, b) => getCatalogName(a).localeCompare(getCatalogName(b)))
+                              .map((ci, idx) => {
+                                const itemName = getCatalogName(ci);
+                                return (
+                                  <CommandItem
+                                    key={ci.id || itemName || idx}
+                                    value={itemName}
+                                    onSelect={() => updateItem(index, 'item_name', itemName)}
+                                    className="text-slate-900 cursor-pointer hover:bg-slate-100 py-2 border-b border-slate-100"
+                                  >
+                                    <Check className={`mr-2 h-4 w-4 text-blue-600 ${item.item_name === itemName ? 'opacity-100' : 'opacity-0'}`} />
+                                    <div className="flex-1">
+                                      <div className="font-semibold text-xs">{itemName}</div>
+                                      <div className="text-[10px] text-slate-500 truncate">{ci.description}</div>
+                                      <div className="text-[10px] text-blue-600 font-bold">${ci.unit_price} / {ci.unit || ci.uom}</div>
+                                    </div>
+                                  </CommandItem>
+                                );
+                              })
+                          ) : (
+                            <CommandItem disabled className="text-center text-slate-500 text-xs py-2">
+                              Sin items disponibles
+                            </CommandItem>
+                          )}
                         </CommandGroup>
                       </Command>
                     </PopoverContent>
