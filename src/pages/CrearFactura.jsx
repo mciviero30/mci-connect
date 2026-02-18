@@ -363,14 +363,13 @@ export default function CrearFactura() {
 
     setFormData({ ...formData, items: updatedItems });
     
-    toast.success(
-      language === 'es' ? 'Actualizado desde catálogo' : 'Updated from catalog',
-      { 
-        description: language === 'es' 
-          ? 'Precios y tiempos actualizados'
-          : 'Prices and times updated'
-      }
-    );
+    toast({
+      title: language === 'es' ? 'Actualizado desde catálogo' : 'Updated from catalog',
+      description: language === 'es' 
+        ? 'Precios y tiempos actualizados'
+        : 'Prices and times updated',
+      variant: 'success'
+    });
   };
 
   const removeItem = (index) => {
