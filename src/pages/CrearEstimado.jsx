@@ -1432,7 +1432,7 @@ Use realistic driving estimates. Round distance to 1 decimal place, hours to nea
             <CardContent className="p-0">
               <LineItemsEditor 
                 items={formData.items}
-                onItemsChange={(newItems) => setFormData({ ...formData, items: newItems })}
+                onItemsChange={(newItems) => setFormData(prev => ({ ...prev, items: newItems }))}
                 catalogItems={quoteItems}
                 allowCatalogSelect={true}
                 allowReorder={true}
