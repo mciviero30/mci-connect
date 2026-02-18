@@ -688,7 +688,8 @@ export default function Dashboard() {
     }
   };
 
-  const getProfileImage = () => {
+  // O3 FIX: Memoize profile image computation
+  const profileImage = useMemo(() => {
     if (!user) return null;
     
     // Check preferred image first
@@ -707,9 +708,8 @@ export default function Dashboard() {
     }
     
     return null;
-  };
+  }, [user?.preferred_profile_image, user?.avatar_image_url, user?.profile_photo_url]);
 
-  const profileImage = getProfileImage();
   const imageKey = user?.profile_last_updated || user?.id;
 
   if (userLoading || prefsLoading) {
