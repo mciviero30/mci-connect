@@ -19,7 +19,8 @@ export default function UnifiedOutOfAreaCalculator({
   onTechCountChange,
   roomsPerNight,
   onRoomsPerNightChange,
-  onStayConfigChange // NEW: Notify parent of stay config changes
+  onStayConfigChange,
+  editMode = false // NEW: when true, suppress auto-recalculation effects
 }) {
   const { language } = useLanguage();
   const [travelMetrics, setTravelMetrics] = useState([]);
