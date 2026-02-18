@@ -20,6 +20,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
   const { t } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { handleError } = useErrorHandler(); // WF-C1 FIX: moved here (top-level, not inside callback)
   const [formData, setFormData] = useState({});
 
   const mutation = useMutation({
