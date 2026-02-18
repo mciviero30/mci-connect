@@ -164,8 +164,8 @@ export default function LineItemsEditor({
           ? getDerivedQuantity(derivedValues, item.calculation_type)
           : item.quantity;
         
-        const roundTrips = item.round_trips || 1;
-        const displayQuantity = item.is_travel_item ? baseQuantity * roundTrips : baseQuantity;
+        // quantity in state is always the FINAL quantity — no round_trips multiplication
+        const displayQuantity = baseQuantity;
         const displayTotal = displayQuantity * (item.unit_price || 0);
         
         return (
