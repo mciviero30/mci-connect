@@ -19,10 +19,9 @@ export function calculateQuoteTotals(items = [], tax_rate = 0) {
     item.unit_price >= 0
   );
 
-  // Calculate subtotal
+  // Calculate subtotal strictly from item.total (preserves travel multipliers)
   const subtotal = validItems.reduce((sum, item) => {
-    const itemTotal = (item.quantity || 0) * (item.unit_price || 0);
-    return sum + itemTotal;
+    return sum + (item.total || 0);
   }, 0);
 
   // Calculate tax
