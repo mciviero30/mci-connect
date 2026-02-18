@@ -516,95 +516,221 @@ export default function PayrollImportLedger() {
           </div>
         )}
 
-        {/* HISTORY STEP */}
-        {step === "history" && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Payroll Batch History</h2>
-              <Button
-                onClick={() => {
-                  setStep("upload");
-                  resetForm();
-                }}
-                className="bg-blue-600"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                New Import
-              </Button>
-            </div>
+        {/* DETAIL VIEW */}
+         {step === "detail" && selectedBatchId && batches.find(b => b.id === selectedBatchId) && (
+           <div className="space-y-6">
+             <div className="flex items-center gap-3 mb-6">
+               <Button
+                 variant="ghost"
+                 size="sm"
+                 onClick={() => {
+                   setStep("history");
+                   setSelectedBatchId(null);
+                 }}
+               >
+                 <ChevronLeft className="w-4 h-4 mr-1" />
+                 Back
+               </Button>
+             </div>
 
-            {batches.length === 0 ? (
-              <Card>
-                <CardContent className="p-8 text-center text-slate-600">
-                  No payroll batches yet. Start by uploading a file.
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {batches.map((batch) => (
-                  <Card key={batch.id} className="shadow">
-                    <CardContent className="p-6">
-                      <div className="grid md:grid-cols-4 gap-4 mb-4">
-                        <div>
-                          <div className="text-sm text-slate-600">Employee</div>
-                          <div className="font-semibold">{batch.employee_name}</div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-slate-600">Period</div>
-                          <div className="font-semibold">
-                            {batch.period_start} to {batch.period_end}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-slate-600">Total Paid</div>
-                          <div className="font-semibold">
-                            ${batch.total_paid.toFixed(2)}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-sm text-slate-600">Status</div>
-                          <div className={`font-semibold uppercase text-xs py-1 px-2 rounded w-fit ${
-                            batch.status === "confirmed"
-                              ? "bg-emerald-100 text-emerald-700"
-                              : batch.status === "reversed"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-amber-100 text-amber-700"
-                          }`}>
-                            {batch.status}
-                          </div>
-                        </div>
-                      </div>
+             {(() => {
+               const batch = batches.find(b => b.id === selectedBatchId);
+               return (
+                 <>
+                   {/* Header Card */}
+                   <Card className="shadow-lg border-blue-200 bg-gradient-to-r from-blue-50 to-slate-50">
+                     <CardContent className="p-6">
+                       <div className="grid md:grid-cols-5 gap-4">
+                         <div>
+                           <div className="text-xs font-semibold text-slate-600 uppercase">Batch ID</div>
+                           <div className="font-mono text-sm mt-1">{batch.id.substring(0, 8)}...</div>
+                         </div>
+                         <div>
+                           <div className="text-xs font-semibold text-slate-600 uppercase">Employee</div>
+                           <div className="font-semibold mt-1">{batch.employee_name}</div>
+                         </div>
+                         <div>
+                           <div className="text-xs font-semibold text-slate-600 uppercase">Period</div>
+                           <div className="font-semibold text-sm mt-1">{batch.period_start} → {batch.period_end}</div>
+                         </div>
+                         <div>
+                           <div className="text-xs font-semibold text-slate-600 uppercase">Total Paid</div>
+                           <div className="font-bold text-lg text-emerald-700 mt-1">${batch.total_paid.toFixed(2)}</div>
+                         </div>
+                         <div>
+                           <div className="text-xs font-semibold text-slate-600 uppercase">Status</div>
+                           <div className={`text-xs font-bold py-1 px-2 rounded mt-1 w-fit ${
+                             batch.status === "confirmed"
+                               ? "bg-emerald-100 text-emerald-700"
+                               : batch.status === "reversed"
+                               ? "bg-red-100 text-red-700"
+                               : "bg-amber-100 text-amber-700"
+                           }`}>
+                             {batch.status.toUpperCase()}
+                           </div>
+                         </div>
+                       </div>
+                     </CardContent>
+                   </Card>
 
-                      {batch.notes && (
-                        <p className="text-sm text-slate-600 mb-4">📝 {batch.notes}</p>
-                      )}
+                   {/* Allocation Breakdown */}
+                   <Card className="shadow-lg">
+                     <CardHeader>
+                       <CardTitle className="flex items-center gap-2">
+                         <DollarSign className="w-5 h-5" />
+                         Allocation Breakdown ({batchAllocations.length})
+                       </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                       <div className="space-y-2">
+                         {batchAllocations.map((alloc) => (
+                           <div key={alloc.id} className="flex justify-between items-center p-3 bg-slate-50 rounded border">
+                             <div>
+                               <div className="font-semibold">{alloc.job_name}</div>
+                               <div className="text-sm text-slate-600">{alloc.hours_worked} hrs • {alloc.allocation_percentage.toFixed(1)}%</div>
+                               {alloc.is_rounding_adjustment && <div className="text-xs text-amber-600">⚠️ Rounding adjustment</div>}
+                             </div>
+                             <div className="text-right">
+                               <div className="font-bold">${alloc.allocated_amount.toFixed(2)}</div>
+                             </div>
+                           </div>
+                         ))}
+                       </div>
+                     </CardContent>
+                   </Card>
 
-                      <div className="mb-4 text-sm text-slate-600">
-                        {batch.allocation_count} allocations • Created by {batch.created_by}
-                      </div>
+                   {/* Audit Trail */}
+                   <Card className="shadow-lg">
+                     <CardHeader>
+                       <CardTitle className="flex items-center gap-2">
+                         <Clock className="w-5 h-5" />
+                         Audit Trail
+                       </CardTitle>
+                     </CardHeader>
+                     <CardContent>
+                       {auditLogs.length === 0 ? (
+                         <p className="text-slate-500 text-sm">No audit events</p>
+                       ) : (
+                         <div className="space-y-3">
+                           {auditLogs.map((log) => (
+                             <div key={log.id} className="p-3 bg-slate-50 rounded border-l-4 border-blue-400">
+                               <div className="text-sm font-semibold">{log.event_type.replace(/_/g, ' ').toUpperCase()}</div>
+                               <div className="text-xs text-slate-600 mt-1">By {log.performed_by_name || log.performed_by}</div>
+                               <div className="text-xs text-slate-600">{new Date(log.created_date).toLocaleString()}</div>
+                             </div>
+                           ))}
+                         </div>
+                       )}
+                     </CardContent>
+                   </Card>
 
-                      {batch.status === "confirmed" && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            if (window.confirm("Reverse this batch? This will undo all cost allocations.")) {
-                              reverseMutation.mutate(batch.id);
-                            }
-                          }}
-                          disabled={reverseMutation.isPending}
-                        >
-                          <RotateCcw className="w-4 h-4 mr-2" />
-                          Reverse
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                   {/* Actions */}
+                   {batch.status === "confirmed" && (
+                     <div className="flex gap-3">
+                       <Button
+                         variant="destructive"
+                         onClick={() => setReverseDialogOpen(true)}
+                         disabled={reverseMutation.isPending}
+                       >
+                         <RotateCcw className="w-4 h-4 mr-2" />
+                         Reverse Batch
+                       </Button>
+                     </div>
+                   )}
+                 </>
+               );
+             })()}
+           </div>
+         )}
+
+         {/* HISTORY STEP */}
+         {step === "history" && (
+           <div className="space-y-6">
+             <div className="flex justify-between items-center">
+               <h2 className="text-2xl font-bold">Payroll Batch History</h2>
+               <Button
+                 onClick={() => {
+                   setStep("upload");
+                   resetForm();
+                 }}
+                 className="bg-blue-600"
+               >
+                 <Upload className="w-4 h-4 mr-2" />
+                 New Import
+               </Button>
+             </div>
+
+             {batches.length === 0 ? (
+               <Card>
+                 <CardContent className="p-8 text-center text-slate-600">
+                   No payroll batches yet. Start by uploading a file.
+                 </CardContent>
+               </Card>
+             ) : (
+               <div className="space-y-4">
+                 {batches.map((batch) => (
+                   <Card key={batch.id} className="shadow hover:shadow-lg transition-shadow cursor-pointer" onClick={() => {
+                     setSelectedBatchId(batch.id);
+                     setStep("detail");
+                   }}>
+                     <CardContent className="p-6">
+                       <div className="grid md:grid-cols-5 gap-4">
+                         <div>
+                           <div className="text-sm text-slate-600">Employee</div>
+                           <div className="font-semibold">{batch.employee_name}</div>
+                         </div>
+                         <div>
+                           <div className="text-sm text-slate-600">Period</div>
+                           <div className="font-semibold text-sm">{batch.period_start} → {batch.period_end}</div>
+                         </div>
+                         <div>
+                           <div className="text-sm text-slate-600">Total Paid</div>
+                           <div className="font-semibold">${batch.total_paid.toFixed(2)}</div>
+                         </div>
+                         <div>
+                           <div className="text-sm text-slate-600">Allocations</div>
+                           <div className="font-semibold">{batch.allocation_count}</div>
+                         </div>
+                         <div>
+                           <div className="text-sm text-slate-600">Status</div>
+                           <div className={`text-xs font-bold py-1 px-2 rounded w-fit ${
+                             batch.status === "confirmed"
+                               ? "bg-emerald-100 text-emerald-700"
+                               : batch.status === "reversed"
+                               ? "bg-red-100 text-red-700"
+                               : "bg-amber-100 text-amber-700"
+                           }`}>
+                             {batch.status.toUpperCase()}
+                           </div>
+                         </div>
+                       </div>
+                     </CardContent>
+                   </Card>
+                 ))}
+               </div>
+             )}
+           </div>
+         )}
+
+         {/* Reverse Confirmation Dialog */}
+         <AlertDialog open={reverseDialogOpen} onOpenChange={setReverseDialogOpen}>
+           <AlertDialogContent>
+             <AlertDialogHeader>
+               <AlertDialogTitle>Reverse Payroll Batch?</AlertDialogTitle>
+               <AlertDialogDescription>
+                 This will subtract all allocated amounts from Job total_cost and recalculate profits & commissions. Allocations will be marked as 'reversed' but not deleted.
+               </AlertDialogDescription>
+             </AlertDialogHeader>
+             <AlertDialogAction
+               onClick={() => reverseMutation.mutate(selectedBatchId)}
+               disabled={reverseMutation.isPending}
+               className="bg-red-600"
+             >
+               {reverseMutation.isPending ? "Reversing..." : "Reverse Batch"}
+             </AlertDialogAction>
+             <AlertDialogCancel>Cancel</AlertDialogCancel>
+           </AlertDialogContent>
+         </AlertDialog>
       </div>
     </div>
   );
