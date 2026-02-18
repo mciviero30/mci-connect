@@ -251,17 +251,19 @@ export default function CrearEstimado() {
       const perDiemItem = itemsWithItemName.find(i => i.calculation_type === 'per_diem');
       const drivingItem = itemsWithItemName.find(i => i.calculation_type === 'hours');
       
-      if (hotelItem?.tech_count) {
-        setProjectTechCount(hotelItem.tech_count);
-      } else if (perDiemItem?.tech_count) {
-        setProjectTechCount(perDiemItem.tech_count);
-      } else if (drivingItem?.tech_count && !drivingItem.manual_override) {
-        setProjectTechCount(drivingItem.tech_count);
-      }
+      // EDIT MODE: never restore derivation inputs — saved items are SSOT
+      if (!editId) {
+        if (hotelItem?.tech_count) {
+          setProjectTechCount(hotelItem.tech_count);
+        } else if (perDiemItem?.tech_count) {
+          setProjectTechCount(perDiemItem.tech_count);
+        } else if (drivingItem?.tech_count) {
+          setProjectTechCount(drivingItem.tech_count);
+        }
 
-      // Extract travel time from driving items — skip if manually overridden
-      if (drivingItem?.duration_value && !drivingItem.manual_override) {
-        setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
+        if (drivingItem?.duration_value) {
+          setTravelTimeHours(parseFloat(drivingItem.duration_value) || 0);
+        }
       }
 
       // Lock prices if quote was sent
