@@ -385,29 +385,32 @@ Lawrenceville, Georgia 30043, U.S.A`
     if (!quote) return;
     
     try {
-      console.log('🔄 Downloading Quote PDF from backend...');
-      const response = await base44.functions.invoke('generateQuotePDFFile', { quoteId: quote.id });
+      console.log('🔄 Downloading Quote PDF...');
+      const result = await base44.functions.invoke('generateQuotePDFFile', { quoteId: quote.id });
       
-      // Convert response to blob if needed
-      const blob = response instanceof Blob ? response : new Blob([response], { type: 'application/pdf' });
+      if (!result.pdf) {
+        throw new Error('No PDF data received');
+      }
       
-      // Create download link
+      // Decode base64 to blob
+      const binaryString = atob(result.pdf);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      
+      // Create and trigger download
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${quote.quote_number || 'quote'}.pdf`;
+      link.download = result.filename || `${quote.quote_number || 'quote'}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // Cleanup
-      setTimeout(() => URL.revokeObjectURL(url), 100);
+      URL.revokeObjectURL(url);
       
       console.log('✅ PDF downloaded successfully');
-      toast({
-        title: 'PDF downloaded',
-        variant: 'success'
-      });
     } catch (error) {
       console.error('PDF download error:', error);
       toast({
