@@ -89,12 +89,16 @@ export default function Calendario() {
     refetchOnWindowFocus: false
   });
 
-  // PERFORMANCE: Date-scoped cache key, reduced refetching
+  // CRITICAL FIX: Query should use currentDate, not hardcoded "today"
   const { data: shifts, isLoading, refetch: refetchShifts } = useQuery({
     queryKey: ['scheduleShifts', format(currentDate, 'yyyy-MM')],
     queryFn: async () => {
-      const today = new Date().toISOString().split('T')[0];
-      const data = await base44.entities.ScheduleShift.filter({ date: today });
+      // Query shifts for the entire month based on currentDate
+      const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
+      const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0];
+      const data = await base44.entities.ScheduleShift.filter({ 
+        date: { $gte: monthStart, $lte: monthEnd }
+      });
       return data || [];
     },
     initialData: [],
