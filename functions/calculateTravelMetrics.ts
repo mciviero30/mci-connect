@@ -87,6 +87,8 @@ Deno.serve(async (req) => {
       const hoursWithBuffer = roundTripHours * 1.1;
       const roundedHours = Math.ceil(hoursWithBuffer * 2) / 2;
 
+      // drivingHours = ONE-WAY hours with buffer (base for 1 round trip = 2x this)
+      // We return ONE-WAY so the calculator can correctly compute: oneWayHours * 2 * roundTrips
       results.push({
         teamId: team.id,
         teamName: team.team_name,
@@ -97,7 +99,7 @@ Deno.serve(async (req) => {
         totalMiles: totalMilesWithBuffer.toFixed(1),
         oneWayHours: oneWayHours.toFixed(2),
         roundTripHours: roundTripHours.toFixed(2),
-        drivingHours: roundedHours.toFixed(1),
+        drivingHours: roundedHours.toFixed(1), // this is round-trip hours (one_way * 2 * 1.1, rounded)
         success: true
       });
     }
