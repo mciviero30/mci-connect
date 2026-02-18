@@ -31,12 +31,13 @@ export default function UnifiedOutOfAreaCalculator({
   const [nightsPerTrip, setNightsPerTrip] = useState(2);
   const [isCalculating, setIsCalculating] = useState(false);
 
-  // Notify parent when stay config changes
+  // Notify parent when stay config changes — skip in edit mode to avoid overwriting saved items
   React.useEffect(() => {
+    if (editMode) return;
     if (onStayConfigChange) {
       onStayConfigChange({ roundTrips, daysPerTrip, nightsPerTrip });
     }
-  }, [roundTrips, daysPerTrip, nightsPerTrip, onStayConfigChange]);
+  }, [roundTrips, daysPerTrip, nightsPerTrip, onStayConfigChange, editMode]);
   
   // Load company settings for rates
   const { data: companySettings } = useQuery({
