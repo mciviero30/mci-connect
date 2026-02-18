@@ -52,6 +52,7 @@ import {
                     RefreshCw,
                     Heart,
                     FileSpreadsheet,
+                    Upload,
                   } from "lucide-react";
 import {
   Sidebar,
