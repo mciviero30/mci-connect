@@ -83,7 +83,6 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       onClose();
     },
     onError: (error) => {
-      const { handleError } = useErrorHandler();
       handleError(error, employee ? 'Employee updated' : 'Employee created');
     }
   });
