@@ -60,6 +60,7 @@ import ActualVsEstimatedChart from "../components/dashboard/ActualVsEstimatedCha
 import { AIPredictor } from "@/components/advanced/AIPredictor";
 import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
 import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/advanced/MicroInteractions";
+import { hasFullAccess } from "@/components/core/roleRules";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
