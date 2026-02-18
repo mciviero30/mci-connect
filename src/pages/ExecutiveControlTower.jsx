@@ -59,10 +59,18 @@ export default function ExecutiveControlTower() {
     staleTime: 30000
   });
 
-  // Compliance data
+  // EMPLOYEE SSOT: Use EmployeeDirectory instead of User.list()
   const { data: employees = [] } = useQuery({
     queryKey: ['all-employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' });
+      return directory.map(d => ({
+        id: d.user_id,
+        email: d.employee_email,
+        full_name: d.full_name,
+        employment_status: 'active'
+      }));
+    },
     staleTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false
