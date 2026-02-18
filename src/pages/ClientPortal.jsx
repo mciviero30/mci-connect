@@ -493,14 +493,6 @@ export default function ClientPortal() {
             </div>
           </TabsContent>
 
-          {/* Messages Tab - NEW */}
-          <TabsContent value="messages">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 p-6">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Project Messages</h3>
-              <JobChatView jobId={selectedJob?.id} currentUser={user} />
-            </div>
-          </TabsContent>
-
           {/* Comments Tab */}
           <TabsContent value="comments">
             <ClientComments jobId={selectedJob?.id} />
