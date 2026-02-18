@@ -199,10 +199,9 @@ export default function UnifiedOutOfAreaCalculator({
       const hotelRate = hotelItem?.unit_price || 200;
       const perDiemRate = perDiemItem?.unit_price || 55;
 
-      // CRITICAL: derivedValues.nights already includes trip calculations from computeQuoteDerived
-      // DO NOT add trips again here - it causes double-counting
-      const totalNights = derivedValues.nights; // Already includes all trips
-      const totalCalendarDays = derivedValues.totalCalendarDays; // Already includes all trips
+      // Use derivedValues when labor items exist, else use manual inputs × roundTrips
+      const totalNights = (hasCalculations ? derivedValues.nights : nightsPerTrip * roundTrips) || (nightsPerTrip * roundTrips);
+      const totalCalendarDays = (hasCalculations ? derivedValues.totalCalendarDays : daysPerTrip * roundTrips) || (daysPerTrip * roundTrips);
       const totalHotelRooms = roomsPerNight * totalNights;
       const totalPerDiemDays = techCount * totalCalendarDays;
 
