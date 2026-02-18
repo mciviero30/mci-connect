@@ -1137,9 +1137,7 @@ export default function CrearFactura() {
                 catalogItems={quoteItems}
                 allowCatalogSelect={true}
                 allowReorder={false}
-                onToast={(toastData) => {
-                  toast[toastData.variant || 'success'](toastData.title, { description: toastData.description });
-                }}
+                onToast={toast}
                 derivedValues={null}
                 onAddItem={addItem}
                 pricesLocked={pricesLocked}
