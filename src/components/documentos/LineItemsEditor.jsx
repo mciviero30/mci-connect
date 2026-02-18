@@ -166,13 +166,14 @@ export default function LineItemsEditor({
 
       {items.map((item, index) => {
         const isAutoCalc = isAutoCalculatedItem(item);
-        const baseQuantity = isAutoCalc && !item.manual_override && derivedValues
+        // Only hotel/per_diem use derivedValues — driving time (hours) and miles use item.quantity directly
+        const isDerivedType = item.calculation_type === 'hotel' || item.calculation_type === 'per_diem';
+        const baseQuantity = isAutoCalc && !item.manual_override && derivedValues && isDerivedType
           ? getDerivedQuantity(derivedValues, item.calculation_type)
           : item.quantity;
         
-        // quantity in state is always the FINAL quantity — no round_trips multiplication
         const displayQuantity = baseQuantity;
-        const displayTotal = displayQuantity * (item.unit_price || 0);
+        const displayTotal = (displayQuantity || 0) * (item.unit_price || 0);
         
         return (
           <div 
