@@ -314,38 +314,51 @@ Deno.serve(async (req) => {
     const user = await base44.auth.me();
 
     if (!user) {
-      return new Response('Unauthorized', { status: 401 });
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
-    const url = new URL(req.url);
-    const quoteId = url.searchParams.get('quoteId');
+    const payload = await req.json().catch(() => ({}));
+    const quoteId = payload.quoteId;
 
     if (!quoteId) {
-      return new Response('Missing quoteId', { status: 400 });
+      return new Response(
+        JSON.stringify({ error: 'Missing quoteId' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
     const quote = await base44.entities.Quote.get(quoteId);
     if (!quote) {
-      return new Response('Quote not found', { status: 404 });
+      return new Response(
+        JSON.stringify({ error: 'Quote not found' }),
+        { status: 404, headers: { 'Content-Type': 'application/json' } }
+      );
     }
 
     const doc = await generateQuotePDF(quote);
     const pdfBytes = doc.output('arraybuffer');
-    const filename = `Quote-${quote.quote_number || 'DRAFT'}.pdf`;
+    const pdfBase64 = btoa(String.fromCharCode(...new Uint8Array(pdfBytes)));
+    const fileName = `Quote-${quote.quote_number || 'DRAFT'}.pdf`;
 
-    return new Response(pdfBytes, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': pdfBytes.byteLength.toString(),
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, HEAD'
+    return new Response(
+      JSON.stringify({
+        success: true,
+        fileName: fileName,
+        base64: pdfBase64
+      }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
       }
-    });
+    );
   } catch (error) {
     console.error('PDF generation error:', error);
-    return new Response(`Error: ${error.message}`, { status: 500 });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 });
