@@ -58,12 +58,16 @@ export default function ClientPortal() {
 
   const projectIds = memberships.map(m => m.project_id);
 
+  // CLI-I2 FIX: filter server-side instead of loading all jobs
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ['client-jobs', projectIds],
     queryFn: async () => {
       if (projectIds.length === 0) return [];
-      const allJobs = await base44.entities.Job.list();
-      return allJobs.filter(j => projectIds.includes(j.id));
+      // Fetch each project's job by ID in parallel (client only has a few)
+      const results = await Promise.all(
+        projectIds.map(id => base44.entities.Job.filter({ id }).catch(() => []))
+      );
+      return results.flat().filter(Boolean);
     },
     enabled: projectIds.length > 0,
   });
