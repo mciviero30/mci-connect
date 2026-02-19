@@ -1220,7 +1220,7 @@ export default function CrearFactura() {
                 {/* Scope of Work Profit Target */}
                 <div className="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 bg-slate-50">
                   <div className="flex items-center gap-2">
-                    <Checkbox id="profit-target-inv" checked={profitTargetEnabled} onCheckedChange={setProfitTargetEnabled} />
+                    <input type="checkbox" id="profit-target-inv" checked={profitTargetEnabled} onChange={e => setProfitTargetEnabled(e.target.checked)} className="w-3.5 h-3.5 accent-violet-600 cursor-pointer" />
                     <label htmlFor="profit-target-inv" className="text-xs text-slate-600 cursor-pointer select-none">
                       {language === 'es' ? 'Meta de ganancia (Scope of Work)' : 'Profit Target (Scope of Work)'}
                     </label>
