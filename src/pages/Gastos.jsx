@@ -22,7 +22,7 @@ import { updateExpenseSafely } from "@/functions/updateExpenseSafely";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function Gastos() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
   const [showExpenseForm, setShowExpenseForm] = useState(false);
