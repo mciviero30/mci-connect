@@ -191,7 +191,7 @@ export default function CrearFactura() {
   const [generatingFromHours, setGeneratingFromHours] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
   const [profitTargetEnabled, setProfitTargetEnabled] = useState(false);
-  const [profitTargetPercent, setProfitTargetPercent] = useState(25);
+  const [profitTargetPercent, setProfitTargetPercent] = useState(0);
   
 
 
