@@ -416,7 +416,7 @@ export default function Empleados() {
             <div className="flex-shrink-0">
               <Button 
                 onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
-                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px] text-xs sm:text-sm px-3 sm:px-4"
+                className="h-10 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md px-4"
               >
                 <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="hidden sm:inline">Add Employee</span>
