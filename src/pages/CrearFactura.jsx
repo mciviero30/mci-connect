@@ -1217,25 +1217,23 @@ export default function CrearFactura() {
                   <span className="text-2xl font-bold text-emerald-700">${total.toFixed(2)}</span>
                 </div>
 
-                {/* Scope of Work Profit Target */}
-                <div className="flex items-center justify-between px-3 py-2 rounded-lg border border-slate-200 bg-slate-50">
+                {/* Profit Target */}
+                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id="profit-target-inv" checked={profitTargetEnabled} onChange={e => setProfitTargetEnabled(e.target.checked)} className="w-3.5 h-3.5 accent-violet-600 cursor-pointer" />
-                    <label htmlFor="profit-target-inv" className="text-xs text-slate-600 cursor-pointer select-none">
-                      {language === 'es' ? 'Meta de ganancia (Scope of Work)' : 'Profit Target (Scope of Work)'}
+                    <label htmlFor="profit-target-inv" className="font-medium cursor-pointer select-none">
+                      {language === 'es' ? 'Meta de Ganancia:' : 'Profit Target:'}
                     </label>
-                  </div>
-                  {profitTargetEnabled && (
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-1">
-                        <Input type="number" value={profitTargetPercent} onChange={e => setProfitTargetPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} min="0" max="100" step="1" className="w-14 h-6 text-xs text-center font-bold border-violet-300 p-1" />
-                        <span className="text-xs font-bold text-violet-700">%</span>
+                    {profitTargetEnabled && (
+                      <div className="flex items-center gap-1 ml-1">
+                        <Input type="number" value={profitTargetPercent} onChange={e => setProfitTargetPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} min="0" max="100" step="1" className="w-20 h-8" />
+                        <span>%</span>
                       </div>
-                      <span className="text-xs text-slate-400">→</span>
-                      <span className="text-xs font-bold text-violet-700">${(subtotal * profitTargetPercent / 100).toFixed(2)}</span>
-                      <span className="text-[10px] text-slate-400">| max cost: <span className="font-semibold text-slate-600">${(subtotal * (1 - profitTargetPercent / 100)).toFixed(2)}</span></span>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  <span className="text-lg font-bold text-violet-700">
+                    {profitTargetEnabled ? `$${(subtotal * profitTargetPercent / 100).toFixed(2)}` : '—'}
+                  </span>
                 </div>
               </div>
             </CardContent>
