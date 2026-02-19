@@ -149,7 +149,7 @@ export default function Contabilidad() {
         />
 
         <div className="grid lg:grid-cols-3 gap-6 mb-8">
-          <Card className="lg:col-span-2 bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+          <Card className="lg:col-span-2 bg-white dark:bg-slate-800 shadow-lg border-slate-200 dark:border-slate-700">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <CardTitle className="text-slate-900 dark:text-white">{t('incomeVsExpenses')}</CardTitle>
             </CardHeader>
