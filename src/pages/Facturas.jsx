@@ -370,15 +370,15 @@ export default function Facturas() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(createPageUrl("Papelera"))}
-                  className="border-red-200 text-red-600 hover:bg-red-50"
+                  className="h-10 border-red-200 text-red-600 hover:bg-red-50"
                 >
                   <TrashIcon className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Papelera' : 'Trash'}
                 </Button>
                 <InvoicePDFImporter onSuccess={() => queryClient.invalidateQueries({ queryKey: ['invoices'] })} />
-                <Link to={createPageUrl("CrearFactura")} className="flex-1 sm:flex-none">
-                  <Button className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                <Link to={createPageUrl("CrearFactura")}>
+                  <Button className="h-10 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
+                    <Plus className="w-4 h-4 mr-2" />
                     <span className="hidden sm:inline">{t('newInvoice')}</span>
                     <span className="sm:hidden">{language === 'es' ? 'Nueva' : 'New'}</span>
                   </Button>
