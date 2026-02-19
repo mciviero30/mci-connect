@@ -453,7 +453,7 @@ export default function Trabajos() {
 
         {/* Regular Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
             <DialogHeader>
               <DialogTitle className="text-2xl text-slate-900 dark:text-white">{editingJob ? t('editJob') : t('newJob')}</DialogTitle>
             </DialogHeader>
