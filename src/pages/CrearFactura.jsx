@@ -1220,20 +1220,11 @@ export default function CrearFactura() {
                 {/* Profit Target */}
                 <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
                   <div className="flex items-center gap-2">
-                    <input type="checkbox" id="profit-target-inv" checked={profitTargetEnabled} onChange={e => setProfitTargetEnabled(e.target.checked)} className="w-3.5 h-3.5 accent-violet-600 cursor-pointer" />
-                    <label htmlFor="profit-target-inv" className="font-medium cursor-pointer select-none">
-                      {language === 'es' ? 'Meta de Ganancia:' : 'Profit Target:'}
-                    </label>
-                    {profitTargetEnabled && (
-                      <div className="flex items-center gap-1 ml-1">
-                        <Input type="number" value={profitTargetPercent} onChange={e => setProfitTargetPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} min="0" max="100" step="1" className="w-20 h-8" />
-                        <span>%</span>
-                      </div>
-                    )}
+                    <span className="font-medium">{language === 'es' ? 'Meta de Ganancia:' : 'Profit Target:'}</span>
+                    <Input type="number" value={profitTargetPercent} onChange={e => setProfitTargetPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} min="0" max="100" step="1" className="w-20 h-8" />
+                    <span>%</span>
                   </div>
-                  <span className="text-lg font-bold text-violet-700">
-                    {profitTargetEnabled ? `$${(subtotal * profitTargetPercent / 100).toFixed(2)}` : '—'}
-                  </span>
+                  <span className="text-lg font-bold text-violet-700">${(subtotal * profitTargetPercent / 100).toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
