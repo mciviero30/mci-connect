@@ -175,7 +175,7 @@ export default function Contabilidad() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white dark:bg-[#282828] shadow-lg border-slate-200 dark:border-slate-700">
+          <Card className="bg-white dark:bg-slate-800 shadow-lg border-slate-200 dark:border-slate-700">
             <CardHeader className="border-b border-slate-200 dark:border-slate-700">
               <CardTitle className="text-slate-900 dark:text-white">{t('expensesByCategory')}</CardTitle>
             </CardHeader>
