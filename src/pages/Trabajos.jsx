@@ -290,19 +290,19 @@ export default function Trabajos() {
                   buttonText={language === 'es' ? 'Excel' : 'Excel'}
                   variant="outline"
                   size="sm"
-                  className="border-green-200 text-green-600 hover:bg-green-50 min-h-[44px]"
-                />
-                <Button
-                  onClick={() => setShowAIWizard(true)}
-                  className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md min-h-[44px] sm:min-h-[48px] text-sm sm:text-base px-4 sm:px-5"
-                >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  {language === 'es' ? 'Crear con IA' : 'Create with AI'}
-                </Button>
-                <Button
-                  onClick={() => setShowForm(true)}
-                  variant="outline"
-                  className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[44px] sm:min-h-[48px] text-sm sm:text-base px-4 sm:px-5"
+                  className="h-10 border-green-200 text-green-600 hover:bg-green-50"
+                  />
+                  <Button
+                   onClick={() => setShowAIWizard(true)}
+                   className="h-10 bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md px-4"
+                  >
+                   <Plus className="w-4 h-4 mr-2" />
+                   {language === 'es' ? 'Crear con IA' : 'Create with AI'}
+                  </Button>
+                  <Button
+                   onClick={() => setShowForm(true)}
+                   variant="outline"
+                   className="h-10 border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 px-4"
                 >
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                   <span className="hidden sm:inline">{language === 'es' ? 'Creación Rápida' : 'Quick Create'}</span>
