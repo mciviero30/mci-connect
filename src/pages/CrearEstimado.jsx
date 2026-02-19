@@ -1193,7 +1193,47 @@ export default function CrearEstimado() {
                   <span className="text-lg font-bold text-emerald-900">{t('total').toUpperCase()}:</span>
                   <span className="text-2xl font-bold text-emerald-700">${total.toFixed(2)}</span>
                 </div>
-              </div>
+
+                {/* Scope of Work Profit Target */}
+                <div className={`rounded-lg border-2 transition-all ${profitTargetEnabled ? 'border-violet-300 bg-violet-50' : 'border-slate-200 bg-slate-50'}`}>
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id="profit-target-quote"
+                        checked={profitTargetEnabled}
+                        onCheckedChange={setProfitTargetEnabled}
+                      />
+                      <label htmlFor="profit-target-quote" className="text-sm font-semibold text-slate-700 cursor-pointer select-none">
+                        {language === 'es' ? 'Meta de ganancia (Scope of Work)' : 'Profit Target (Scope of Work)'}
+                      </label>
+                    </div>
+                    {profitTargetEnabled && (
+                      <div className="flex items-center gap-1">
+                        <Input
+                          type="number"
+                          value={profitTargetPercent}
+                          onChange={e => setProfitTargetPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+                          min="0" max="100" step="1"
+                          className="w-16 h-7 text-sm text-center font-bold border-violet-300"
+                        />
+                        <span className="text-sm font-bold text-violet-700">%</span>
+                      </div>
+                    )}
+                  </div>
+                  {profitTargetEnabled && (
+                    <div className="px-4 pb-3 pt-0 grid grid-cols-2 gap-2 border-t border-violet-200">
+                      <div className="text-center p-2 bg-white rounded-md border border-violet-200">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wide">{language === 'es' ? 'Meta de ganancia' : 'Profit Target'}</p>
+                        <p className="text-lg font-bold text-violet-700">${(subtotal * profitTargetPercent / 100).toFixed(2)}</p>
+                      </div>
+                      <div className="text-center p-2 bg-white rounded-md border border-violet-200">
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wide">{language === 'es' ? 'Costo máx. aceptable' : 'Max Acceptable Cost'}</p>
+                        <p className="text-lg font-bold text-slate-700">${(subtotal * (1 - profitTargetPercent / 100)).toFixed(2)}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                </div>
             </CardContent>
           </Card>
 
