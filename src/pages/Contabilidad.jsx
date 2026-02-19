@@ -130,7 +130,7 @@ export default function Contabilidad() {
           icon={DollarSign}
           actions={
             <div className="flex-shrink-0">
-              <Button onClick={() => setFormOpen(true)} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
+              <Button onClick={() => setFormOpen(true)} className="h-10 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
                 <span className="hidden sm:inline">{t('newTransaction')}</span>
                 <span className="sm:hidden">{language === 'es' ? 'Nueva' : 'New'}</span>
