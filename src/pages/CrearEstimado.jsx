@@ -125,6 +125,8 @@ export default function CrearEstimado() {
   // ALL derived values come from useMemo below
   
   const [isCalculatingTravel, setIsCalculatingTravel] = useState(false);
+  const [profitTargetEnabled, setProfitTargetEnabled] = useState(false);
+  const [profitTargetPercent, setProfitTargetPercent] = useState(25);
   const [projectTechCount, setProjectTechCount] = useState(2);
   const [travelTimeHours, setTravelTimeHours] = useState(0);
   // N3 FIX: roomsPerNight tracks projectTechCount dynamically
