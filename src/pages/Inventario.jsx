@@ -375,20 +375,10 @@ export default function Inventario() {
               <Button 
                 onClick={() => {
                   setShowMovementDialog(true);
-                  // Reset movement form when opening for a new movement
-                  setMovementForm({
-                    item_id: '',
-                    item_name: '',
-                    type: 'remove',
-                    quantity: 0,
-                    job_id: '',
-                    job_name: '',
-                    notes: ''
-                  });
+                  setMovementForm({ item_id: '', item_name: '', type: 'remove', quantity: 0, job_id: '', job_name: '', notes: '' });
                 }} 
                 variant="outline"
-                size="lg" 
-                className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
+                className="h-10 border-slate-300 text-slate-700 hover:bg-slate-50"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Register Movement
@@ -396,27 +386,10 @@ export default function Inventario() {
               <Button 
                 onClick={() => { 
                   setSelectedItem(null); 
-                  setItemForm({
-                    name: '',
-                    category: 'materials',
-                    inventory_type: 'tools',
-                    team_id: '',
-                    team_name: '',
-                    description: '',
-                    sku: '',
-                    quantity: 0,
-                    min_quantity: 0,
-                    unit: 'units',
-                    cost: 0,
-                    location: '',
-                    photo_url: '',
-                    supplier_id: '',
-                    supplier_name: ''
-                  });
+                  setItemForm({ name: '', category: 'materials', inventory_type: 'tools', team_id: '', team_name: '', description: '', sku: '', quantity: 0, min_quantity: 0, unit: 'units', cost: 0, location: '', photo_url: '', supplier_id: '', supplier_name: '' });
                   setShowAddDialog(true); 
                 }} 
-                size="lg"
-                className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
+                className="h-10 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Item
