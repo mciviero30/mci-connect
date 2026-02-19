@@ -227,7 +227,7 @@ export default function Clientes() {
                   size="sm"
                   className="border-green-200 text-green-600 hover:bg-green-50"
                 />
-                <Button onClick={() => setShowForm(true)} size="lg" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[44px]">
+                <Button onClick={() => setShowForm(true)} className="h-10 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
                   <span className="hidden sm:inline">{t('newCustomer')}</span>
                   <span className="sm:hidden">{language === 'es' ? 'Nuevo' : 'New'}</span>
