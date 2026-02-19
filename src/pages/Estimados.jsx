@@ -300,7 +300,7 @@ export default function Estimados() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(createPageUrl("Papelera"))}
-                  className="border-red-200 text-red-600 hover:bg-red-50"
+                  className="h-10 border-red-200 text-red-600 hover:bg-red-50"
                 >
                   <TrashIcon className="w-4 h-4 mr-2" />
                   {language === 'es' ? 'Papelera' : 'Trash'}
@@ -308,17 +308,17 @@ export default function Estimados() {
                 <QuotePDFImporter onSuccess={() => queryClient.invalidateQueries({ queryKey: ['quotes'] })} />
                 <Button
                   onClick={() => setShowAIWizard(true)}
-                  className="bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md min-h-[44px] px-3 sm:px-4 flex-1 sm:flex-none"
+                  className="h-10 bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md px-3 sm:px-4"
                 >
-                  <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                  <Sparkles className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">{language === 'es' ? 'IA' : 'AI'}</span>
                 </Button>
-                <Link to={createPageUrl("CrearEstimado")} className="flex-1 sm:flex-none">
+                <Link to={createPageUrl("CrearEstimado")}>
                   <Button
                     variant="outline"
-                    className="w-full border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[44px] px-3 sm:px-4"
+                    className="h-10 border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 px-3 sm:px-4"
                   >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                    <Plus className="w-4 h-4 mr-2" />
                     <span className="hidden sm:inline">{t('newQuote')}</span>
                     <span className="sm:hidden">{language === 'es' ? 'Nuevo' : 'New'}</span>
                   </Button>
