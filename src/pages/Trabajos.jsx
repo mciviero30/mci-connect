@@ -402,7 +402,7 @@ export default function Trabajos() {
         )}
 
         {filteredJobs.length === 0 && !isLoading && (
-          <Card className="bg-white/90 dark:bg-[#282828] backdrop-blur-sm shadow-lg border-slate-200 dark:border-slate-700">
+          <Card className="bg-white dark:bg-slate-800 shadow-lg border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
               <Briefcase className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
