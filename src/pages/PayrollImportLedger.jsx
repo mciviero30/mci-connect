@@ -310,8 +310,69 @@ export default function PayrollImportLedger() {
           </Card>
         )}
 
+        {/* SELECT EMPLOYEE STEP */}
+        {step === "select_employee" && parsedData && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold">Select Employee to Import</h2>
+              <Button variant="outline" size="sm" onClick={() => { setStep("upload"); resetForm(); }}>Back</Button>
+            </div>
+            <p className="text-slate-500 text-sm">
+              Found {parsedData.employee_count} employees. {parsedData.matched_count} matched in system.
+              Select one to import.
+            </p>
+            <div className="space-y-3">
+              {parsedData.employees.map((emp, idx) => (
+                <Card
+                  key={idx}
+                  className={`cursor-pointer hover:shadow-md transition-shadow border-2 ${
+                    emp.match ? "border-emerald-200" : "border-amber-200"
+                  }`}
+                  onClick={() => {
+                    setSelectedEmployee(emp);
+                    setFormData(prev => ({
+                      ...prev,
+                      employee_name: emp.match?.full_name || emp.connecteam_name,
+                      employee_id: emp.match?.pending_employee_id || "",
+                      total_paid: emp.total_pay > 0 ? String(emp.total_pay) : prev.total_paid,
+                    }));
+                    setStep("preview");
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-bold text-base">{emp.connecteam_name}</div>
+                        {emp.match ? (
+                          <div className="text-xs text-emerald-600 font-medium mt-0.5">
+                            ✅ Matched: {emp.match.full_name} {emp.match_method === 'ssn' ? '(SSN)' : '(name)'}
+                            {emp.match.email && <span className="text-slate-500 ml-1">· {emp.match.email}</span>}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-amber-600 font-medium mt-0.5">
+                            ⚠️ Not found in system — will create new employee
+                          </div>
+                        )}
+                        <div className="text-xs text-slate-500 mt-1">
+                          {emp.jobs.length} jobs · {emp.total_hours} hrs
+                          {emp.title && <span> · {emp.title}</span>}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {emp.total_pay > 0 && (
+                          <div className="font-bold text-emerald-700">${emp.total_pay.toFixed(2)}</div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* PREVIEW STEP */}
-         {step === "preview" && parsedData && (
+         {step === "preview" && parsedData && selectedEmployee && (
            <div className="space-y-6">
              <Card className="shadow-lg">
                <CardHeader>
