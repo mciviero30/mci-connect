@@ -40,8 +40,9 @@ export default function PayrollImportLedger() {
   });
 
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [step, setStep] = useState("history"); // upload | preview | confirm | history | detail
-  const [parsedData, setParsedData] = useState(null);
+  const [step, setStep] = useState("history"); // upload | select_employee | preview | history | detail
+  const [parsedData, setParsedData] = useState(null);  // full parsed result with all employees
+  const [selectedEmployee, setSelectedEmployee] = useState(null); // chosen employee from list
   const [allocations, setAllocations] = useState(null);
   const [selectedBatchId, setSelectedBatchId] = useState(null);
   const [reverseDialogOpen, setReverseDialogOpen] = useState(false);
