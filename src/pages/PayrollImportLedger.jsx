@@ -454,7 +454,12 @@ export default function PayrollImportLedger() {
                             ⚠️ Absorbs rounding delta
                           </div>
                         )}
-                        {!alloc.job_found && (
+                        {alloc.is_placeholder && (
+                          <div className="text-xs text-amber-600 font-medium flex items-center gap-1">
+                            🆕 Placeholder job created — needs to be linked
+                          </div>
+                        )}
+                        {!alloc.job_found && !alloc.is_placeholder && (
                           <div className="text-xs text-red-600 font-medium">
                             ❌ Job not found in system
                           </div>
@@ -479,10 +484,10 @@ export default function PayrollImportLedger() {
                 </div>
 
                 {allocations.some((a) => !a.job_found) && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded flex gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
-                    <div className="text-sm text-red-700">
-                      Some jobs were not found in the system. They will be created with empty job_id.
+                  <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded flex gap-2">
+                    <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                    <div className="text-sm text-amber-700">
+                      <strong>{allocations.filter(a => !a.job_found).length} job(s) not found</strong> — placeholder jobs will be auto-created with a draft invoice ($0). Go to <strong>Jobs</strong> → filter by <em>"payroll_placeholder"</em> to complete them later.
                     </div>
                   </div>
                 )}
