@@ -104,8 +104,21 @@ export default function PayrollImportLedger() {
     },
     onSuccess: (data) => {
       setParsedData(data);
-      setStep("preview");
-      toast.success("Excel parsed successfully");
+      // If only one employee, skip selection and go straight to preview
+      if (data.employees?.length === 1) {
+        const emp = data.employees[0];
+        setSelectedEmployee(emp);
+        setFormData(prev => ({
+          ...prev,
+          employee_name: emp.match?.full_name || emp.connecteam_name,
+          employee_id: emp.match?.pending_employee_id || "",
+          total_paid: emp.total_pay > 0 ? String(emp.total_pay) : prev.total_paid,
+        }));
+        setStep("preview");
+      } else {
+        setStep("select_employee");
+      }
+      toast.success(`Parsed ${data.employee_count} employees`);
     },
     onError: (error) => {
       toast.error(error.message || "Failed to parse file");
