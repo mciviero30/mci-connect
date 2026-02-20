@@ -275,6 +275,23 @@ export default function PayrollImportLedger() {
                 <Label className="text-lg font-semibold mb-4 block">
                   Upload Excel file (Connecteam timesheet)
                 </Label>
+                <Button
+                  disabled={uploadMutation.isPending}
+                  className="cursor-pointer relative"
+                  onClick={() => document.getElementById('file-upload').click()}
+                >
+                  {uploadMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Parsing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Select File
+                    </>
+                  )}
+                </Button>
                 <input
                   type="file"
                   accept=".xlsx,.xls,.csv"
@@ -283,27 +300,6 @@ export default function PayrollImportLedger() {
                   className="hidden"
                   id="file-upload"
                 />
-                <label htmlFor="file-upload" className="inline-block">
-                  <Button
-                    asChild
-                    disabled={uploadMutation.isPending}
-                    className="cursor-pointer"
-                  >
-                    <span>
-                      {uploadMutation.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Parsing...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Select File
-                        </>
-                      )}
-                    </span>
-                  </Button>
-                </label>
                 {uploadedFile && (
                   <p className="mt-4 text-sm text-slate-600">
                     📄 {uploadedFile.name}
