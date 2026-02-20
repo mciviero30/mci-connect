@@ -481,8 +481,8 @@ export default function PayrollImportLedger() {
               <Button
                 variant="outline"
                 onClick={() => {
-                  setStep("upload");
-                  setParsedData(null);
+                  setAllocations(null);
+                  setStep(parsedData?.employee_count > 1 ? "select_employee" : "upload");
                 }}
               >
                 Back
