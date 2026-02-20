@@ -208,6 +208,7 @@ export default function PayrollImportLedger() {
   const resetForm = () => {
     setUploadedFile(null);
     setParsedData(null);
+    setSelectedEmployee(null);
     setAllocations(null);
     setFormData({
       employee_id: "",
