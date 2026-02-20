@@ -456,25 +456,25 @@ export default function PayrollImportLedger() {
             </Card>
 
             <Card className="shadow-lg border-blue-200 bg-blue-50">
-              <CardHeader>
-                <CardTitle>Jobs Found ({parsedData.jobs.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {parsedData.jobs.map((job, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between p-3 bg-white rounded border"
-                    >
-                      <span className="font-medium">{job.name}</span>
-                      <span className="text-slate-600">{job.hours} hours</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-sm text-slate-600 mt-4">
-                  Total: {parsedData.total_hours} hours
-                </p>
-              </CardContent>
+             <CardHeader>
+               <CardTitle>Jobs Found ({selectedEmployee.jobs.length})</CardTitle>
+             </CardHeader>
+             <CardContent>
+               <div className="space-y-2">
+                 {selectedEmployee.jobs.map((job, idx) => (
+                   <div
+                     key={idx}
+                     className="flex justify-between p-3 bg-white rounded border"
+                   >
+                     <span className="font-medium">{job.name}</span>
+                     <span className="text-slate-600">{job.hours} hours</span>
+                   </div>
+                 ))}
+               </div>
+               <p className="text-sm text-slate-600 mt-4">
+                 Total: {selectedEmployee.total_hours} hours
+               </p>
+             </CardContent>
             </Card>
 
             <div className="flex gap-3">
