@@ -24,19 +24,27 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { file_url, file_name } = body;
+    const { file_url, file_base64, file_name } = body;
 
-    if (!file_url) {
-      return Response.json({ error: 'file_url required' }, { status: 400 });
+    if (!file_url && !file_base64) {
+      return Response.json({ error: 'file_url or file_base64 required' }, { status: 400 });
     }
 
-    // Download the Excel file
-    const fileResponse = await fetch(file_url);
-    if (!fileResponse.ok) {
-      return Response.json({ error: 'Failed to download file' }, { status: 400 });
+    let arrayBuffer;
+    if (file_base64) {
+      // Decode base64 directly — no integration credits needed
+      const binaryStr = atob(file_base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+      arrayBuffer = bytes.buffer;
+    } else {
+      const fileResponse = await fetch(file_url);
+      if (!fileResponse.ok) {
+        return Response.json({ error: 'Failed to download file' }, { status: 400 });
+      }
+      arrayBuffer = await fileResponse.arrayBuffer();
     }
 
-    const arrayBuffer = await fileResponse.arrayBuffer();
     const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
 
     // Use "All Employees" sheet if available, else first sheet
