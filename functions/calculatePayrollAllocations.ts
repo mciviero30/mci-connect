@@ -75,9 +75,30 @@ Deno.serve(async (req) => {
 
       // Find matching job in DB
       const matchedJob = jobMap.get(job.name.toLowerCase().trim());
+
+      // If not found, create a placeholder Job
+      let jobId = matchedJob?.id || '';
+      let isPlaceholder = false;
+      if (!matchedJob) {
+        try {
+          const newJob = await base44.entities.Job.create({
+            name: job.name,
+            customer_name: 'Unknown (Payroll Import)',
+            authorization_id: 'payroll-placeholder',
+            status: 'payroll_placeholder',
+            backfill_source: 'auto_generated',
+            notes: `Auto-created from payroll import. Needs to be linked to the real job.`
+          });
+          jobId = newJob.id;
+          isPlaceholder = true;
+          console.log(`🆕 Created placeholder Job "${job.name}" → ${newJob.id}`);
+        } catch (err) {
+          console.warn(`⚠️ Failed to create placeholder Job for "${job.name}":`, err.message);
+        }
+      }
       
       allocations.push({
-        job_id: matchedJob?.id || '',
+        job_id: jobId,
         job_name: job.name,
         allocated_amount: Math.round(allocated_amount * 100) / 100,
         allocation_percentage: Math.round(percentage * 100) / 100,
@@ -87,7 +108,9 @@ Deno.serve(async (req) => {
           (Math.round(allocated_amount * 100) / 100) - 
           (Math.round((job.hours / total_hours) * total_paid * 100) / 100)
           : 0,
-        job_found: !!matchedJob
+        job_found: !!matchedJob,
+        is_placeholder: isPlaceholder,
+        placeholder_job_id: isPlaceholder ? jobId : undefined
       });
     }
 

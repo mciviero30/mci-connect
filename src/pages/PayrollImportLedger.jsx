@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Upload, AlertCircle, CheckCircle2, RotateCcw, Loader2, ChevronLeft, Clock, DollarSign } from "lucide-react";
+import { Upload, AlertCircle, CheckCircle2, RotateCcw, Loader2, ChevronLeft, Clock, DollarSign, ExternalLink } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import PageHeader from "@/components/shared/PageHeader";
 import { toast } from "sonner";

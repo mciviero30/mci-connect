@@ -236,6 +236,42 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Step 4b: Create draft invoices for placeholder jobs (non-critical)
+    const placeholderAllocations = allocations.filter(a => a.is_placeholder && a.job_id);
+    for (const alloc of placeholderAllocations) {
+      try {
+        // Get a unique invoice number
+        let invoiceNumber = `PAYROLL-DRAFT-${Date.now()}`;
+        try {
+          const { invoice_number } = await base44.functions.invoke('generateInvoiceNumber', {});
+          invoiceNumber = invoice_number || invoiceNumber;
+        } catch (_) {}
+
+        await base44.entities.Invoice.create({
+          invoice_number: invoiceNumber,
+          job_id: alloc.job_id,
+          job_name: alloc.job_name,
+          customer_name: 'Pending - Import from Payroll',
+          invoice_date: period_start,
+          items: [{
+            item_name: 'Payroll Labor Cost (Pending)',
+            description: `Auto-created from payroll import. Update with real billing info. Hours: ${alloc.hours_worked}`,
+            quantity: 1,
+            unit_price: 0,
+            total: 0
+          }],
+          subtotal: 0,
+          tax_amount: 0,
+          total: 0,
+          status: 'draft',
+          notes: `⚠️ PAYROLL DRAFT: This invoice was auto-created because job "${alloc.job_name}" was not found in the system. Please update with correct customer, amounts, and billing info. Payroll Batch: ${batch.id}`,
+        });
+        console.log(`🧾 Created draft invoice for placeholder job "${alloc.job_name}"`);
+      } catch (err) {
+        console.warn(`⚠️ Failed to create draft invoice for "${alloc.job_name}":`, err.message);
+      }
+    }
+
     // Step 5: LOCK batch & allocations - total_paid now immutable
     try {
       await base44.entities.PayrollBatch.update(batch.id, {
