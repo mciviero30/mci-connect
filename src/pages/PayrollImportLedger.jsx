@@ -129,11 +129,12 @@ export default function PayrollImportLedger() {
   const calculateMutation = useMutation({
     mutationFn: async () => {
       const total = parseFloat(formData.total_paid) || 0;
+      const jobs = selectedEmployee?.jobs || parsedData.jobs;
       const { allocations } = await base44.functions.invoke(
         "calculatePayrollAllocations",
         {
           total_paid: total,
-          jobs: parsedData.jobs,
+          jobs,
         }
       );
       return allocations;
