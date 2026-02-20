@@ -227,6 +227,7 @@ export default function PayrollImportLedger() {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile(file);
+      toast.info(`Uploading ${file.name}...`);
       uploadMutation.mutate(file);
     }
   };
