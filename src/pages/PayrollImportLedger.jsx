@@ -96,11 +96,14 @@ export default function PayrollImportLedger() {
   const uploadMutation = useMutation({
     mutationFn: async (file) => {
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      const { data } = await base44.functions.invoke("parsePayrollExcel", {
+      const response = await base44.functions.invoke("parsePayrollExcel", {
         file_url,
         file_name: file.name,
       });
-      return data;
+      // response.data is the axios response body: { success, data: { employees, ... } }
+      const body = response.data;
+      if (!body?.success) throw new Error(body?.error || "Failed to parse file");
+      return body.data;
     },
     onSuccess: (data) => {
       setParsedData(data);
