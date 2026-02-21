@@ -1,6 +1,14 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import { createDeterminismEngine } from './FinancialDeterminismFactory.js';
 
+// ============================================================
+// PHASE 0 HARD FREEZE — FINANCIAL RESET IN PROGRESS
+// Disabled: 2026-02-21
+// ============================================================
+Deno.serve(async (req) => {
+  return Response.json({ error: 'COMMISSION SYSTEM DISABLED — FINANCIAL RESET IN PROGRESS' }, { status: 503 });
+});
+
 /**
  * TASK #1: COMMISSION CALCULATION ENGINE (Unified Pattern)
  * 
