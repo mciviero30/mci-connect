@@ -283,6 +283,65 @@ Deno.serve(async (req) => {
 
   console.log(`[confirmPayrollImportFromPreview] ✅ All ${confirmedBatchIds.length} employees confirmed successfully`);
 
+  // ============================================================
+  // STEP 2+3 — POST-IMPORT SNAPSHOT + FINANCIAL SUMMARY (read-only)
+  // Fetch updated job values after confirmPayrollBatch has run recalculateJobFinancials.
+  // No mutations here — pure reporting.
+  // ============================================================
+  const jobSnapshotAfter = {}; // job_id → { real_cost_after, profit_real_after }
+  for (const jobId of allJobIds) {
+    const job = await base44.asServiceRole.entities.Job.get(jobId);
+    if (job) {
+      jobSnapshotAfter[jobId] = {
+        real_cost_after: job.real_cost ?? 0,
+        profit_real_after: job.profit_real ?? 0
+      };
+    }
+  }
+
+  const totalPayrollImported = round2(previewPayload.summary?.total_pay_amount ?? 0);
+
+  let totalRealCostAdded = 0;
+  let companyProfitBefore = 0;
+  let companyProfitAfter = 0;
+  const jobsImpacted = [];
+
+  for (const jobId of allJobIds) {
+    const before = jobSnapshotBefore[jobId];
+    const after = jobSnapshotAfter[jobId];
+    if (!before || !after) continue;
+
+    const costDelta = round2(after.real_cost_after - before.real_cost_before);
+    totalRealCostAdded = round2(totalRealCostAdded + costDelta);
+    companyProfitBefore = round2(companyProfitBefore + before.profit_real_before);
+    companyProfitAfter = round2(companyProfitAfter + after.profit_real_after);
+
+    jobsImpacted.push({
+      job_id: jobId,
+      job_name: before.job_name,
+      real_cost_before: before.real_cost_before,
+      real_cost_after: after.real_cost_after,
+      cost_delta: costDelta,
+      profit_real_before: before.profit_real_before,
+      profit_real_after: after.profit_real_after,
+      profit_delta: round2(after.profit_real_after - before.profit_real_before)
+    });
+  }
+
+  const profitDelta = round2(companyProfitAfter - companyProfitBefore);
+
+  const financialSummary = {
+    total_payroll_imported: totalPayrollImported,
+    total_real_cost_added: totalRealCostAdded,
+    jobs_impacted: jobsImpacted.length,
+    company_profit_before: companyProfitBefore,
+    company_profit_after: companyProfitAfter,
+    profit_delta: profitDelta,
+    jobs: jobsImpacted
+  };
+
+  console.log(`[confirmPayrollImportFromPreview] Financial summary: payroll=$${totalPayrollImported}, profit_delta=$${profitDelta}`);
+
   // Audit log the successful import
   await base44.asServiceRole.entities.AuditLog.create({
     event_type: 'payroll_batch_confirmed',
