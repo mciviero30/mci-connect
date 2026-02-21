@@ -143,14 +143,16 @@ export default function PayrollImportLedger() {
     mutationFn: async () => {
       const total = parseFloat(formData.total_paid) || 0;
       const jobs = selectedEmployee?.jobs || parsedData.jobs;
-      const { allocations } = await base44.functions.invoke(
+      const response = await base44.functions.invoke(
         "calculatePayrollAllocations",
         {
           total_paid: total,
           jobs,
         }
       );
-      return allocations;
+      const body = response.data;
+      if (!body?.allocations) throw new Error(body?.error || "Failed to calculate allocations");
+      return body.allocations;
     },
     onSuccess: (data) => {
       setAllocations(data);
