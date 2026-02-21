@@ -166,7 +166,7 @@ export default function PayrollImportLedger() {
   // Confirm batch
   const confirmMutation = useMutation({
     mutationFn: async () => {
-      const { batch_id } = await base44.functions.invoke("confirmPayrollBatch", {
+      const response = await base44.functions.invoke("confirmPayrollBatch", {
         employee_id: formData.employee_id || user.id,
         employee_name: formData.employee_name,
         period_start: formData.period_start,
@@ -178,7 +178,9 @@ export default function PayrollImportLedger() {
         })),
         notes: formData.notes,
       });
-      return batch_id;
+      const body = response.data;
+      if (!body?.batch_id && !body?.success) throw new Error(body?.error || "Failed to confirm batch");
+      return body.batch_id;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payrollBatches"] });
