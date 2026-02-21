@@ -236,8 +236,15 @@ export default function PayrollImportLedger() {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile(file);
+      // Try to extract dates from filename like: timeclock-..._2025-01-01_2025-03-31.xlsx
+      const dateMatch = file.name.match(/(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})/);
+      const meta = {
+        period_start: dateMatch ? dateMatch[1] : "",
+        period_end: dateMatch ? dateMatch[2] : "",
+      };
+      setFileMetadata(meta);
       toast.info(`Parsing ${file.name}...`);
-      setStep("upload"); // ensure we're on upload step so spinner shows
+      setStep("upload");
       uploadMutation.mutate(file);
     }
   };
