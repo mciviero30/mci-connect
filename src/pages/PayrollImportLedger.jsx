@@ -416,16 +416,29 @@ export default function PayrollImportLedger() {
                        }}
                      >
                        <SelectTrigger className="mt-1">
-                         <SelectValue placeholder="Select employee" />
+                         <SelectValue placeholder="Select employee">
+                           {formData.employee_id
+                             ? (employees.find(e => e.id === formData.employee_id)?.full_name || employees.find(e => e.id === formData.employee_id)?.employee_name || formData.employee_name)
+                             : formData.employee_name
+                               ? <span className="text-amber-600">{formData.employee_name} (not matched — select manually)</span>
+                               : "Select employee"}
+                         </SelectValue>
                        </SelectTrigger>
                        <SelectContent>
-                         {employees.map((emp) => (
-                           <SelectItem key={emp.id} value={emp.id}>
-                             {emp.full_name || emp.employee_name}
-                           </SelectItem>
-                         ))}
+                         {[...employees]
+                           .sort((a, b) => (a.full_name || a.employee_name || "").localeCompare(b.full_name || b.employee_name || ""))
+                           .map((emp) => (
+                             <SelectItem key={emp.id} value={emp.id}>
+                               {emp.full_name || emp.employee_name}
+                             </SelectItem>
+                           ))}
                        </SelectContent>
                      </Select>
+                     {formData.employee_name && !formData.employee_id && (
+                       <p className="text-xs text-amber-600 mt-1">
+                         Connecteam name: <strong>{selectedEmployee?.connecteam_name}</strong> — please select the matching employee above
+                       </p>
+                     )}
                    </div>
                   <div>
                     <Label>Total Paid *</Label>
