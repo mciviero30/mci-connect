@@ -59,12 +59,14 @@ Deno.serve(async (req) => {
       return Response.json({ success: false, error: 'No data found in file' }, { status: 400 });
     }
 
-    // Helper: parse "HH:MM" or numeric to decimal hours
+    // Helper: parse "HH:MM" string or Excel time fraction to decimal hours
     const parseHours = (val) => {
       if (!val && val !== 0) return 0;
       const str = String(val).trim();
       if (!str) return 0;
-      if (!isNaN(str)) return parseFloat(str) * 24; // Excel time fraction
+      // Excel stores times as fraction of 24hrs (e.g. 0.25 = 6:00)
+      if (!isNaN(str)) return parseFloat(str) * 24;
+      // "HH:MM" or "HHH:MM" string format
       const parts = str.split(':');
       if (parts.length >= 2) {
         return (parseInt(parts[0]) || 0) + (parseInt(parts[1]) || 0) / 60;
@@ -74,71 +76,108 @@ Deno.serve(async (req) => {
 
     const round2 = (n) => Math.round(n * 100) / 100;
 
-    // Skip-list for non-job entries
     const skipTypes = new Set(['lunch break', 'rest break', 'no records for this day', 'no sub-job', '']);
 
-    // Parse: employee header rows have First name populated
-    // Job detail rows have empty First name but have Type + Shift hours
-    const employees = [];
-    let currentEmployee = null;
+    // Detect format:
+    // "row-format": every row has First name + Last name + Type + Total hours (one job per row, employee repeats)
+    // "summary-format": employee header row (has First name) followed by job detail rows (empty First name, has Shift hours)
+    const hasShiftHoursCol = rows.some(r => r['Shift hours'] !== undefined);
+    const isRowFormat = !hasShiftHoursCol;
 
-    for (const row of rows) {
-      const firstName = String(row['First name'] || '').trim();
-      const lastName = String(row['Last name'] || '').trim();
-      const hasName = firstName || lastName;
+    console.log(`📋 Detected format: ${isRowFormat ? 'row-format (Total hours per row)' : 'summary-format (Shift hours)'}`);
 
-      if (hasName) {
-        // This is an employee header row
-        const ssnRaw = row['SSN'];
-        const ssn = ssnRaw ? String(ssnRaw).trim().replace(/\D/g, '') : '';
-        const totalPayRaw = row['Total pay'];
-        const totalPay = totalPayRaw ? parseFloat(totalPayRaw) || 0 : 0;
-        const hourlyRate = row['Hourly rate (USD)'] ? parseFloat(row['Hourly rate (USD)']) : null;
+    const empMap = new Map(); // key = "FirstName LastName" normalized
 
-        currentEmployee = {
-          connecteam_name: `${firstName} ${lastName}`.trim(),
-          first_name: firstName,
-          last_name: lastName,
-          ssn,
-          total_pay: totalPay,
-          hourly_rate: hourlyRate,
-          title: String(row['Title'] || '').trim(),
-          address: String(row['Address'] || '').trim(),
-          birthday: String(row['Birthday'] || '').trim(),
-          jobMap: new Map()
-        };
+    if (isRowFormat) {
+      // ROW FORMAT: each row = one employee + one job
+      for (const row of rows) {
+        const firstName = String(row['First name'] || '').trim();
+        const lastName = String(row['Last name'] || '').trim();
+        if (!firstName && !lastName) continue;
 
-        // Also check if this header row itself has a job (can happen)
-        const jobName = String(row['Type'] || '').trim();
-        if (jobName && !skipTypes.has(jobName.toLowerCase())) {
-          const shiftHours = parseHours(row['Shift hours']);
-          if (shiftHours > 0) {
-            const key = jobName.toLowerCase();
-            const existing = currentEmployee.jobMap.get(key) || { name: jobName, hours: 0 };
-            existing.hours = round2(existing.hours + shiftHours);
-            currentEmployee.jobMap.set(key, existing);
-          }
-        }
-
-        employees.push(currentEmployee);
-      } else if (currentEmployee) {
-        // Job detail row - belongs to currentEmployee
+        const nameKey = `${firstName} ${lastName}`.toLowerCase().trim();
         const jobName = String(row['Type'] || '').trim();
         if (!jobName || skipTypes.has(jobName.toLowerCase())) continue;
 
-        const shiftHours = parseHours(row['Shift hours']);
-        if (shiftHours <= 0) continue;
+        // Ignore break pay types
+        const payType = String(row['Pay type'] || '').toLowerCase();
+        if (payType.includes('break') || payType.includes('lunch')) continue;
 
+        const hours = parseHours(row['Total hours'] || row['Total paid hours']);
+        if (hours <= 0) continue;
+
+        if (!empMap.has(nameKey)) {
+          const ssnRaw = row['SSN'];
+          empMap.set(nameKey, {
+            connecteam_name: `${firstName} ${lastName}`.trim(),
+            first_name: firstName,
+            last_name: lastName,
+            ssn: ssnRaw ? String(ssnRaw).trim().replace(/\D/g, '') : '',
+            total_pay: 0, // not available in this format
+            hourly_rate: row['Hourly rate (USD)'] ? parseFloat(row['Hourly rate (USD)']) : null,
+            title: String(row['Title'] || '').trim(),
+            address: String(row['Address'] || '').trim(),
+            birthday: String(row['Birthday'] || '').trim(),
+            jobMap: new Map()
+          });
+        }
+
+        const emp = empMap.get(nameKey);
         const key = jobName.toLowerCase();
-        const existing = currentEmployee.jobMap.get(key) || { name: jobName, hours: 0 };
-        existing.hours = round2(existing.hours + shiftHours);
-        currentEmployee.jobMap.set(key, existing);
+        const existing = emp.jobMap.get(key) || { name: jobName, hours: 0 };
+        existing.hours = round2(existing.hours + hours);
+        emp.jobMap.set(key, existing);
+      }
+    } else {
+      // SUMMARY FORMAT: employee header row + job detail rows
+      let currentEmployee = null;
+      for (const row of rows) {
+        const firstName = String(row['First name'] || '').trim();
+        const lastName = String(row['Last name'] || '').trim();
+        const hasName = firstName || lastName;
+
+        if (hasName) {
+          const ssnRaw = row['SSN'];
+          const ssn = ssnRaw ? String(ssnRaw).trim().replace(/\D/g, '') : '';
+          const nameKey = `${firstName} ${lastName}`.toLowerCase().trim();
+          currentEmployee = {
+            connecteam_name: `${firstName} ${lastName}`.trim(),
+            first_name: firstName,
+            last_name: lastName,
+            ssn,
+            total_pay: parseFloat(row['Total pay']) || 0,
+            hourly_rate: row['Hourly rate (USD)'] ? parseFloat(row['Hourly rate (USD)']) : null,
+            title: String(row['Title'] || '').trim(),
+            address: String(row['Address'] || '').trim(),
+            birthday: String(row['Birthday'] || '').trim(),
+            jobMap: new Map()
+          };
+          empMap.set(nameKey, currentEmployee);
+
+          // Header row may also have a job
+          const jobName = String(row['Type'] || '').trim();
+          if (jobName && !skipTypes.has(jobName.toLowerCase())) {
+            const h = parseHours(row['Shift hours']);
+            if (h > 0) {
+              currentEmployee.jobMap.set(jobName.toLowerCase(), { name: jobName, hours: round2(h) });
+            }
+          }
+        } else if (currentEmployee) {
+          const jobName = String(row['Type'] || '').trim();
+          if (!jobName || skipTypes.has(jobName.toLowerCase())) continue;
+          const h = parseHours(row['Shift hours']);
+          if (h <= 0) continue;
+          const key = jobName.toLowerCase();
+          const existing = currentEmployee.jobMap.get(key) || { name: jobName, hours: 0 };
+          existing.hours = round2(existing.hours + h);
+          currentEmployee.jobMap.set(key, existing);
+        }
       }
     }
 
-    // Convert to final structure
-    const result = employees
-      .filter(emp => emp.jobMap.size > 0) // only employees with hours
+    // Convert empMap to result array
+    const result = Array.from(empMap.values())
+      .filter(emp => emp.jobMap.size > 0)
       .map(emp => {
         const jobs = Array.from(emp.jobMap.values());
         const total_hours = round2(jobs.reduce((s, j) => s + j.hours, 0));
