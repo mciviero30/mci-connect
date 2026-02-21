@@ -60,84 +60,89 @@ Deno.serve(async (req) => {
     console.log(`[reversePayrollBatch] Reversing batch ${batch_id} (${allocations.length} allocations). Reason: ${reason}`);
 
     // ============================================================
-    // STEP 3 — Pre-validate all jobs before touching any data
-    // Abort entire reversal if any job is year-locked
+    // STEP 1+2 — GLOBAL VALIDATION: fetch all jobs up front,
+    // build snapshot map, validate ALL before any mutation begins.
+    // originalCosts[job_id] = job.real_cost (snapshot, never derived)
     // ============================================================
-    const jobUpdatesToApply = []; // { job_id, oldRealCost, newRealCost, allocation }
+    const originalCosts = {}; // snapshot: job_id → original real_cost
+    const jobUpdatesToApply = []; // { job_id, newRealCost, allocation, skip }
 
     for (const alloc of allocations) {
       if (!alloc.job_id) {
-        jobUpdatesToApply.push({ job_id: null, oldRealCost: 0, newRealCost: 0, allocation: alloc, skip: true });
+        jobUpdatesToApply.push({ job_id: null, newRealCost: 0, allocation: alloc, skip: true });
         continue;
       }
 
       const job = await base44.asServiceRole.entities.Job.get(alloc.job_id);
       if (!job) {
         console.warn(`[reversePayrollBatch] Job ${alloc.job_id} not found — skipping real_cost decrement`);
-        jobUpdatesToApply.push({ job_id: alloc.job_id, oldRealCost: 0, newRealCost: 0, allocation: alloc, skip: true });
+        jobUpdatesToApply.push({ job_id: alloc.job_id, newRealCost: 0, allocation: alloc, skip: true });
         continue;
       }
 
-      // HARD GATE: reject entire reversal if any job is year-locked
+      // Global check: no year-locked jobs
       if (job.financial_year_locked === true) {
         return Response.json({
           error: `Job "${job.name}" (${job.id}) has financial_year_locked = true. Cannot reverse payroll for a locked fiscal year.`
         }, { status: 409 });
       }
 
-      const oldRealCost = job.real_cost || 0;
-      const newRealCost = Number(Math.max(0, oldRealCost - alloc.allocated_amount).toFixed(2));
-      jobUpdatesToApply.push({ job_id: alloc.job_id, oldRealCost, newRealCost, allocation: alloc, skip: false });
+      // Snapshot original value (used verbatim for rollback — no arithmetic)
+      originalCosts[job.id] = job.real_cost ?? 0;
+
+      // STEP 3 — 2-decimal precision enforced here
+      const newRealCost = Number(Math.max(0, originalCosts[job.id] - alloc.allocated_amount).toFixed(2));
+      jobUpdatesToApply.push({ job_id: alloc.job_id, newRealCost, allocation: alloc, skip: false });
     }
 
-    console.log(`[reversePayrollBatch] Pre-validated ${jobUpdatesToApply.filter(u => !u.skip).length} job real_cost decrements`);
+    console.log(`[reversePayrollBatch] Global validation passed. Snapshot captured for ${Object.keys(originalCosts).length} jobs.`);
 
     // ============================================================
-    // STEP 3 + STEP 5 + STEP 6 — ATOMIC real_cost decrements
-    // recalculateJobFinancials is CRITICAL — failure = rollback + hard fail
+    // ATOMIC real_cost decrements — snapshot rollback on any failure
+    // recalculateJobFinancials is CRITICAL — hard fail + rollback
     // ============================================================
-    const appliedDecrements = []; // track for rollback
+    let jobsAppliedCount = 0;
 
     for (const update of jobUpdatesToApply) {
       if (update.skip) continue;
 
-      // Decrement real_cost
+      // Decrement real_cost — newRealCost already rounded to 2 decimals during validation
       try {
         await base44.asServiceRole.entities.Job.update(update.job_id, {
           real_cost: update.newRealCost
         });
-        appliedDecrements.push(update);
-        console.log(`[reversePayrollBatch] Job ${update.job_id}: real_cost ${update.oldRealCost} → ${update.newRealCost}`);
+        jobsAppliedCount++;
+        console.log(`[reversePayrollBatch] Job ${update.job_id}: real_cost ${originalCosts[update.job_id]} → ${update.newRealCost}`);
       } catch (err) {
         console.error(`[reversePayrollBatch] Job real_cost decrement FAILED for ${update.job_id}:`, err.message);
-        await _rollbackDecrements(base44, appliedDecrements);
+        await _rollbackFromSnapshot(base44, originalCosts);
         return Response.json({
           success: false,
           error: `Job real_cost decrement failed for "${update.job_id}": ${err.message}. Entire reversal rolled back.`
         }, { status: 500 });
       }
 
-      // STEP 5 — recalculateJobFinancials is CRITICAL
+      // recalculateJobFinancials is CRITICAL — hard fail + rollback
       try {
         await base44.functions.invoke('recalculateJobFinancials', { job_id: update.job_id });
         console.log(`[reversePayrollBatch] recalculateJobFinancials succeeded for Job ${update.job_id}`);
       } catch (err) {
         console.error(`[reversePayrollBatch] recalculateJobFinancials FAILED for ${update.job_id}:`, err.message);
-        await _rollbackDecrements(base44, appliedDecrements);
+        await _rollbackFromSnapshot(base44, originalCosts);
         return Response.json({
           success: false,
           error: `recalculateJobFinancials failed for job "${update.job_id}": ${err.message}. Entire reversal rolled back.`
         }, { status: 500 });
       }
 
-      // Mark allocation as reversed
+      // Mark allocation as reversed (non-critical)
       await base44.asServiceRole.entities.PayrollAllocation.update(update.allocation.id, {
         status: 'reversed',
         financial_recalc_triggered: true
       }).catch(err => console.error('[reversePayrollBatch] Allocation status update failed:', err.message));
     }
 
-    console.log(`[reversePayrollBatch] All ${appliedDecrements.length} decrements + recalculations succeeded`);
+    console.log(`[reversePayrollBatch] All ${jobsAppliedCount} decrements + recalculations succeeded`);
 
     // ============================================================
     // Update batch status
@@ -167,7 +172,7 @@ Deno.serve(async (req) => {
         batch_id,
         employee_id: batch.employee_id,
         reversal_reason: reason,
-        job_reversal_count: appliedDecrements.length
+        job_reversal_count: jobsAppliedCount
       }
     }).catch(err => console.warn('[reversePayrollBatch] Audit log failed (non-critical):', err.message));
 
@@ -175,7 +180,7 @@ Deno.serve(async (req) => {
       success: true,
       batch_id,
       allocation_count: allocations.length,
-      job_reversals_applied: appliedDecrements.length,
+      job_reversals_applied: jobsAppliedCount,
       message: `Reversed payroll batch for ${batch.employee_name}. Batch is now unlocked.`
     });
 
@@ -186,19 +191,18 @@ Deno.serve(async (req) => {
 });
 
 /**
- * Rollback helper — re-increments real_cost for all applied decrements.
- * Called when any subsequent step fails mid-loop.
+ * STEP 1 — Snapshot-based rollback.
+ * originalCosts is the pre-mutation snapshot: { job_id: original_real_cost }
+ * We restore directly from the snapshot — no arithmetic reversal.
  */
-async function _rollbackDecrements(base44, appliedDecrements) {
-  console.error(`[reversePayrollBatch] ROLLBACK: re-incrementing ${appliedDecrements.length} real_cost values`);
-  for (const applied of appliedDecrements) {
+async function _rollbackFromSnapshot(base44, originalCosts) {
+  console.error(`[reversePayrollBatch] ROLLBACK: restoring ${Object.keys(originalCosts).length} jobs from snapshot`);
+  for (const [jobId, snapshotCost] of Object.entries(originalCosts)) {
     try {
-      await base44.asServiceRole.entities.Job.update(applied.job_id, {
-        real_cost: applied.oldRealCost
-      });
-      console.log(`[reversePayrollBatch] Rollback: Job ${applied.job_id} real_cost restored to ${applied.oldRealCost}`);
+      await base44.asServiceRole.entities.Job.update(jobId, { real_cost: snapshotCost });
+      console.log(`[reversePayrollBatch] Snapshot restored Job ${jobId}: real_cost = ${snapshotCost}`);
     } catch (rbErr) {
-      console.error(`[reversePayrollBatch] CRITICAL: rollback re-increment failed for Job ${applied.job_id}:`, rbErr.message);
+      console.error(`[reversePayrollBatch] CRITICAL: snapshot restore failed for Job ${jobId}:`, rbErr.message);
     }
   }
 }
