@@ -301,14 +301,7 @@ export default function PayrollImportLedger() {
                     </>
                   )}
                 </Button>
-                <input
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={handleFileUpload}
-                  disabled={uploadMutation.isPending}
-                  className="hidden"
-                  id="file-upload"
-                />
+
                 {uploadedFile && (
                   <p className="mt-4 text-sm text-slate-600">
                     📄 {uploadedFile.name}
