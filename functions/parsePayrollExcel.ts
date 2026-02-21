@@ -80,9 +80,12 @@ Deno.serve(async (req) => {
 
     // Detect format:
     // "row-format": every row has First name + Last name + Type + Total hours (one job per row, employee repeats)
-    // "summary-format": employee header row (has First name) followed by job detail rows (empty First name, has Shift hours)
+    // "summary-format": employee header row (has First name) + job detail rows (empty First name, Shift hours col)
+    // "summary-totals-format": like summary-format but we only use the employee header row totals (Total pay, Total Paid Hours)
     const hasShiftHoursCol = rows.some(r => r['Shift hours'] !== undefined);
     const isRowFormat = !hasShiftHoursCol;
+    // For summary-format with many sheets (large files), use totals from employee header rows only
+    const hasTotalPayCol = rows.some(r => r['Total pay'] !== undefined && r['Total pay'] !== '');
 
     console.log(`📋 Detected format: ${isRowFormat ? 'row-format (Total hours per row)' : 'summary-format (Shift hours)'}`);
 
