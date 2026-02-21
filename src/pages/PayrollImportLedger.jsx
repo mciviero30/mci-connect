@@ -116,7 +116,6 @@ export default function PayrollImportLedger() {
     },
     onSuccess: (data) => {
       setParsedData(data);
-      // If only one employee, skip selection and go straight to preview
       if (data.employees?.length === 1) {
         const emp = data.employees[0];
         setSelectedEmployee(emp);
@@ -125,6 +124,8 @@ export default function PayrollImportLedger() {
           employee_name: emp.match?.full_name || emp.connecteam_name,
           employee_id: emp.match?.pending_employee_id || "",
           total_paid: emp.total_pay > 0 ? String(emp.total_pay) : prev.total_paid,
+          period_start: prev.period_start || fileMetadata.period_start,
+          period_end: prev.period_end || fileMetadata.period_end,
         }));
         setStep("preview");
       } else {
