@@ -92,38 +92,44 @@ Deno.serve(async (req) => {
     console.log(`[confirmPayrollBatch] Starting for ${employee_name} (${period_start} → ${period_end})`);
 
     // ============================================================
-    // STEP 2 — Pre-validate jobs before touching any data
-    // Fetch Job for each allocation and check financial_year_locked
+    // STEP 1+2 — GLOBAL VALIDATION: fetch all jobs up front,
+    // build snapshot map, validate ALL before any mutation begins.
+    // originalCosts[job_id] = job.real_cost (snapshot, never derived)
     // ============================================================
-    const jobUpdatesToApply = []; // { job_id, job_name, oldRealCost, newRealCost }
+    const originalCosts = {}; // snapshot: job_id → original real_cost
+    const jobUpdatesToApply = []; // { job_id, job_name, newRealCost, allocation, skip }
 
     for (const alloc of allocations) {
       if (!alloc.job_id) {
-        // Placeholder job with no ID — skip real_cost update
-        jobUpdatesToApply.push({ job_id: null, job_name: alloc.job_name, oldRealCost: 0, newRealCost: 0, allocation: alloc, skip: true });
+        jobUpdatesToApply.push({ job_id: null, job_name: alloc.job_name, newRealCost: 0, allocation: alloc, skip: true });
         continue;
       }
 
       const job = await base44.asServiceRole.entities.Job.get(alloc.job_id);
+
+      // Global check: job must exist
       if (!job) {
         return Response.json({
           error: `Job not found: ${alloc.job_id} (${alloc.job_name}). Cannot confirm batch.`
         }, { status: 400 });
       }
 
-      // STEP 3 hard gate: reject if year is locked
+      // Global check: no year-locked jobs
       if (job.financial_year_locked === true) {
         return Response.json({
           error: `Job "${job.name}" (${job.id}) has financial_year_locked = true. Cannot apply payroll.`
         }, { status: 409 });
       }
 
-      const oldRealCost = job.real_cost || 0;
-      const newRealCost = Number((oldRealCost + alloc.allocated_amount).toFixed(2));
-      jobUpdatesToApply.push({ job_id: alloc.job_id, job_name: alloc.job_name, oldRealCost, newRealCost, allocation: alloc, skip: false });
+      // Snapshot original value (used verbatim for rollback — no arithmetic)
+      originalCosts[job.id] = job.real_cost ?? 0;
+
+      // STEP 3 — 2-decimal precision enforced here
+      const newRealCost = Number((originalCosts[job.id] + alloc.allocated_amount).toFixed(2));
+      jobUpdatesToApply.push({ job_id: alloc.job_id, job_name: alloc.job_name, newRealCost, allocation: alloc, skip: false });
     }
 
-    console.log(`[confirmPayrollBatch] Pre-validated ${jobUpdatesToApply.filter(u => !u.skip).length} job real_cost updates`);
+    console.log(`[confirmPayrollBatch] Global validation passed. Snapshot captured for ${Object.keys(originalCosts).length} jobs.`);
 
     // ============================================================
     // Create PayrollBatch (not yet locked)
@@ -313,19 +319,19 @@ Deno.serve(async (req) => {
 });
 
 /**
- * Rollback helper — restores real_cost for all appliedJobUpdates, then deletes batch + allocations.
+ * STEP 1 — Snapshot-based rollback.
+ * originalCosts is the pre-mutation snapshot: { job_id: original_real_cost }
+ * We restore directly from the snapshot — no arithmetic reversal.
  */
-async function _rollback(base44, batchId, createdAllocations, appliedJobUpdates) {
+async function _rollback(base44, batchId, createdAllocations, originalCosts) {
   console.error(`[confirmPayrollBatch] ROLLBACK INITIATED for batch ${batchId}`);
 
-  for (const applied of appliedJobUpdates) {
+  for (const [jobId, snapshotCost] of Object.entries(originalCosts)) {
     try {
-      await base44.asServiceRole.entities.Job.update(applied.job_id, {
-        real_cost: applied.oldRealCost
-      });
-      console.log(`[confirmPayrollBatch] Rolled back Job ${applied.job_id}: real_cost restored to ${applied.oldRealCost}`);
+      await base44.asServiceRole.entities.Job.update(jobId, { real_cost: snapshotCost });
+      console.log(`[confirmPayrollBatch] Snapshot restored Job ${jobId}: real_cost = ${snapshotCost}`);
     } catch (rbErr) {
-      console.error(`[confirmPayrollBatch] CRITICAL: real_cost rollback failed for Job ${applied.job_id}:`, rbErr.message);
+      console.error(`[confirmPayrollBatch] CRITICAL: snapshot restore failed for Job ${jobId}:`, rbErr.message);
     }
   }
 
