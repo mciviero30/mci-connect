@@ -30,22 +30,20 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'file_url or file_base64 required (v2)' }, { status: 400 });
     }
 
-    let arrayBuffer;
+    let workbook;
     if (file_base64) {
-      // Decode base64 directly — no integration credits needed
-      const binaryStr = atob(file_base64);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
-      arrayBuffer = bytes.buffer;
+      workbook = XLSX.read(file_base64, { type: 'base64' });
     } else {
-      const fileResponse = await fetch(file_url);
+      const fileResponse = await fetch(file_url, {
+        headers: { 'Accept': 'application/octet-stream' }
+      });
       if (!fileResponse.ok) {
-        return Response.json({ error: 'Failed to download file' }, { status: 400 });
+        return Response.json({ error: `Failed to download file: ${fileResponse.status}` }, { status: 400 });
       }
-      arrayBuffer = await fileResponse.arrayBuffer();
+      const arrayBuffer = await fileResponse.arrayBuffer();
+      console.log(`📦 Downloaded ${arrayBuffer.byteLength} bytes`);
+      workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
     }
-
-    const workbook = XLSX.read(new Uint8Array(arrayBuffer), { type: 'array' });
 
     // Use "All Employees" sheet if available, else first sheet
     const sheetName = workbook.SheetNames.includes('All Employees')
