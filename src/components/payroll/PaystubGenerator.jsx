@@ -66,11 +66,11 @@ export default function PaystubGenerator({ open, onOpenChange, payrollData, week
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400">Employee</p>
-              <p className="font-semibold text-slate-900 dark:text-white">{payrollData.employee.full_name}</p>
+              <p className="font-semibold text-slate-900 dark:text-white">{employee?.full_name}</p>
             </div>
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400">Employee ID</p>
-              <p className="font-semibold text-slate-900 dark:text-white">{payrollData.employee.email}</p>
+              <p className="font-semibold text-slate-900 dark:text-white">{employee?.email}</p>
             </div>
           </div>
 
