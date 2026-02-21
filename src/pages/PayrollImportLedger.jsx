@@ -777,7 +777,7 @@ export default function PayrollImportLedger() {
                <Button
                  onClick={() => {
                    setStep("upload");
-                   resetForm();
+                   resetForm(true);
                  }}
                  className="bg-blue-600"
                >
