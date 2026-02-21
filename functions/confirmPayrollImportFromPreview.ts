@@ -34,16 +34,51 @@ Deno.serve(async (req) => {
   }
 
   const body = await req.json();
-  const { previewPayload, period_start, period_end } = body;
+  const { preview_id } = body;
+
+  if (!preview_id) {
+    return Response.json({ error: 'preview_id is required' }, { status: 400 });
+  }
+
+  // ============================================================
+  // Fetch and validate the stored preview record
+  // ============================================================
+  const previews = await base44.asServiceRole.entities.PayrollImportPreview.filter({ preview_id });
+  if (!previews.length) {
+    return Response.json({ error: 'Preview not found. Generate a new preview before confirming.' }, { status: 404 });
+  }
+
+  const previewRecord = previews[0];
+  const now = new Date();
+
+  // Auto-expire if TTL exceeded
+  if (new Date(previewRecord.expires_at) <= now) {
+    await base44.asServiceRole.entities.PayrollImportPreview.update(previewRecord.id, { status: 'expired' }).catch(() => {});
+    return Response.json({ error: 'Preview has expired. Please generate a new preview and try again.' }, { status: 410 });
+  }
+
+  if (previewRecord.status === 'confirmed') {
+    return Response.json({ error: 'Preview has already been confirmed.' }, { status: 409 });
+  }
+
+  if (previewRecord.status === 'expired') {
+    return Response.json({ error: 'Preview has expired. Please generate a new preview and try again.' }, { status: 410 });
+  }
+
+  // Ownership check: only the user who created it may confirm
+  if (previewRecord.created_by !== user.id) {
+    return Response.json({ error: 'You are not authorized to confirm this preview.' }, { status: 403 });
+  }
+
+  const previewPayload = previewRecord.payload;
+  const period_start = previewRecord.period_start;
+  const period_end = previewRecord.period_end;
 
   // ============================================================
   // STEP 2 — GLOBAL VALIDATION (no mutations yet)
   // ============================================================
   if (!previewPayload?.employees?.length) {
-    return Response.json({ error: 'previewPayload.employees is required and must not be empty' }, { status: 400 });
-  }
-  if (!period_start || !period_end) {
-    return Response.json({ error: 'period_start and period_end are required' }, { status: 400 });
+    return Response.json({ error: 'Stored preview payload is empty or malformed.' }, { status: 400 });
   }
 
   const employees = previewPayload.employees;
