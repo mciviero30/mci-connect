@@ -260,6 +260,15 @@ export default function PayrollImportLedger() {
 
   return (
     <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Always-mounted file input so it works from any step */}
+      <input
+        type="file"
+        accept=".xlsx,.xls,.csv"
+        onChange={handleFileUpload}
+        disabled={uploadMutation.isPending}
+        className="hidden"
+        id="file-upload"
+      />
       <div className="max-w-6xl mx-auto">
         <PageHeader title="Payroll Import Ledger" showBack={true} />
 
