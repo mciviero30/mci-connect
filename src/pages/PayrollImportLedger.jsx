@@ -228,11 +228,12 @@ export default function PayrollImportLedger() {
     });
   };
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedFile(file);
-      toast.info(`Uploading ${file.name}...`);
+      toast.info(`Parsing ${file.name}...`);
+      setStep("upload"); // ensure we're on upload step so spinner shows
       uploadMutation.mutate(file);
     }
   };
