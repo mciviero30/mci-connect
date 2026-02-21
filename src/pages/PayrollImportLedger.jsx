@@ -338,7 +338,7 @@ export default function PayrollImportLedger() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold">Select Employee to Import</h2>
-              <Button variant="outline" size="sm" onClick={() => { setStep("upload"); resetForm(); }}>Back</Button>
+              <Button variant="outline" size="sm" onClick={() => { setStep("upload"); resetForm(true); }}>Back</Button>
             </div>
             <p className="text-slate-500 text-sm">
               Found {parsedData.employee_count} employees. {parsedData.matched_count} matched in system.
