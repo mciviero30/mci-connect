@@ -218,16 +218,19 @@ export default function PayrollImportLedger() {
     },
   });
 
-  const resetForm = () => {
-    setUploadedFile(null);
-    setParsedData(null);
+  const resetForm = (fullReset = true) => {
+    if (fullReset) {
+      setUploadedFile(null);
+      setParsedData(null);
+      setFileMetadata({ period_start: "", period_end: "" });
+    }
     setSelectedEmployee(null);
     setAllocations(null);
     setFormData({
       employee_id: "",
       employee_name: "",
-      period_start: "",
-      period_end: "",
+      period_start: fileMetadata.period_start,
+      period_end: fileMetadata.period_end,
       total_paid: "",
       notes: "",
     });
