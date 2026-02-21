@@ -250,23 +250,44 @@ Deno.serve(async (req) => {
   }
 
   // ============================================================
-  // STEP 4 — Return structured preview payload
+  // STEP 4 — Store preview payload and return preview_id
   // ============================================================
+  const previewPayload = {
+    period_start,
+    period_end,
+    employees: previewEmployees,
+    summary: {
+      total_employees: previewEmployees.length,
+      total_jobs: grandTotalJobs,
+      total_pay_amount: grandTotalPay,
+      employees_matched: previewEmployees.filter(e => e.employee_match_status !== 'not_found').length,
+      employees_not_found: previewEmployees.filter(e => e.employee_match_status === 'not_found').length,
+      jobs_matched: previewEmployees.flatMap(e => e.jobs).filter(j => j.match_status !== 'not_found').length,
+      jobs_not_found: previewEmployees.flatMap(e => e.jobs).filter(j => j.match_status === 'not_found').length
+    }
+  };
+
+  const preview_id = uuidv4();
+  const now = new Date();
+  const expires_at = new Date(now.getTime() + 60 * 60 * 1000).toISOString(); // +1 hour
+
+  await base44.asServiceRole.entities.PayrollImportPreview.create({
+    preview_id,
+    period_start,
+    period_end,
+    status: 'pending',
+    payload: previewPayload,
+    created_by: user.id,
+    created_at: now.toISOString(),
+    expires_at
+  });
+
+  console.log(`[previewPayrollImport] Stored preview ${preview_id}, expires ${expires_at}`);
+
   return Response.json({
     success: true,
-    preview: {
-      period_start,
-      period_end,
-      employees: previewEmployees,
-      summary: {
-        total_employees: previewEmployees.length,
-        total_jobs: grandTotalJobs,
-        total_pay_amount: grandTotalPay,
-        employees_matched: previewEmployees.filter(e => e.employee_match_status !== 'not_found').length,
-        employees_not_found: previewEmployees.filter(e => e.employee_match_status === 'not_found').length,
-        jobs_matched: previewEmployees.flatMap(e => e.jobs).filter(j => j.match_status !== 'not_found').length,
-        jobs_not_found: previewEmployees.flatMap(e => e.jobs).filter(j => j.match_status === 'not_found').length
-      }
-    }
+    preview_id,
+    preview_payload: previewPayload,
+    expires_at
   });
 });
