@@ -7,15 +7,11 @@ import { base44 } from '@/api/base44Client';
 import { format } from 'date-fns';
 
 export default function PaystubGenerator({ open, onOpenChange, payrollData, weekStart, weekEnd }) {
-  if (!payrollData?.employee) return null;
-
   const generatePdfMutation = useMutation({
     mutationFn: async () => {
-      // This would call a backend function to generate PDF
-      // For now, we'll create a simple HTML-based paystub
       const response = await base44.functions.invoke('generatePaystub', {
-        employeeEmail: payrollData.employee.email,
-        employeeName: payrollData.employee.full_name,
+        employeeEmail: payrollData?.employee?.email,
+        employeeName: payrollData?.employee?.full_name,
         weekStart,
         weekEnd,
         hourlyRate: payrollData.hourlyRate,
