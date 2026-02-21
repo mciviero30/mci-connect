@@ -256,8 +256,12 @@ Deno.serve(async (req) => {
   }
 
   // ============================================================
-  // STEP 5 — SUCCESS
+  // STEP 5 — SUCCESS: mark preview as confirmed
   // ============================================================
+  await base44.asServiceRole.entities.PayrollImportPreview.update(previewRecord.id, {
+    status: 'confirmed'
+  }).catch(e => console.warn('[confirmPayrollImportFromPreview] Preview status update failed (non-critical):', e.message));
+
   console.log(`[confirmPayrollImportFromPreview] ✅ All ${confirmedBatchIds.length} employees confirmed successfully`);
 
   // Audit log the successful import
