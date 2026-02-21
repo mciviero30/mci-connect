@@ -357,16 +357,19 @@ Deno.serve(async (req) => {
       period_end,
       employees_confirmed: employees.length,
       batch_ids: confirmedBatchIds,
-      total_pay: previewPayload.summary?.total_pay_amount
+      total_pay: totalPayrollImported,
+      profit_delta: profitDelta,
+      jobs_impacted: jobsImpacted.length
     }
-  }).catch(e => console.warn('[confirmPayrollImportFromPreview] Audit log failed:', e.message));
+    }).catch(e => console.warn('[confirmPayrollImportFromPreview] Audit log failed:', e.message));
 
-  return Response.json({
+    return Response.json({
     status: 'success',
     employees_confirmed: confirmedBatchIds.length,
     total_batches_created: confirmedBatchIds.length,
     batch_ids: confirmedBatchIds,
     period_start,
-    period_end
-  });
+    period_end,
+    financial_summary: financialSummary
+    });
 });
