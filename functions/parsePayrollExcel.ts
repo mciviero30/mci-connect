@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     const { file_url, file_base64, file_name } = body;
 
     if (!file_url && !file_base64) {
-      return Response.json({ error: 'file_url or file_base64 required' }, { status: 400 });
+      return Response.json({ error: 'file_url or file_base64 required (v2)' }, { status: 400 });
     }
 
     let arrayBuffer;
