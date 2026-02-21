@@ -95,9 +95,18 @@ export default function PayrollImportLedger() {
   // Upload and parse file
   const uploadMutation = useMutation({
     mutationFn: async (file) => {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      // Convert to base64 — avoids file URL fetch issues in Deno
+      const arrayBuffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+      }
+      const file_base64 = btoa(binary);
+
       const response = await base44.functions.invoke("parsePayrollExcel", {
-        file_url,
+        file_base64,
         file_name: file.name,
       });
       const body = response.data;
