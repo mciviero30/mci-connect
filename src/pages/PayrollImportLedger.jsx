@@ -95,15 +95,9 @@ export default function PayrollImportLedger() {
   // Upload and parse file
   const uploadMutation = useMutation({
     mutationFn: async (file) => {
-      // Convert file to base64 to avoid using UploadFile integration credits
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      let binary = '';
-      for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
-      const base64 = btoa(binary);
-
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
       const response = await base44.functions.invoke("parsePayrollExcel", {
-        file_base64: base64,
+        file_url,
         file_name: file.name,
       });
       const body = response.data;
