@@ -186,22 +186,21 @@ Deno.serve(async (req) => {
     // STEP 2 + STEP 5 + STEP 6 — ATOMIC job.real_cost updates
     // recalculateJobFinancials is CRITICAL — failure = hard fail + full rollback
     // ============================================================
-    const appliedJobUpdates = [];
+    let jobsAppliedCount = 0;
 
     for (const update of jobUpdatesToApply) {
       if (update.skip) continue;
 
-      // Update real_cost
+      // Update real_cost — newRealCost already rounded to 2 decimals during validation
       try {
         await base44.asServiceRole.entities.Job.update(update.job_id, {
           real_cost: update.newRealCost
         });
-        appliedJobUpdates.push(update);
-        console.log(`[confirmPayrollBatch] Job ${update.job_id}: real_cost ${update.oldRealCost} → ${update.newRealCost}`);
+        jobsAppliedCount++;
+        console.log(`[confirmPayrollBatch] Job ${update.job_id}: real_cost ${originalCosts[update.job_id]} → ${update.newRealCost}`);
       } catch (err) {
-        // HARD FAILURE — rollback everything applied so far
         console.error(`[confirmPayrollBatch] Job real_cost update FAILED for ${update.job_id}:`, err.message);
-        await _rollback(base44, batch.id, createdAllocations, appliedJobUpdates);
+        await _rollback(base44, batch.id, createdAllocations, originalCosts);
         return Response.json({
           success: false,
           error: `Job real_cost update failed for "${update.job_name}" (${update.job_id}): ${err.message}. Entire batch rolled back.`,
@@ -209,14 +208,13 @@ Deno.serve(async (req) => {
         }, { status: 500 });
       }
 
-      // STEP 5 — recalculateJobFinancials is CRITICAL, not optional
+      // recalculateJobFinancials is CRITICAL — hard fail + rollback on error
       try {
         await base44.functions.invoke('recalculateJobFinancials', { job_id: update.job_id });
         console.log(`[confirmPayrollBatch] recalculateJobFinancials succeeded for Job ${update.job_id}`);
       } catch (err) {
-        // HARD FAILURE — rollback everything (including the update we just applied)
         console.error(`[confirmPayrollBatch] recalculateJobFinancials FAILED for ${update.job_id}:`, err.message);
-        await _rollback(base44, batch.id, createdAllocations, appliedJobUpdates);
+        await _rollback(base44, batch.id, createdAllocations, originalCosts);
         return Response.json({
           success: false,
           error: `recalculateJobFinancials failed for job "${update.job_name}" (${update.job_id}): ${err.message}. Entire batch rolled back.`,
@@ -224,16 +222,16 @@ Deno.serve(async (req) => {
         }, { status: 500 });
       }
 
-      // Mark allocation as recalc triggered
+      // Mark allocation as recalc triggered (non-critical flag)
       const allocRecord = createdAllocations.find(r => r.job_id === update.job_id);
       if (allocRecord) {
         await base44.asServiceRole.entities.PayrollAllocation.update(allocRecord.id, {
           financial_recalc_triggered: true
-        }).catch(() => {}); // non-critical flag update
+        }).catch(() => {});
       }
     }
 
-    console.log(`[confirmPayrollBatch] All ${appliedJobUpdates.length} job real_cost updates + recalculations succeeded`);
+    console.log(`[confirmPayrollBatch] All ${jobsAppliedCount} job real_cost updates + recalculations succeeded`);
 
     // ============================================================
     // Create draft invoices for placeholder jobs (non-critical, does NOT block)
@@ -300,7 +298,7 @@ Deno.serve(async (req) => {
       action_description: `Confirmed payroll batch for ${employee_name} (${period_start} to ${period_end}): $${total_paid.toFixed(2)} across ${allocations.length} jobs`,
       before_state: null,
       after_state: { batch_id: batch.id, status: 'confirmed', total_paid, allocation_count: allocations.length, is_locked: true },
-      metadata: { employee_id, period_start, period_end, file_hash: file_hash.substring(0, 16) + '...', job_update_count: appliedJobUpdates.length }
+      metadata: { employee_id, period_start, period_end, file_hash: file_hash.substring(0, 16) + '...', job_update_count: jobsAppliedCount }
     }).catch(err => console.warn('[confirmPayrollBatch] Audit log failed (non-critical):', err.message));
 
     return Response.json({
