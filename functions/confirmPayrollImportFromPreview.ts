@@ -140,6 +140,25 @@ Deno.serve(async (req) => {
   console.log(`[confirmPayrollImportFromPreview] Global validation passed for ${employees.length} employees, ${allJobIds.length} unique jobs.`);
 
   // ============================================================
+  // STEP 1 — PRE-IMPORT SNAPSHOT (read-only)
+  // Capture real_cost and profit_real for all referenced jobs BEFORE any mutation.
+  // ============================================================
+  const round2 = (n) => Number(Number(n).toFixed(2));
+  const jobSnapshotBefore = {}; // job_id → { real_cost_before, profit_real_before, name }
+  for (const jobId of allJobIds) {
+    const job = await base44.asServiceRole.entities.Job.get(jobId);
+    if (job) {
+      jobSnapshotBefore[jobId] = {
+        job_id: jobId,
+        job_name: job.name,
+        real_cost_before: job.real_cost ?? 0,
+        profit_real_before: job.profit_real ?? 0
+      };
+    }
+  }
+  console.log(`[confirmPayrollImportFromPreview] Pre-import snapshot captured for ${Object.keys(jobSnapshotBefore).length} jobs.`);
+
+  // ============================================================
   // STEP 3 — CONFIRMATION LOOP
   // Delegates each employee to confirmPayrollBatch via invoke.
   // ============================================================
