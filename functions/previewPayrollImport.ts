@@ -1,7 +1,6 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { crypto } from 'npm:@noble/hashes@1.3.3/crypto';
 
-// Lightweight UUID v4 generator (no external dep)
+// Lightweight UUID v4 generator using Web Crypto (built-in to Deno)
 function uuidv4() {
   const bytes = new Uint8Array(16);
   globalThis.crypto.getRandomValues(bytes);
