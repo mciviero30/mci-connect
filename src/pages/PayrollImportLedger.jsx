@@ -518,10 +518,16 @@ export default function PayrollImportLedger() {
             <div className="flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => {
-                  setAllocations(null);
-                  setStep(parsedData?.employee_count > 1 ? "select_employee" : "upload");
-                }}
+                  onClick={() => {
+                    setAllocations(null);
+                    if (parsedData?.employee_count > 1) {
+                      resetForm(false); // keep file/parsed data, just reset employee selection
+                      setStep("select_employee");
+                    } else {
+                      setStep("upload");
+                      resetForm(true);
+                    }
+                  }}
               >
                 Back
               </Button>
