@@ -1,13 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// ============================================================
-// PHASE 0 HARD FREEZE — FINANCIAL RESET IN PROGRESS
-// Disabled: 2026-02-21
-// ============================================================
-Deno.serve(async (req) => {
-  return Response.json({ error: 'PAYROLL VALIDATION DISABLED — FINANCIAL RESET IN PROGRESS' }, { status: 503 });
-});
-
 /**
  * PAYROLL BACKEND VALIDATION - Autoridad Final
  * 
