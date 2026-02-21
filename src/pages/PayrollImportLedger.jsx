@@ -54,6 +54,7 @@ export default function PayrollImportLedger() {
     total_paid: "",
     notes: "",
   });
+  const [fileMetadata, setFileMetadata] = useState({ period_start: "", period_end: "" });
 
   // Get existing batches
   const { data: batches = [] } = useQuery({
