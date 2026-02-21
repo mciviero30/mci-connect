@@ -45,8 +45,6 @@ export default function PaystubGenerator({ open, onOpenChange, payrollData, week
     }
   };
 
-  if (!payrollData) return null;
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl bg-white dark:bg-slate-900">
