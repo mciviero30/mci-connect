@@ -39,9 +39,9 @@ Deno.serve(async (req) => {
 
     // STEP 3 — AGGREGATE COSTS
     const [allocations, expenses, drivingLogs] = await Promise.all([
-      base44.asServiceRole.entities.PayrollAllocation.filter({ job_id, status: 'confirmed' }),
-      base44.asServiceRole.entities.Expense.filter({ job_id, status: 'approved' }),
-      base44.asServiceRole.entities.DrivingLog.filter({ job_id, status: 'approved' }),
+      base44.asServiceRole.entities.PayrollAllocation.filter({ job_id, status: 'confirmed' }).catch(() => []),
+      base44.asServiceRole.entities.Expense.filter({ job_id, status: 'approved' }).catch(() => []),
+      base44.asServiceRole.entities.DrivingLog.filter({ job_id, status: 'approved' }).catch(() => []),
     ]);
 
     const payroll_cost = allocations.reduce((sum, a) => sum + (a.allocated_amount || 0), 0);
