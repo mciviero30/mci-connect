@@ -306,6 +306,8 @@ export function canSendDocument(user) {
 // NAVIGATION ACCESS
 // ============================================
 
+import { LayoutDashboard, Users, Briefcase, Clock, Receipt, FileText, DollarSign, BarChart3, Settings, MessageSquare, BookOpen } from 'lucide-react';
+
 /**
  * Get navigation items based on role
  * Returns array of navigation sections with items
@@ -326,8 +328,6 @@ export function getNavigationForRole(user) {
  * Admin navigation structure (full access)
  */
 export function getAdminNavigation() {
-  const { LayoutDashboard, Users, Briefcase, Clock, Receipt, FileText, DollarSign, BarChart3, Settings, MessageSquare, BookOpen } = require('lucide-react');
-  
   return [
     {
       section: 'Main',
@@ -371,8 +371,6 @@ export function getAdminNavigation() {
  * Employee navigation structure (limited access)
  */
 export function getEmployeeNavigation() {
-  const { LayoutDashboard, Clock, Receipt, MessageSquare } = require('lucide-react');
-  
   return [
     {
       section: 'Main',
