@@ -13,6 +13,10 @@ export default function ExecutiveDashboard() {
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
