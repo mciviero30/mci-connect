@@ -318,27 +318,23 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     });
   };
 
+  const [confirmApproveAll, setConfirmApproveAll] = useState(false);
+
   const handleApproveAll = async () => {
     const pendingEntries = filteredEntries.filter(e => e.status === 'pending');
-    
     if (pendingEntries.length === 0) {
-      alert(language === 'es' ? 'No hay entradas pendientes para aprobar' : 'No pending entries to approve');
+      sonnerToast.info(language === 'es' ? 'No hay entradas pendientes para aprobar' : 'No pending entries to approve');
       return;
     }
+    setConfirmApproveAll(true);
+  };
 
-    const confirmed = window.confirm(
-      language === 'es' 
-        ? `¿Aprobar ${pendingEntries.length} entradas pendientes? Todas serán marcadas como "Listas para Pago".` 
-        : `Approve ${pendingEntries.length} pending entries? All will be marked "Ready for Payment".`
-    );
-
-    if (!confirmed) return;
-
+  const handleConfirmApproveAll = async () => {
+    setConfirmApproveAll(false);
+    const pendingEntries = filteredEntries.filter(e => e.status === 'pending');
     setIsApprovingAll(true);
     try {
-      // Collect unique employee emails for scoped invalidation
       const affectedEmployees = new Set();
-      
       for (const entry of pendingEntries) {
         const response = await updateTimeEntrySafely({ 
           entity_id: entry.id, 
@@ -349,12 +345,10 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
             ready_for_payment: true
           }
         });
-        
         if (!response.data.success) {
           console.error(`Failed to approve entry ${entry.id}:`, response.data.error);
           continue;
         }
-        
         affectedEmployees.add(entry.employee_email);
         try {
           await notifyTimesheetStatus(entry, 'approved', null);
@@ -362,19 +356,17 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
           console.error(`Failed to send notification for entry ${entry.id}:`, error);
         }
       }
-      
-      // SCOPED invalidation - only invalidate affected users
       affectedEmployees.forEach(email => {
         queryClient.invalidateQueries({ queryKey: ['myTimeEntries', email] });
       });
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      alert(language === 'es' 
-        ? `✅ ${pendingEntries.length} entradas aprobadas - Listas para Pago` 
-        : `✅ ${pendingEntries.length} entries approved - Ready for Payment`
+      sonnerToast.success(language === 'es' 
+        ? `${pendingEntries.length} entradas aprobadas - Listas para Pago` 
+        : `${pendingEntries.length} entries approved - Ready for Payment`
       );
     } catch (error) {
       console.error('Error approving entries:', error);
-      alert(language === 'es' ? 'Error al aprobar las entradas' : 'Error approving entries');
+      sonnerToast.error(language === 'es' ? 'Error al aprobar las entradas' : 'Error approving entries');
     } finally {
       setIsApprovingAll(false);
     }
