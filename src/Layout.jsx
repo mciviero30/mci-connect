@@ -162,6 +162,8 @@ export default function Layout({ children, currentPageName }) {
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: async () => {
       try {
+        // Always force fresh data on mount
+        sessionStorage.removeItem('auth_redirect_pending');
         return await base44.auth.me();
       } catch (err) {
         if (err?.status === 401 || err?.message?.includes('401')) {
@@ -176,10 +178,10 @@ export default function Layout({ children, currentPageName }) {
       }
     },
     retry: false,
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     refetchInterval: false,
   });
 
