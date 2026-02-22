@@ -227,24 +227,19 @@ export default function Trabajos() {
   };
 
   // Filter jobs based on search term, status, and team
-  const filteredJobs = jobs.filter(job => {
-    // Text search filter
+  const filteredJobs = useMemo(() => {
     const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = !searchTerm ||
-      job.name?.toLowerCase().includes(searchLower) ||
-      job.address?.toLowerCase().includes(searchLower) ||
-      job.customer_name?.toLowerCase().includes(searchLower);
+    return jobs.filter(job => {
+      const matchesSearch = !searchTerm ||
+        job.name?.toLowerCase().includes(searchLower) ||
+        job.address?.toLowerCase().includes(searchLower) ||
+        job.customer_name?.toLowerCase().includes(searchLower);
+      const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
+      const matchesTeam = teamFilter === 'all' || job.team_id === teamFilter;
+      return matchesSearch && matchesStatus && matchesTeam;
+    });
+  }, [jobs, searchTerm, statusFilter, teamFilter]);
 
-    // Status filter
-    const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
-
-    // Team filter
-    const matchesTeam = teamFilter === 'all' || job.team_id === teamFilter;
-
-    return matchesSearch && matchesStatus && matchesTeam;
-  });
-
-  // Memoize expensive filters
   const { activeJobs, completedJobs } = useMemo(() => ({
     activeJobs: filteredJobs.filter(j => j.status === 'active'),
     completedJobs: filteredJobs.filter(j => j.status === 'completed')
