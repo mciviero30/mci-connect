@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
-import { Banknote, Download, Search, Edit, User, FileText, Briefcase, Car, DollarSign, Gift } from "lucide-react";
+import { Banknote, Download, Search, Edit, User, FileText, Briefcase, Car, DollarSign, Gift, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import EmployeePayrollDetail from "../components/nomina/EmployeePayrollDetail";
 import DateRangeFilter from "../components/reportes/DateRangeFilter";
 import PaystubGenerator from "../components/payroll/PaystubGenerator";
-import { Loader2 } from "lucide-react";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function Nomina() {
