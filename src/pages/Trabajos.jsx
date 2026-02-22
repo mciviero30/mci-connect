@@ -12,26 +12,17 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import PageHeader from "../components/shared/PageHeader";
-import JobForm from "../components/trabajos/JobForm";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import AIJobWizard from "../components/trabajos/AIJobWizard";
 import ModernJobCard from "../components/trabajos/ModernJobCard";
 import FilterBar from "../components/shared/FilterBar";
-import { useJobClosureValidation } from "../components/trabajos/JobStatusValidator";
-import ExcelExporter, { transformJobsForExport } from "@/components/shared/ExcelExporter";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
-import { FileSpreadsheet } from "lucide-react";
 import ViewModeToggle from "@/components/shared/ViewModeToggle";
 import SavedFilters from "@/components/shared/SavedFilters";
 import CompactListView from "@/components/shared/CompactListView";
+import JobsActionBar from "../components/trabajos/JobsActionBar";
+import JobsEmptyState from "../components/trabajos/JobsEmptyState";
+import JobsDialogs from "../components/trabajos/JobsDialogs";
 
 
 
@@ -288,36 +279,13 @@ export default function Trabajos() {
           description={`${activeJobs.length} ${t('active').toLowerCase()}, ${completedJobs.length} ${t('completed').toLowerCase()}`}
           icon={Briefcase}
           actions={
-            isAdmin && (
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                <ExcelExporter
-                  data={filteredJobs}
-                  filename="jobs"
-                  sheetName="Jobs"
-                  transformData={transformJobsForExport}
-                  buttonText={language === 'es' ? 'Excel' : 'Excel'}
-                  variant="outline"
-                  size="sm"
-                  className="h-10 border-green-200 text-green-600 hover:bg-green-50"
-                  />
-                  <Button
-                   onClick={() => setShowAIWizard(true)}
-                   className="h-10 bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md px-4"
-                  >
-                   <Plus className="w-4 h-4 mr-2" />
-                   {language === 'es' ? 'Crear con IA' : 'Create with AI'}
-                  </Button>
-                  <Button
-                   onClick={() => setShowForm(true)}
-                   variant="outline"
-                   className="h-10 border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 px-4"
-                >
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  <span className="hidden sm:inline">{language === 'es' ? 'Creación Rápida' : 'Quick Create'}</span>
-                  <span className="sm:hidden">{language === 'es' ? 'Rápido' : 'Quick'}</span>
-                </Button>
-              </div>
-            )
+            <JobsActionBar
+              isAdmin={isAdmin}
+              filteredJobs={filteredJobs}
+              onShowAIWizard={() => setShowAIWizard(true)}
+              onShowForm={() => setShowForm(true)}
+              language={language}
+            />
           }
         />
 
@@ -410,74 +378,30 @@ export default function Trabajos() {
         )}
 
         {filteredJobs.length === 0 && !isLoading && (
-          <Card className="bg-white dark:bg-slate-800 shadow-lg border-slate-200 dark:border-slate-700">
-            <CardContent className="p-12 text-center">
-              <Briefcase className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                {jobs.length === 0 ? t('noJobs') : (language === 'es' ? 'No se encontraron trabajos' : 'No jobs found')}
-              </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6">
-                {jobs.length === 0
-                  ? t('startByAddingJob')
-                  : (language === 'es' ? 'Intenta ajustar los filtros' : 'Try adjusting your filters')
-                }
-              </p>
-              {isAdmin && jobs.length === 0 && ( // Only show create buttons if there are truly no jobs at all
-                <div className="flex flex-col sm:flex-row justify-center gap-3 w-full sm:w-auto px-4 sm:px-0">
-                  <Button
-                    onClick={() => setShowAIWizard(true)}
-                    className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[48px] w-full sm:w-auto"
-                  >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    {language === 'es' ? 'Crear con IA' : 'Create with AI'}
-                  </Button>
-                  <Button onClick={() => setShowForm(true)} variant="outline" className="border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[48px] w-full sm:w-auto">
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    {t('createJob')}
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <JobsEmptyState
+            isAdmin={isAdmin}
+            hasAnyJobs={jobs.length > 0}
+            onShowAIWizard={() => setShowAIWizard(true)}
+            onShowForm={() => setShowForm(true)}
+            language={language}
+          />
         )}
 
-        {/* AI Wizard Dialog */}
-        <Dialog open={showAIWizard} onOpenChange={setShowAIWizard}>
-          <DialogContent className="max-w-4xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-[#507DB4]" />
-                {language === 'es' ? 'Crear Proyecto con Asistente IA' : 'Create Project with AI Assistant'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <AIJobWizard
-                onComplete={handleWizardComplete}
-                onCancel={() => setShowAIWizard(false)}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Regular Form Dialog */}
-        <Dialog open={showForm} onOpenChange={setShowForm}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900 dark:text-white">{editingJob ? t('editJob') : t('newJob')}</DialogTitle>
-            </DialogHeader>
-            <div className="py-4">
-              <JobForm
-                job={editingJob}
-                onSubmit={handleSubmit}
-                onCancel={() => {
-                  setShowForm(false);
-                  setEditingJob(null);
-                }}
-                isProcessing={createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || archiveMutation.isPending}
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
+        <JobsDialogs
+          showAIWizard={showAIWizard}
+          onAIWizardOpenChange={setShowAIWizard}
+          onWizardComplete={handleWizardComplete}
+          onWizardCancel={() => setShowAIWizard(false)}
+          showForm={showForm}
+          onFormOpenChange={setShowForm}
+          editingJob={editingJob}
+          onFormSubmit={handleSubmit}
+          onFormCancel={() => {
+            setShowForm(false);
+            setEditingJob(null);
+          }}
+          isFormProcessing={createMutation.isPending || updateMutation.isPending || deleteMutation.isPending || archiveMutation.isPending}
+        />
       </div>
     </div>
   );
