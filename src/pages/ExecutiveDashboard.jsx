@@ -95,17 +95,20 @@ export default function ExecutiveDashboard() {
   const filteredInvoices = filterByDate(invoices.filter(inv => inv.status === 'paid'), 'payment_date');
   const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
 
-  const filteredCommissions = filterByDate(commissions, 'created_date');
-  const commissionsCalculated = filteredCommissions.filter(c => c.status === 'calculated');
-  const commissionsApproved = filteredCommissions.filter(c => c.status === 'approved');
-  const commissionsPaid = filteredCommissions.filter(c => c.status === 'paid');
+  // Payroll from confirmed PayrollImportPreview records
+  const filteredPayroll = filterByDate(payrollPreviews, 'created_at');
+  const totalPayrollExposure = filteredPayroll.reduce((sum, p) => {
+    const summary = p.payload?.summary;
+    return sum + (summary?.total_gross_pay || summary?.total_pay || 0);
+  }, 0);
 
-  const totalCommissionsCalculated = commissionsCalculated.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
-  const totalCommissionsApproved = commissionsApproved.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
-  const totalCommissionsPaid = commissionsPaid.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
-
-  const filteredPayroll = filterByDate(payrollEntries, 'created_date');
-  const totalPayrollExposure = filteredPayroll.reduce((sum, p) => sum + (p.total_pay || 0), 0);
+  // Commissions: not available as standalone entity — show zeros until commission system is wired
+  const totalCommissionsCalculated = 0;
+  const totalCommissionsApproved = 0;
+  const totalCommissionsPaid = 0;
+  const commissionsCalculated = [];
+  const commissionsApproved = [];
+  const commissionsPaid = [];
 
   const activeEmployees = allEmployees.filter(e => e.employment_status === 'active');
   const taxCompliant = taxProfiles.filter(t => t.completed).length;
