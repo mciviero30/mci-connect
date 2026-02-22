@@ -110,8 +110,9 @@ export default function ExecutiveDashboard() {
   const commissionsApproved = [];
   const commissionsPaid = [];
 
-  const activeEmployees = allEmployees.filter(e => e.employment_status === 'active');
-  const taxCompliant = taxProfiles.filter(t => t.completed).length;
+  const activeEmployees = allEmployees.filter(e => e.status === 'active');
+  // taxProfiles query already filters completed:true, so count directly
+  const taxCompliant = taxProfiles.length;
   const taxComplianceRate = activeEmployees.length > 0 
     ? ((taxCompliant / activeEmployees.length) * 100).toFixed(1)
     : 0;
