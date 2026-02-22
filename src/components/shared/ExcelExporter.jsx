@@ -134,9 +134,16 @@ export const transformJobsForExport = (jobs) => {
     'Address': job.address || '',
     'Status': job.status,
     'Contract Amount': job.contract_amount || 0,
+    'Real Cost': job.real_cost || 0,
+    'Revenue (Real)': job.revenue_real || 0,
+    'Profit (Real)': job.profit_real || 0,
+    'Commission Amount': job.commission_amount || 0,
+    'Commission %': job.commission_percentage || 0,
+    'Billing Type': job.billing_type || 'fixed_price',
     'Team': job.team_name || '',
     'Start Date': job.start_date_field || '',
     'Completed Date': job.completed_date || '',
+    'Financial Last Updated': job.financial_last_recalculated_at ? format(new Date(job.financial_last_recalculated_at), 'yyyy-MM-dd HH:mm') : '',
     'Created': format(new Date(job.created_date), 'yyyy-MM-dd HH:mm')
   }));
 };
