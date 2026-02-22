@@ -113,7 +113,7 @@ const LayoutContentWrapper = ({ children, currentPageName, user }) => {
           <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
             {!shouldHideSidebar && (
               <LayoutSidebar
-                navigation={getNavigationForRole(user)}
+                navigation={navigation}
                 location={location}
                 pendingExpenses={pendingExpenses}
                 sidebarContentRef={sidebarContentRef}
