@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, DollarSign, Car, Banknote, Receipt, ChevronLeft, ChevronRight, CheckCircle, CalendarDays } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { es } from 'date-fns/locale';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
