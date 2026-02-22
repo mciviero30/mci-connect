@@ -145,13 +145,24 @@ export default function ExecutiveDashboard() {
     );
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-slate-600 dark:text-slate-400">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Executive Dashboard</h1>
-          <p className="text-slate-600">Real-time business intelligence and KPIs</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Executive Dashboard</h1>
+          <p className="text-slate-600 dark:text-slate-400">Real-time business intelligence and KPIs</p>
         </div>
 
         {/* Date Filter */}
