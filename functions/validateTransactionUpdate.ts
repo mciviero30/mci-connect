@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     ];
 
     for (const field of immutableFields) {
-      if (old_data[field] !== newData[field]) {
+      if (field in newData && old_data[field] !== newData[field]) {
         return reject(`Field "${field}" is immutable and cannot be modified.`);
       }
     }
@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     // Rule 2: Category restriction after reconciliation
     if (
       old_data.reconciliation_status !== 'unreconciled' &&
+      'category' in newData &&
       old_data.category !== newData.category
     ) {
       return reject('Cannot modify category after reconciliation has started.');
@@ -48,6 +49,7 @@ Deno.serve(async (req) => {
     };
 
     if (
+      'reconciliation_status' in newData &&
       old_data.reconciliation_status !== newData.reconciliation_status
     ) {
       if (
