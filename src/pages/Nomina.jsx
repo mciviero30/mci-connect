@@ -37,7 +37,8 @@ export default function Nomina() {
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
-    staleTime: 300000,
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
@@ -45,14 +46,27 @@ export default function Nomina() {
   const weekStartStr = format(weekStart, 'yyyy-MM-dd');
   const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
 
+  const NOMINA_STATIC_CONFIG = {
+    enabled: !!user,
+    staleTime: 300000,
+    gcTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+
+  const NOMINA_DATE_CONFIG = {
+    enabled: !!user,
+    staleTime: 60000,
+    gcTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+
   // Fetch all data needed to build payroll manually
   const { data: allEmployees = [], isLoading: employeesLoading } = useQuery({
     queryKey: ['nomina-employees'],
     queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name'),
-    enabled: !!user,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...NOMINA_STATIC_CONFIG,
   });
 
   const { data: timeEntries = [], isLoading: timeLoading } = useQuery({
@@ -61,10 +75,7 @@ export default function Nomina() {
       date: { $gte: weekStartStr, $lte: weekEndStr },
       status: 'approved'
     }, '-date', 500),
-    enabled: !!user,
-    staleTime: 30000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...NOMINA_DATE_CONFIG,
   });
 
   const { data: drivingLogs = [], isLoading: drivingLoading } = useQuery({
@@ -73,10 +84,7 @@ export default function Nomina() {
       date: { $gte: weekStartStr, $lte: weekEndStr },
       status: 'approved'
     }, '-date', 500),
-    enabled: !!user,
-    staleTime: 30000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...NOMINA_DATE_CONFIG,
   });
 
   const { data: expenses = [], isLoading: expensesLoading } = useQuery({
@@ -85,19 +93,13 @@ export default function Nomina() {
       date: { $gte: weekStartStr, $lte: weekEndStr },
       status: 'approved'
     }, '-date', 500),
-    enabled: !!user,
-    staleTime: 30000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...NOMINA_DATE_CONFIG,
   });
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['nomina-users'],
     queryFn: () => base44.entities.User.filter({ employment_status: 'active' }, 'full_name', 200),
-    enabled: !!user,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...NOMINA_STATIC_CONFIG,
   });
 
   const payrollLoading = employeesLoading || timeLoading || drivingLoading || expensesLoading || usersLoading;
