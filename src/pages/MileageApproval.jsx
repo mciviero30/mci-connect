@@ -534,6 +534,35 @@ export default function MileageApproval() {
           </DialogContent>
         </Dialog>
 
+      {/* Confirm Approve Dialog */}
+      <Dialog open={confirmApproveDialog.open} onOpenChange={(open) => !open && setConfirmApproveDialog({ open: false, log: null })}>
+        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              {language === 'es' ? 'Confirmar Aprobación' : 'Confirm Approval'}
+            </DialogTitle>
+          </DialogHeader>
+          {confirmApproveDialog.log && (
+            <div className="py-4">
+              <p className="text-slate-700 dark:text-slate-300">
+                {language === 'es'
+                  ? `¿Aprobar ${confirmApproveDialog.log.miles} millas para ${confirmApproveDialog.log.employee_name}?`
+                  : `Approve ${confirmApproveDialog.log.miles} miles for ${confirmApproveDialog.log.employee_name}?`}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmApproveDialog({ open: false, log: null })} className="bg-white border-slate-300 text-slate-700">
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button onClick={handleConfirmApprove} disabled={approveMutation.isPending} className="bg-green-600 hover:bg-green-700 text-white">
+              {language === 'es' ? 'Aprobar' : 'Approve'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Reject Dialog */}
       <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ ...rejectDialog, open })}>
         <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
