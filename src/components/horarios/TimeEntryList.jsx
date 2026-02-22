@@ -19,6 +19,7 @@ import { notifyTimesheetStatus } from '../notifications/notificationHelpers';
 import { canCreateTimeEntry } from "../trabajos/JobStatusValidator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/toast";
+import { toast as sonnerToast } from "sonner";
 import { resolveUser, resolveDisplayName } from "@/components/utils/userResolution";
 import { updateTimeEntrySafely } from "@/functions/updateTimeEntrySafely";
 
