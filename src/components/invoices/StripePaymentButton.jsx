@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Loader2, ExternalLink } from 'lucide-react';
-import { createPaymentCheckout } from '@/functions/createPaymentCheckout';
+import { base44 } from '@/api/base44Client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
@@ -27,11 +27,11 @@ export default function StripePaymentButton({ invoice }) {
     setError(null);
 
     try {
-      const { data } = await createPaymentCheckout({ invoice_id: invoice.id });
+      const response = await base44.functions.invoke('stripe-checkout', { invoiceId: invoice.id });
 
-      if (data.success && data.checkout_url) {
+      if (response?.url) {
         // Redirect to Stripe checkout
-        window.location.href = data.checkout_url;
+        window.location.href = response.url;
       } else {
         throw new Error('Failed to create checkout session');
       }
