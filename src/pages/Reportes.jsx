@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Download, TrendingUp, TrendingDown, DollarSign, Clock, Users as UsersIcon, Briefcase, Target, Award, Calendar as CalendarIcon } from "lucide-react";
+import { BarChart3, Download, TrendingUp, TrendingDown, DollarSign, Clock, Users as UsersIcon, Briefcase, Target, Award, Calendar as CalendarIcon, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
@@ -15,6 +15,7 @@ import ClientProfitabilityReport from "../components/reportes/ClientProfitabilit
 import ResourceAllocationReport from "../components/reportes/ResourceAllocationReport";
 import WorkloadHeatmap from "../components/reportes/WorkloadHeatmap";
 import TeamWorkloadChart from "../components/reportes/TeamWorkloadChart";
+import InvoiceAgingReport from "../components/reportes/InvoiceAgingReport";
 
 const COLORS = ['#3B9FF3', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#6366f1'];
 
