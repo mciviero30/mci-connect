@@ -11,6 +11,7 @@ import {
   Printer,
   DollarSign,
   CheckCircle,
+  CheckCircle2,
   Copy,
   Trash2,
   MoreHorizontal,
