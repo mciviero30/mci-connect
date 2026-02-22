@@ -22,9 +22,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const isAuthorized = ['admin', 'ceo'].includes(user.role);
-    if (!isAuthorized) {
-      return Response.json({ error: 'Only Admin or CEO can reverse payroll batches' }, { status: 403 });
+    // Admin/CEO-only operation
+    if (!['admin', 'ceo'].includes(user.role)) {
+      console.warn(`[Permission Denied] ${user.email} (${user.role}) attempted payroll reversal`);
+      return Response.json({ error: 'Forbidden: Admin/CEO access required' }, { status: 403 });
     }
 
     const body = await req.json();

@@ -14,9 +14,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
     const user = await base44.auth.me();
-    if (user?.role !== 'admin') {
+
+    // Admin-only operation (critical data repair)
+    if (!user || user.role !== 'admin') {
+      console.warn(`[Permission Denied] Attempt to repair production data denied for ${user?.email} (${user?.role})`);
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
     }
 
