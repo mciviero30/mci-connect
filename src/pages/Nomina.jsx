@@ -45,23 +45,138 @@ export default function Nomina() {
     refetchOnWindowFocus: false
   });
 
-  // PERFORMANCE: Single aggregated query instead of 7 separate entities
-  const { data: aggregatedPayroll, isLoading: payrollLoading } = useQuery({
-    queryKey: ['payrollAggregate', format(weekStart, 'yyyy-MM-dd'), format(weekEnd, 'yyyy-MM-dd')],
-    queryFn: async () => {
-      const response = await base44.functions.invoke('getAggregatedPayroll', {
-        week_start: format(weekStart, 'yyyy-MM-dd'),
-        week_end: format(weekEnd, 'yyyy-MM-dd')
-      });
-      return response.data;
-    },
+  const weekStartStr = format(weekStart, 'yyyy-MM-dd');
+  const weekEndStr = format(weekEnd, 'yyyy-MM-dd');
+
+  // Fetch all data needed to build payroll manually
+  const { data: allEmployees = [], isLoading: employeesLoading } = useQuery({
+    queryKey: ['nomina-employees'],
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name'),
+    enabled: !!user,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: timeEntries = [], isLoading: timeLoading } = useQuery({
+    queryKey: ['nomina-timeentries', weekStartStr, weekEndStr],
+    queryFn: () => base44.entities.TimeEntry.filter({
+      date: { $gte: weekStartStr, $lte: weekEndStr },
+      status: 'approved'
+    }, '-date', 500),
     enabled: !!user,
     staleTime: 30000,
     refetchOnMount: false,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
-  const payrollData = aggregatedPayroll?.payrollData || [];
+  const { data: drivingLogs = [], isLoading: drivingLoading } = useQuery({
+    queryKey: ['nomina-driving', weekStartStr, weekEndStr],
+    queryFn: () => base44.entities.DrivingLog.filter({
+      date: { $gte: weekStartStr, $lte: weekEndStr },
+      status: 'approved'
+    }, '-date', 500),
+    enabled: !!user,
+    staleTime: 30000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: expenses = [], isLoading: expensesLoading } = useQuery({
+    queryKey: ['nomina-expenses', weekStartStr, weekEndStr],
+    queryFn: () => base44.entities.Expense.filter({
+      date: { $gte: weekStartStr, $lte: weekEndStr },
+      status: 'approved'
+    }, '-date', 500),
+    enabled: !!user,
+    staleTime: 30000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ['nomina-users'],
+    queryFn: () => base44.entities.User.filter({ employment_status: 'active' }, 'full_name', 200),
+    enabled: !!user,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const payrollLoading = employeesLoading || timeLoading || drivingLoading || expensesLoading || usersLoading;
+
+  // Build payroll data from raw entities
+  const payrollData = useMemo(() => {
+    if (!allEmployees.length) return [];
+    
+    // Build a map of user data (hourly_rate, etc.) keyed by email
+    const userMap = users.reduce((acc, u) => {
+      acc[u.email] = u;
+      return acc;
+    }, {});
+
+    return allEmployees.map(emp => {
+      const empEmail = emp.employee_email;
+      const userData = userMap[empEmail] || {};
+      const hourlyRate = parseFloat(userData.hourly_rate || 25);
+      const overtimeRate = hourlyRate * 1.5;
+
+      // Time entries for this employee
+      const empTimeEntries = timeEntries.filter(e => 
+        e.employee_email === empEmail || (emp.user_id && e.user_id === emp.user_id)
+      );
+      const empDrivingLogs = drivingLogs.filter(d => 
+        d.employee_email === empEmail || (emp.user_id && d.user_id === emp.user_id)
+      );
+      const empExpenses = expenses.filter(ex => 
+        ex.employee_email === empEmail || (emp.user_id && ex.user_id === emp.user_id)
+      );
+
+      const totalHours = empTimeEntries.reduce((s, e) => s + (e.hours_worked || 0), 0);
+      const normalHours = Math.min(totalHours, 40);
+      const overtimeHours = Math.max(0, totalHours - 40);
+      const drivingHours = empDrivingLogs.reduce((s, d) => s + (d.hours || 0), 0);
+      const drivingMiles = empDrivingLogs.reduce((s, d) => s + (d.miles || 0), 0);
+
+      const workPay = (normalHours * hourlyRate) + (overtimeHours * overtimeRate);
+      const drivingPay = (drivingHours * hourlyRate) + (drivingMiles * 0.70);
+      const perDiemAmount = empExpenses.filter(e => e.category === 'per_diem').reduce((s, e) => s + (e.amount || 0), 0);
+      const reimbursements = empExpenses.filter(e => e.payment_method === 'personal' && e.category !== 'per_diem').reduce((s, e) => s + (e.amount || 0), 0);
+      const bonusAmount = 0;
+      const totalPay = workPay + drivingPay + perDiemAmount + reimbursements;
+      const workDaysCount = new Set(empTimeEntries.map(e => e.date)).size;
+
+      // Skip employees with zero hours AND zero pay
+      if (totalHours === 0 && drivingHours === 0 && drivingMiles === 0 && perDiemAmount === 0 && reimbursements === 0) return null;
+
+      return {
+        employee: {
+          id: emp.user_id || emp.id,
+          full_name: emp.full_name,
+          email: empEmail,
+          position: emp.position,
+          profile_photo_url: emp.profile_photo_url,
+          avatar_image_url: userData.avatar_image_url,
+          preferred_profile_image: userData.preferred_profile_image,
+        },
+        normalHours,
+        overtimeHours,
+        drivingHours,
+        drivingMiles,
+        workDaysCount,
+        perDiemAmount,
+        workPay,
+        drivingPay,
+        reimbursements,
+        bonusAmount,
+        totalPay,
+        hourlyRate,
+        overtimeRate,
+        pendingReimbursements: 0,
+        weekPayroll: null,
+      };
+    }).filter(Boolean);
+  }, [allEmployees, timeEntries, drivingLogs, expenses, users]);
 
   // PERFORMANCE: Data already aggregated by backend
   // No client-side filtering needed
