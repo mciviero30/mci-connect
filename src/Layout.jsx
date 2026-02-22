@@ -399,27 +399,110 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
 
     // Wrapper to ensure useUI is called within UIProvider
 const LayoutContentWrapper = ({ children, currentPageName, user, isLoading, error }) => {
-  // This component is guaranteed to be inside UIProvider
   const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
-  
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { language, changeLanguage } = useLanguage();
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+  const sidebarContentRef = useRef(null);
+  const location = useLocation();
+
+  const { data: pendingExpenses } = useQuery({
+    queryKey: ['pendingExpensesCount', user?.email],
+    queryFn: async () => {
+      if (!user) return 0;
+      if (user.role === 'admin') {
+        const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100);
+        return expenses.length;
+      } else {
+        const expenses = await base44.entities.Expense.filter({
+          employee_email: user.email,
+          status: 'pending'
+        }, '', 20);
+        return expenses.length;
+      }
+    },
+    enabled: !!user,
+    initialData: 0,
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: clientMemberships = [] } = useQuery({
+    queryKey: ['client-memberships-check', user?.email, user?.role],
+    queryFn: () => base44.entities.ProjectMember.filter({ 
+      user_email: user?.email,
+      role: 'client'
+    }),
+    enabled: !!user?.email && user?.role !== 'admin',
+    staleTime: 300000,
+    gcTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const isClientOnly = clientMemberships.length > 0 && user?.role !== 'admin';
+
   return (
-    <LayoutContent 
-      children={children}
-      currentPageName={currentPageName}
-      user={user}
-      isLoading={isLoading}
-      error={error}
-      isFieldMode={isFieldMode}
-      isFocusMode={isFocusMode}
-      toggleFocusMode={toggleFocusMode}
-      shouldHideSidebar={shouldHideSidebar}
-    />
+    <LayoutGates 
+      user={user} 
+      isClientOnly={isClientOnly}
+      location={location}
+      navigate={navigate}
+      queryClient={queryClient}
+    >
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
+          {!shouldHideSidebar && (
+            <LayoutSidebar
+              navigation={getNavigationForRole(user)}
+              location={location}
+              pendingExpenses={pendingExpenses}
+              sidebarContentRef={sidebarContentRef}
+              user={user}
+              theme={theme}
+              setTheme={setTheme}
+              language={language}
+              changeLanguage={changeLanguage}
+              profileImage={user?.profile_photo_url || user?.avatar_image_url}
+              imageKey={user?.profile_last_updated || user?.id}
+            />
+          )}
+
+          <LayoutHeader
+            user={user}
+            theme={theme}
+            setTheme={setTheme}
+            toggleFocusMode={toggleFocusMode}
+            isFieldMode={isFieldMode}
+            isFocusMode={isFocusMode}
+            shouldHideSidebar={shouldHideSidebar}
+          />
+
+          <LayoutMainContent
+            children={children}
+            currentPageName={currentPageName}
+            isFocusMode={isFocusMode}
+            isFieldMode={isFieldMode}
+            toggleFocusMode={toggleFocusMode}
+            shouldHideSidebar={shouldHideSidebar}
+            user={user}
+            pendingExpenses={pendingExpenses}
+            navigation={getNavigationForRole(user)}
+            globalSearchOpen={globalSearchOpen}
+            setGlobalSearchOpen={setGlobalSearchOpen}
+          />
+        </div>
+      </SidebarProvider>
+    </LayoutGates>
   );
 };
 
-const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar }) => {
-
-  const location = useLocation();
+// OLD LayoutContent - REMOVED (replaced by LayoutGates + modular components)
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { language, changeLanguage, t } = useLanguage();
