@@ -308,6 +308,7 @@ export function canSendDocument(user) {
 
 /**
  * Get navigation items based on role
+ * Returns array of navigation sections with items
  */
 export function getNavigationForRole(user) {
   const role = getUserRole(user);
@@ -325,14 +326,44 @@ export function getNavigationForRole(user) {
  * Admin navigation structure (full access)
  */
 export function getAdminNavigation() {
+  const { LayoutDashboard, Users, Briefcase, Clock, Receipt, FileText, DollarSign, BarChart3, Settings, MessageSquare, BookOpen } = require('lucide-react');
+  
   return [
     {
       section: 'Main',
       icon: null,
       items: [
-        { title: 'Dashboard', url: '/Dashboard', icon: () => null },
+        { title: 'Dashboard', url: '/Dashboard', icon: LayoutDashboard },
       ]
-    }
+    },
+    {
+      section: 'Documents & Finances',
+      icon: null,
+      items: [
+        { title: 'Quotes', url: '/Estimados', icon: FileText },
+        { title: 'Invoices', url: '/Facturas', icon: DollarSign },
+        { title: 'Accounting', url: '/Contabilidad', icon: BarChart3 },
+      ]
+    },
+    {
+      section: 'Operations',
+      icon: null,
+      items: [
+        { title: 'Employees', url: '/Empleados', icon: Users },
+        { title: 'Jobs', url: '/Trabajos', icon: Briefcase },
+        { title: 'Time Tracking', url: '/TimeTracking', icon: Clock },
+      ]
+    },
+    {
+      section: 'Resources',
+      icon: null,
+      items: [
+        { title: 'Expenses', url: '/Gastos', icon: Receipt },
+        { title: 'Payroll', url: '/Nomina', icon: DollarSign },
+        { title: 'Calendar', url: '/Calendario', icon: Clock },
+        { title: 'Chat', url: '/Chat', icon: MessageSquare },
+      ]
+    },
   ];
 }
 
@@ -340,14 +371,31 @@ export function getAdminNavigation() {
  * Employee navigation structure (limited access)
  */
 export function getEmployeeNavigation() {
+  const { LayoutDashboard, Clock, Receipt, MessageSquare } = require('lucide-react');
+  
   return [
     {
       section: 'Main',
       icon: null,
       items: [
-        { title: 'Dashboard', url: '/Dashboard', icon: () => null },
+        { title: 'Dashboard', url: '/Dashboard', icon: LayoutDashboard },
       ]
-    }
+    },
+    {
+      section: 'My Work',
+      icon: null,
+      items: [
+        { title: 'Time Tracking', url: '/TimeTracking', icon: Clock },
+        { title: 'Expenses', url: '/Gastos', icon: Receipt },
+      ]
+    },
+    {
+      section: 'Communication',
+      icon: null,
+      items: [
+        { title: 'Chat', url: '/Chat', icon: MessageSquare },
+      ]
+    },
   ];
 }
 
