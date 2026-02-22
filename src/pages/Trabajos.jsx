@@ -188,26 +188,38 @@ export default function Trabajos() {
   });
 
   const archiveMutation = useMutation({
-    mutationFn: (id) => {
-      // For archive, we could also implement similar validation if needed,
-      // but for now, the prompt only specified it for the general updateMutation.
-      return base44.entities.Job.update(id, { status: 'archived' });
-    },
+    mutationFn: (id) => base44.entities.Job.update(id, { status: 'archived' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Job'] });
+      resetPagination();
       toast({
         title: language === 'es' ? 'Trabajo archivado' : 'Job archived',
         variant: 'success'
       });
     },
     onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive'
-      });
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
     }
   });
+
+  const handleDeleteWithConfirm = (job) => {
+    const confirmed = window.confirm(
+      language === 'es'
+        ? `¿Eliminar "${job.name}" permanentemente? Esta acción no se puede deshacer.`
+        : `Delete "${job.name}" permanently? This action cannot be undone.`
+    );
+    if (confirmed) deleteMutation.mutate(job.id);
+  };
+
+  const handleArchiveWithConfirm = (job) => {
+    const confirmed = window.confirm(
+      language === 'es'
+        ? `¿Archivar "${job.name}"? El trabajo no aparecerá en la lista activa.`
+        : `Archive "${job.name}"? The job will no longer appear in the active list.`
+    );
+    if (confirmed) archiveMutation.mutate(job.id);
+  };
 
   const handleSubmit = (data) => {
     if (editingJob) {
