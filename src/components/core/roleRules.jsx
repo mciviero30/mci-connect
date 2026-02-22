@@ -314,11 +314,41 @@ export function getNavigationForRole(user) {
   const roleConfig = ROLE_HIERARCHY[role];
 
   if (roleConfig?.fullAccess) {
-    return 'admin'; // Full admin navigation
+    return getAdminNavigation();
   }
 
   // Employee navigation for non-admin roles
-  return 'employee';
+  return getEmployeeNavigation();
+}
+
+/**
+ * Admin navigation structure (full access)
+ */
+export function getAdminNavigation() {
+  return [
+    {
+      section: 'Main',
+      icon: null,
+      items: [
+        { title: 'Dashboard', url: '/Dashboard', icon: () => null },
+      ]
+    }
+  ];
+}
+
+/**
+ * Employee navigation structure (limited access)
+ */
+export function getEmployeeNavigation() {
+  return [
+    {
+      section: 'Main',
+      icon: null,
+      items: [
+        { title: 'Dashboard', url: '/Dashboard', icon: () => null },
+      ]
+    }
+  ];
 }
 
 // ============================================
