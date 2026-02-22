@@ -114,11 +114,11 @@ export default function MileageApproval() {
         job_id: '',
         notes: ''
       });
-      alert('✅ ' + (language === 'es' ? 'Registro de millas creado!' : 'Mileage record created!'));
+      toast.success(language === 'es' ? 'Registro de millas creado!' : 'Mileage record created!');
     },
     onError: (error) => {
       console.error("Error creating mileage record:", error);
-      alert('❌ ' + (language === 'es' ? 'Error al crear registro: ' : 'Failed to create mileage record: ') + error.message);
+      toast.error((language === 'es' ? 'Error al crear registro: ' : 'Failed to create mileage record: ') + error.message);
     }
   });
 
@@ -126,11 +126,11 @@ export default function MileageApproval() {
     mutationFn: ({ id }) => base44.entities.DrivingLog.update(id, { status: 'approved' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivingLogs'] });
-      alert('✅ ' + (language === 'es' ? 'Millas aprobadas!' : 'Mileage approved!'));
+      toast.success(language === 'es' ? 'Millas aprobadas!' : 'Mileage approved!');
     },
     onError: (error) => {
       console.error("Error approving mileage:", error);
-      alert('❌ ' + (language === 'es' ? 'Error al aprobar: ' : 'Failed to approve mileage: ') + error.message);
+      toast.error((language === 'es' ? 'Error al aprobar: ' : 'Failed to approve mileage: ') + error.message);
     }
   });
 
@@ -142,26 +142,28 @@ export default function MileageApproval() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivingLogs'] });
       setRejectDialog({ open: false, log: null, notes: "" });
-      alert('✅ ' + (language === 'es' ? 'Millas rechazadas' : 'Mileage rejected'));
+      toast.success(language === 'es' ? 'Millas rechazadas' : 'Mileage rejected');
     },
     onError: (error) => {
       console.error("Error rejecting mileage:", error);
-      alert('❌ ' + (language === 'es' ? 'Error al rechazar: ' : 'Failed to reject mileage: ') + error.message);
+      toast.error((language === 'es' ? 'Error al rechazar: ' : 'Failed to reject mileage: ') + error.message);
     }
   });
 
+  const [confirmApproveDialog, setConfirmApproveDialog] = useState({ open: false, log: null });
+
   const handleApprove = (log) => {
-    const message = language === 'es' 
-      ? `¿Aprobar ${log.miles} millas para ${log.employee_name}?`
-      : `Approve ${log.miles} miles for ${log.employee_name}?`;
-    if (confirm(message)) {
-      approveMutation.mutate({ id: log.id });
-    }
+    setConfirmApproveDialog({ open: true, log });
+  };
+
+  const handleConfirmApprove = () => {
+    approveMutation.mutate({ id: confirmApproveDialog.log.id });
+    setConfirmApproveDialog({ open: false, log: null });
   };
 
   const handleReject = () => {
     if (!rejectDialog.notes.trim()) {
-      alert(language === 'es' ? 'Por favor proporciona una razón para el rechazo' : 'Please provide a reason for rejection');
+      toast.error(language === 'es' ? 'Por favor proporciona una razón para el rechazo' : 'Please provide a reason for rejection');
       return;
     }
     rejectMutation.mutate({
@@ -179,17 +181,17 @@ export default function MileageApproval() {
   const handleSubmitMileage = (e) => {
     e.preventDefault();
     if (!selectedEmployee) {
-      alert(language === 'es' ? 'Por favor selecciona un empleado.' : 'Please select an employee.');
+      toast.error(language === 'es' ? 'Por favor selecciona un empleado.' : 'Please select an employee.');
       return;
     }
     if (!mileageFormData.job_id) {
-      alert(language === 'es' ? 'Por favor selecciona un trabajo.' : 'Please select a job.');
+      toast.error(language === 'es' ? 'Por favor selecciona un trabajo.' : 'Please select a job.');
       return;
     }
     const miles = parseFloat(mileageFormData.miles);
     const hours = parseFloat(mileageFormData.hours);
     if ((isNaN(miles) || miles <= 0) && (isNaN(hours) || hours <= 0)) {
-      alert(language === 'es' ? 'Millas o Horas deben ser mayores a cero.' : 'Miles or Hours must be greater than zero.');
+      toast.error(language === 'es' ? 'Millas o Horas deben ser mayores a cero.' : 'Miles or Hours must be greater than zero.');
       return;
     }
     createMileageMutation.mutate(mileageFormData);
