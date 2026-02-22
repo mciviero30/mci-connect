@@ -198,6 +198,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
+import payrollimportledgerV2 from './pages/PayrollImportLedger_v2';
 import __Layout from './Layout.jsx';
 
 
@@ -353,6 +354,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
+    "PayrollImportLedger_v2": payrollimportledgerV2,
 }
 
 export const pagesConfig = {
