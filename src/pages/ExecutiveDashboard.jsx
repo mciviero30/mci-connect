@@ -23,59 +23,51 @@ export default function ExecutiveDashboard() {
 
   // Fetch data
   // STRATEGY FIX: add staleTime to prevent refetch on every mount
-  const { data: invoices = [] } = useQuery({
+  const EXEC_QUERY_CONFIG = {
+    enabled: isAdmin,
+    staleTime: 300000,
+    gcTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  };
+
+  const { data: invoices = [], isLoading: loadingInvoices } = useQuery({
     queryKey: ['invoices-revenue'],
     queryFn: () => base44.entities.Invoice.list('-created_date', 1000),
-    enabled: isAdmin,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...EXEC_QUERY_CONFIG,
   });
 
-  const { data: payrollPreviews = [] } = useQuery({
+  const { data: payrollPreviews = [], isLoading: loadingPayroll } = useQuery({
     queryKey: ['payroll-previews-exec'],
     queryFn: () => base44.entities.PayrollImportPreview.filter({ status: 'confirmed' }, '-created_at', 200),
-    enabled: isAdmin,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...EXEC_QUERY_CONFIG,
   });
 
   const { data: taxProfiles = [] } = useQuery({
     queryKey: ['all-tax-profiles'],
     queryFn: () => base44.entities.TaxProfile.filter({ completed: true }),
-    enabled: isAdmin,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...EXEC_QUERY_CONFIG,
   });
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['all-employees-exec'],
     queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
-    enabled: isAdmin,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...EXEC_QUERY_CONFIG,
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['all-jobs'],
     queryFn: () => base44.entities.Job.list('-created_date', 1000),
-    enabled: isAdmin,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...EXEC_QUERY_CONFIG,
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['all-expenses'],
     queryFn: () => base44.entities.Expense.list('-created_date', 1000),
-    enabled: isAdmin,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    ...EXEC_QUERY_CONFIG,
   });
+
+  const isLoading = loadingInvoices || loadingPayroll;
 
   // Filter by date range
   const filterByDate = (items, dateField) => {
