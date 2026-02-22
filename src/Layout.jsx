@@ -600,6 +600,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Payroll', url: createPageUrl("Nomina"), icon: Banknote },
         { title: 'Payroll Auto-Flow', url: createPageUrl('PayrollAutoFlow'), icon: Zap },
         { title: 'Payroll Import Ledger', url: createPageUrl('PayrollImportLedger'), icon: Upload },
+        { title: 'Payroll Import v2', url: createPageUrl('PayrollImportLedger_v2'), icon: Upload },
         { title: 'Time Reports', url: createPageUrl("TimeReports"), icon: BarChart3 },
       ]
     },
