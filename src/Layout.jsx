@@ -180,10 +180,10 @@ export default function Layout({ children, currentPageName }) {
       }
     },
     retry: false,
-    staleTime: 0,
-    gcTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    staleTime: 60000,
+    gcTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
     refetchInterval: false,
   });
 
