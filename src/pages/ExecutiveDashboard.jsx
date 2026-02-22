@@ -12,7 +12,7 @@ export default function ExecutiveDashboard() {
   const [endDate, setEndDate] = useState('');
 
   const { data: currentUser } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: Infinity,
     gcTime: Infinity,
