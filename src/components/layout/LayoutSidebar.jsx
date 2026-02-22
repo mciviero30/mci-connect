@@ -43,7 +43,8 @@ export function LayoutSidebar({
           navigation={navigation} 
           location={location} 
           pendingExpenses={pendingExpenses} 
-          sidebarContentRef={sidebarContentRef} 
+          sidebarContentRef={sidebarContentRef}
+          setOpenMobile={() => {}}
         />
       </SidebarContent>
 

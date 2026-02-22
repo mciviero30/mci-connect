@@ -5,7 +5,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 
-export const SidebarNavigation = React.memo(function SidebarNavigation({ 
+const SidebarNavigation = React.memo(function SidebarNavigation({ 
   navigation, 
   location, 
   pendingExpenses, 
@@ -250,3 +250,5 @@ export const SidebarNavigation = React.memo(function SidebarNavigation({
     </Accordion>
   );
 });
+
+export default SidebarNavigation;
