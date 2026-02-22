@@ -738,29 +738,49 @@ export default function JobDetails() {
 
               <Card className="bg-white shadow-lg">
                 <CardHeader className="border-b">
-                  <CardTitle className="flex items-center gap-2 text-slate-900">
-                    <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
-                    {t('financialSummary')}
-                  </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-slate-900">
+                      <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
+                      {t('financialSummary')}
+                    </CardTitle>
+                    {hasSSOT && (
+                      <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs">
+                        ✓ {language === 'es' ? 'Datos Reales' : 'Real Data'}
+                      </Badge>
+                    )}
+                  </div>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{language === 'es' ? 'Monto del Contrato' : 'Contract Amount'}</span>
-                    <span className="font-bold text-green-600">${(job.contract_amount || 0).toLocaleString()}</span>
+                    <span className="text-slate-600">{language === 'es' ? 'Ingresos (Facturas)' : 'Revenue (Invoices)'}</span>
+                    <span className="font-bold text-green-600">${(hasSSOT ? ssotRevenue : adjustedContractAmount).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{language === 'es' ? 'Costo de Nómina' : 'Payroll Cost'}</span>
-                    <span className="font-semibold text-slate-900">${totalPayrollCost.toFixed(2)}</span>
+                    <span className="text-slate-600">{language === 'es' ? 'Costo Real Total' : 'Real Total Cost'}</span>
+                    <span className="font-semibold text-slate-900">${totalCosts.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{language === 'es' ? 'Gastos' : 'Expenses'}</span>
-                    <span className="font-semibold text-slate-900">${totalExpenses.toFixed(2)}</span>
-                  </div>
+                  {estimatedCost > 0 && (
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-slate-500 text-sm">{language === 'es' ? 'Presupuesto usado' : 'Budget used'}</span>
+                        <span className={`text-sm font-bold ${isOverBudget ? 'text-red-600' : isNearBudget ? 'text-amber-600' : 'text-green-600'}`}>
+                          {budgetUsed.toFixed(0)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
+                        <div
+                          className={`h-full transition-all ${isOverBudget ? 'bg-red-500' : isNearBudget ? 'bg-amber-500' : 'bg-green-500'}`}
+                          style={{ width: `${Math.min(budgetUsed, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
                   <div className="border-t pt-4 mt-4">
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-slate-900">{t('profitLoss')}</span>
                       <span className={`font-bold text-xl ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ${profit.toFixed(2)}
+                        ${profit.toLocaleString()}
+                        <span className="text-sm font-normal ml-1">({profitMargin.toFixed(1)}%)</span>
                       </span>
                     </div>
                   </div>
