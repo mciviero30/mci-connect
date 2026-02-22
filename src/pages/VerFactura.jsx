@@ -465,6 +465,22 @@ export default function VerFactura() {
               {language === 'es' ? 'Enviar' : 'Send'}
             </Button>
 
+            {/* Send for Customer Approval */}
+            {invoice.customer_email && !['paid', 'cancelled'].includes(invoice.status) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSendForApproval}
+                disabled={sendingApproval}
+                className="bg-green-700 border-green-600 text-white hover:bg-green-600 disabled:opacity-50 text-xs px-3 h-9"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                {sendingApproval 
+                  ? '...' 
+                  : (language === 'es' ? 'Pedir Aprobación' : 'Request Approval')}
+              </Button>
+            )}
+
             <Button
               variant="outline"
               size="sm"
