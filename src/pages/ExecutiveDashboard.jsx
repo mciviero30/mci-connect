@@ -39,7 +39,7 @@ export default function ExecutiveDashboard() {
 
   const { data: taxProfiles = [] } = useQuery({
     queryKey: ['all-tax-profiles'],
-    queryFn: () => base44.entities.TaxProfile.list(),
+    queryFn: () => base44.entities.TaxProfile.filter({ completed: true }),
     enabled: isAdmin,
     staleTime: 300000,
     refetchOnMount: false,
