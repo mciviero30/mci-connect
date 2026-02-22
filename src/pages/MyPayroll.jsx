@@ -16,7 +16,14 @@ export default function MyPayroll() {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const currentWeekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ 
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
 
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: timeEntries = [] } = useQuery({
