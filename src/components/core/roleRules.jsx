@@ -306,134 +306,19 @@ export function canSendDocument(user) {
 // NAVIGATION ACCESS
 // ============================================
 
-import { LayoutDashboard, Users, Briefcase, Clock, Receipt, FileText, DollarSign, BarChart3, Settings, MessageSquare, BookOpen } from 'lucide-react';
-
 /**
  * Get navigation items based on role
- * Returns array of navigation sections with items
  */
 export function getNavigationForRole(user) {
   const role = getUserRole(user);
   const roleConfig = ROLE_HIERARCHY[role];
 
   if (roleConfig?.fullAccess) {
-    return getAdminNavigation();
+    return 'admin'; // Full admin navigation
   }
 
   // Employee navigation for non-admin roles
-  return getEmployeeNavigation();
-}
-
-/**
- * Admin navigation structure (full access)
- */
-export function getAdminNavigation() {
-  return [
-    {
-      section: 'STRATEGY',
-      icon: null,
-      items: [
-        { title: 'Dashboard', url: '/Dashboard', icon: LayoutDashboard },
-        { title: 'Executive Dashboard', url: '/ExecutiveDashboard', icon: BarChart3 },
-      ]
-    },
-    {
-      section: 'OPERATIONS',
-      icon: null,
-      items: [
-        { title: 'Jobs', url: '/Trabajos', icon: Briefcase },
-        { title: 'Calendar', url: '/Calendario', icon: Clock },
-        { title: 'Field', url: '/Field', icon: Briefcase },
-      ]
-    },
-    {
-      section: 'FINANCE',
-      icon: null,
-      items: [
-        { title: 'Quotes', url: '/Estimados', icon: FileText },
-        { title: 'Invoices', url: '/Facturas', icon: DollarSign },
-        { title: 'Accounting', url: '/Contabilidad', icon: BarChart3 },
-        { title: 'Profitability', url: '/ProfitabilityDashboard', icon: BarChart3 },
-      ]
-    },
-    {
-      section: 'WORKFORCE',
-      icon: null,
-      items: [
-        { title: 'Employees', url: '/Empleados', icon: Users },
-        { title: 'Teams', url: '/Teams', icon: Users },
-        { title: 'Performance', url: '/PerformanceManagement', icon: BarChart3 },
-        { title: 'Skill Matrix', url: '/SkillMatrix', icon: Users },
-        { title: 'Goals & OKRs', url: '/Goals', icon: FileText },
-        { title: 'Team Goals', url: '/TeamGoals', icon: FileText },
-        { title: 'Recognitions', url: '/Recognitions', icon: Users },
-      ]
-    },
-    {
-      section: 'TIME & PAYROLL',
-      icon: null,
-      items: [
-        { title: 'Time Tracking', url: '/TimeTracking', icon: Clock },
-        { title: 'Expenses', url: '/Gastos', icon: Receipt },
-        { title: 'Payroll', url: '/Nomina', icon: DollarSign },
-        { title: 'Mileage', url: '/Manejo', icon: Clock },
-      ]
-    },
-    {
-      section: 'LEARNING & REFERENCE',
-      icon: null,
-      items: [
-        { title: 'Training', url: '/Capacitacion', icon: BookOpen },
-        { title: 'Knowledge Library', url: '/KnowledgeLibrary', icon: BookOpen },
-      ]
-    },
-    {
-      section: 'COMPLIANCE',
-      icon: null,
-      items: [
-        { title: 'Compliance Hub', url: '/ComplianceHub', icon: FileText },
-        { title: 'Audit Trail', url: '/AuditTrail', icon: FileText },
-      ]
-    },
-    {
-      section: 'CLIENT ACCESS',
-      icon: null,
-      items: [
-        { title: 'Client Portal', url: '/ClientPortal', icon: Users },
-        { title: 'Client Management', url: '/ClientManagement', icon: Users },
-      ]
-    },
-  ];
-}
-
-/**
- * Employee navigation structure (limited access)
- */
-export function getEmployeeNavigation() {
-  return [
-    {
-      section: 'Main',
-      icon: null,
-      items: [
-        { title: 'Dashboard', url: '/Dashboard', icon: LayoutDashboard },
-      ]
-    },
-    {
-      section: 'My Work',
-      icon: null,
-      items: [
-        { title: 'Time Tracking', url: '/TimeTracking', icon: Clock },
-        { title: 'Expenses', url: '/Gastos', icon: Receipt },
-      ]
-    },
-    {
-      section: 'Communication',
-      icon: null,
-      items: [
-        { title: 'Chat', url: '/Chat', icon: MessageSquare },
-      ]
-    },
-  ];
+  return 'employee';
 }
 
 // ============================================

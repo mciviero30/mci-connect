@@ -28,26 +28,17 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { getNavigationForRole } from "@/components/core/roleRules";
 
 const LayoutContentWrapper = ({ children, currentPageName, user }) => {
-        const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
-        const navigate = useNavigate();
-        const queryClient = useQueryClient();
-        const { language, changeLanguage } = useLanguage();
-        const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-        const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
-        const sidebarContentRef = useRef(null);
-        const location = useLocation();
-
-        // DEFENSIVE NAVIGATION COMPUTATION: Always returns array
-        const navigation = React.useMemo(() => {
-          if (!user) return [];
-          // Force role to be read directly, not from cache
-          const freshUser = { ...user, role: user.role?.toLowerCase() };
-          const nav = getNavigationForRole(freshUser);
-          return Array.isArray(nav) ? nav : [];
-        }, [user?.id, user?.role]);
+  const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { language, changeLanguage } = useLanguage();
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+  const sidebarContentRef = useRef(null);
+  const location = useLocation();
 
   const { data: pendingExpenses } = useQuery({
-    queryKey: ['pendingExpensesCount', user?.email, user?.role],
+    queryKey: ['pendingExpensesCount', user?.email],
     queryFn: async () => {
       if (!user) return 0;
       if (user.role === 'admin') {
@@ -63,8 +54,8 @@ const LayoutContentWrapper = ({ children, currentPageName, user }) => {
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: 60000,
-    gcTime: 300000,
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchInterval: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -115,7 +106,7 @@ const LayoutContentWrapper = ({ children, currentPageName, user }) => {
           <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
             {!shouldHideSidebar && (
               <LayoutSidebar
-                navigation={navigation}
+                navigation={getNavigationForRole(user)}
                 location={location}
                 pendingExpenses={pendingExpenses}
                 sidebarContentRef={sidebarContentRef}
@@ -164,8 +155,6 @@ export default function Layout({ children, currentPageName }) {
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: async () => {
       try {
-        // Always force fresh data on mount
-        sessionStorage.removeItem('auth_redirect_pending');
         return await base44.auth.me();
       } catch (err) {
         if (err?.status === 401 || err?.message?.includes('401')) {
@@ -180,8 +169,8 @@ export default function Layout({ children, currentPageName }) {
       }
     },
     retry: false,
-    staleTime: 60000,
-    gcTime: 300000,
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     refetchInterval: false,
@@ -219,24 +208,12 @@ export default function Layout({ children, currentPageName }) {
         <LanguageProvider>
           <PermissionsProvider>
             <UIProvider>
-              {isLoading ? (
-                <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
-                  <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              ) : !user ? (
-                <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
-                  <div className="text-center">
-                    <p className="text-slate-600 dark:text-slate-400 mb-4">Redirecting to login...</p>
-                  </div>
-                </div>
-              ) : (
-                <LayoutContentWrapper 
-                  currentPageName={currentPageName} 
-                  user={user}
-                >
-                  {children}
-                </LayoutContentWrapper>
-              )}
+              <LayoutContentWrapper 
+                currentPageName={currentPageName} 
+                user={user}
+              >
+                {children}
+              </LayoutContentWrapper>
             </UIProvider>
           </PermissionsProvider>
         </LanguageProvider>

@@ -62,26 +62,6 @@ Deno.serve(async (req) => {
 
     const profit_contractual = Number((contract_amount - real_cost).toFixed(2));
     const profit_real = Number((revenue_real - real_cost).toFixed(2));
-
-    // ✅ COMMISSION LOCK CHECK — if locked, freeze commission permanently
-    if (job.commission_locked === true) {
-      console.log('[recalculateJobFinancials_v2] Commission locked for job:', job_id);
-      return Response.json({
-        success: true,
-        status: 'commission_locked',
-        job_id,
-        financials: {
-          real_cost,
-          revenue_real,
-          profit_contractual,
-          profit_real,
-          commission_amount: job.commission_amount_final
-        },
-        note: 'Commission frozen. Cost/revenue continue updating.'
-      });
-    }
-
-    // Dynamic commission calculation (only if NOT locked)
     const commission_amount = Number(((profit_contractual * commission_percentage) / 100).toFixed(2));
 
     // STEP 6 — IDEMPOTENT WRITE
