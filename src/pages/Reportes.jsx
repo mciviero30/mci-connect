@@ -807,6 +807,11 @@ export default function Reportes() {
               dateRange={dateRange}
             />
           </TabsContent>
+
+          {/* AGING TAB */}
+          <TabsContent value="aging">
+            <InvoiceAgingReport invoices={invoices} language={language} />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
