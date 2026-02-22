@@ -17,6 +17,7 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { getCustomerDisplayName, sortCustomersByName } from '@/components/utils/nameHelpers';
 import AddressAutocomplete from '@/components/shared/AddressAutocomplete';
 import LineItemsEditor from '@/components/documentos/LineItemsEditor';
+import TMPreviewSelector from '@/components/documentos/TMPreviewSelector';
 
 export default function TMInvoiceBuilder() {
   const { t, language } = useLanguage();
