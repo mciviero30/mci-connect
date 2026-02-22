@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, DollarSign, TrendingUp, Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Shield, DollarSign, TrendingUp, Users, CheckCircle, Clock, AlertTriangle, Loader2 } from 'lucide-react';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 export default function ExecutiveDashboard() {
   const [startDate, setStartDate] = useState('');
