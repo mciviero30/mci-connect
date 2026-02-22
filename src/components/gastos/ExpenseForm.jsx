@@ -105,22 +105,16 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     e.preventDefault();
     const job = jobs?.find(j => j.id === formData.job_id);
     
-    // Validate amount > 0
-    const finalAmount = parseFloat(formData.amount || '0');
-    if (!finalAmount || finalAmount <= 0) {
-      alert(language === 'es'
-        ? '⚠️ El monto debe ser mayor a $0.'
-        : '⚠️ Amount must be greater than $0.');
-      return;
-    }
-
-    // Require receipt
+    // NEW: Prompt #58 - Require receipt for all expenses
     if (!formData.receipt_url) {
       alert(language === 'es' 
         ? '⚠️ El recibo es obligatorio. Por favor sube un documento.' 
         : '⚠️ Receipt is required. Please upload a document.');
       return;
     }
+
+    // Convert amount to float
+    const finalAmount = parseFloat(formData.amount || '0');
 
     // WRITE GUARD — STRICT MODE for Expense (blocks without user_id)
     const baseData = {

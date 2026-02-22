@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, Download, TrendingUp, TrendingDown, DollarSign, Clock, Users as UsersIcon, Briefcase, Target, Award, Calendar as CalendarIcon, AlertTriangle } from "lucide-react";
+import { BarChart3, Download, TrendingUp, TrendingDown, DollarSign, Clock, Users as UsersIcon, Briefcase, Target, Award, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
@@ -15,7 +15,6 @@ import ClientProfitabilityReport from "../components/reportes/ClientProfitabilit
 import ResourceAllocationReport from "../components/reportes/ResourceAllocationReport";
 import WorkloadHeatmap from "../components/reportes/WorkloadHeatmap";
 import TeamWorkloadChart from "../components/reportes/TeamWorkloadChart";
-import InvoiceAgingReport from "../components/reportes/InvoiceAgingReport";
 
 const COLORS = ['#3B9FF3', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4', '#ec4899', '#6366f1'];
 
@@ -189,15 +188,22 @@ export default function Reportes() {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 10);
 
-  // Project profitability — use Job SSOT fields (real_cost, revenue_real, profit_real)
+  // Project profitability
   const projectProfitability = jobs.map(job => {
-    // Use SSOT aggregated fields if available, fallback to invoice calculation
-    const revenue = job.revenue_real > 0 ? job.revenue_real : filteredInvoices.filter(inv => inv.job_id === job.id).reduce((sum, inv) => sum + (inv.total || 0), 0);
-    const totalCost = job.real_cost > 0 ? job.real_cost : 0;
-    const profit = job.profit_real !== undefined && job.profit_real !== 0 ? job.profit_real : (revenue - totalCost);
+    const jobInvoices = filteredInvoices.filter(inv => inv.job_id === job.id);
+    const revenue = jobInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+    
+    const jobTimeEntries = filteredTimeEntries.filter(e => e.job_id === job.id);
+    const hours = jobTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
+    const laborCost = hours * 25; // Assuming a flat labor cost
+    
+    const jobExpenses = filteredExpenses.filter(e => e.job_id === job.id);
+    const expenseCost = jobExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+    
+    const totalCost = laborCost + expenseCost;
+    const profit = revenue - totalCost;
     const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-    const hours = filteredTimeEntries.filter(e => e.job_id === job.id).reduce((sum, e) => sum + (e.hours_worked || 0), 0);
-
+    
     return {
       name: job.name,
       revenue,
@@ -346,13 +352,6 @@ export default function Reportes() {
             >
               <UsersIcon className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Clientes' : 'Clients'}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="aging" 
-              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
-            >
-              <AlertTriangle className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Aging' : 'Aging'}
             </TabsTrigger>
           </TabsList>
 
@@ -799,11 +798,6 @@ export default function Reportes() {
               timeEntries={filteredTimeEntries}
               dateRange={dateRange}
             />
-          </TabsContent>
-
-          {/* AGING TAB */}
-          <TabsContent value="aging">
-            <InvoiceAgingReport invoices={invoices} language={language} />
           </TabsContent>
         </Tabs>
       </div>

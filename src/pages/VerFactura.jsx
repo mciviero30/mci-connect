@@ -11,7 +11,6 @@ import {
   Printer,
   DollarSign,
   CheckCircle,
-  CheckCircle2,
   Copy,
   Trash2,
   MoreHorizontal,
@@ -44,11 +43,11 @@ import {
 import InvoiceDocument from "../components/documentos/InvoiceDocument";
 import { downloadInvoicePDF } from "../components/pdf/generateInvoicePDF";
 import { trackRecentlyViewed } from "@/components/shared/RecentlyViewed";
+import { getInvoiceStatusMeta } from "../components/core/statusConfig";
 import RetryProvisioningButton from "../components/invoices/RetryProvisioningButton";
+import { useUI } from "@/components/contexts/FieldModeContext";
 import CreateJobFromInvoiceDialog from "../components/trabajos/CreateJobFromInvoiceDialog";
 import StripePaymentButton from "../components/invoices/StripePaymentButton";
-import InvoiceActionBar from "../components/invoices/InvoiceActionBar";
-import PaymentRecordDialog from "../components/invoices/PaymentRecordDialog";
 
 export default function VerFactura() {
   const { t, language } = useLanguage();
@@ -70,23 +69,6 @@ export default function VerFactura() {
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [showCreateJobDialog, setShowCreateJobDialog] = useState(false);
-  const [sendingApproval, setSendingApproval] = useState(false);
-
-  const handleSendForApproval = async () => {
-    if (!invoice?.customer_email) {
-      toast({ title: 'No customer email on this invoice', variant: 'destructive' });
-      return;
-    }
-    setSendingApproval(true);
-    try {
-      await base44.functions.invoke('generateInvoiceApprovalLink', { invoiceId: invoice.id });
-      toast({ title: language === 'es' ? '✅ Email de aprobación enviado al cliente' : '✅ Approval email sent to customer', variant: 'success' });
-    } catch (err) {
-      toast({ title: 'Failed to send approval email', variant: 'destructive' });
-    } finally {
-      setSendingApproval(false);
-    }
-  };
 
   const { data: rawInvoice, isLoading } = useQuery({
     queryKey: ['invoice', invoiceId],
@@ -404,34 +386,153 @@ export default function VerFactura() {
     );
   }
 
+  const statusMeta = getInvoiceStatusMeta(invoice.status, language);
+  const canEdit = invoice.status === 'draft';
+  const canDelete = invoice.status === 'draft';
+  const canRecordPayment = !['paid', 'cancelled'].includes(invoice.status);
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <InvoiceActionBar
-        invoice={invoice}
-        job={job}
-        onRecordPayment={() => setPaymentDialog(true)}
-        onSendInvoice={() => sendInvoiceMutation.mutate()}
-        onSendApproval={handleSendForApproval}
-        onCreateJob={() => setShowCreateJobDialog(true)}
-        onPrint={handlePrint}
-        onDownloadPDF={handleDownloadPDF}
-        onShare={handleShare}
-        onClone={() => cloneMutation.mutate()}
-        onCancel={() => cancelInvoiceMutation.mutate()}
-        onDelete={handleDelete}
-        sendingApproval={sendingApproval}
-        sendInvoiceLoading={sendInvoiceMutation.isPending}
-        onRetryProvisioning={
-          <RetryProvisioningButton 
-            invoice={invoice} 
-            job={job}
-            onSuccess={() => {
-              queryClient.invalidateQueries({ queryKey: ['job', invoice?.job_id] });
-              queryClient.invalidateQueries({ queryKey: ['jobs'] });
-            }}
-          />
-        }
-      />
+      {/* Top Action Bar - Reorganized */}
+      <div className="no-print border-b shadow-sm px-4 py-3" style={{background: 'linear-gradient(to right, #000000 0%, #000000 35%, #4a4a4a 100%)', borderColor: 'rgba(0, 0, 0, 0.2)'}}>
+        <div className="max-w-6xl mx-auto flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(createPageUrl('Facturas'))}
+              className="text-slate-300 hover:text-white hover:bg-slate-800 flex-shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-lg font-bold text-white truncate">{invoice.invoice_number}</h1>
+              <Badge className={`${statusMeta.badgeClass} text-[10px] px-2 py-0.5`}>{statusMeta.label}</Badge>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap justify-end flex-shrink-0">
+            {/* Primary Actions - More Compact */}
+            {canRecordPayment && (
+              <Button
+                size="sm"
+                onClick={() => setPaymentDialog(true)}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-xs px-3 h-9"
+              >
+                <DollarSign className="w-3.5 h-3.5 mr-1.5" />
+                ${invoice.balance?.toLocaleString() || '0'}
+              </Button>
+            )}
+
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(createPageUrl(`CrearFactura?id=${invoice.id}`))}
+                className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs px-3 h-9"
+              >
+                <Edit className="w-3.5 h-3.5 mr-1.5" />
+                {t('edit')}
+              </Button>
+            )}
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => sendInvoiceMutation.mutate()}
+              disabled={sendInvoiceMutation.isPending}
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 disabled:opacity-50 text-xs px-3 h-9"
+            >
+              <Mail className="w-3.5 h-3.5 mr-1.5" />
+              {language === 'es' ? 'Enviar' : 'Send'}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => downloadInvoicePDF(invoice)}
+              className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 text-xs px-3 h-9"
+            >
+              <Download className="w-3.5 h-3.5 mr-1.5" />
+              PDF
+            </Button>
+
+            {!invoice.job_id && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCreateJobDialog(true)}
+                className="bg-blue-600 border-blue-700 text-white hover:bg-blue-700 text-xs px-3 h-9"
+              >
+                <Briefcase className="w-3.5 h-3.5 mr-1.5" />
+                {language === 'es' ? 'Crear Job' : 'Create Job'}
+              </Button>
+            )}
+
+            <RetryProvisioningButton 
+              invoice={invoice} 
+              job={job}
+              onSuccess={() => {
+                queryClient.invalidateQueries({ queryKey: ['job', invoice?.job_id] });
+                queryClient.invalidateQueries({ queryKey: ['jobs'] });
+              }}
+            />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700 px-2 h-9">
+                  <MoreHorizontal className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-slate-900 border-slate-800">
+                <DropdownMenuItem onClick={toggleFocusMode} className="cursor-pointer text-white hover:bg-slate-800">
+                  <Maximize2 className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Modo Enfoque' : 'Focus Mode'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-800" />
+                <DropdownMenuItem onClick={handlePrint} className="cursor-pointer text-white hover:bg-slate-800">
+                  <Printer className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Imprimir' : 'Print'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleDownloadPDF} className="cursor-pointer text-white hover:bg-slate-800">
+                  <Download className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Descargar PDF' : 'Download PDF'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-slate-800" />
+                <DropdownMenuItem onClick={handleShare} className="cursor-pointer text-white hover:bg-slate-800">
+                  <Share2 className="w-4 h-4 mr-2" />
+                  {t('share')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => cloneMutation.mutate()} className="cursor-pointer text-white hover:bg-slate-800">
+                  <Copy className="w-4 h-4 mr-2" />
+                  {t('clone')}
+                </DropdownMenuItem>
+                {invoice.status !== 'cancelled' && invoice.status !== 'paid' && (
+                  <>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    <DropdownMenuItem onClick={() => cancelInvoiceMutation.mutate()} className="cursor-pointer text-white hover:bg-slate-800">
+                      <XCircle className="w-4 h-4 mr-2 text-amber-600" />
+                      {t('cancelInvoice')}
+                    </DropdownMenuItem>
+                  </>
+                )}
+                {canDelete && (
+                  <>
+                    <DropdownMenuSeparator className="bg-slate-800" />
+                    <DropdownMenuItem
+                      onClick={handleDelete}
+                      className="text-red-400 focus:text-red-300 cursor-pointer hover:bg-red-500/10"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      {t('delete')}
+                    </DropdownMenuItem>
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </div>
 
       {/* Invoice Document */}
       <div id="invoice-printable" className="max-w-4xl mx-auto my-8 print:my-0 bg-white shadow-xl print:shadow-none rounded-lg print:rounded-none">
@@ -445,15 +546,48 @@ export default function VerFactura() {
         </div>
       )}
 
-      <PaymentRecordDialog
-        open={paymentDialog}
-        onOpenChange={setPaymentDialog}
-        invoice={invoice}
-        paymentAmount={paymentAmount}
-        onPaymentAmountChange={setPaymentAmount}
-        onSubmit={(amount) => recordPaymentMutation.mutate(amount)}
-        isLoading={recordPaymentMutation.isPending}
-      />
+      {/* Payment Dialog */}
+      <Dialog open={paymentDialog} onOpenChange={setPaymentDialog}>
+        <DialogContent className="bg-white border-slate-200">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900">{t('recordPayment')}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <p className="text-sm text-slate-600">{t('balanceDue')}</p>
+              <p className="text-2xl font-bold text-amber-700">
+                ${((Number(invoice?.balance) || Number(invoice?.total) || 0)).toFixed(2)}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-slate-700">{t('paymentAmount')}</Label>
+              <Input
+                type="number"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                max={invoice.balance || invoice.total}
+                className="bg-slate-50 border-slate-200"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPaymentDialog(false)} className="border-slate-300">
+              {t('cancel')}
+            </Button>
+            <Button
+              onClick={() => recordPaymentMutation.mutate(parseFloat(paymentAmount))}
+              disabled={!paymentAmount || parseFloat(paymentAmount) <= 0 || recordPaymentMutation.isPending}
+              className="soft-green-gradient"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              {recordPaymentMutation.isPending ? t('processing') : t('confirmPayment')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Create Job Dialog */}
       <CreateJobFromInvoiceDialog

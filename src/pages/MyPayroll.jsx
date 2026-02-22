@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, DollarSign, Car, Banknote, Receipt, ChevronLeft, ChevronRight, CheckCircle, CalendarDays } from 'lucide-react';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks } from 'date-fns';
-import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { es } from 'date-fns/locale';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
@@ -17,14 +16,7 @@ export default function MyPayroll() {
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const currentWeekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
 
-  const { data: user } = useQuery({ 
-    queryKey: CURRENT_USER_QUERY_KEY,
-    queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
+  const { data: user } = useQuery({ queryKey: ['currentUser'] });
 
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: timeEntries = [] } = useQuery({
@@ -59,18 +51,34 @@ export default function MyPayroll() {
     enabled: !!user,
   });
 
-  // PayrollImportPreview confirmed records to check if week was processed
-  const { data: payrollPreviews = [] } = useQuery({
-    queryKey: ['myPayrollPreviews', user?.id],
-    queryFn: () => base44.entities.PayrollImportPreview.filter({ status: 'confirmed' }, '-created_at', 50),
+  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  const { data: weeklyPayrolls = [] } = useQuery({
+    queryKey: ['myWeeklyPayrolls', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.WeeklyPayroll.filter(query, '-week_start');
+    },
     enabled: !!user,
-    staleTime: 60000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
   });
 
-  // Commissions not available as standalone entity yet — placeholder
-  const weekCommissions = [];
+  // Fetch approved commissions for the week
+  const { data: weekCommissions = [] } = useQuery({
+    queryKey: ['myWeekCommissions', user?.id, currentWeekStart, currentWeekEnd],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const commissions = await base44.entities.CommissionRecord.filter({
+        user_id: user.id,
+        status: 'approved'
+      });
+      // Filter by calculation_date in period
+      return commissions.filter(c => {
+        const calcDate = new Date(c.calculation_date);
+        return calcDate >= currentWeekStart && calcDate <= currentWeekEnd;
+      });
+    },
+    enabled: !!user?.id
+  });
 
   const calculations = useMemo(() => {
     const weekStart = currentWeekStart;
@@ -104,7 +112,7 @@ export default function MyPayroll() {
     const normalWorkPay = normalWorkHours * hourlyRate;
     const overtimeWorkPay = overtimeWorkHours * (hourlyRate * 1.5);
     const drivingHoursPay = totalDrivingHours * hourlyRate;
-    const totalCommission = 0; // Commission entity not yet available
+    const totalCommission = weekCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
     const totalPay = normalWorkPay + overtimeWorkPay + drivingHoursPay + drivingMilesPay + perDiemAmount + reimbursements + totalCommission;
 
     const groupedByDate = {};
@@ -127,13 +135,8 @@ export default function MyPayroll() {
     };
   }, [timeEntries, drivingLogs, expenses, currentWeekStart, currentWeekEnd, user?.hourly_rate]);
 
-  // Check if a confirmed payroll import covers this week
-  const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
-  const weekEndStr = format(currentWeekEnd, 'yyyy-MM-dd');
-  const existingPayroll = payrollPreviews.find(p => 
-    p.period_start <= weekEndStr && p.period_end >= weekStartStr
-  );
-  const payrollStatus = existingPayroll ? 'approved' : 'draft';
+  const existingPayroll = weeklyPayrolls.find(p => new Date(p.week_start).getTime() === currentWeekStart.getTime());
+  const payrollStatus = existingPayroll?.status || 'draft';
 
   const statusConfig = {
     draft: { label: language === 'es' ? 'Borrador' : 'Draft', color: 'bg-slate-100 text-slate-700' },

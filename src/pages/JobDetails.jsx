@@ -257,37 +257,27 @@ export default function JobDetails() {
   // Calculate change orders impact
   const totalChangeOrderAmount = changeOrders.reduce((sum, co) => sum + (co.change_amount || 0), 0);
   const adjustedContractAmount = baseContractAmount + totalChangeOrderAmount;
-
-  // SSOT financial data from recalculateJobFinancials_v2 (authoritative)
-  const ssotRealCost = job?.real_cost || 0;
-  const ssotRevenue = job?.revenue_real || 0;
-  const ssotProfit = job?.profit_real || 0;
-
-  // For display purposes: use SSOT if available, else fallback to local calculation
-  const hasSSOT = ssotRealCost > 0 || ssotRevenue > 0;
-
-  // Local calculation (used as fallback and for per-category breakdown)
+  
+  // Calculate actual costs
   const totalHours = timeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
   const totalPayrollCost = timeEntries.reduce((sum, entry) => {
-    const rate = 25; // Fallback avg rate
+    const rate = 25; // Could be dynamic per employee
     return sum + ((entry.hours_worked || 0) * rate);
   }, 0);
+  
   const totalExpenses = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
   const totalDrivingCost = drivingLogs.reduce((sum, log) => sum + (log.total_amount || 0), 0);
   const totalInventoryCost = inventoryTransactions
     .filter(t => t.type === 'remove')
     .reduce((sum, t) => sum + ((t.cost_per_unit || 0) * (t.quantity || 0)), 0);
-
-  // Use SSOT real_cost if available, otherwise sum local
-  const totalCosts = hasSSOT ? ssotRealCost : (totalPayrollCost + totalExpenses + totalDrivingCost + totalInventoryCost);
-  const profit = hasSSOT ? ssotProfit : (adjustedContractAmount - totalCosts);
-  const revenueForMargin = hasSSOT ? ssotRevenue : adjustedContractAmount;
-  const profitMargin = revenueForMargin > 0 ? (profit / revenueForMargin) * 100 : 0;
+  
+  const totalCosts = totalPayrollCost + totalExpenses + totalDrivingCost + totalInventoryCost;
+  const profit = adjustedContractAmount - totalCosts;
+  const profitMargin = adjustedContractAmount > 0 ? (profit / adjustedContractAmount) * 100 : 0;
   
   // Budget health indicators
   const budgetUsed = estimatedCost > 0 ? (totalCosts / estimatedCost) * 100 : 0;
   const isOverBudget = budgetUsed > 100;
-  const isNearBudget = !isOverBudget && budgetUsed >= 80;
   const budgetVariance = totalCosts - estimatedCost;
 
   if (jobLoading) {
@@ -425,37 +415,19 @@ export default function JobDetails() {
           />
         </div>
 
-        {/* Budget Alert Banner — Over Budget */}
+        {/* Budget Alert Banner */}
         {isOverBudget && (
-          <Card className="mb-4 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-300 dark:border-red-700">
+          <Card className="mb-6 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-300 dark:border-red-700">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-500 rounded-full">
                   <AlertTriangle className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-red-900 dark:text-red-300">🚨 Over Budget</h3>
+                  <h3 className="font-bold text-red-900 dark:text-red-300">⚠️ Over Budget Alert</h3>
                   <p className="text-sm text-red-700 dark:text-red-400">
-                    Real cost: ${totalCosts.toLocaleString()} ({budgetUsed.toFixed(0)}% of ${estimatedCost.toLocaleString()} budget) — Over by ${Math.abs(budgetVariance).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Budget Alert Banner — 80% Warning */}
-        {isNearBudget && (
-          <Card className="mb-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-2 border-amber-300 dark:border-amber-700">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-500 rounded-full">
-                  <AlertTriangle className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-amber-900 dark:text-amber-300">⚠️ Budget at {budgetUsed.toFixed(0)}% — Approaching Limit</h3>
-                  <p className="text-sm text-amber-700 dark:text-amber-400">
-                    Real cost: ${totalCosts.toLocaleString()} of ${estimatedCost.toLocaleString()} estimated — ${Math.abs(budgetVariance).toLocaleString()} remaining
+                    Current costs: ${totalCosts.toLocaleString()} ({budgetUsed.toFixed(0)}% of budget) • 
+                    Over by ${Math.abs(budgetVariance).toLocaleString()}
                   </p>
                 </div>
               </div>
@@ -738,49 +710,29 @@ export default function JobDetails() {
 
               <Card className="bg-white shadow-lg">
                 <CardHeader className="border-b">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2 text-slate-900">
-                      <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
-                      {t('financialSummary')}
-                    </CardTitle>
-                    {hasSSOT && (
-                      <Badge className="bg-green-100 text-green-700 border border-green-300 text-xs">
-                        ✓ {language === 'es' ? 'Datos Reales' : 'Real Data'}
-                      </Badge>
-                    )}
-                  </div>
+                  <CardTitle className="flex items-center gap-2 text-slate-900">
+                    <DollarSign className="w-5 h-5 text-[#3B9FF3]" />
+                    {t('financialSummary')}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{language === 'es' ? 'Ingresos (Facturas)' : 'Revenue (Invoices)'}</span>
-                    <span className="font-bold text-green-600">${(hasSSOT ? ssotRevenue : adjustedContractAmount).toLocaleString()}</span>
+                    <span className="text-slate-600">{language === 'es' ? 'Monto del Contrato' : 'Contract Amount'}</span>
+                    <span className="font-bold text-green-600">${(job.contract_amount || 0).toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-600">{language === 'es' ? 'Costo Real Total' : 'Real Total Cost'}</span>
-                    <span className="font-semibold text-slate-900">${totalCosts.toLocaleString()}</span>
+                    <span className="text-slate-600">{language === 'es' ? 'Costo de Nómina' : 'Payroll Cost'}</span>
+                    <span className="font-semibold text-slate-900">${totalPayrollCost.toFixed(2)}</span>
                   </div>
-                  {estimatedCost > 0 && (
-                    <div>
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="text-slate-500 text-sm">{language === 'es' ? 'Presupuesto usado' : 'Budget used'}</span>
-                        <span className={`text-sm font-bold ${isOverBudget ? 'text-red-600' : isNearBudget ? 'text-amber-600' : 'text-green-600'}`}>
-                          {budgetUsed.toFixed(0)}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                        <div
-                          className={`h-full transition-all ${isOverBudget ? 'bg-red-500' : isNearBudget ? 'bg-amber-500' : 'bg-green-500'}`}
-                          style={{ width: `${Math.min(budgetUsed, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-600">{language === 'es' ? 'Gastos' : 'Expenses'}</span>
+                    <span className="font-semibold text-slate-900">${totalExpenses.toFixed(2)}</span>
+                  </div>
                   <div className="border-t pt-4 mt-4">
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-slate-900">{t('profitLoss')}</span>
                       <span className={`font-bold text-xl ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ${profit.toLocaleString()}
-                        <span className="text-sm font-normal ml-1">({profitMargin.toFixed(1)}%)</span>
+                        ${profit.toFixed(2)}
                       </span>
                     </div>
                   </div>

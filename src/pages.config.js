@@ -121,7 +121,6 @@ import Horarios from './pages/Horarios';
 import HorasManejo from './pages/HorasManejo';
 import IntegrationsStatus from './pages/IntegrationsStatus';
 import Inventario from './pages/Inventario';
-import InvoiceApproval from './pages/InvoiceApproval';
 import Items from './pages/Items';
 import JobDetails from './pages/JobDetails';
 import JobPerformanceAnalysis from './pages/JobPerformanceAnalysis';
@@ -157,9 +156,8 @@ import Papelera from './pages/Papelera';
 import PaymentReconciliation from './pages/PaymentReconciliation';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
-import PerDiem from './pages/PerDiem';
 import PayrollImportLedger from './pages/PayrollImportLedger';
-import payrollimportledgerV2 from './pages/PayrollImportLedger_v2';
+import PerDiem from './pages/PerDiem';
 import PerformanceManagement from './pages/PerformanceManagement';
 import ProfitabilityDashboard from './pages/ProfitabilityDashboard';
 import QuickBooksExport from './pages/QuickBooksExport';
@@ -200,6 +198,7 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
+import payrollimportledgerV2 from './pages/PayrollImportLedger_v2';
 import __Layout from './Layout.jsx';
 
 
@@ -278,7 +277,6 @@ export const PAGES = {
     "HorasManejo": HorasManejo,
     "IntegrationsStatus": IntegrationsStatus,
     "Inventario": Inventario,
-    "InvoiceApproval": InvoiceApproval,
     "Items": Items,
     "JobDetails": JobDetails,
     "JobPerformanceAnalysis": JobPerformanceAnalysis,
@@ -314,9 +312,8 @@ export const PAGES = {
     "PaymentReconciliation": PaymentReconciliation,
     "PaymentSuccess": PaymentSuccess,
     "PayrollAutoFlow": PayrollAutoFlow,
-    "PerDiem": PerDiem,
     "PayrollImportLedger": PayrollImportLedger,
-    "PayrollImportLedger_v2": payrollimportledgerV2,
+    "PerDiem": PerDiem,
     "PerformanceManagement": PerformanceManagement,
     "ProfitabilityDashboard": ProfitabilityDashboard,
     "QuickBooksExport": QuickBooksExport,
@@ -357,6 +354,7 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
+    "PayrollImportLedger_v2": payrollimportledgerV2,
 }
 
 export const pagesConfig = {

@@ -61,7 +61,6 @@ import { AIPredictor } from "@/components/advanced/AIPredictor";
 import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
 import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/advanced/MicroInteractions";
 import { hasFullAccess } from "@/components/core/roleRules";
-import EmployeeMobileDashboard from "@/components/mobile/EmployeeMobileDashboard";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -918,16 +917,9 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* 6C: Mobile-First Employee Dashboard (shown on mobile, hidden on desktop) */}
+        {/* Quick Actions for Employees - Mobile-First */}
         {!isAdmin && (
-          <div className="block md:hidden mb-4">
-            <EmployeeMobileDashboard user={user} />
-          </div>
-        )}
-
-        {/* Quick Actions for Employees - Desktop Only */}
-        {!isAdmin && (
-          <div className="hidden md:block mb-4 sm:mb-6 md:mb-8">
+          <div className="mb-4 sm:mb-6 md:mb-8">
             <QuickActions user={user} certifications={certifications} />
           </div>
         )}

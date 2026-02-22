@@ -1,130 +1,145 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Shield, DollarSign, TrendingUp, Users, CheckCircle, Clock, AlertTriangle, Loader2, Download } from 'lucide-react';
-import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
+import { Shield, DollarSign, TrendingUp, Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
 
 export default function ExecutiveDashboard() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
   const { data: currentUser } = useQuery({
-    queryKey: CURRENT_USER_QUERY_KEY,
+    queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
   });
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
 
   // Fetch data
   // STRATEGY FIX: add staleTime to prevent refetch on every mount
-  const EXEC_QUERY_CONFIG = {
-    enabled: isAdmin,
-    staleTime: 300000,
-    gcTime: 600000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  };
-
-  const { data: invoices = [], isLoading: loadingInvoices } = useQuery({
+  const { data: invoices = [] } = useQuery({
     queryKey: ['invoices-revenue'],
     queryFn: () => base44.entities.Invoice.list('-created_date', 1000),
-    ...EXEC_QUERY_CONFIG,
+    enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  const { data: payrollPreviews = [], isLoading: loadingPayroll } = useQuery({
-    queryKey: ['payroll-previews-exec'],
-    queryFn: () => base44.entities.PayrollImportPreview.filter({ status: 'confirmed' }, '-created_at', 200),
-    ...EXEC_QUERY_CONFIG,
+  const { data: commissions = [] } = useQuery({
+    queryKey: ['all-commissions'],
+    queryFn: () => base44.entities.CommissionResult.list('-created_date', 1000),
+    enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: payrollEntries = [] } = useQuery({
+    queryKey: ['payroll-entries'],
+    queryFn: () => base44.entities.WeeklyPayroll.list('-created_date', 1000),
+    enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: taxProfiles = [] } = useQuery({
     queryKey: ['all-tax-profiles'],
-    queryFn: () => base44.entities.TaxProfile.filter({ completed: true }),
-    ...EXEC_QUERY_CONFIG,
+    queryFn: () => base44.entities.TaxProfile.list(),
+    enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: allEmployees = [] } = useQuery({
-    queryKey: ['all-employees-exec'],
-    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
-    ...EXEC_QUERY_CONFIG,
+    queryKey: ['all-employees'],
+    queryFn: () => base44.entities.EmployeeDirectory.list(),
+    enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['all-jobs'],
     queryFn: () => base44.entities.Job.list('-created_date', 1000),
-    ...EXEC_QUERY_CONFIG,
+    enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['all-expenses'],
     queryFn: () => base44.entities.Expense.list('-created_date', 1000),
-    ...EXEC_QUERY_CONFIG,
+    enabled: isAdmin,
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  const isLoading = loadingInvoices || loadingPayroll;
+  // Filter by date range
+  const filterByDate = (items, dateField) => {
+    let filtered = items;
+    if (startDate) {
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item[dateField]);
+        return itemDate >= new Date(startDate);
+      });
+    }
+    if (endDate) {
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item[dateField]);
+        return itemDate <= new Date(endDate);
+      });
+    }
+    return filtered;
+  };
 
-  // Memoize expensive calculations
-  const metrics = useMemo(() => {
-    const filterByDate = (items, dateField) => {
-      let filtered = items;
-      if (startDate) filtered = filtered.filter(item => new Date(item[dateField]) >= new Date(startDate));
-      if (endDate) filtered = filtered.filter(item => new Date(item[dateField]) <= new Date(endDate));
-      return filtered;
-    };
+  // Calculate metrics
+  const filteredInvoices = filterByDate(invoices.filter(inv => inv.status === 'paid'), 'payment_date');
+  const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
 
-    const filteredInvoices = filterByDate(invoices.filter(inv => inv.status === 'paid'), 'payment_date');
-    const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
+  const filteredCommissions = filterByDate(commissions, 'created_date');
+  const commissionsCalculated = filteredCommissions.filter(c => c.status === 'calculated');
+  const commissionsApproved = filteredCommissions.filter(c => c.status === 'approved');
+  const commissionsPaid = filteredCommissions.filter(c => c.status === 'paid');
 
-    const filteredPayroll = filterByDate(payrollPreviews, 'created_at');
-    const totalPayrollExposure = filteredPayroll.reduce((sum, p) => {
-      const summary = p.payload?.summary;
-      return sum + (summary?.total_gross_pay || summary?.total_pay || 0);
-    }, 0);
+  const totalCommissionsCalculated = commissionsCalculated.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+  const totalCommissionsApproved = commissionsApproved.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+  const totalCommissionsPaid = commissionsPaid.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
 
-    const totalCommissionsPaid = 0;
-    const activeEmployees = allEmployees.filter(e => e.status === 'active');
-    const taxCompliant = taxProfiles.length;
-    const taxComplianceRate = activeEmployees.length > 0
-      ? ((taxCompliant / activeEmployees.length) * 100).toFixed(1) : 0;
+  const filteredPayroll = filterByDate(payrollEntries, 'created_date');
+  const totalPayrollExposure = filteredPayroll.reduce((sum, p) => sum + (p.total_pay || 0), 0);
 
-    const activeJobs = jobs.filter(j => j.status === 'active' && !j.deleted_at);
-    const completedJobs = jobs.filter(j => j.status === 'completed' && !j.deleted_at);
-    const avgJobProfit = completedJobs.length > 0
-      ? completedJobs.reduce((sum, j) => {
-          const revenue = j.contract_amount || 0;
-          const cost = j.real_cost ?? j.estimated_cost ?? 0;
-          return sum + (revenue - cost);
-        }, 0) / completedJobs.length
-      : 0;
+  const activeEmployees = allEmployees.filter(e => e.employment_status === 'active');
+  const taxCompliant = taxProfiles.filter(t => t.completed).length;
+  const taxComplianceRate = activeEmployees.length > 0 
+    ? ((taxCompliant / activeEmployees.length) * 100).toFixed(1)
+    : 0;
 
-    const totalExpenses = expenses.filter(e => e.status === 'approved').reduce((sum, e) => sum + (e.amount || 0), 0);
-    const netProfit = totalRevenue - totalPayrollExposure - totalCommissionsPaid - totalExpenses;
-    const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
+  // Job pipeline metrics
+  const activeJobs = jobs.filter(j => j.status === 'active' && !j.deleted_at);
+  const completedJobs = jobs.filter(j => j.status === 'completed' && !j.deleted_at);
+  const avgJobProfit = completedJobs.length > 0 
+    ? completedJobs.reduce((sum, j) => {
+        const revenue = j.contract_amount || 0;
+        const cost = j.estimated_cost || 0;
+        return sum + (revenue - cost);
+      }, 0) / completedJobs.length
+    : 0;
 
-    return {
-      filteredInvoices, totalRevenue, filteredPayroll, totalPayrollExposure,
-      totalCommissionsCalculated: 0, totalCommissionsApproved: 0, totalCommissionsPaid: 0,
-      commissionsCalculated: [], commissionsApproved: [], commissionsPaid: [],
-      activeEmployees, taxCompliant, taxComplianceRate,
-      activeJobs, completedJobs, avgJobProfit, totalExpenses, netProfit, profitMargin
-    };
-  }, [invoices, payrollPreviews, allEmployees, taxProfiles, jobs, expenses, startDate, endDate]);
-
-  const {
-    filteredInvoices, totalRevenue, filteredPayroll, totalPayrollExposure,
-    totalCommissionsCalculated, totalCommissionsApproved, totalCommissionsPaid,
-    commissionsCalculated, commissionsApproved, commissionsPaid,
-    activeEmployees, taxCompliant, taxComplianceRate,
-    activeJobs, completedJobs, avgJobProfit, totalExpenses, netProfit, profitMargin
-  } = metrics;
+  // Cost breakdown
+  const approvedExpenses = expenses.filter(e => e.status === 'approved');
+  const totalExpenses = approvedExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+  
+  // Net profit
+  const netProfit = totalRevenue - totalPayrollExposure - totalCommissionsPaid - totalExpenses;
+  const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
 
   if (!isAdmin) {
     return (
@@ -146,68 +161,13 @@ export default function ExecutiveDashboard() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
-          <p className="text-slate-600 dark:text-slate-400">Loading dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
+    <div className="min-h-screen bg-slate-50 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Executive Dashboard</h1>
-            <p className="text-slate-600 dark:text-slate-400">Real-time business intelligence and KPIs</p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => {
-              const lines = [
-                `Executive Dashboard KPI Snapshot`,
-                `Period: ${startDate || 'All time'} → ${endDate || 'Today'}`,
-                `Generated: ${new Date().toLocaleDateString()}`,
-                ``,
-                `REVENUE`,
-                `  Total Revenue: $${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                `  Paid Invoices: ${filteredInvoices.length}`,
-                ``,
-                `COSTS`,
-                `  Payroll Exposure: $${totalPayrollExposure.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                `  Expenses: $${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                `  Commissions Paid: $${totalCommissionsPaid.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                ``,
-                `PROFITABILITY`,
-                `  Net Profit: $${netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-                `  Profit Margin: ${profitMargin}%`,
-                ``,
-                `JOBS`,
-                `  Active: ${activeJobs.length}`,
-                `  Completed: ${completedJobs.length}`,
-                `  Avg Job Profit: $${avgJobProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-                ``,
-                `WORKFORCE`,
-                `  Active Employees: ${activeEmployees.length}`,
-                `  Tax Compliance: ${taxComplianceRate}% (${taxCompliant}/${activeEmployees.length})`,
-              ].join('\n');
-              const blob = new Blob([lines], { type: 'text/plain' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `kpi_snapshot_${new Date().toISOString().split('T')[0]}.txt`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Export KPIs
-          </Button>
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Executive Dashboard</h1>
+          <p className="text-slate-600">Real-time business intelligence and KPIs</p>
         </div>
 
         {/* Date Filter */}

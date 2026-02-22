@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Car, CheckCircle, XCircle, Calendar, MapPin, Plus, AlertTriangle } from "lucide-react";
-import { toast } from "sonner";
+import { Car, CheckCircle, XCircle, Calendar, MapPin, Plus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -114,11 +113,11 @@ export default function MileageApproval() {
         job_id: '',
         notes: ''
       });
-      toast.success(language === 'es' ? 'Registro de millas creado!' : 'Mileage record created!');
+      alert('✅ ' + (language === 'es' ? 'Registro de millas creado!' : 'Mileage record created!'));
     },
     onError: (error) => {
       console.error("Error creating mileage record:", error);
-      toast.error((language === 'es' ? 'Error al crear registro: ' : 'Failed to create mileage record: ') + error.message);
+      alert('❌ ' + (language === 'es' ? 'Error al crear registro: ' : 'Failed to create mileage record: ') + error.message);
     }
   });
 
@@ -126,11 +125,11 @@ export default function MileageApproval() {
     mutationFn: ({ id }) => base44.entities.DrivingLog.update(id, { status: 'approved' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivingLogs'] });
-      toast.success(language === 'es' ? 'Millas aprobadas!' : 'Mileage approved!');
+      alert('✅ ' + (language === 'es' ? 'Millas aprobadas!' : 'Mileage approved!'));
     },
     onError: (error) => {
       console.error("Error approving mileage:", error);
-      toast.error((language === 'es' ? 'Error al aprobar: ' : 'Failed to approve mileage: ') + error.message);
+      alert('❌ ' + (language === 'es' ? 'Error al aprobar: ' : 'Failed to approve mileage: ') + error.message);
     }
   });
 
@@ -142,28 +141,26 @@ export default function MileageApproval() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['drivingLogs'] });
       setRejectDialog({ open: false, log: null, notes: "" });
-      toast.success(language === 'es' ? 'Millas rechazadas' : 'Mileage rejected');
+      alert('✅ ' + (language === 'es' ? 'Millas rechazadas' : 'Mileage rejected'));
     },
     onError: (error) => {
       console.error("Error rejecting mileage:", error);
-      toast.error((language === 'es' ? 'Error al rechazar: ' : 'Failed to reject mileage: ') + error.message);
+      alert('❌ ' + (language === 'es' ? 'Error al rechazar: ' : 'Failed to reject mileage: ') + error.message);
     }
   });
 
-  const [confirmApproveDialog, setConfirmApproveDialog] = useState({ open: false, log: null });
-
   const handleApprove = (log) => {
-    setConfirmApproveDialog({ open: true, log });
-  };
-
-  const handleConfirmApprove = () => {
-    approveMutation.mutate({ id: confirmApproveDialog.log.id });
-    setConfirmApproveDialog({ open: false, log: null });
+    const message = language === 'es' 
+      ? `¿Aprobar ${log.miles} millas para ${log.employee_name}?`
+      : `Approve ${log.miles} miles for ${log.employee_name}?`;
+    if (confirm(message)) {
+      approveMutation.mutate({ id: log.id });
+    }
   };
 
   const handleReject = () => {
     if (!rejectDialog.notes.trim()) {
-      toast.error(language === 'es' ? 'Por favor proporciona una razón para el rechazo' : 'Please provide a reason for rejection');
+      alert(language === 'es' ? 'Por favor proporciona una razón para el rechazo' : 'Please provide a reason for rejection');
       return;
     }
     rejectMutation.mutate({
@@ -181,17 +178,17 @@ export default function MileageApproval() {
   const handleSubmitMileage = (e) => {
     e.preventDefault();
     if (!selectedEmployee) {
-      toast.error(language === 'es' ? 'Por favor selecciona un empleado.' : 'Please select an employee.');
+      alert(language === 'es' ? 'Por favor selecciona un empleado.' : 'Please select an employee.');
       return;
     }
     if (!mileageFormData.job_id) {
-      toast.error(language === 'es' ? 'Por favor selecciona un trabajo.' : 'Please select a job.');
+      alert(language === 'es' ? 'Por favor selecciona un trabajo.' : 'Please select a job.');
       return;
     }
     const miles = parseFloat(mileageFormData.miles);
     const hours = parseFloat(mileageFormData.hours);
     if ((isNaN(miles) || miles <= 0) && (isNaN(hours) || hours <= 0)) {
-      toast.error(language === 'es' ? 'Millas o Horas deben ser mayores a cero.' : 'Miles or Hours must be greater than zero.');
+      alert(language === 'es' ? 'Millas o Horas deben ser mayores a cero.' : 'Miles or Hours must be greater than zero.');
       return;
     }
     createMileageMutation.mutate(mileageFormData);
@@ -533,35 +530,6 @@ export default function MileageApproval() {
             </form>
           </DialogContent>
         </Dialog>
-
-      {/* Confirm Approve Dialog */}
-      <Dialog open={confirmApproveDialog.open} onOpenChange={(open) => !open && setConfirmApproveDialog({ open: false, log: null })}>
-        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-              <CheckCircle className="w-5 h-5 text-green-600" />
-              {language === 'es' ? 'Confirmar Aprobación' : 'Confirm Approval'}
-            </DialogTitle>
-          </DialogHeader>
-          {confirmApproveDialog.log && (
-            <div className="py-4">
-              <p className="text-slate-700 dark:text-slate-300">
-                {language === 'es'
-                  ? `¿Aprobar ${confirmApproveDialog.log.miles} millas para ${confirmApproveDialog.log.employee_name}?`
-                  : `Approve ${confirmApproveDialog.log.miles} miles for ${confirmApproveDialog.log.employee_name}?`}
-              </p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmApproveDialog({ open: false, log: null })} className="bg-white border-slate-300 text-slate-700">
-              {language === 'es' ? 'Cancelar' : 'Cancel'}
-            </Button>
-            <Button onClick={handleConfirmApprove} disabled={approveMutation.isPending} className="bg-green-600 hover:bg-green-700 text-white">
-              {language === 'es' ? 'Aprobar' : 'Approve'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Reject Dialog */}
       <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ ...rejectDialog, open })}>

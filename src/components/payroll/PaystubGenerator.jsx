@@ -1,141 +1,176 @@
-import React, { useRef } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import React, { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Download, Printer } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import { FileText, Download, Loader2 } from 'lucide-react';
+import { useMutation } from '@tanstack/react-query';
+import { base44 } from '@/api/base44Client';
+import { format } from 'date-fns';
 
 export default function PaystubGenerator({ open, onOpenChange, payrollData, weekStart, weekEnd }) {
-  const contentRef = useRef();
+  const generatePdfMutation = useMutation({
+    mutationFn: async () => {
+      const response = await base44.functions.invoke('generatePaystub', {
+        employeeEmail: payrollData?.employee?.email,
+        employeeName: payrollData?.employee?.full_name,
+        weekStart,
+        weekEnd,
+        hourlyRate: payrollData.hourlyRate,
+        overtimeRate: payrollData.overtimeRate,
+        regularHours: payrollData.totalRegularHours,
+        overtimeHours: payrollData.totalOvertimeHours,
+        drivingHours: payrollData.totalDrivingHours,
+        regularPay: payrollData.regularPay,
+        overtimePay: payrollData.overtimePay,
+        drivingPay: payrollData.drivingPay,
+        mileageTotal: payrollData.mileageTotal,
+        expenseTotal: payrollData.expenseTotal,
+        grossPay: payrollData.grossPay
+      });
+      
+      return response;
+    }
+  });
 
-  const handlePrint = () => {
-    window.print();
+  const handleDownload = async () => {
+    try {
+      await generatePdfMutation.mutateAsync();
+      // Download would happen here
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Error generating paystub:', error);
+    }
   };
 
-  const handleDownloadPDF = async () => {
-    if (!contentRef.current) return;
+  if (!payrollData?.employee) return null;
 
-    const canvas = await html2canvas(contentRef.current, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-    });
-
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4',
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    const imgWidth = 210;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-    pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-    pdf.save(`paystub-${payrollData.employee.full_name}-${weekStart}.pdf`);
-  };
-
-  if (!payrollData) return null;
-
-  const { employee, regularHours, overtimeHours, regularRate, overtimeRate, regularPay, overtimePay, approvedExpenses, mileageReimbursement, subtotal, taxes, totalDue } = payrollData;
+  const employee = payrollData?.employee;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl bg-white dark:bg-slate-900">
         <DialogHeader>
-          <DialogTitle>Paystub - {employee.full_name}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <FileText className="w-5 h-5 text-blue-600" />
+            Paystub Preview
+          </DialogTitle>
         </DialogHeader>
 
-        {/* Printable Content */}
-        <div ref={contentRef} className="p-8 bg-white text-slate-900">
+        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-6 bg-slate-50 dark:bg-slate-800">
           {/* Header */}
-          <div className="mb-8 border-b border-slate-200 pb-6">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">PAYSTUB</h1>
-            <div className="grid grid-cols-2 gap-8">
-              <div>
-                <p className="text-sm text-slate-600">Employee Name:</p>
-                <p className="font-bold text-lg">{employee.full_name}</p>
-                <p className="text-sm text-slate-600 mt-2">Email:</p>
-                <p className="font-mono text-sm">{employee.email}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm text-slate-600">Pay Period:</p>
-                <p className="font-bold text-lg">{weekStart} to {weekEnd}</p>
-                <p className="text-sm text-slate-600 mt-2">Position:</p>
-                <p className="font-bold">{employee.position || 'Employee'}</p>
-              </div>
+          <div className="text-center mb-6 pb-4 border-b border-slate-300 dark:border-slate-600">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">MCI Connect</h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">Pay Period: {format(new Date(weekStart), 'MMM dd')} - {format(new Date(weekEnd), 'MMM dd, yyyy')}</p>
+          </div>
+
+          {/* Employee Info */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Employee</p>
+              <p className="font-semibold text-slate-900 dark:text-white">{employee?.full_name}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Employee ID</p>
+              <p className="font-semibold text-slate-900 dark:text-white">{employee?.email}</p>
             </div>
           </div>
 
           {/* Earnings */}
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-slate-900 mb-4 uppercase tracking-wide">Earnings</h2>
-            <div className="space-y-2 bg-slate-50 p-4 rounded-lg">
-              {regularHours > 0 && (
-                <div className="flex justify-between">
-                  <span>Regular Pay ({regularHours}h @ ${regularRate}/h)</span>
-                  <span className="font-bold">${regularPay.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
-                </div>
-              )}
-              {overtimeHours > 0 && (
-                <div className="flex justify-between">
-                  <span>Overtime ({overtimeHours}h @ ${overtimeRate}/h)</span>
-                  <span className="font-bold">${overtimePay.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
-                </div>
-              )}
-              {approvedExpenses > 0 && (
-                <div className="flex justify-between">
-                  <span>Expense Reimbursement</span>
-                  <span className="font-bold text-green-600">${approvedExpenses.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
-                </div>
-              )}
-              {mileageReimbursement > 0 && (
-                <div className="flex justify-between">
-                  <span>Mileage Reimbursement</span>
-                  <span className="font-bold text-green-600">${mileageReimbursement.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
-                </div>
-              )}
-            </div>
+          <div className="mb-6">
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">Earnings</h3>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-slate-600 dark:text-slate-400">
+                  <th className="pb-2">Description</th>
+                  <th className="pb-2 text-right">Hours/Qty</th>
+                  <th className="pb-2 text-right">Rate</th>
+                  <th className="pb-2 text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="text-slate-900 dark:text-white">
+                <tr className="border-t border-slate-200 dark:border-slate-700">
+                  <td className="py-2">Regular Hours</td>
+                  <td className="text-right">{payrollData.totalRegularHours}</td>
+                  <td className="text-right">${payrollData.hourlyRate}</td>
+                  <td className="text-right font-semibold">${payrollData.regularPay}</td>
+                </tr>
+                {parseFloat(payrollData.totalOvertimeHours) > 0 && (
+                  <tr className="border-t border-slate-200 dark:border-slate-700">
+                    <td className="py-2">Overtime (1.5x)</td>
+                    <td className="text-right">{payrollData.totalOvertimeHours}</td>
+                    <td className="text-right">${payrollData.overtimeRate}</td>
+                    <td className="text-right font-semibold">${payrollData.overtimePay}</td>
+                  </tr>
+                )}
+                {parseFloat(payrollData.totalDrivingHours) > 0 && (
+                  <tr className="border-t border-slate-200 dark:border-slate-700">
+                    <td className="py-2">Driving Hours</td>
+                    <td className="text-right">{payrollData.totalDrivingHours}</td>
+                    <td className="text-right">${payrollData.hourlyRate}</td>
+                    <td className="text-right font-semibold">${payrollData.drivingPay}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
 
-          {/* Deductions */}
-          <div className="mb-8">
-            <h2 className="text-lg font-bold text-slate-900 mb-4 uppercase tracking-wide">Deductions</h2>
-            <div className="space-y-2 bg-red-50 p-4 rounded-lg">
-              <div className="flex justify-between">
-                <span>Federal & FICA Taxes (15%)</span>
-                <span className="font-bold text-red-600">${taxes.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
-              </div>
+          {/* Reimbursements */}
+          {(parseFloat(payrollData.mileageTotal) > 0 || parseFloat(payrollData.expenseTotal) > 0) && (
+            <div className="mb-6">
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-3 pb-2 border-b border-slate-300 dark:border-slate-600">Reimbursements</h3>
+              <table className="w-full text-sm">
+                <tbody className="text-slate-900 dark:text-white">
+                  {parseFloat(payrollData.mileageTotal) > 0 && (
+                    <tr className="border-t border-slate-200 dark:border-slate-700">
+                      <td className="py-2">Mileage</td>
+                      <td className="text-right">{payrollData.mileageCount} trips</td>
+                      <td className="text-right">$0.60/mi</td>
+                      <td className="text-right font-semibold">${payrollData.mileageTotal}</td>
+                    </tr>
+                  )}
+                  {parseFloat(payrollData.expenseTotal) > 0 && (
+                    <tr className="border-t border-slate-200 dark:border-slate-700">
+                      <td className="py-2">Expense Reimbursements</td>
+                      <td className="text-right">{payrollData.expenseCount} items</td>
+                      <td className="text-right">-</td>
+                      <td className="text-right font-semibold">${payrollData.expenseTotal}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
-          </div>
+          )}
 
-          {/* Summary */}
-          <div className="border-t-2 border-slate-900 pt-6">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-bold uppercase">Total Due:</span>
-              <span className="text-3xl font-bold text-green-600">${totalDue.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
-            </div>
-            <div className="text-xs text-slate-600 text-right">
-              Generated: {new Date().toLocaleDateString()}
+          {/* Total */}
+          <div className="pt-4 border-t-2 border-slate-300 dark:border-slate-600">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-bold text-slate-900 dark:text-white">Total Gross Pay</span>
+              <span className="text-2xl font-bold text-green-600 dark:text-green-400">${payrollData.grossPay}</span>
             </div>
           </div>
         </div>
 
-        {/* Actions */}
-        <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={handlePrint}>
-            <Printer className="w-4 h-4 mr-2" />
-            Print
-          </Button>
-          <Button onClick={handleDownloadPDF} className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Download className="w-4 h-4 mr-2" />
-            Download PDF
-          </Button>
+        <div className="flex justify-end gap-3 mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close
           </Button>
-        </DialogFooter>
+          <Button 
+            onClick={handleDownload}
+            disabled={generatePdfMutation.isPending}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            {generatePdfMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 mr-2" />
+                Download PDF
+              </>
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -11,10 +11,9 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // Admin/CEO-only operation
-    if (!user || !['admin', 'ceo'].includes(user.role)) {
-      console.warn(`[Permission Denied] ${user?.email} (${user?.role}) attempted commission approval`);
-      return Response.json({ error: 'Forbidden: Admin/CEO access required' }, { status: 403 });
+    // SECURITY: Only CEO/Admin can approve
+    if (!user || (user.role !== 'admin' && user.role !== 'ceo')) {
+      return Response.json({ error: 'Unauthorized: Admin/CEO only' }, { status: 403 });
     }
 
     const { commission_result_id, adjusted_rate, notes } = await req.json();

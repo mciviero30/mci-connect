@@ -5,17 +5,13 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 
-const SidebarNavigation = React.memo(function SidebarNavigation({ 
+export const SidebarNavigation = React.memo(function SidebarNavigation({ 
   navigation, 
   location, 
   pendingExpenses, 
   sidebarContentRef,
   setOpenMobile 
 }) {
-  if (!Array.isArray(navigation)) {
-    return null;
-  }
-
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const [expandedParents, setExpandedParents] = React.useState(new Set());
   const itemRefs = React.useRef([]);
@@ -254,5 +250,3 @@ const SidebarNavigation = React.memo(function SidebarNavigation({
     </Accordion>
   );
 });
-
-export default SidebarNavigation;

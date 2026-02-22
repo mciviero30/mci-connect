@@ -39,11 +39,7 @@ export default function ModernJobCard({ job, onEdit }) {
   });
 
   const handleDelete = () => {
-    if (confirm(
-      language === 'es'
-        ? `¿Eliminar "${job.name || 'este trabajo'}" permanentemente? Esta acción no se puede deshacer.`
-        : `Delete "${job.name || 'this job'}" permanently? This action cannot be undone.`
-    )) {
+    if (confirm(language === 'es' ? '¿Eliminar este trabajo?' : 'Delete this job?')) {
       deleteMutation.mutate(job.id);
     }
   };

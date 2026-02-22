@@ -26,11 +26,6 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   const location = useLocation();
   const [sheetOpen, setSheetOpen] = React.useState(false);
 
-  // Safety check for navigation
-  if (!Array.isArray(navigation)) {
-    return null;
-  }
-
   // STEP 2: Track pending sync operations count
   const { pendingCount } = useSyncQueue();
 

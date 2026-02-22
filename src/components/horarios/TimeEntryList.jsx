@@ -19,7 +19,6 @@ import { notifyTimesheetStatus } from '../notifications/notificationHelpers';
 import { canCreateTimeEntry } from "../trabajos/JobStatusValidator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/toast";
-import { toast as sonnerToast } from "sonner";
 import { resolveUser, resolveDisplayName } from "@/components/utils/userResolution";
 import { updateTimeEntrySafely } from "@/functions/updateTimeEntrySafely";
 
@@ -252,15 +251,16 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     }
   });
 
-  const [confirmApproveEntry, setConfirmApproveEntry] = useState(null);
-  const [confirmRejectEntry, setConfirmRejectEntry] = useState(null);
-
   const handleApprove = (entry) => {
-    setConfirmApproveEntry(entry);
+    if (window.confirm(language === 'es' ? '¿Aprobar estas horas?' : 'Approve these hours?')) {
+      approveMutation.mutate(entry);
+    }
   };
 
   const handleReject = (entry) => {
-    setConfirmRejectEntry(entry);
+    if (window.confirm(language === 'es' ? '¿Rechazar estas horas?' : 'Reject these hours?')) {
+      rejectMutation.mutate(entry);
+    }
   };
 
   const handleEdit = async (entry) => {
@@ -318,23 +318,27 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     });
   };
 
-  const [confirmApproveAll, setConfirmApproveAll] = useState(false);
-
   const handleApproveAll = async () => {
     const pendingEntries = filteredEntries.filter(e => e.status === 'pending');
+    
     if (pendingEntries.length === 0) {
-      sonnerToast.info(language === 'es' ? 'No hay entradas pendientes para aprobar' : 'No pending entries to approve');
+      alert(language === 'es' ? 'No hay entradas pendientes para aprobar' : 'No pending entries to approve');
       return;
     }
-    setConfirmApproveAll(true);
-  };
 
-  const handleConfirmApproveAll = async () => {
-    setConfirmApproveAll(false);
-    const pendingEntries = filteredEntries.filter(e => e.status === 'pending');
+    const confirmed = window.confirm(
+      language === 'es' 
+        ? `¿Aprobar ${pendingEntries.length} entradas pendientes? Todas serán marcadas como "Listas para Pago".` 
+        : `Approve ${pendingEntries.length} pending entries? All will be marked "Ready for Payment".`
+    );
+
+    if (!confirmed) return;
+
     setIsApprovingAll(true);
     try {
+      // Collect unique employee emails for scoped invalidation
       const affectedEmployees = new Set();
+      
       for (const entry of pendingEntries) {
         const response = await updateTimeEntrySafely({ 
           entity_id: entry.id, 
@@ -345,10 +349,12 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
             ready_for_payment: true
           }
         });
+        
         if (!response.data.success) {
           console.error(`Failed to approve entry ${entry.id}:`, response.data.error);
           continue;
         }
+        
         affectedEmployees.add(entry.employee_email);
         try {
           await notifyTimesheetStatus(entry, 'approved', null);
@@ -356,17 +362,19 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
           console.error(`Failed to send notification for entry ${entry.id}:`, error);
         }
       }
+      
+      // SCOPED invalidation - only invalidate affected users
       affectedEmployees.forEach(email => {
         queryClient.invalidateQueries({ queryKey: ['myTimeEntries', email] });
       });
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
-      sonnerToast.success(language === 'es' 
-        ? `${pendingEntries.length} entradas aprobadas - Listas para Pago` 
-        : `${pendingEntries.length} entries approved - Ready for Payment`
+      alert(language === 'es' 
+        ? `✅ ${pendingEntries.length} entradas aprobadas - Listas para Pago` 
+        : `✅ ${pendingEntries.length} entries approved - Ready for Payment`
       );
     } catch (error) {
       console.error('Error approving entries:', error);
-      sonnerToast.error(language === 'es' ? 'Error al aprobar las entradas' : 'Error approving entries');
+      alert(language === 'es' ? 'Error al aprobar las entradas' : 'Error approving entries');
     } finally {
       setIsApprovingAll(false);
     }
@@ -374,7 +382,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
   const handleExportToExcel = () => {
     if (filteredEntries.length === 0) {
-      sonnerToast.info(language === 'es' ? 'No hay registros para exportar' : 'No records to export');
+      alert(language === 'es' ? 'No hay registros para exportar' : 'No records to export');
       return;
     }
 
@@ -520,68 +528,6 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
   return (
     <div className="space-y-4">
-      {/* Confirm Approve Single Entry Dialog */}
-      <Dialog open={!!confirmApproveEntry} onOpenChange={(open) => !open && setConfirmApproveEntry(null)}>
-        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white">
-              {language === 'es' ? 'Confirmar Aprobación' : 'Confirm Approval'}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-slate-700 dark:text-slate-300 py-2">
-            {language === 'es' ? '¿Aprobar estas horas?' : 'Approve these hours?'}
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmApproveEntry(null)}>{language === 'es' ? 'Cancelar' : 'Cancel'}</Button>
-            <Button onClick={() => { approveMutation.mutate(confirmApproveEntry); setConfirmApproveEntry(null); }} className="bg-green-600 hover:bg-green-700 text-white">
-              {language === 'es' ? 'Aprobar' : 'Approve'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirm Reject Single Entry Dialog */}
-      <Dialog open={!!confirmRejectEntry} onOpenChange={(open) => !open && setConfirmRejectEntry(null)}>
-        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white">
-              {language === 'es' ? 'Confirmar Rechazo' : 'Confirm Rejection'}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-slate-700 dark:text-slate-300 py-2">
-            {language === 'es' ? '¿Rechazar estas horas?' : 'Reject these hours?'}
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmRejectEntry(null)}>{language === 'es' ? 'Cancelar' : 'Cancel'}</Button>
-            <Button onClick={() => { rejectMutation.mutate(confirmRejectEntry); setConfirmRejectEntry(null); }} className="bg-red-600 hover:bg-red-700 text-white">
-              {language === 'es' ? 'Rechazar' : 'Reject'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Confirm Approve All Dialog */}
-      <Dialog open={confirmApproveAll} onOpenChange={setConfirmApproveAll}>
-        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-          <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-white">
-              {language === 'es' ? 'Aprobar Todos' : 'Approve All'}
-            </DialogTitle>
-          </DialogHeader>
-          <p className="text-slate-700 dark:text-slate-300 py-2">
-            {language === 'es' 
-              ? `¿Aprobar ${filteredEntries.filter(e => e.status === 'pending').length} entradas pendientes? Todas serán marcadas como "Listas para Pago".`
-              : `Approve ${filteredEntries.filter(e => e.status === 'pending').length} pending entries? All will be marked "Ready for Payment".`}
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmApproveAll(false)}>{language === 'es' ? 'Cancelar' : 'Cancel'}</Button>
-            <Button onClick={handleConfirmApproveAll} className="bg-green-600 hover:bg-green-700 text-white">
-              {language === 'es' ? 'Aprobar Todos' : 'Approve All'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       {formData.job_id && !validation.allowed && (
         <Alert className="mb-4 bg-red-50 border-red-300">
           <AlertTriangle className="w-4 h-4" />
