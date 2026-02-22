@@ -425,19 +425,37 @@ export default function JobDetails() {
           />
         </div>
 
-        {/* Budget Alert Banner */}
+        {/* Budget Alert Banner — Over Budget */}
         {isOverBudget && (
-          <Card className="mb-6 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-300 dark:border-red-700">
+          <Card className="mb-4 bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 border-2 border-red-300 dark:border-red-700">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-500 rounded-full">
                   <AlertTriangle className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-red-900 dark:text-red-300">⚠️ Over Budget Alert</h3>
+                  <h3 className="font-bold text-red-900 dark:text-red-300">🚨 Over Budget</h3>
                   <p className="text-sm text-red-700 dark:text-red-400">
-                    Current costs: ${totalCosts.toLocaleString()} ({budgetUsed.toFixed(0)}% of budget) • 
-                    Over by ${Math.abs(budgetVariance).toLocaleString()}
+                    Real cost: ${totalCosts.toLocaleString()} ({budgetUsed.toFixed(0)}% of ${estimatedCost.toLocaleString()} budget) — Over by ${Math.abs(budgetVariance).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Budget Alert Banner — 80% Warning */}
+        {isNearBudget && (
+          <Card className="mb-4 bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-2 border-amber-300 dark:border-amber-700">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-500 rounded-full">
+                  <AlertTriangle className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-amber-900 dark:text-amber-300">⚠️ Budget at {budgetUsed.toFixed(0)}% — Approaching Limit</h3>
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                    Real cost: ${totalCosts.toLocaleString()} of ${estimatedCost.toLocaleString()} estimated — ${Math.abs(budgetVariance).toLocaleString()} remaining
                   </p>
                 </div>
               </div>
