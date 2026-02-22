@@ -149,7 +149,6 @@ Deno.serve(async (req) => {
 
     for (const [nameKey, drivingEmp] of drivingMap) {
       if (!mergedMap.has(nameKey)) {
-        // Employee only in driving file — include with driving hours only
         mergedMap.set(nameKey, { ...drivingEmp });
       }
 
@@ -158,13 +157,12 @@ Deno.serve(async (req) => {
 
       for (const [jobKey, job] of drivingEmp.jobMap) {
         const drivingKey = jobKey + '_driving';
-        const drivingJobName = job.name + ' (Driving)';
-        const existing = merged.jobMap.get(drivingKey) || { name: drivingJobName, hours: 0, is_driving: true };
-        existing.hours = round2(existing.hours + job.hours);
+        const drivingJobName = job.excel_job_name + ' (Driving)';
+        const existing = merged.jobMap.get(drivingKey) || { excel_job_name: drivingJobName, total_hours: 0, is_driving: true };
+        existing.total_hours = round2(existing.total_hours + job.total_hours);
         merged.jobMap.set(drivingKey, existing);
       }
 
-      // If driving file has total_pay and hourly doesn't, carry it over
       if (!merged.total_pay && drivingEmp.total_pay) {
         merged.total_pay = drivingEmp.total_pay;
       }
@@ -175,7 +173,7 @@ Deno.serve(async (req) => {
       .filter(emp => emp.jobMap && emp.jobMap.size > 0)
       .map(emp => {
         const jobs = Array.from(emp.jobMap.values());
-        const total_hours = round2(jobs.reduce((s, j) => s + j.hours, 0));
+        const total_hours = round2(jobs.reduce((s, j) => s + j.total_hours, 0));
         return {
           connecteam_name: emp.connecteam_name,
           first_name: emp.first_name,
@@ -183,10 +181,9 @@ Deno.serve(async (req) => {
           ssn: emp.ssn,
           total_pay: emp.total_pay,
           hourly_rate: emp.hourly_rate,
-          title: emp.title,
           jobs: jobs.map(j => ({
-            name: j.name,
-            hours: j.hours,
+            excel_job_name: j.excel_job_name,
+            total_hours: j.total_hours,
             is_driving: j.is_driving || false
           })),
           total_hours
