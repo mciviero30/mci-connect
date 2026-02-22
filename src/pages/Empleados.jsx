@@ -414,7 +414,31 @@ export default function Empleados() {
               </p>
             </div>
             
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const exportList = employees.map(e => ({
+                    'Full Name': e.full_name || '',
+                    'Email': e.email || '',
+                    'Position': e.position || '',
+                    'Department': e.department || '',
+                    'Team': e.team_name || '',
+                    'Phone': e.phone || '',
+                    'Status': e.employment_status || '',
+                    'Role': e.role || '',
+                  }));
+                  const ws = XLSX.utils.json_to_sheet(exportList);
+                  const wb = XLSX.utils.book_new();
+                  XLSX.utils.book_append_sheet(wb, ws, 'Employees');
+                  XLSX.writeFile(wb, `employees_${new Date().toISOString().slice(0,10)}.xlsx`);
+                }}
+                className="h-10 border-slate-300 dark:border-slate-600 px-3"
+                title="Export to Excel"
+              >
+                <Download className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Export Excel</span>
+              </Button>
               <Button 
                 onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
                 className="h-10 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md px-4"
