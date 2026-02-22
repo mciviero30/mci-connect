@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import PageHeader from '@/components/shared/PageHeader';
-import AutoPayrollCalculator from '@/components/payroll/AutoPayrollCalculator';
-import PaystubGenerator from '@/components/payroll/PaystubGenerator';
+import AutoPayrollCalculator from '@/components/payroll/AutoPayrollCalculator.jsx';
+import PaystubGenerator from '@/components/payroll/PaystubGenerator.jsx';
 import CashFlowForecast from '@/components/financial/CashFlowForecast';
 import { 
   DollarSign, 
@@ -132,6 +132,7 @@ export default function PayrollAutoFlow() {
                   employeeEmail={employee.email}
                   weekStart={weekStart}
                   weekEnd={weekEnd}
+                  onGeneratePaystub={(data) => handleGeneratePaystub(employee, data)}
                 />
               </CardContent>
             </Card>
