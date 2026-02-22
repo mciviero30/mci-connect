@@ -122,8 +122,9 @@ export default function ExecutiveDashboard() {
   const completedJobs = jobs.filter(j => j.status === 'completed' && !j.deleted_at);
   const avgJobProfit = completedJobs.length > 0 
     ? completedJobs.reduce((sum, j) => {
+        // Use real_cost if available, fallback to estimated_cost
         const revenue = j.contract_amount || 0;
-        const cost = j.estimated_cost || 0;
+        const cost = j.real_cost ?? j.estimated_cost ?? 0;
         return sum + (revenue - cost);
       }, 0) / completedJobs.length
     : 0;
