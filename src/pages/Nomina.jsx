@@ -13,7 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EmployeePayrollDetail from "../components/nomina/EmployeePayrollDetail";
 import DateRangeFilter from "../components/reportes/DateRangeFilter";
-import AutoPayrollCalculator from "../components/payroll/AutoPayrollCalculator";
 import PaystubGenerator from "../components/payroll/PaystubGenerator";
 import { Loader2 } from "lucide-react";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
