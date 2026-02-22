@@ -354,6 +354,13 @@ export default function Reportes() {
               <UsersIcon className="w-4 h-4 mr-2" />
               {language === 'es' ? 'Clientes' : 'Clients'}
             </TabsTrigger>
+            <TabsTrigger 
+              value="aging" 
+              className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              {language === 'es' ? 'Aging' : 'Aging'}
+            </TabsTrigger>
           </TabsList>
 
           {/* OVERVIEW TAB */}
