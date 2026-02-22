@@ -447,62 +447,14 @@ export default function TMInvoiceBuilder() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="glass-card shadow-xl border-slate-200 mb-6">
-                <CardHeader className="border-b border-slate-200">
-                  <CardTitle className="text-slate-900 flex items-center gap-2">
-                    <DollarSign className="w-5 h-5" />
-                    {language === 'es' ? 'Vista Previa de Factura' : 'Invoice Preview'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6 space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="soft-blue-gradient p-4 rounded-lg">
-                      <p className="text-sm opacity-90">{language === 'es' ? 'Horas' : 'Time Entries'}</p>
-                      <p className="text-2xl font-bold">{preview.time_entries.length}</p>
-                    </div>
-                    <div className="soft-green-gradient p-4 rounded-lg">
-                      <p className="text-sm opacity-90">{language === 'es' ? 'Gastos' : 'Expenses'}</p>
-                      <p className="text-2xl font-bold">{preview.expenses.length}</p>
-                    </div>
-                    <div className="soft-purple-gradient p-4 rounded-lg">
-                      <p className="text-sm opacity-90">Total</p>
-                      <p className="text-2xl font-bold">${preview.total.toFixed(2)}</p>
-                    </div>
-                  </div>
-
-                  <div className="border-t pt-4">
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                      {language === 'es' ? 'Labor' : 'Labor'}: ${preview.labor_total.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                      {language === 'es' ? 'Gastos' : 'Expenses'}: ${preview.expenses_total.toFixed(2)}
-                    </p>
-                  </div>
-
-                  {preview.time_entries.length === 0 && preview.expenses.length === 0 ? (
-                    <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 p-4 bg-amber-50 rounded-lg">
-                      <AlertCircle className="w-5 h-5" />
-                      <span>{language === 'es' ? 'No hay items sin facturar en este período' : 'No unbilled items in this date range'}</span>
-                    </div>
-                  ) : (
-                    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 dark:border-amber-600 rounded-lg mb-4">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="w-5 h-5 text-amber-700 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-bold text-amber-900 dark:text-amber-300 mb-1">
-                            ⚠️ {language === 'es' ? 'Importante: La Factura Bloqueará Registros' : 'Important: Invoice Locks Records'}
-                          </p>
-                          <p className="text-sm text-amber-800 dark:text-amber-400">
-                            {language === 'es'
-                              ? `Crear esta factura bloqueará permanentemente ${preview.time_entries.length} horas y ${preview.expenses.length} gastos. No se podrán editar después de facturar.`
-                              : `Creating this invoice will permanently lock ${preview.time_entries.length} time entries and ${preview.expenses.length} expenses. They cannot be edited after billing.`}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              <TMPreviewSelector
+                preview={preview}
+                onConfirm={(selection) => {
+                  // TODO: Update createMutation to use selection
+                  handleCreate();
+                }}
+                loading={createMutation.isPending}
+              />
             )}
 
             {/* Action Buttons */}
