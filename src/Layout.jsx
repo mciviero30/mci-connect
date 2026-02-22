@@ -208,12 +208,24 @@ export default function Layout({ children, currentPageName }) {
         <LanguageProvider>
           <PermissionsProvider>
             <UIProvider>
-              <LayoutContentWrapper 
-                currentPageName={currentPageName} 
-                user={user}
-              >
-                {children}
-              </LayoutContentWrapper>
+              {isLoading ? (
+                <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+                  <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : !user ? (
+                <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+                  <div className="text-center">
+                    <p className="text-slate-600 dark:text-slate-400 mb-4">Redirecting to login...</p>
+                  </div>
+                </div>
+              ) : (
+                <LayoutContentWrapper 
+                  currentPageName={currentPageName} 
+                  user={user}
+                >
+                  {children}
+                </LayoutContentWrapper>
+              )}
             </UIProvider>
           </PermissionsProvider>
         </LanguageProvider>
