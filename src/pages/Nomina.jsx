@@ -16,7 +16,6 @@ import DateRangeFilter from "../components/reportes/DateRangeFilter";
 import PaystubGenerator from "../components/payroll/PaystubGenerator";
 import { Loader2 } from "lucide-react";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
-import { useMemo, useCallback } from 'react';
 
 export default function Nomina() {
   const { t, language } = useLanguage();
