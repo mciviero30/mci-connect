@@ -28,14 +28,21 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { getNavigationForRole } from "@/components/core/roleRules";
 
 const LayoutContentWrapper = ({ children, currentPageName, user }) => {
-  const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { language, changeLanguage } = useLanguage();
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-  const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
-  const sidebarContentRef = useRef(null);
-  const location = useLocation();
+        const { isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar } = useUI();
+        const navigate = useNavigate();
+        const queryClient = useQueryClient();
+        const { language, changeLanguage } = useLanguage();
+        const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+        const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+        const sidebarContentRef = useRef(null);
+        const location = useLocation();
+
+        // DEFENSIVE NAVIGATION COMPUTATION: Always returns array
+        const navigation = React.useMemo(() => {
+          if (!user) return [];
+          const nav = getNavigationForRole(user);
+          return Array.isArray(nav) ? nav : [];
+        }, [user]);
 
   const { data: pendingExpenses } = useQuery({
     queryKey: ['pendingExpensesCount', user?.email],
