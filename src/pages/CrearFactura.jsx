@@ -612,6 +612,17 @@ export default function CrearFactura() {
       return;
     }
 
+    // Validate at least one item with price > 0
+    const hasValidItem = (formData.items || []).some(i => (i.quantity || 0) > 0 && (i.unit_price || 0) > 0);
+    if (!hasValidItem) {
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'La factura debe tener al menos un ítem con precio mayor a $0.' : 'Invoice must have at least one item with a price greater than $0.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     // For drafts, allow incomplete items - filter out empty ones
     const validItems = (formData.items || []).filter(i => 
       i.item_name || i.description || i.quantity > 0 || i.unit_price > 0
