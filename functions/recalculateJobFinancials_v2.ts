@@ -17,7 +17,10 @@ Deno.serve(async (req) => {
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (user.role !== 'admin' && user.role !== 'ceo') {
+    // Allow admin, ceo, and internal service-role invocations (from other backend functions)
+    const isAdminRole = user.role === 'admin' || user.role === 'ceo';
+    const isServiceInvocation = req.headers.get('x-internal-invocation') === 'true';
+    if (!isAdminRole && !isServiceInvocation) {
       return Response.json({ error: 'Forbidden: Admin or CEO only' }, { status: 403 });
     }
 
