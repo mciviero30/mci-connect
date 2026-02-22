@@ -77,40 +77,71 @@ Deno.serve(async (req) => {
 
       if (rows.length === 0) return new Map();
 
+      // Detect format:
+      // "row-format" (Connecteam v2): every row has Full name + Job + Total hours
+      // "summary-format" (legacy): employee header row + detail rows with Shift hours
       const hasShiftHoursCol = rows.some(r => r['Shift hours'] !== undefined);
-      const isRowFormat = !hasShiftHoursCol;
-      console.log(`📋 [${label}] Format: ${isRowFormat ? 'row-format' : 'summary-format'}`);
+      const hasFullNameCol = rows.some(r => r['Full name'] !== undefined && r['Full name'] !== '');
+      const isRowFormat = !hasShiftHoursCol || hasFullNameCol;
+      console.log(`📋 [${label}] Format: ${isRowFormat ? 'row-format (Connecteam v2)' : 'summary-format (legacy)'}`);
 
-      const empMap = new Map(); // nameKey → { connecteam_name, first_name, last_name, ssn, total_pay, hourly_rate, title, jobMap }
+      const empMap = new Map(); // nameKey → employee record
+
+      // Helper: extract name from row (supports both Full name and First/Last name columns)
+      const extractName = (row) => {
+        const fullName = String(row['Full name'] || '').trim();
+        if (fullName) {
+          const parts = fullName.split(' ');
+          const firstName = parts.shift() || '';
+          const lastName = parts.join(' ');
+          return { fullName, firstName, lastName };
+        }
+        // Legacy fallback
+        const firstName = String(row['First name'] || '').trim();
+        const lastName = String(row['Last name'] || '').trim();
+        if (!firstName && !lastName) return null;
+        return { fullName: `${firstName} ${lastName}`.trim(), firstName, lastName };
+      };
+
+      // Helper: get job name from row (supports Job and Type columns)
+      const extractJobName = (row) => String(row['Job'] || row['Type'] || '').trim();
+
+      // Helper: get hours from row (supports Total hours, Shift hours, Total paid hours)
+      const extractHours = (row) => parseHoursFromValue(row['Total hours'] || row['Shift hours'] || row['Total paid hours']);
 
       if (isRowFormat) {
         for (const row of rows) {
-          const firstName = String(row['First name'] || '').trim();
-          const lastName = String(row['Last name'] || '').trim();
-          if (!firstName && !lastName) continue;
+          const nameResult = extractName(row);
+          if (!nameResult) continue;
+          const { fullName, firstName, lastName } = nameResult;
 
           const nameKey = normName(firstName, lastName);
-          const jobName = String(row['Type'] || '').trim();
+          const jobName = extractJobName(row);
           if (!jobName || skipTypes.has(jobName.toLowerCase())) continue;
 
           const payType = String(row['Pay type'] || '').toLowerCase();
           if (payType.includes('break') || payType.includes('lunch')) continue;
 
-          const hours = parseHoursFromValue(row['Total hours'] || row['Total paid hours']);
+          const hours = extractHours(row);
           if (hours <= 0) continue;
 
           if (!empMap.has(nameKey)) {
             const ssnRaw = row['SSN'];
             empMap.set(nameKey, {
-              connecteam_name: `${firstName} ${lastName}`.trim(),
+              connecteam_name: fullName,
               first_name: firstName,
               last_name: lastName,
               ssn: ssnRaw ? String(ssnRaw).trim().replace(/\D/g, '') : '',
-              total_pay: 0,
+              total_pay: parseFloat(row['Total pay']) || 0,
               hourly_rate: row['Hourly rate (USD)'] ? parseFloat(row['Hourly rate (USD)']) : null,
               title: String(row['Title'] || '').trim(),
               jobMap: new Map()
             });
+          } else {
+            // Accumulate total_pay across rows for same employee
+            const emp = empMap.get(nameKey);
+            const rowPay = parseFloat(row['Total pay']) || 0;
+            if (rowPay > 0 && emp.total_pay === 0) emp.total_pay = rowPay;
           }
 
           const emp = empMap.get(nameKey);
@@ -120,17 +151,17 @@ Deno.serve(async (req) => {
           emp.jobMap.set(key, existing);
         }
       } else {
+        // Legacy summary-format: employee header row (has name) + detail rows (no name)
         let currentEmployee = null;
         for (const row of rows) {
-          const firstName = String(row['First name'] || '').trim();
-          const lastName = String(row['Last name'] || '').trim();
-          const hasName = firstName || lastName;
+          const nameResult = extractName(row);
 
-          if (hasName) {
+          if (nameResult) {
+            const { fullName, firstName, lastName } = nameResult;
             const ssnRaw = row['SSN'];
             const nameKey = normName(firstName, lastName);
             currentEmployee = {
-              connecteam_name: `${firstName} ${lastName}`.trim(),
+              connecteam_name: fullName,
               first_name: firstName,
               last_name: lastName,
               ssn: ssnRaw ? String(ssnRaw).trim().replace(/\D/g, '') : '',
@@ -141,17 +172,17 @@ Deno.serve(async (req) => {
             };
             empMap.set(nameKey, currentEmployee);
 
-            const jobName = String(row['Type'] || '').trim();
+            const jobName = extractJobName(row);
             if (jobName && !skipTypes.has(jobName.toLowerCase())) {
-              const h = parseHoursFromValue(row['Shift hours']);
+              const h = extractHours(row);
               if (h > 0) {
                 currentEmployee.jobMap.set(jobName.toLowerCase(), { name: jobName, hours: round2(h) });
               }
             }
           } else if (currentEmployee) {
-            const jobName = String(row['Type'] || '').trim();
+            const jobName = extractJobName(row);
             if (!jobName || skipTypes.has(jobName.toLowerCase())) continue;
-            const h = parseHoursFromValue(row['Shift hours']);
+            const h = extractHours(row);
             if (h <= 0) continue;
             const key = jobName.toLowerCase();
             const existing = currentEmployee.jobMap.get(key) || { name: jobName, hours: 0 };
