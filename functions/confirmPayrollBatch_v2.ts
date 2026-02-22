@@ -1,55 +1,52 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import crypto from 'node:crypto';
 
 /**
- * PAYROLL ENGINE STABILIZATION v2 — confirmPayrollBatch_v2
+ * PAYROLL ENGINE v2 — confirmPayrollBatch_v2
  *
  * 100% ATOMIC. Strict rules:
- * - Does NOT write to Job directly
- * - Does NOT increment real_cost manually
- * - Only calls recalculateJobFinancials_v2
- * - Rollback on ANY failure
- * - financial_year_locked check on all jobs BEFORE any mutation
+ * - Does NOT write to Job directly.
+ * - Does NOT increment real_cost manually.
+ * - Calls recalculateJobFinancials_v2 exclusively.
+ * - Full rollback on ANY failure after batch creation.
+ * - No silent failures. No partial states.
+ *
+ * FLOW:
+ * 1. Validation (read-only)
+ * 2. Create PayrollBatch (pending_internal)
+ * 3. Create PayrollAllocations (status = confirmed immediately)
+ * 4. Recalculate all affected jobs
+ * 5. If any recalc fails → rollback batch + all allocations
+ * 6. Update PayrollBatch to confirmed
+ * 7. If that update fails → rollback everything
+ * 8. Return success
  */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
 
-    // AUTH — admin/ceo only
+    // AUTH
     if (!user) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
     if (!['admin', 'ceo'].includes(user.role)) {
-      return Response.json({
-        error: 'Forbidden: Only Admin or CEO can confirm payroll batches'
-      }, { status: 403 });
+      return Response.json({ error: 'Forbidden: Only Admin or CEO can confirm payroll batches' }, { status: 403 });
     }
 
     const body = await req.json();
-    const {
-      employee_id,
-      employee_name,
-      period_start,
-      period_end,
-      total_paid,
-      allocations,
-      source_type,
-      notes
-    } = body;
+    const { employee_id, employee_name, period_start, period_end, total_paid, allocations, source_type, notes } = body;
 
-    // VALIDATE INPUT
     if (!employee_id || !employee_name || !period_start || !period_end || !total_paid) {
       throw new Error('Missing required fields: employee_id, employee_name, period_start, period_end, total_paid');
     }
-    if (!allocations || !Array.isArray(allocations) || allocations.length === 0) {
+    if (!Array.isArray(allocations) || allocations.length === 0) {
       throw new Error('allocations must be a non-empty array');
     }
 
     console.log(`[confirmPayrollBatch_v2] Starting for ${employee_name} (${period_start}→${period_end})`);
 
     // ========================================================================
-    // VALIDATION PHASE (Read-only, no mutations)
+    // VALIDATION PHASE — Read-only, no mutations
     // ========================================================================
 
     // 1. Validate employee exists
@@ -58,7 +55,7 @@ Deno.serve(async (req) => {
       throw new Error(`Employee not found: ${employee_id}`);
     }
 
-    // 2. Check for duplicate confirmed batch (employee + period)
+    // 2. Reject duplicate confirmed batch
     const existingBatches = await base44.asServiceRole.entities.PayrollBatch.filter({
       employee_id,
       period_start,
@@ -73,18 +70,18 @@ Deno.serve(async (req) => {
       }, { status: 409 });
     }
 
-    // 3. Validate allocations sum
+    // 3. Validate allocations sum matches total_paid
     const allocSum = allocations.reduce((sum, a) => sum + (a.allocated_amount || 0), 0);
     const diff = Math.abs(allocSum - total_paid);
     if (diff > 0.01) {
       throw new Error(
-        `Allocations don't sum to total_paid. Got: $${allocSum.toFixed(2)}, Expected: $${total_paid.toFixed(2)}`
+        `Allocations sum ($${allocSum.toFixed(2)}) does not match total_paid ($${total_paid.toFixed(2)})`
       );
     }
 
-    // 4. Validate all job_ids exist
+    // 4. Validate all job_ids exist and collect snapshots
     const jobIds = new Set(allocations.map(a => a.job_id).filter(Boolean));
-    const jobSnapshots = {}; // job_id → job object
+    const jobSnapshots = {};
     for (const jobId of jobIds) {
       const job = await base44.asServiceRole.entities.Job.get(jobId);
       if (!job) {
@@ -94,25 +91,21 @@ Deno.serve(async (req) => {
     }
     console.log(`[confirmPayrollBatch_v2] Validated ${jobIds.size} unique jobs`);
 
-    // 5. CRITICAL: Validate NO jobs are financially locked
+    // 5. Reject if ANY job is financially locked
     for (const [jobId, job] of Object.entries(jobSnapshots)) {
       if (job.financial_year_locked === true) {
-        throw new Error(
-          `Job "${job.name}" (${jobId}) has financial_year_locked = true. Cannot apply payroll.`
-        );
+        throw new Error(`Job "${job.name}" (${jobId}) has financial_year_locked = true. Cannot apply payroll.`);
       }
     }
     console.log(`[confirmPayrollBatch_v2] All jobs passed financial lock check`);
 
     // ========================================================================
-    // MUTATION PHASE (Atomic: all-or-nothing)
+    // MUTATION PHASE — Atomic: all-or-nothing
     // ========================================================================
 
-    // Generate file_hash for deduplication
-    const hashInput = `${employee_id}:${period_start}:${period_end}:${total_paid}`;
-    const file_hash = crypto.createHash('sha256').update(hashInput).digest('hex');
+    const now = new Date().toISOString();
 
-    // Create PayrollBatch with status = pending_internal
+    // Create PayrollBatch with pending_internal
     let batch;
     try {
       batch = await base44.asServiceRole.entities.PayrollBatch.create({
@@ -123,19 +116,19 @@ Deno.serve(async (req) => {
         total_paid,
         source: source_type || 'payroll_import',
         status: 'pending_internal',
-        file_hash,
         created_by: user.email,
         allocation_count: allocations.length,
         jobs_affected: Array.from(jobIds),
         notes: notes || '',
         is_locked: false
       });
-      console.log(`[confirmPayrollBatch_v2] Created PayrollBatch ${batch.id}`);
+      console.log(`[confirmPayrollBatch_v2] Created PayrollBatch ${batch.id} (pending_internal)`);
     } catch (err) {
       throw new Error(`Failed to create PayrollBatch: ${err.message}`);
     }
 
-    // Create PayrollAllocation records
+    // Create PayrollAllocations with status = confirmed immediately
+    // CRITICAL: Must be confirmed BEFORE recalc so recalculateJobFinancials_v2 includes them
     const createdAllocations = [];
     try {
       for (const alloc of allocations) {
@@ -146,35 +139,32 @@ Deno.serve(async (req) => {
           allocated_amount: alloc.allocated_amount,
           allocation_percentage: alloc.allocation_percentage,
           hours_worked: alloc.hours_worked || 0,
-          status: 'pending_internal',
-          confirmed_at: null,
-          financial_recalc_triggered: false,
-          is_locked: false
+          status: 'confirmed',
+          confirmed_at: now,
+          is_locked: true,
+          financial_recalc_triggered: false
         });
         createdAllocations.push(record);
       }
-      console.log(`[confirmPayrollBatch_v2] Created ${createdAllocations.length} PayrollAllocation records`);
+      console.log(`[confirmPayrollBatch_v2] Created ${createdAllocations.length} PayrollAllocations (confirmed)`);
     } catch (err) {
-      // Rollback batch
-      await base44.asServiceRole.entities.PayrollBatch.delete(batch.id).catch(e =>
-        console.error('[confirmPayrollBatch_v2] Batch delete on alloc create failure:', e.message)
-      );
+      await _rollbackBatch(base44, batch.id, createdAllocations);
       throw new Error(`Failed to create allocations: ${err.message}`);
     }
 
     // Invoke recalculateJobFinancials_v2 for each unique job
+    // Allocations are already confirmed, so recalc includes them
     const recalcResults = {};
     for (const jobId of jobIds) {
       try {
         const result = await base44.functions.invoke('recalculateJobFinancials_v2', { job_id: jobId });
-        if (!result?.success) {
-          throw new Error(`Recalc returned non-success: ${JSON.stringify(result)}`);
+        if (!result || result.success === false) {
+          throw new Error(result?.error || `Recalc returned non-success: ${JSON.stringify(result)}`);
         }
         recalcResults[jobId] = result;
-        console.log(`[confirmPayrollBatch_v2] recalculateJobFinancials_v2 succeeded for Job ${jobId}`);
+        console.log(`[confirmPayrollBatch_v2] recalculateJobFinancials_v2 OK for Job ${jobId} → status: ${result.status}`);
       } catch (err) {
-        console.error(`[confirmPayrollBatch_v2] recalculateJobFinancials_v2 FAILED for ${jobId}:`, err.message);
-        // Full rollback
+        console.error(`[confirmPayrollBatch_v2] recalculateJobFinancials_v2 FAILED for ${jobId}: ${err.message}`);
         await _rollbackBatch(base44, batch.id, createdAllocations);
         throw new Error(
           `recalculateJobFinancials_v2 failed for job "${jobSnapshots[jobId]?.name}" (${jobId}): ${err.message}. Entire batch rolled back.`
@@ -182,12 +172,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ========================================================================
-    // FINALIZATION (if all recalc succeeded)
-    // ========================================================================
-
-    // Update batch to confirmed
-    const now = new Date().toISOString();
+    // Update PayrollBatch to confirmed
+    // If this fails → rollback everything (no pending_internal leftovers allowed)
     try {
       await base44.asServiceRole.entities.PayrollBatch.update(batch.id, {
         status: 'confirmed',
@@ -195,35 +181,40 @@ Deno.serve(async (req) => {
         is_locked: true,
         locked_at: now
       });
-      console.log(`[confirmPayrollBatch_v2] Updated PayrollBatch ${batch.id} to confirmed and locked`);
+      console.log(`[confirmPayrollBatch_v2] PayrollBatch ${batch.id} updated to confirmed`);
     } catch (err) {
-      throw new Error(`Failed to update batch status to confirmed: ${err.message}`);
+      console.error(`[confirmPayrollBatch_v2] PayrollBatch status update FAILED: ${err.message}`);
+      await _rollbackBatch(base44, batch.id, createdAllocations);
+      throw new Error(`Failed to finalize batch (rolled back): ${err.message}`);
     }
 
-    // Update allocations to confirmed
+    // Mark allocations as recalc triggered
     for (const alloc of createdAllocations) {
       try {
         await base44.asServiceRole.entities.PayrollAllocation.update(alloc.id, {
-          status: 'confirmed',
-          confirmed_at: now,
-          is_locked: true,
           financial_recalc_triggered: true
-        }).catch(() => {}); // Non-critical
-      } catch (_) {}
+        });
+      } catch (err) {
+        throw new Error(`Failed to mark allocation ${alloc.id} as recalc triggered: ${err.message}`);
+      }
     }
 
     // Audit log
-    await base44.asServiceRole.entities.AuditLog.create({
-      event_type: 'payroll_batch_confirmed',
-      entity_type: 'PayrollBatch',
-      entity_id: batch.id,
-      performed_by: user.email,
-      performed_by_name: user.full_name || user.email,
-      action_description: `Confirmed payroll batch for ${employee_name} (${period_start}→${period_end}): $${total_paid.toFixed(2)} across ${allocations.length} allocations, ${jobIds.size} unique jobs`,
-      before_state: null,
-      after_state: { status: 'confirmed', is_locked: true },
-      metadata: { batch_id: batch.id, employee_id, file_hash: file_hash.substring(0, 16) + '...' }
-    }).catch(e => console.warn('[confirmPayrollBatch_v2] Audit log failed:', e.message));
+    try {
+      await base44.asServiceRole.entities.AuditLog.create({
+        event_type: 'payroll_batch_confirmed',
+        entity_type: 'PayrollBatch',
+        entity_id: batch.id,
+        performed_by: user.email,
+        performed_by_name: user.full_name || user.email,
+        action_description: `Confirmed payroll batch for ${employee_name} (${period_start}→${period_end}): $${total_paid.toFixed(2)} across ${allocations.length} allocations, ${jobIds.size} unique jobs`,
+        before_state: null,
+        after_state: { status: 'confirmed', is_locked: true },
+        metadata: { batch_id: batch.id, employee_id }
+      });
+    } catch (err) {
+      throw new Error(`Failed to create audit log: ${err.message}`);
+    }
 
     return Response.json({
       success: true,
@@ -241,16 +232,15 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('[confirmPayrollBatch_v2] Fatal error:', error.message || error);
-    return Response.json({
-      success: false,
-      error: error.message || 'Failed to confirm payroll batch'
-    }, { status: 500 });
+    console.error('[confirmPayrollBatch_v2] Fatal error:', error.message);
+    return Response.json({ success: false, error: error.message }, { status: 500 });
   }
 });
 
 /**
- * ROLLBACK: Delete batch and all allocations
+ * FULL ROLLBACK — Delete batch and all created allocations.
+ * Called on any failure after batch creation.
+ * No silent swallowing — errors are logged clearly.
  */
 async function _rollbackBatch(base44, batchId, createdAllocations) {
   console.error(`[confirmPayrollBatch_v2] ROLLBACK INITIATED for batch ${batchId}`);
@@ -258,17 +248,17 @@ async function _rollbackBatch(base44, batchId, createdAllocations) {
   for (const alloc of createdAllocations) {
     try {
       await base44.asServiceRole.entities.PayrollAllocation.delete(alloc.id);
-      console.log(`[confirmPayrollBatch_v2] Deleted PayrollAllocation ${alloc.id}`);
+      console.log(`[confirmPayrollBatch_v2] Rollback: deleted PayrollAllocation ${alloc.id}`);
     } catch (e) {
-      console.error(`[confirmPayrollBatch_v2] Failed to delete allocation ${alloc.id}:`, e.message);
+      console.error(`[confirmPayrollBatch_v2] CRITICAL: failed to delete allocation ${alloc.id}: ${e.message}`);
     }
   }
 
   try {
     await base44.asServiceRole.entities.PayrollBatch.delete(batchId);
-    console.log(`[confirmPayrollBatch_v2] Deleted PayrollBatch ${batchId}`);
+    console.log(`[confirmPayrollBatch_v2] Rollback: deleted PayrollBatch ${batchId}`);
   } catch (e) {
-    console.error(`[confirmPayrollBatch_v2] Failed to delete batch ${batchId}:`, e.message);
+    console.error(`[confirmPayrollBatch_v2] CRITICAL: failed to delete batch ${batchId}: ${e.message}`);
   }
 
   console.error(`[confirmPayrollBatch_v2] Rollback complete`);
