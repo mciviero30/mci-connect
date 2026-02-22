@@ -36,6 +36,7 @@ import JobChatView from '@/components/client/JobChatView';
 import BlueprintViewer from '@/components/field/BlueprintViewer';
 import DailyFieldReportView from '@/components/field/DailyFieldReportView';
 import ClientApprovalsView from '@/components/client/ClientApprovalsView';
+import ClientInvoicesPortal from '@/components/client/ClientInvoicesPortal';
 
 export default function ClientPortal() {
   const [selectedPhoto, setSelectedPhoto] = useState(null);
