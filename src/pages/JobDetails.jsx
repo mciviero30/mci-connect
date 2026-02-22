@@ -257,27 +257,37 @@ export default function JobDetails() {
   // Calculate change orders impact
   const totalChangeOrderAmount = changeOrders.reduce((sum, co) => sum + (co.change_amount || 0), 0);
   const adjustedContractAmount = baseContractAmount + totalChangeOrderAmount;
-  
-  // Calculate actual costs
+
+  // SSOT financial data from recalculateJobFinancials_v2 (authoritative)
+  const ssotRealCost = job?.real_cost || 0;
+  const ssotRevenue = job?.revenue_real || 0;
+  const ssotProfit = job?.profit_real || 0;
+
+  // For display purposes: use SSOT if available, else fallback to local calculation
+  const hasSSOT = ssotRealCost > 0 || ssotRevenue > 0;
+
+  // Local calculation (used as fallback and for per-category breakdown)
   const totalHours = timeEntries.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
   const totalPayrollCost = timeEntries.reduce((sum, entry) => {
-    const rate = 25; // Could be dynamic per employee
+    const rate = 25; // Fallback avg rate
     return sum + ((entry.hours_worked || 0) * rate);
   }, 0);
-  
   const totalExpenses = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
   const totalDrivingCost = drivingLogs.reduce((sum, log) => sum + (log.total_amount || 0), 0);
   const totalInventoryCost = inventoryTransactions
     .filter(t => t.type === 'remove')
     .reduce((sum, t) => sum + ((t.cost_per_unit || 0) * (t.quantity || 0)), 0);
-  
-  const totalCosts = totalPayrollCost + totalExpenses + totalDrivingCost + totalInventoryCost;
-  const profit = adjustedContractAmount - totalCosts;
-  const profitMargin = adjustedContractAmount > 0 ? (profit / adjustedContractAmount) * 100 : 0;
+
+  // Use SSOT real_cost if available, otherwise sum local
+  const totalCosts = hasSSOT ? ssotRealCost : (totalPayrollCost + totalExpenses + totalDrivingCost + totalInventoryCost);
+  const profit = hasSSOT ? ssotProfit : (adjustedContractAmount - totalCosts);
+  const revenueForMargin = hasSSOT ? ssotRevenue : adjustedContractAmount;
+  const profitMargin = revenueForMargin > 0 ? (profit / revenueForMargin) * 100 : 0;
   
   // Budget health indicators
   const budgetUsed = estimatedCost > 0 ? (totalCosts / estimatedCost) * 100 : 0;
   const isOverBudget = budgetUsed > 100;
+  const isNearBudget = !isOverBudget && budgetUsed >= 80;
   const budgetVariance = totalCosts - estimatedCost;
 
   if (jobLoading) {
