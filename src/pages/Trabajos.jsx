@@ -53,7 +53,8 @@ export default function Trabajos() {
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
-    staleTime: 300000,
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
