@@ -696,6 +696,16 @@ export default function CrearEstimado() {
       return;
     }
 
+    // Validate total > 0
+    if (subtotal <= 0) {
+      toast({
+        title: 'Error',
+        description: language === 'es' ? 'El estimado debe tener al menos un ítem con precio mayor a $0.' : 'Quote must have at least one item with a price greater than $0.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     // formData.items is the single source of truth — never re-derive quantity on save
     const enrichedItems = formData.items.map(item => ({
       ...item,
