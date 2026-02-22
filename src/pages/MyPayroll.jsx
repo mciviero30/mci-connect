@@ -104,7 +104,7 @@ export default function MyPayroll() {
     const normalWorkPay = normalWorkHours * hourlyRate;
     const overtimeWorkPay = overtimeWorkHours * (hourlyRate * 1.5);
     const drivingHoursPay = totalDrivingHours * hourlyRate;
-    const totalCommission = weekCommissions.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+    const totalCommission = 0; // Commission entity not yet available
     const totalPay = normalWorkPay + overtimeWorkPay + drivingHoursPay + drivingMilesPay + perDiemAmount + reimbursements + totalCommission;
 
     const groupedByDate = {};
