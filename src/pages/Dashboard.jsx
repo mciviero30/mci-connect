@@ -918,9 +918,16 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Quick Actions for Employees - Mobile-First */}
+        {/* 6C: Mobile-First Employee Dashboard (shown on mobile, hidden on desktop) */}
         {!isAdmin && (
-          <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="block md:hidden mb-4">
+            <EmployeeMobileDashboard user={user} />
+          </div>
+        )}
+
+        {/* Quick Actions for Employees - Desktop Only */}
+        {!isAdmin && (
+          <div className="hidden md:block mb-4 sm:mb-6 md:mb-8">
             <QuickActions user={user} certifications={certifications} />
           </div>
         )}
