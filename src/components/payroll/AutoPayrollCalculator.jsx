@@ -1,278 +1,221 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Car, Receipt, Award, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
-import { startOfWeek, endOfWeek, parseISO, isWithinInterval, differenceInMinutes } from 'date-fns';
-import { buildUserQuery } from '@/components/utils/userResolution';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Clock, DollarSign, TrendingUp, AlertCircle, FileText } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
 
-export default function AutoPayrollCalculator({ employeeEmail, employeeId, weekStart, weekEnd }) {
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-  // Note: This component receives both employeeEmail and employeeId from parent
-  const employeeUser = { id: employeeId, email: employeeEmail };
-  
-  // Fetch all payment sources
+export default function AutoPayrollCalculator({ employeeEmail, weekStart, weekEnd, onGeneratePaystub }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Fetch time entries for this week
   const { data: timeEntries = [] } = useQuery({
-    queryKey: ['time-entries', employeeId, employeeEmail, weekStart],
+    queryKey: ['time-entries', employeeEmail, weekStart, weekEnd],
     queryFn: async () => {
-      const query = buildUserQuery(employeeUser, 'user_id', 'employee_email');
-      const entries = await base44.entities.TimeEntry.filter({ 
-        ...query,
-        status: 'approved'
+      const entries = await base44.entities.TimeEntry.filter({
+        employee_email: employeeEmail,
       });
-      return entries.filter(e => {
-        if (!e.date) return false;
-        const entryDate = parseISO(e.date);
-        return isWithinInterval(entryDate, { start: parseISO(weekStart), end: parseISO(weekEnd) });
+      
+      // Filter by date range
+      return entries.filter(entry => {
+        const entryDate = entry.date;
+        return entryDate >= weekStart && entryDate <= weekEnd;
       });
     },
-    enabled: !!(employeeEmail || employeeId) && !!weekStart
+    enabled: !!employeeEmail,
   });
 
-  const { data: drivingLogs = [] } = useQuery({
-    queryKey: ['driving-logs', employeeId, employeeEmail, weekStart],
-    queryFn: async () => {
-      const query = buildUserQuery(employeeUser, 'user_id', 'employee_email');
-      const logs = await base44.entities.DrivingLog.filter({ 
-        ...query,
-        status: 'approved'
-      });
-      return logs.filter(e => {
-        if (!e.date) return false;
-        const entryDate = parseISO(e.date);
-        return isWithinInterval(entryDate, { start: parseISO(weekStart), end: parseISO(weekEnd) });
-      });
-    },
-    enabled: !!(employeeEmail || employeeId) && !!weekStart
-  });
-
+  // Fetch expenses for this week
   const { data: expenses = [] } = useQuery({
-    queryKey: ['expenses', employeeId, employeeEmail, weekStart],
+    queryKey: ['expenses', employeeEmail, weekStart, weekEnd],
     queryFn: async () => {
-      const query = buildUserQuery(employeeUser, 'user_id', 'employee_email');
-      const exps = await base44.entities.Expense.filter({ 
-        ...query,
-        status: 'approved',
-        payment_method: 'personal'
+      const exp = await base44.entities.Expense.filter({
+        employee_email: employeeEmail,
       });
-      return exps.filter(e => {
-        if (!e.date) return false;
-        const entryDate = parseISO(e.date);
-        return isWithinInterval(entryDate, { start: parseISO(weekStart), end: parseISO(weekEnd) });
+
+      return exp.filter(e => {
+        const expDate = e.date;
+        return expDate >= weekStart && expDate <= weekEnd;
       });
     },
-    enabled: !!(employeeEmail || employeeId) && !!weekStart
+    enabled: !!employeeEmail,
   });
 
-  const { data: employee } = useQuery({
-    queryKey: ['employee', employeeId, employeeEmail],
+  // Fetch driving logs
+  const { data: drivingLogs = [] } = useQuery({
+    queryKey: ['driving-logs', employeeEmail, weekStart, weekEnd],
     queryFn: async () => {
-      // Try user_id first
-      if (employeeId) {
-        const users = await base44.entities.User.filter({ id: employeeId });
-        if (users[0]) return users[0];
-      }
-      // Fallback to email
+      const logs = await base44.entities.DrivingLog.filter({
+        employee_email: employeeEmail,
+      });
+
+      return logs.filter(log => {
+        const logDate = log.date;
+        return logDate >= weekStart && logDate <= weekEnd;
+      });
+    },
+    enabled: !!employeeEmail,
+  });
+
+  // Fetch employee to get hourly rates
+  const { data: employee } = useQuery({
+    queryKey: ['employee-rates', employeeEmail],
+    queryFn: async () => {
       const users = await base44.entities.User.filter({ email: employeeEmail });
       return users[0];
     },
-    enabled: !!(employeeEmail || employeeId)
+    enabled: !!employeeEmail,
   });
 
-  // Calculate payroll breakdown
-  const payrollData = useMemo(() => {
-    if (!employee?.hourly_rate) return null;
+  // Calculate payroll summary
+  const payrollSummary = useMemo(() => {
+    if (!employee) return null;
 
-    const hourlyRate = parseFloat(employee.hourly_rate);
-    const overtimeRate = hourlyRate * 1.5;
+    const regularHours = timeEntries
+      .filter(t => t.hour_type === 'normal')
+      .reduce((sum, t) => sum + (t.hours_worked || 0), 0);
 
-    // Calculate regular and overtime hours
-    let totalRegularHours = 0;
-    let totalOvertimeHours = 0;
-    let totalDrivingHours = 0;
+    const overtimeHours = timeEntries
+      .filter(t => t.hour_type === 'overtime')
+      .reduce((sum, t) => sum + (t.hours_worked || 0), 0);
 
-    // Group by week to calculate overtime correctly
-    const weeklyHours = {};
-    
-    timeEntries.forEach(entry => {
-      if (!entry.date || !entry.hours_worked) return;
-      
-      const weekKey = startOfWeek(parseISO(entry.date)).toISOString();
-      if (!weeklyHours[weekKey]) weeklyHours[weekKey] = 0;
-      
-      const hours = parseFloat(entry.hours_worked);
-      weeklyHours[weekKey] += hours;
-    });
+    const regularRate = employee.hourly_rate || 60;
+    const overtimeRate = employee.overtime_rate || regularRate * 1.5;
 
-    // Split into regular/overtime
-    Object.values(weeklyHours).forEach(weekHours => {
-      if (weekHours <= 40) {
-        totalRegularHours += weekHours;
-      } else {
-        totalRegularHours += 40;
-        totalOvertimeHours += (weekHours - 40);
-      }
-    });
+    const regularPay = regularHours * regularRate;
+    const overtimePay = overtimeHours * overtimeRate;
 
-    // Driving hours (paid at regular rate, no OT)
-    drivingLogs.forEach(log => {
-      if (log.hours) totalDrivingHours += parseFloat(log.hours);
-    });
-
-    // Calculate pay components
-    const regularPay = totalRegularHours * hourlyRate;
-    const overtimePay = totalOvertimeHours * overtimeRate;
-    const drivingPay = totalDrivingHours * hourlyRate;
+    // Approved expenses only
+    const approvedExpenses = expenses
+      .filter(e => e.status === 'approved' && e.payment_method === 'personal')
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
 
     // Mileage reimbursement
-    const mileageTotal = drivingLogs.reduce((sum, log) => {
-      return sum + (log.total_amount || 0);
-    }, 0);
+    const mileageReimbursement = drivingLogs
+      .filter(d => d.status === 'approved')
+      .reduce((sum, d) => sum + (d.total_amount || 0), 0);
 
-    // Expense reimbursements
-    const expenseTotal = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
-
-    // Total gross pay
-    const grossPay = regularPay + overtimePay + drivingPay + mileageTotal + expenseTotal;
+    const subtotal = regularPay + overtimePay + approvedExpenses + mileageReimbursement;
+    const taxRate = 0.15; // Simplified tax rate
+    const taxes = subtotal * taxRate;
+    const totalDue = subtotal - taxes;
 
     return {
-      employee,
-      hourlyRate,
+      regularHours,
+      overtimeHours,
+      regularRate,
       overtimeRate,
-      totalRegularHours: totalRegularHours.toFixed(2),
-      totalOvertimeHours: totalOvertimeHours.toFixed(2),
-      totalDrivingHours: totalDrivingHours.toFixed(2),
-      regularPay: regularPay.toFixed(2),
-      overtimePay: overtimePay.toFixed(2),
-      drivingPay: drivingPay.toFixed(2),
-      mileageTotal: mileageTotal.toFixed(2),
-      expenseTotal: expenseTotal.toFixed(2),
-      grossPay: grossPay.toFixed(2),
-      mileageCount: drivingLogs.length,
-      expenseCount: expenses.length,
-      hasOvertime: totalOvertimeHours > 0
+      regularPay,
+      overtimePay,
+      approvedExpenses,
+      mileageReimbursement,
+      subtotal,
+      taxes,
+      totalDue,
+      itemCount: timeEntries.length + expenses.filter(e => e.status === 'approved').length + drivingLogs.filter(d => d.status === 'approved').length,
     };
-  }, [timeEntries, drivingLogs, expenses, employee]);
+  }, [timeEntries, expenses, drivingLogs, employee]);
 
-  if (!payrollData) {
+  if (!payrollSummary) {
     return (
-      <Card className="bg-white dark:bg-slate-800">
-        <CardContent className="p-8 text-center">
-          <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-          <p className="text-slate-600 dark:text-slate-400">No hourly rate set for this employee</p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center justify-center py-8">
+        <div className="w-6 h-6 border-3 border-slate-300 border-t-blue-500 rounded-full animate-spin" />
+      </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Summary Card */}
-      <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-green-900 dark:text-green-100">
-            <DollarSign className="w-5 h-5" />
-            Total Gross Pay
-            {payrollData.hasOvertime && (
-              <Badge className="bg-orange-500 text-white">OT Included</Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-4xl font-bold text-green-900 dark:text-green-100">
-            ${payrollData.grossPay}
-          </p>
-          <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-            {payrollData.employee.full_name} • ${payrollData.hourlyRate}/hr
-          </p>
-        </CardContent>
-      </Card>
+    <div className="space-y-4">
+      {/* Quick Summary Row */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+          <p className="text-xs text-blue-700 dark:text-blue-400 font-semibold mb-1">Regular Hours</p>
+          <p className="text-xl font-bold text-blue-900 dark:text-blue-100">{payrollSummary.regularHours}h</p>
+        </div>
+        <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3">
+          <p className="text-xs text-orange-700 dark:text-orange-400 font-semibold mb-1">Overtime</p>
+          <p className="text-xl font-bold text-orange-900 dark:text-orange-100">{payrollSummary.overtimeHours}h</p>
+        </div>
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3">
+          <p className="text-xs text-green-700 dark:text-green-400 font-semibold mb-1">Reimbursements</p>
+          <p className="text-xl font-bold text-green-900 dark:text-green-100">${(payrollSummary.approvedExpenses + payrollSummary.mileageReimbursement).toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+        </div>
+        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3">
+          <p className="text-xs text-purple-700 dark:text-purple-400 font-semibold mb-1">Total Items</p>
+          <p className="text-xl font-bold text-purple-900 dark:text-purple-100">{payrollSummary.itemCount}</p>
+        </div>
+        <div className="bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-lg p-3 border-2 border-slate-900 dark:border-slate-600">
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">TOTAL DUE</p>
+          <p className="text-2xl font-bold text-slate-900 dark:text-white">${payrollSummary.totalDue.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+        </div>
+      </div>
 
-      {/* Breakdown Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Regular Hours */}
-        <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Regular Hours</CardTitle>
-              <Clock className="w-4 h-4 text-blue-600" />
+      {/* Expandable Details */}
+      {isExpanded && (
+        <Card className="bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700">
+          <CardContent className="p-4 space-y-3">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-slate-600 dark:text-slate-400">{payrollSummary.regularHours}h @ ${payrollSummary.regularRate}/h</p>
+                <p className="font-bold text-slate-900 dark:text-white">${payrollSummary.regularPay.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+              </div>
+              {payrollSummary.overtimeHours > 0 && (
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400">{payrollSummary.overtimeHours}h OT @ ${payrollSummary.overtimeRate}/h</p>
+                  <p className="font-bold text-slate-900 dark:text-white">${payrollSummary.overtimePay.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+                </div>
+              )}
+              {payrollSummary.approvedExpenses > 0 && (
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400">Expenses Reimbursed</p>
+                  <p className="font-bold text-green-600 dark:text-green-400">+${payrollSummary.approvedExpenses.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+                </div>
+              )}
+              {payrollSummary.mileageReimbursement > 0 && (
+                <div>
+                  <p className="text-slate-600 dark:text-slate-400">Mileage</p>
+                  <p className="font-bold text-green-600 dark:text-green-400">+${payrollSummary.mileageReimbursement.toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+                </div>
+              )}
             </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">{payrollData.totalRegularHours} hrs</p>
-            <p className="text-sm text-green-600 dark:text-green-400 font-semibold mt-1">${payrollData.regularPay}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">${payrollData.hourlyRate}/hr</p>
+
+            <div className="border-t border-slate-300 dark:border-slate-600 pt-3 space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-slate-600 dark:text-slate-400">Subtotal:</span>
+                <span className="font-semibold text-slate-900 dark:text-white">${payrollSummary.subtotal.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-600 dark:text-slate-400">Taxes (15%):</span>
+                <span className="font-semibold text-red-600 dark:text-red-400">-${payrollSummary.taxes.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-300 dark:border-slate-600 pt-2">
+                <span className="font-bold text-slate-900 dark:text-white">Total Due:</span>
+                <span className="text-lg font-bold text-green-600 dark:text-green-400">${payrollSummary.totalDue.toLocaleString('en-US', { maximumFractionDigits: 2 })}</span>
+              </div>
+            </div>
           </CardContent>
         </Card>
+      )}
 
-        {/* Overtime Hours */}
-        {payrollData.hasOvertime && (
-          <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-orange-700 dark:text-orange-300">Overtime (1.5x)</CardTitle>
-                <TrendingUp className="w-4 h-4 text-orange-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-orange-900 dark:text-orange-100">{payrollData.totalOvertimeHours} hrs</p>
-              <p className="text-sm text-orange-700 dark:text-orange-300 font-semibold mt-1">${payrollData.overtimePay}</p>
-              <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">${payrollData.overtimeRate}/hr</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Driving Hours */}
-        {parseFloat(payrollData.totalDrivingHours) > 0 && (
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Driving Hours</CardTitle>
-                <Car className="w-4 h-4 text-indigo-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{payrollData.totalDrivingHours} hrs</p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-semibold mt-1">${payrollData.drivingPay}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">No OT applied</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Mileage */}
-        {payrollData.mileageCount > 0 && (
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Mileage</CardTitle>
-                <Car className="w-4 h-4 text-purple-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{payrollData.mileageCount} trips</p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-semibold mt-1">${payrollData.mileageTotal}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">$0.60/mile</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Expenses */}
-        {payrollData.expenseCount > 0 && (
-          <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">Reimbursements</CardTitle>
-                <Receipt className="w-4 h-4 text-pink-600" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-slate-900 dark:text-white">{payrollData.expenseCount} items</p>
-              <p className="text-sm text-green-600 dark:text-green-400 font-semibold mt-1">${payrollData.expenseTotal}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Approved expenses</p>
-            </CardContent>
-          </Card>
-        )}
+      {/* Toggle and Actions */}
+      <div className="flex gap-2 justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="text-slate-700 dark:text-slate-300"
+        >
+          {isExpanded ? '▼ Hide Details' : '▶ Show Details'}
+        </Button>
+        <Button
+          onClick={() => onGeneratePaystub?.(payrollSummary)}
+          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm"
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Generate Paystub
+        </Button>
       </div>
     </div>
   );
