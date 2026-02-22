@@ -158,6 +158,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
 import PayrollImportLedger from './pages/PayrollImportLedger';
 import PerDiem from './pages/PerDiem';
+import payrollimportledgerV2 from './pages/PayrollImportLedger_v2';
 import PerformanceManagement from './pages/PerformanceManagement';
 import ProfitabilityDashboard from './pages/ProfitabilityDashboard';
 import QuickBooksExport from './pages/QuickBooksExport';
@@ -198,7 +199,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import payrollimportledgerV2 from './pages/PayrollImportLedger_v2';
 import __Layout from './Layout.jsx';
 
 
@@ -314,6 +314,7 @@ export const PAGES = {
     "PayrollAutoFlow": PayrollAutoFlow,
     "PayrollImportLedger": PayrollImportLedger,
     "PerDiem": PerDiem,
+    "PayrollImportLedger_v2": payrollimportledgerV2,
     "PerformanceManagement": PerformanceManagement,
     "ProfitabilityDashboard": ProfitabilityDashboard,
     "QuickBooksExport": QuickBooksExport,
@@ -354,7 +355,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "PayrollImportLedger_v2": payrollimportledgerV2,
 }
 
 export const pagesConfig = {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,9 +49,12 @@ export default function Contabilidad() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.Transaction.delete(id),
+    mutationFn: (id) => {
+      console.warn('❌ Transaction deletion is disabled during Finance Hardening Phase 1');
+      return Promise.resolve();
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      // Delete disabled - no mutation execution
     }
   });
 
@@ -59,16 +62,39 @@ export default function Contabilidad() {
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
 
-  const monthTransactions = transactions.filter(t => {
-    const tDate = new Date(t.date);
-    return tDate >= monthStart && tDate <= monthEnd;
-  });
+  // ✅ MEMOIZED: monthTransactions with strict date validation
+  const monthTransactions = useMemo(() => {
+    return transactions.filter(t => {
+      if (!t.date || t.date === '') {
+        console.warn(`⚠️ Transaction ${t.id} has invalid/missing date field`);
+        return false;
+      }
+      const tDate = new Date(t.date);
+      if (isNaN(tDate.getTime())) {
+        console.warn(`⚠️ Transaction ${t.id} has malformed date: "${t.date}"`);
+        return false;
+      }
+      return tDate >= monthStart && tDate <= monthEnd;
+    });
+  }, [transactions, monthStart, monthEnd]);
 
-  const totalIncome = monthTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + (t.amount || 0), 0);
-  const totalExpenses = monthTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + (t.amount || 0), 0);
-  const balance = totalIncome - totalExpenses;
+  // ✅ MEMOIZED: Financial totals with strict numeric conversion
+  const { totalIncome, totalExpenses, balance } = useMemo(() => {
+    const income = monthTransactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+    const expenses = monthTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+    return {
+      totalIncome: income,
+      totalExpenses: expenses,
+      balance: income - expenses
+    };
+  }, [monthTransactions]);
 
-  const getChartData = () => {
+  // ✅ MEMOIZED: Chart data calculation
+  const chartData = useMemo(() => {
     let startDate = subMonths(currentMonth, 6);
     const months = [];
     let current = startDate;
@@ -79,28 +105,32 @@ export default function Contabilidad() {
     }
 
     transactions.forEach(t => {
+      if (!t.date || t.date === '') return;
       const tDate = new Date(t.date);
+      if (isNaN(tDate.getTime())) return;
       if (tDate >= startDate && tDate <= currentMonth) {
         const monthKey = format(tDate, 'MMM yyyy');
         const monthData = months.find(m => m.month === monthKey);
         if (monthData) {
-          if (t.type === 'income') monthData.income += t.amount;
-          else monthData.expenses += t.amount;
+          if (t.type === 'income') monthData.income += Number(t.amount || 0);
+          else monthData.expenses += Number(t.amount || 0);
         }
       }
     });
 
     return months;
-  };
+  }, [transactions, currentMonth]);
 
-  const expensesByCategory = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((acc, t) => {
-      acc[t.category] = (acc[t.category] || 0) + t.amount;
-      return acc;
-    }, {});
-
-  const pieData = Object.entries(expensesByCategory).map(([name, value]) => ({ name, value }));
+  // ✅ MEMOIZED: Pie chart data - uses monthTransactions only (month-consistent)
+  const pieData = useMemo(() => {
+    const expensesByCategory = monthTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((acc, t) => {
+        acc[t.category] = (acc[t.category] || 0) + Number(t.amount || 0);
+        return acc;
+      }, {});
+    return Object.entries(expensesByCategory).map(([name, value]) => ({ name, value }));
+  }, [monthTransactions]);
 
   const handleSubmit = (data) => {
     if (editingTransaction) {
@@ -155,7 +185,7 @@ export default function Contabilidad() {
             </CardHeader>
             <CardContent className="p-6">
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={getChartData()}>
+                <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.2)"/>
                   <XAxis dataKey="month" stroke="rgba(100,116,139,0.8)" />
                   <YAxis stroke="rgba(100,116,139,0.8)" />
@@ -213,7 +243,7 @@ export default function Contabilidad() {
         <TransactionList
           transactions={transactions}
           onEdit={handleEdit}
-          onDelete={handleDelete}
+          onDelete={null}
           loading={isLoading}
         />
 
