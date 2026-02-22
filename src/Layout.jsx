@@ -63,11 +63,11 @@ const LayoutContentWrapper = ({ children, currentPageName, user }) => {
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: 0,
-    gcTime: 0,
+    staleTime: 60000,
+    gcTime: 300000,
     refetchInterval: false,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: clientMemberships = [] } = useQuery({
