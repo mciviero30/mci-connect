@@ -61,6 +61,7 @@ import { AIPredictor } from "@/components/advanced/AIPredictor";
 import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
 import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/advanced/MicroInteractions";
 import { hasFullAccess } from "@/components/core/roleRules";
+import EmployeeMobileDashboard from "@/components/mobile/EmployeeMobileDashboard";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
