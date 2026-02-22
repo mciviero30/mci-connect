@@ -59,34 +59,18 @@ export default function MyPayroll() {
     enabled: !!user,
   });
 
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
-  const { data: weeklyPayrolls = [] } = useQuery({
-    queryKey: ['myWeeklyPayrolls', user?.id, user?.email],
-    queryFn: () => {
-      if (!user) return [];
-      const query = buildUserQuery(user, 'user_id', 'employee_email');
-      return base44.entities.WeeklyPayroll.filter(query, '-week_start');
-    },
+  // PayrollImportPreview confirmed records to check if week was processed
+  const { data: payrollPreviews = [] } = useQuery({
+    queryKey: ['myPayrollPreviews', user?.id],
+    queryFn: () => base44.entities.PayrollImportPreview.filter({ status: 'confirmed' }, '-created_at', 50),
     enabled: !!user,
+    staleTime: 60000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
-  // Fetch approved commissions for the week
-  const { data: weekCommissions = [] } = useQuery({
-    queryKey: ['myWeekCommissions', user?.id, currentWeekStart, currentWeekEnd],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      const commissions = await base44.entities.CommissionRecord.filter({
-        user_id: user.id,
-        status: 'approved'
-      });
-      // Filter by calculation_date in period
-      return commissions.filter(c => {
-        const calcDate = new Date(c.calculation_date);
-        return calcDate >= currentWeekStart && calcDate <= currentWeekEnd;
-      });
-    },
-    enabled: !!user?.id
-  });
+  // Commissions not available as standalone entity yet — placeholder
+  const weekCommissions = [];
 
   const calculations = useMemo(() => {
     const weekStart = currentWeekStart;
