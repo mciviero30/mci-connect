@@ -520,6 +520,68 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
   return (
     <div className="space-y-4">
+      {/* Confirm Approve Single Entry Dialog */}
+      <Dialog open={!!confirmApproveEntry} onOpenChange={(open) => !open && setConfirmApproveEntry(null)}>
+        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white">
+              {language === 'es' ? 'Confirmar Aprobación' : 'Confirm Approval'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-slate-700 dark:text-slate-300 py-2">
+            {language === 'es' ? '¿Aprobar estas horas?' : 'Approve these hours?'}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmApproveEntry(null)}>{language === 'es' ? 'Cancelar' : 'Cancel'}</Button>
+            <Button onClick={() => { approveMutation.mutate(confirmApproveEntry); setConfirmApproveEntry(null); }} className="bg-green-600 hover:bg-green-700 text-white">
+              {language === 'es' ? 'Aprobar' : 'Approve'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Reject Single Entry Dialog */}
+      <Dialog open={!!confirmRejectEntry} onOpenChange={(open) => !open && setConfirmRejectEntry(null)}>
+        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white">
+              {language === 'es' ? 'Confirmar Rechazo' : 'Confirm Rejection'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-slate-700 dark:text-slate-300 py-2">
+            {language === 'es' ? '¿Rechazar estas horas?' : 'Reject these hours?'}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmRejectEntry(null)}>{language === 'es' ? 'Cancelar' : 'Cancel'}</Button>
+            <Button onClick={() => { rejectMutation.mutate(confirmRejectEntry); setConfirmRejectEntry(null); }} className="bg-red-600 hover:bg-red-700 text-white">
+              {language === 'es' ? 'Rechazar' : 'Reject'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm Approve All Dialog */}
+      <Dialog open={confirmApproveAll} onOpenChange={setConfirmApproveAll}>
+        <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white">
+              {language === 'es' ? 'Aprobar Todos' : 'Approve All'}
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-slate-700 dark:text-slate-300 py-2">
+            {language === 'es' 
+              ? `¿Aprobar ${filteredEntries.filter(e => e.status === 'pending').length} entradas pendientes? Todas serán marcadas como "Listas para Pago".`
+              : `Approve ${filteredEntries.filter(e => e.status === 'pending').length} pending entries? All will be marked "Ready for Payment".`}
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmApproveAll(false)}>{language === 'es' ? 'Cancelar' : 'Cancel'}</Button>
+            <Button onClick={handleConfirmApproveAll} className="bg-green-600 hover:bg-green-700 text-white">
+              {language === 'es' ? 'Aprobar Todos' : 'Approve All'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {formData.job_id && !validation.allowed && (
         <Alert className="mb-4 bg-red-50 border-red-300">
           <AlertTriangle className="w-4 h-4" />
