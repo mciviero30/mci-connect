@@ -198,13 +198,14 @@ Deno.serve(async (req) => {
     console.log(`[confirmPayrollImportFromPreview] Confirming ${emp.connecteam_name} — $${emp.total_pay} across ${allocations.length} jobs`);
 
     try {
-      const result = await base44.functions.invoke('confirmPayrollBatch', {
+      const result = await base44.functions.invoke('confirmPayrollBatch_v2', {
         employee_id: emp.employee_id,
         employee_name: emp.connecteam_name,
         period_start,
         period_end,
         total_paid: emp.total_pay,
         allocations,
+        source_type: 'payroll_import',
         notes: `Imported via full-file payroll import (${period_start} → ${period_end})`
       });
 
