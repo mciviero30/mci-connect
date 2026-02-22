@@ -28,18 +28,9 @@ export default function ExecutiveDashboard() {
     refetchOnWindowFocus: false,
   });
 
-  const { data: commissions = [] } = useQuery({
-    queryKey: ['all-commissions'],
-    queryFn: () => base44.entities.CommissionResult.list('-created_date', 1000),
-    enabled: isAdmin,
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-  });
-
-  const { data: payrollEntries = [] } = useQuery({
-    queryKey: ['payroll-entries'],
-    queryFn: () => base44.entities.WeeklyPayroll.list('-created_date', 1000),
+  const { data: payrollPreviews = [] } = useQuery({
+    queryKey: ['payroll-previews-exec'],
+    queryFn: () => base44.entities.PayrollImportPreview.filter({ status: 'confirmed' }, '-created_at', 200),
     enabled: isAdmin,
     staleTime: 300000,
     refetchOnMount: false,
