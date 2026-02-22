@@ -374,7 +374,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
   const handleExportToExcel = () => {
     if (filteredEntries.length === 0) {
-      alert(language === 'es' ? 'No hay registros para exportar' : 'No records to export');
+      sonnerToast.info(language === 'es' ? 'No hay registros para exportar' : 'No records to export');
       return;
     }
 
