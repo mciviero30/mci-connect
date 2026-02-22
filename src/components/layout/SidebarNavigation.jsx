@@ -12,6 +12,10 @@ const SidebarNavigation = React.memo(function SidebarNavigation({
   sidebarContentRef,
   setOpenMobile 
 }) {
+  if (!Array.isArray(navigation)) {
+    return null;
+  }
+
   const [focusedIndex, setFocusedIndex] = React.useState(-1);
   const [expandedParents, setExpandedParents] = React.useState(new Set());
   const itemRefs = React.useRef([]);
