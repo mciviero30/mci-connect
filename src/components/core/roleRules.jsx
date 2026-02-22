@@ -361,8 +361,12 @@ export function getAdminNavigation() {
       icon: null,
       items: [
         { title: 'Employees', url: '/Empleados', icon: Users },
-        { title: 'Directory', url: '/Directory', icon: Users },
         { title: 'Teams', url: '/Teams', icon: Users },
+        { title: 'Performance', url: '/PerformanceManagement', icon: BarChart3 },
+        { title: 'Skill Matrix', url: '/SkillMatrix', icon: Users },
+        { title: 'Goals & OKRs', url: '/Goals', icon: FileText },
+        { title: 'Team Goals', url: '/TeamGoals', icon: FileText },
+        { title: 'Recognitions', url: '/Recognitions', icon: Users },
       ]
     },
     {
