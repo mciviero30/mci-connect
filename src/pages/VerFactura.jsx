@@ -425,7 +425,15 @@ export default function VerFactura() {
             </Button>
             <div className="min-w-0 flex-1">
               <h1 className="text-lg font-bold text-white truncate">{invoice.invoice_number}</h1>
-              <Badge className={`${statusMeta.badgeClass} text-[10px] px-2 py-0.5`}>{statusMeta.label}</Badge>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge className={`${statusMeta.badgeClass} text-[10px] px-2 py-0.5`}>{statusMeta.label}</Badge>
+                {invoice.customer_approved && (
+                  <Badge className="bg-green-600 text-white text-[10px] px-2 py-0.5 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" />
+                    {language === 'es' ? 'Aprobado por Cliente' : 'Customer Approved'}
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
 
