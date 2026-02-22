@@ -252,16 +252,15 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     }
   });
 
+  const [confirmApproveEntry, setConfirmApproveEntry] = useState(null);
+  const [confirmRejectEntry, setConfirmRejectEntry] = useState(null);
+
   const handleApprove = (entry) => {
-    if (window.confirm(language === 'es' ? '¿Aprobar estas horas?' : 'Approve these hours?')) {
-      approveMutation.mutate(entry);
-    }
+    setConfirmApproveEntry(entry);
   };
 
   const handleReject = (entry) => {
-    if (window.confirm(language === 'es' ? '¿Rechazar estas horas?' : 'Reject these hours?')) {
-      rejectMutation.mutate(entry);
-    }
+    setConfirmRejectEntry(entry);
   };
 
   const handleEdit = async (entry) => {
