@@ -70,6 +70,23 @@ export default function VerFactura() {
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [showCreateJobDialog, setShowCreateJobDialog] = useState(false);
+  const [sendingApproval, setSendingApproval] = useState(false);
+
+  const handleSendForApproval = async () => {
+    if (!invoice?.customer_email) {
+      toast({ title: 'No customer email on this invoice', variant: 'destructive' });
+      return;
+    }
+    setSendingApproval(true);
+    try {
+      await base44.functions.invoke('generateInvoiceApprovalLink', { invoiceId: invoice.id });
+      toast({ title: language === 'es' ? '✅ Email de aprobación enviado al cliente' : '✅ Approval email sent to customer', variant: 'success' });
+    } catch (err) {
+      toast({ title: 'Failed to send approval email', variant: 'destructive' });
+    } finally {
+      setSendingApproval(false);
+    }
+  };
 
   const { data: rawInvoice, isLoading } = useQuery({
     queryKey: ['invoice', invoiceId],
