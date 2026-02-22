@@ -47,6 +47,14 @@ Deno.serve(async (req) => {
       }, { status: 403 });
     }
 
+    // OWNERSHIP CHECK: employees can only edit their own records
+    if (user.role !== 'admin') {
+      const isOwner = existingRecord.user_id === user.id || existingRecord.employee_email === user.email;
+      if (!isOwner) {
+        return Response.json({ error: 'Forbidden: You can only edit your own expenses' }, { status: 403 });
+      }
+    }
+
     // Not billed: Allow update
     const updated = await base44.entities.Expense.update(entity_id, update_data);
     return Response.json({ success: true, data: updated });
