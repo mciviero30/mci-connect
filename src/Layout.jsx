@@ -40,12 +40,14 @@ const LayoutContentWrapper = ({ children, currentPageName, user }) => {
         // DEFENSIVE NAVIGATION COMPUTATION: Always returns array
         const navigation = React.useMemo(() => {
           if (!user) return [];
-          const nav = getNavigationForRole(user);
+          // Force role to be read directly, not from cache
+          const freshUser = { ...user, role: user.role?.toLowerCase() };
+          const nav = getNavigationForRole(freshUser);
           return Array.isArray(nav) ? nav : [];
-        }, [user]);
+        }, [user?.id, user?.role]);
 
   const { data: pendingExpenses } = useQuery({
-    queryKey: ['pendingExpensesCount', user?.email],
+    queryKey: ['pendingExpensesCount', user?.email, user?.role],
     queryFn: async () => {
       if (!user) return 0;
       if (user.role === 'admin') {
@@ -61,11 +63,11 @@ const LayoutContentWrapper = ({ children, currentPageName, user }) => {
     },
     enabled: !!user,
     initialData: 0,
-    staleTime: Infinity,
-    gcTime: Infinity,
+    staleTime: 0,
+    gcTime: 0,
     refetchInterval: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 
   const { data: clientMemberships = [] } = useQuery({
