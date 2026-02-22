@@ -47,8 +47,8 @@ export default function ExecutiveDashboard() {
   });
 
   const { data: allEmployees = [] } = useQuery({
-    queryKey: ['all-employees'],
-    queryFn: () => base44.entities.EmployeeDirectory.list(),
+    queryKey: ['all-employees-exec'],
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
     enabled: isAdmin,
     staleTime: 300000,
     refetchOnMount: false,
