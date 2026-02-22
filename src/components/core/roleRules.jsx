@@ -330,38 +330,73 @@ export function getNavigationForRole(user) {
 export function getAdminNavigation() {
   return [
     {
-      section: 'Main',
+      section: 'STRATEGY',
       icon: null,
       items: [
         { title: 'Dashboard', url: '/Dashboard', icon: LayoutDashboard },
+        { title: 'Executive Dashboard', url: '/ExecutiveDashboard', icon: BarChart3 },
       ]
     },
     {
-      section: 'Documents & Finances',
+      section: 'OPERATIONS',
+      icon: null,
+      items: [
+        { title: 'Jobs', url: '/Trabajos', icon: Briefcase },
+        { title: 'Calendar', url: '/Calendario', icon: Clock },
+        { title: 'Field', url: '/Field', icon: Briefcase },
+      ]
+    },
+    {
+      section: 'FINANCE',
       icon: null,
       items: [
         { title: 'Quotes', url: '/Estimados', icon: FileText },
         { title: 'Invoices', url: '/Facturas', icon: DollarSign },
         { title: 'Accounting', url: '/Contabilidad', icon: BarChart3 },
+        { title: 'Profitability', url: '/ProfitabilityDashboard', icon: BarChart3 },
       ]
     },
     {
-      section: 'Operations',
+      section: 'WORKFORCE',
       icon: null,
       items: [
         { title: 'Employees', url: '/Empleados', icon: Users },
-        { title: 'Jobs', url: '/Trabajos', icon: Briefcase },
-        { title: 'Time Tracking', url: '/TimeTracking', icon: Clock },
+        { title: 'Directory', url: '/Directory', icon: Users },
+        { title: 'Teams', url: '/Teams', icon: Users },
       ]
     },
     {
-      section: 'Resources',
+      section: 'TIME & PAYROLL',
       icon: null,
       items: [
+        { title: 'Time Tracking', url: '/TimeTracking', icon: Clock },
         { title: 'Expenses', url: '/Gastos', icon: Receipt },
         { title: 'Payroll', url: '/Nomina', icon: DollarSign },
-        { title: 'Calendar', url: '/Calendario', icon: Clock },
-        { title: 'Chat', url: '/Chat', icon: MessageSquare },
+        { title: 'Mileage', url: '/Manejo', icon: Clock },
+      ]
+    },
+    {
+      section: 'LEARNING & REFERENCE',
+      icon: null,
+      items: [
+        { title: 'Training', url: '/Capacitacion', icon: BookOpen },
+        { title: 'Knowledge Library', url: '/KnowledgeLibrary', icon: BookOpen },
+      ]
+    },
+    {
+      section: 'COMPLIANCE',
+      icon: null,
+      items: [
+        { title: 'Compliance Hub', url: '/ComplianceHub', icon: FileText },
+        { title: 'Audit Trail', url: '/AuditTrail', icon: FileText },
+      ]
+    },
+    {
+      section: 'CLIENT ACCESS',
+      icon: null,
+      items: [
+        { title: 'Client Portal', url: '/ClientPortal', icon: Users },
+        { title: 'Client Management', url: '/ClientManagement', icon: Users },
       ]
     },
   ];
