@@ -161,9 +161,53 @@ export default function ExecutiveDashboard() {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Executive Dashboard</h1>
-          <p className="text-slate-600 dark:text-slate-400">Real-time business intelligence and KPIs</p>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Executive Dashboard</h1>
+            <p className="text-slate-600 dark:text-slate-400">Real-time business intelligence and KPIs</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() => {
+              const lines = [
+                `Executive Dashboard KPI Snapshot`,
+                `Period: ${startDate || 'All time'} → ${endDate || 'Today'}`,
+                `Generated: ${new Date().toLocaleDateString()}`,
+                ``,
+                `REVENUE`,
+                `  Total Revenue: $${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                `  Paid Invoices: ${filteredInvoices.length}`,
+                ``,
+                `COSTS`,
+                `  Payroll Exposure: $${totalPayrollExposure.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                `  Expenses: $${totalExpenses.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                `  Commissions Paid: $${totalCommissionsPaid.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                ``,
+                `PROFITABILITY`,
+                `  Net Profit: $${netProfit.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                `  Profit Margin: ${profitMargin}%`,
+                ``,
+                `JOBS`,
+                `  Active: ${activeJobs.length}`,
+                `  Completed: ${completedJobs.length}`,
+                `  Avg Job Profit: $${avgJobProfit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+                ``,
+                `WORKFORCE`,
+                `  Active Employees: ${activeEmployees.length}`,
+                `  Tax Compliance: ${taxComplianceRate}% (${taxCompliant}/${activeEmployees.length})`,
+              ].join('\n');
+              const blob = new Blob([lines], { type: 'text/plain' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `kpi_snapshot_${new Date().toISOString().split('T')[0]}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export KPIs
+          </Button>
         </div>
 
         {/* Date Filter */}
