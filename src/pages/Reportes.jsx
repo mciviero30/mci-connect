@@ -189,22 +189,15 @@ export default function Reportes() {
     .sort((a, b) => b.revenue - a.revenue)
     .slice(0, 10);
 
-  // Project profitability
+  // Project profitability — use Job SSOT fields (real_cost, revenue_real, profit_real)
   const projectProfitability = jobs.map(job => {
-    const jobInvoices = filteredInvoices.filter(inv => inv.job_id === job.id);
-    const revenue = jobInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
-    
-    const jobTimeEntries = filteredTimeEntries.filter(e => e.job_id === job.id);
-    const hours = jobTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
-    const laborCost = hours * 25; // Assuming a flat labor cost
-    
-    const jobExpenses = filteredExpenses.filter(e => e.job_id === job.id);
-    const expenseCost = jobExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-    
-    const totalCost = laborCost + expenseCost;
-    const profit = revenue - totalCost;
+    // Use SSOT aggregated fields if available, fallback to invoice calculation
+    const revenue = job.revenue_real > 0 ? job.revenue_real : filteredInvoices.filter(inv => inv.job_id === job.id).reduce((sum, inv) => sum + (inv.total || 0), 0);
+    const totalCost = job.real_cost > 0 ? job.real_cost : 0;
+    const profit = job.profit_real !== undefined && job.profit_real !== 0 ? job.profit_real : (revenue - totalCost);
     const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-    
+    const hours = filteredTimeEntries.filter(e => e.job_id === job.id).reduce((sum, e) => sum + (e.hours_worked || 0), 0);
+
     return {
       name: job.name,
       revenue,
