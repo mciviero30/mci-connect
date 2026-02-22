@@ -70,69 +70,60 @@ export default function ExecutiveDashboard() {
 
   const isLoading = loadingInvoices || loadingPayroll;
 
-  // Filter by date range
-  const filterByDate = (items, dateField) => {
-    let filtered = items;
-    if (startDate) {
-      filtered = filtered.filter(item => {
-        const itemDate = new Date(item[dateField]);
-        return itemDate >= new Date(startDate);
-      });
-    }
-    if (endDate) {
-      filtered = filtered.filter(item => {
-        const itemDate = new Date(item[dateField]);
-        return itemDate <= new Date(endDate);
-      });
-    }
-    return filtered;
-  };
+  // Memoize expensive calculations
+  const metrics = useMemo(() => {
+    const filterByDate = (items, dateField) => {
+      let filtered = items;
+      if (startDate) filtered = filtered.filter(item => new Date(item[dateField]) >= new Date(startDate));
+      if (endDate) filtered = filtered.filter(item => new Date(item[dateField]) <= new Date(endDate));
+      return filtered;
+    };
 
-  // Calculate metrics
-  const filteredInvoices = filterByDate(invoices.filter(inv => inv.status === 'paid'), 'payment_date');
-  const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
+    const filteredInvoices = filterByDate(invoices.filter(inv => inv.status === 'paid'), 'payment_date');
+    const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
 
-  // Payroll from confirmed PayrollImportPreview records
-  const filteredPayroll = filterByDate(payrollPreviews, 'created_at');
-  const totalPayrollExposure = filteredPayroll.reduce((sum, p) => {
-    const summary = p.payload?.summary;
-    return sum + (summary?.total_gross_pay || summary?.total_pay || 0);
-  }, 0);
+    const filteredPayroll = filterByDate(payrollPreviews, 'created_at');
+    const totalPayrollExposure = filteredPayroll.reduce((sum, p) => {
+      const summary = p.payload?.summary;
+      return sum + (summary?.total_gross_pay || summary?.total_pay || 0);
+    }, 0);
 
-  // Commissions: not available as standalone entity — show zeros until commission system is wired
-  const totalCommissionsCalculated = 0;
-  const totalCommissionsApproved = 0;
-  const totalCommissionsPaid = 0;
-  const commissionsCalculated = [];
-  const commissionsApproved = [];
-  const commissionsPaid = [];
+    const totalCommissionsPaid = 0;
+    const activeEmployees = allEmployees.filter(e => e.status === 'active');
+    const taxCompliant = taxProfiles.length;
+    const taxComplianceRate = activeEmployees.length > 0
+      ? ((taxCompliant / activeEmployees.length) * 100).toFixed(1) : 0;
 
-  const activeEmployees = allEmployees.filter(e => e.status === 'active');
-  // taxProfiles query already filters completed:true, so count directly
-  const taxCompliant = taxProfiles.length;
-  const taxComplianceRate = activeEmployees.length > 0 
-    ? ((taxCompliant / activeEmployees.length) * 100).toFixed(1)
-    : 0;
+    const activeJobs = jobs.filter(j => j.status === 'active' && !j.deleted_at);
+    const completedJobs = jobs.filter(j => j.status === 'completed' && !j.deleted_at);
+    const avgJobProfit = completedJobs.length > 0
+      ? completedJobs.reduce((sum, j) => {
+          const revenue = j.contract_amount || 0;
+          const cost = j.real_cost ?? j.estimated_cost ?? 0;
+          return sum + (revenue - cost);
+        }, 0) / completedJobs.length
+      : 0;
 
-  // Job pipeline metrics
-  const activeJobs = jobs.filter(j => j.status === 'active' && !j.deleted_at);
-  const completedJobs = jobs.filter(j => j.status === 'completed' && !j.deleted_at);
-  const avgJobProfit = completedJobs.length > 0 
-    ? completedJobs.reduce((sum, j) => {
-        // Use real_cost if available, fallback to estimated_cost
-        const revenue = j.contract_amount || 0;
-        const cost = j.real_cost ?? j.estimated_cost ?? 0;
-        return sum + (revenue - cost);
-      }, 0) / completedJobs.length
-    : 0;
+    const totalExpenses = expenses.filter(e => e.status === 'approved').reduce((sum, e) => sum + (e.amount || 0), 0);
+    const netProfit = totalRevenue - totalPayrollExposure - totalCommissionsPaid - totalExpenses;
+    const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
 
-  // Cost breakdown
-  const approvedExpenses = expenses.filter(e => e.status === 'approved');
-  const totalExpenses = approvedExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  
-  // Net profit
-  const netProfit = totalRevenue - totalPayrollExposure - totalCommissionsPaid - totalExpenses;
-  const profitMargin = totalRevenue > 0 ? ((netProfit / totalRevenue) * 100).toFixed(1) : 0;
+    return {
+      filteredInvoices, totalRevenue, filteredPayroll, totalPayrollExposure,
+      totalCommissionsCalculated: 0, totalCommissionsApproved: 0, totalCommissionsPaid: 0,
+      commissionsCalculated: [], commissionsApproved: [], commissionsPaid: [],
+      activeEmployees, taxCompliant, taxComplianceRate,
+      activeJobs, completedJobs, avgJobProfit, totalExpenses, netProfit, profitMargin
+    };
+  }, [invoices, payrollPreviews, allEmployees, taxProfiles, jobs, expenses, startDate, endDate]);
+
+  const {
+    filteredInvoices, totalRevenue, filteredPayroll, totalPayrollExposure,
+    totalCommissionsCalculated, totalCommissionsApproved, totalCommissionsPaid,
+    commissionsCalculated, commissionsApproved, commissionsPaid,
+    activeEmployees, taxCompliant, taxComplianceRate,
+    activeJobs, completedJobs, avgJobProfit, totalExpenses, netProfit, profitMargin
+  } = metrics;
 
   if (!isAdmin) {
     return (
