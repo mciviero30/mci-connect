@@ -127,8 +127,13 @@ export default function MyPayroll() {
     };
   }, [timeEntries, drivingLogs, expenses, currentWeekStart, currentWeekEnd, user?.hourly_rate]);
 
-  const existingPayroll = weeklyPayrolls.find(p => new Date(p.week_start).getTime() === currentWeekStart.getTime());
-  const payrollStatus = existingPayroll?.status || 'draft';
+  // Check if a confirmed payroll import covers this week
+  const weekStartStr = format(currentWeekStart, 'yyyy-MM-dd');
+  const weekEndStr = format(currentWeekEnd, 'yyyy-MM-dd');
+  const existingPayroll = payrollPreviews.find(p => 
+    p.period_start <= weekEndStr && p.period_end >= weekStartStr
+  );
+  const payrollStatus = existingPayroll ? 'approved' : 'draft';
 
   const statusConfig = {
     draft: { label: language === 'es' ? 'Borrador' : 'Draft', color: 'bg-slate-100 text-slate-700' },
