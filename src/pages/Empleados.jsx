@@ -172,8 +172,13 @@ export default function Empleados() {
       const userIds = [...new Set(directory.filter(d => d.user_id).map(d => d.user_id))];
       let userMap = {};
       if (userIds.length > 0) {
-        const allUsers = await base44.entities.User.list();
-        userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+        try {
+          const allUsers = await base44.entities.User.list();
+          userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+        } catch (_) {
+          // User.list() may fail for non-admin; fall back gracefully
+          userMap = {};
+        }
       }
 
       return directory.map(d => {
