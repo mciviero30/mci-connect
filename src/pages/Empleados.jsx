@@ -162,81 +162,81 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: EmployeeDirectory is the single source of truth (with PendingEmployee fallback)
+  // SSOT: Merge User + EmployeeDirectory + PendingEmployee
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        const directory = await base44.entities.EmployeeDirectory.list('-created_date');
+        // Fetch all sources
+        const [allUsers, directory, pending] = await Promise.all([
+          base44.entities.User.list().catch(() => []),
+          base44.entities.EmployeeDirectory.list('-created_date').catch(() => []),
+          base44.entities.PendingEmployee.list('-created_date').catch(() => []),
+        ]);
 
-        // Batch fetch users only once (not N+1)
-        const userIds = [...new Set(directory.filter(d => d.user_id).map(d => d.user_id))];
-        let userMap = {};
-        if (userIds.length > 0) {
-          try {
-            const allUsers = await base44.entities.User.list();
-            userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
-          } catch (_) {
-            // User.list() may fail for non-admin; fall back gracefully
-            userMap = {};
-          }
-        }
+        // Build user map
+        const userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
 
-        const dirResult = directory.map(d => {
-          const user = d.user_id ? userMap[d.user_id] : null;
-          // Map EmployeeDirectory.status to employment_status for UI
-          const dir_status = d.status || 'pending';
-          const employment_status = user?.employment_status || dir_status;
-          return {
-            id: d.user_id || d.id,
-            directory_id: d.id,
-            email: d.employee_email,
-            full_name: d.full_name,
-            first_name: d.first_name,
-            last_name: d.last_name,
-            position: d.position,
-            department: d.department,
-            phone: d.phone,
-            team_id: d.team_id,
-            team_name: d.team_name,
-            profile_photo_url: d.profile_photo_url,
-            employment_status,
-            dir_status,
-            role: user?.role || 'user',
-            hourly_rate: user?.hourly_rate,
-            onboarding_completed: user?.onboarding_completed,
-            invitation_count: user?.invitation_count,
-            last_invitation_sent: user?.last_invitation_sent,
-          };
-        });
+        // Map EmployeeDirectory records
+        const dirResult = directory.map(d => ({
+          id: d.user_id || d.id,
+          directory_id: d.id,
+          email: d.employee_email,
+          full_name: d.full_name,
+          first_name: d.first_name,
+          last_name: d.last_name,
+          position: d.position,
+          department: d.department,
+          phone: d.phone,
+          team_id: d.team_id,
+          team_name: d.team_name,
+          profile_photo_url: d.profile_photo_url,
+          employment_status: userMap[d.user_id]?.employment_status || d.status || 'pending',
+          dir_status: d.status || 'pending',
+          role: userMap[d.user_id]?.role || 'user',
+          hourly_rate: userMap[d.user_id]?.hourly_rate,
+          onboarding_completed: userMap[d.user_id]?.onboarding_completed,
+        }));
 
-        // Also fetch PendingEmployee (without user_id) to get imported but not yet in Directory
-        try {
-          const pending = await base44.entities.PendingEmployee.list('-created_date');
-          const existingEmails = new Set(dirResult.map(d => d.email?.toLowerCase()));
-          
-          const pendingResult = pending
-            .filter(p => p.email && !existingEmails.has(p.email.toLowerCase()))
-            .map(p => ({
-              id: p.id,
-              pending_id: p.id,
-              email: p.email,
-              full_name: `${p.first_name} ${p.last_name}`.trim(),
-              first_name: p.first_name,
-              last_name: p.last_name,
-              position: p.position || '',
-              phone: p.phone || '',
-              employment_status: p.status || 'pending',
-              dir_status: p.status || 'pending',
-              role: 'user',
-              hourly_rate: null,
-            }));
+        // Add active User records not in Directory
+        const dirEmails = new Set(dirResult.map(d => d.email?.toLowerCase()));
+        const activeUsersNotInDir = allUsers
+          .filter(u => u.employment_status === 'active' && !dirEmails.has(u.email?.toLowerCase()))
+          .map(u => ({
+            id: u.id,
+            email: u.email,
+            full_name: u.full_name,
+            first_name: u.first_name,
+            last_name: u.last_name,
+            position: u.position || '',
+            phone: u.phone || '',
+            employment_status: 'active',
+            dir_status: 'active',
+            role: u.role || 'user',
+            hourly_rate: u.hourly_rate,
+            onboarding_completed: u.onboarding_completed,
+          }));
 
-          return [...dirResult, ...pendingResult];
-        } catch (_) {
-          // If PendingEmployee fails, just return Directory
-          return dirResult;
-        }
+        // Add PendingEmployee not in Directory
+        const existingEmails = new Set([...dirEmails, ...activeUsersNotInDir.map(u => u.email?.toLowerCase())]);
+        const pendingResult = pending
+          .filter(p => p.email && !existingEmails.has(p.email.toLowerCase()))
+          .map(p => ({
+            id: p.id,
+            pending_id: p.id,
+            email: p.email,
+            full_name: `${p.first_name} ${p.last_name}`.trim(),
+            first_name: p.first_name,
+            last_name: p.last_name,
+            position: p.position || '',
+            phone: p.phone || '',
+            employment_status: p.status || 'pending',
+            dir_status: p.status || 'pending',
+            role: 'user',
+            hourly_rate: null,
+          }));
+
+        return [...dirResult, ...activeUsersNotInDir, ...pendingResult];
       } catch (err) {
         console.error('Query error:', err);
         return [];
