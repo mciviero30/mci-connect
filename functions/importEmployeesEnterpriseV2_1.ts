@@ -111,47 +111,45 @@ Deno.serve(async (req) => {
       return Response.json(result, { status: 400 });
     }
 
-    // Check for duplicates in database
+    // Fetch and check for conflicts via targeted queries (no bulk list)
     console.log('🔍 Checking database for existing records...');
-    const existingSsns = new Map();
-    const existingCodes = new Map();
-    const existingUsers = new Map();
-    const existingProfiles = new Map();
-
-    try {
-      const allProfiles = await base44.asServiceRole.entities.EmployeeProfile.list('', 1000);
-      for (const profile of allProfiles) {
-        if (profile.ssn_encrypted) {
-          existingSsns.set(profile.ssn_encrypted, profile.user_id);
-        }
-        if (profile.employee_code) {
-          existingCodes.set(profile.employee_code, profile.user_id);
-        }
-        existingProfiles.set(profile.user_id, profile);
-      }
-
-      const allUsers = await base44.asServiceRole.entities.User.list('', 1000);
-      for (const u of allUsers) {
-        existingUsers.set(u.email, u.id);
-      }
-    } catch (err) {
-      console.error('Failed to fetch existing records:', err.message);
-      return Response.json({ error: 'Failed to check duplicates', status: 'failed' }, { status: 500 });
-    }
-
-    // Check for conflicts
     const dbConflicts = [];
-    for (const emp of employees) {
-      if (emp.ssn) {
-        const normalized = emp.ssn.replace(/\D/g, '');
-        const hash = await sha256Hash(normalized);
-        if (existingSsns.has(hash) && existingSsns.get(hash) !== existingUsers.get(emp.email)) {
-          dbConflicts.push({ email: emp.email, conflict: 'SSN already exists for different user' });
-        }
-      }
 
-      if (emp.employee_code && existingCodes.has(emp.employee_code) && existingCodes.get(emp.employee_code) !== existingUsers.get(emp.email)) {
-        dbConflicts.push({ email: emp.email, conflict: 'Employee code already exists for different user' });
+    for (const emp of employees) {
+      try {
+        // Check email
+        const userByEmail = await base44.asServiceRole.entities.User.filter({ email: emp.email });
+        
+        // Check SSN if provided
+        if (emp.ssn) {
+          const normalized = emp.ssn.replace(/\D/g, '');
+          const hash = await sha256Hash(normalized);
+          const profileBySsn = await base44.asServiceRole.entities.EmployeeProfile.filter({ ssn_encrypted: hash });
+          
+          if (profileBySsn.length > 0 && userByEmail.length > 0) {
+            if (profileBySsn[0].user_id !== userByEmail[0].id) {
+              dbConflicts.push({ email: emp.email, conflict: 'SSN already exists for different user' });
+            }
+          } else if (profileBySsn.length > 0 && userByEmail.length === 0) {
+            dbConflicts.push({ email: emp.email, conflict: 'SSN already exists for different user' });
+          }
+        }
+
+        // Check employee_code if provided
+        if (emp.employee_code) {
+          const profileByCode = await base44.asServiceRole.entities.EmployeeProfile.filter({ employee_code: emp.employee_code });
+          
+          if (profileByCode.length > 0 && userByEmail.length > 0) {
+            if (profileByCode[0].user_id !== userByEmail[0].id) {
+              dbConflicts.push({ email: emp.email, conflict: 'Employee code already exists for different user' });
+            }
+          } else if (profileByCode.length > 0 && userByEmail.length === 0) {
+            dbConflicts.push({ email: emp.email, conflict: 'Employee code already exists for different user' });
+          }
+        }
+      } catch (err) {
+        console.error(`Failed to check conflicts for ${emp.email}:`, err.message);
+        return Response.json({ error: 'Failed to check duplicates', status: 'failed' }, { status: 500 });
       }
     }
 
