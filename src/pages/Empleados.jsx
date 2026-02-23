@@ -6,7 +6,7 @@ import { useSubscription } from "@/components/hooks/useMemoryLeakPrevention";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Users, Plus, Search, Shield, FileText, Upload, CheckSquare, Square } from "lucide-react";
+import { Users, Plus, Search, Shield, FileText, Upload, CheckSquare, Square, Trash2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/components/i18n/LanguageContext";
