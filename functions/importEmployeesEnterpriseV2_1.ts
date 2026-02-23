@@ -276,7 +276,20 @@ Deno.serve(async (req) => {
             const snapshot = JSON.parse(JSON.stringify(existingProfile));
             rollback.updated_profiles.push({ profileId: existingProfile.id, snapshot });
 
-            const ssn_hash = emp.ssn ? await sha256Hash(emp.ssn.replace(/\D/g, '')) : null;
+            // SSN: Only update if provided, otherwise keep existing
+            let ssn_hash = existingProfile.ssn_encrypted;
+            if (emp.ssn) {
+              const normalized = emp.ssn.replace(/\D/g, '');
+              ssn_hash = await sha256Hash(normalized);
+
+              // Validate SSN change - check for conflicts
+              if (ssn_hash !== existingProfile.ssn_encrypted) {
+                const profilesBySsn = await base44.asServiceRole.entities.EmployeeProfile.filter({ ssn_encrypted: ssn_hash });
+                if (profilesBySsn.length > 0 && profilesBySsn[0].id !== existingProfile.id) {
+                  throw new Error(`SSN conflict: New SSN already exists for different employee`);
+                }
+              }
+            }
 
             const overwriteData = {
               first_name: emp.first_name,
@@ -308,7 +321,11 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Update User.full_name to match EmployeeProfile
+        // Update User.full_name to match EmployeeProfile (save snapshot first)
+        if (existingUser) {
+          const userSnapshot = JSON.parse(JSON.stringify(existingUser));
+          rollback.updated_users.push({ userId, snapshot: userSnapshot });
+        }
         await base44.asServiceRole.entities.User.update(userId, { full_name: fullName });
 
       } catch (err) {
