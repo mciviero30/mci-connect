@@ -54,7 +54,9 @@ Deno.serve(async (req) => {
 
     console.log('🗑️  Cleaning up employee users...');
 
-    // Delete all User records with role 'employee' (keep admin users)
+    // Delete all User records with role 'employee' (keep admin users and mciviero30@gmail.com)
+    const PROTECTED_EMAIL = 'mciviero30@gmail.com';
+    
     try {
       let offset = 0;
       let hasMore = true;
@@ -68,8 +70,8 @@ Deno.serve(async (req) => {
         }
 
         for (const u of users) {
-          // Only delete employee users, keep admin users
-          if (u.role === 'employee' || u.role === 'user') {
+          // Only delete employee users, keep admin users and protected email
+          if ((u.role === 'employee' || u.role === 'user') && u.email !== PROTECTED_EMAIL) {
             try {
               await base44.asServiceRole.entities.User.delete(u.id);
               result.deleted_users++;
