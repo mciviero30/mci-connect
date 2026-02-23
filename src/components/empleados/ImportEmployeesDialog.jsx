@@ -179,8 +179,8 @@ export default function ImportEmployeesDialog({ open, onClose }) {
         {/* Instructions */}
         {!results && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800 space-y-1">
-            <p className="font-semibold">Expected columns (any order):</p>
-            <p className="font-mono text-xs">first_name, last_name, email, position, department, phone, team</p>
+            <p className="font-semibold">Compatible with your MCI Excel format:</p>
+            <p className="font-mono text-xs">First name, Last name, Email, Mobile phone, Title, Birthday, SSN, Address, T-shirt size</p>
             <p className="text-xs text-blue-600 mt-1">Employees will be added to the directory with status <strong>Pending</strong>. You can invite them from the Pending tab.</p>
           </div>
         )}
