@@ -39,8 +39,8 @@ export default function Teams() {
   });
 
   const { data: employees } = useQuery({
-    queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryKey: ['employees-directory'],
+    queryFn: () => base44.entities.EmployeeDirectory.list(),
     initialData: [],
   });
 
