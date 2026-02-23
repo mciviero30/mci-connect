@@ -167,21 +167,23 @@ export default function Empleados() {
 
         // Map EmployeeProfile records
         const profileEmployees = profiles
+          .filter(p => p.first_name || p.last_name) // Skip empty profiles
           .map(p => {
             const user = users.find(u => u.id === p.user_id);
             return {
-              id: p.user_id,
+              id: p.user_id || p.id, // Use user_id if exists, otherwise profile id
               profile_id: p.id,
               email: user?.email || '',
-              full_name: `${p.first_name} ${p.last_name}`.trim(),
-              first_name: p.first_name,
-              last_name: p.last_name,
+              full_name: `${p.first_name || ''} ${p.last_name || ''}`.trim(),
+              first_name: p.first_name || '',
+              last_name: p.last_name || '',
               position: null,
               phone: p.phone || '',
               employment_status: p.employment_status || 'active',
               dir_status: p.employment_status || 'active',
               role: user?.role || 'user',
               hourly_rate: p.hourly_rate || null,
+              has_user: !!p.user_id // Flag to track if synced to User
             };
           });
 
