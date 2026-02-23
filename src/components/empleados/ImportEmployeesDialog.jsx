@@ -136,11 +136,20 @@ export default function ImportEmployeesDialog({ open, onClose }) {
             throw new Error("Missing name (first or last name required)");
           }
 
+          const firstName = row.first_name?.trim() || row.full_name?.split(" ")[0] || "Unknown";
+          const lastName = row.last_name?.trim() || row.full_name?.split(" ").slice(1).join(" ")?.trim() || "";
+          const email = row.employee_email?.trim() || "";
+
+          // All three are required for PendingEmployee
+          if (!firstName || !lastName || !email) {
+            throw new Error(`Invalid data: firstName="${firstName}", lastName="${lastName}", email="${email}"`);
+          }
+
           // Save full data to PendingEmployee only (SSOT)
           await base44.entities.PendingEmployee.create({
-            first_name: row.first_name || row.full_name.split(" ")[0] || "Unknown",
-            last_name: row.last_name || row.full_name.split(" ").slice(1).join(" ") || "",
-            email: row.employee_email?.trim() || "",
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
             phone: row.phone?.trim() || "",
             position: row.position?.trim() || "",
             ssn_tax_id: row.ssn_tax_id?.trim() || "",
@@ -153,8 +162,8 @@ export default function ImportEmployeesDialog({ open, onClose }) {
           success.push(row);
           if (emailKey) existingEmails.add(emailKey);
         } catch (err) {
-          console.error("Import error for", row.full_name, ":", err);
-          failed.push({ ...row, reason: err.message });
+          console.error("Import error for", row.full_name, ":", err.message || err);
+          failed.push({ ...row, reason: err.message || "Unknown error" });
         }
       }
 
