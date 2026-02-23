@@ -349,9 +349,10 @@ Deno.serve(async (req) => {
  * originalCosts is the pre-mutation snapshot: { job_id: original_real_cost }
  * We restore directly from the snapshot — no arithmetic reversal.
  */
-async function _rollback(base44, batchId, createdAllocations, originalCosts) {
+async function _rollback(base44, batchId, createdAllocations, originalCosts, payrollTransaction) {
   console.error(`[confirmPayrollBatch] ROLLBACK INITIATED for batch ${batchId}`);
 
+  // Restore job real_costs from snapshot
   for (const [jobId, snapshotCost] of Object.entries(originalCosts)) {
     try {
       await base44.asServiceRole.entities.Job.update(jobId, { real_cost: snapshotCost });
@@ -359,6 +360,13 @@ async function _rollback(base44, batchId, createdAllocations, originalCosts) {
     } catch (rbErr) {
       console.error(`[confirmPayrollBatch] CRITICAL: snapshot restore failed for Job ${jobId}:`, rbErr.message);
     }
+  }
+
+  // Delete Transaction if it was created
+  if (payrollTransaction?.id) {
+    await base44.asServiceRole.entities.Transaction.delete(payrollTransaction.id)
+      .catch(e => console.error(`[confirmPayrollBatch] CRITICAL: Transaction delete failed (${payrollTransaction.id}):`, e.message));
+    console.error(`[confirmPayrollBatch] Transaction ${payrollTransaction.id} deleted (rollback)`);
   }
 
   for (const alloc of createdAllocations) {
