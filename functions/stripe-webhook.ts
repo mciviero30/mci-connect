@@ -3,19 +3,53 @@ import Stripe from 'npm:stripe@17.5.0';
 
 /**
  * STRIPE WEBHOOK HANDLER
- * Processes payment events from Stripe
- * Events: checkout.session.completed
+ * Idempotency: ALL events guarded via IdempotencyRecord using Stripe event.id as mutation_id.
+ * This prevents double-processing on Stripe retries regardless of Transaction state.
  */
+
+async function checkAndClaimIdempotency(base44, stripeEventId, mutationType) {
+  // Check if event was already processed
+  const existing = await base44.asServiceRole.entities.IdempotencyRecord.filter({
+    mutation_id: stripeEventId
+  });
+  if (existing.length > 0) {
+    console.log(`⚠️ Duplicate Stripe event - already processed: ${stripeEventId}`);
+    return { isDuplicate: true, record: existing[0] };
+  }
+
+  // Claim the event atomically by creating the record (pending)
+  const record = await base44.asServiceRole.entities.IdempotencyRecord.create({
+    request_id: stripeEventId,
+    mutation_id: stripeEventId,
+    mutation_type: mutationType,
+    user_id: 'stripe-webhook',
+    entity_type: 'Payment',
+    entity_id: stripeEventId,
+    created_at: new Date().toISOString(),
+    is_permanent: true,
+    status: 'pending',
+  });
+
+  return { isDuplicate: false, record };
+}
+
+async function markIdempotencyComplete(base44, recordId, entityId) {
+  await base44.asServiceRole.entities.IdempotencyRecord.update(recordId, {
+    status: 'completed',
+    entity_id: entityId,
+  });
+}
+
+async function markIdempotencyFailed(base44, recordId, errorMessage) {
+  await base44.asServiceRole.entities.IdempotencyRecord.update(recordId, {
+    status: 'failed',
+    error_message: errorMessage,
+  });
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    
-    // CRITICAL: Set token from request headers BEFORE any Stripe validation
-    const authHeader = req.headers.get('authorization');
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.substring(7);
-      base44.setToken(token);
-    }
 
     // Get raw body for signature verification
     const body = await req.text();
@@ -37,42 +71,40 @@ Deno.serve(async (req) => {
       Deno.env.get('STRIPE_WEBHOOK_SECRET')
     );
 
-    console.log('✅ Webhook verified:', event.type);
+    console.log('✅ Webhook verified:', event.type, event.id);
 
-    // Handle subscription invoice payment
+    // ─────────────────────────────────────────────────────────────
+    // EVENT: invoice.paid (Recurring subscriptions)
+    // ─────────────────────────────────────────────────────────────
     if (event.type === 'invoice.paid') {
-      const invoice = event.data.object;
-      const subscriptionId = invoice.subscription;
+      const stripeInvoice = event.data.object;
+      const subscriptionId = stripeInvoice.subscription;
 
-      if (subscriptionId) {
-        console.log('💰 Subscription payment received:', invoice.id);
+      if (!subscriptionId) {
+        return Response.json({ received: true });
+      }
 
-        // IDEMPOTENCY GUARD: Check if this payment_intent was already processed
-        if (invoice.payment_intent) {
-          const existing = await base44.asServiceRole.entities.Transaction.filter({
-            stripe_payment_intent_id: invoice.payment_intent
-          });
-          if (existing.length > 0) {
-            console.log('⚠️ Duplicate webhook - invoice.paid already processed:', invoice.payment_intent);
-            return Response.json({ success: true, idempotent: true });
-          }
-        }
+      console.log('💰 Subscription payment received:', stripeInvoice.id);
 
-        // Find recurring invoice template
+      // IDEMPOTENCY: use Stripe event.id as the canonical key
+      const { isDuplicate, record } = await checkAndClaimIdempotency(
+        base44, event.id, 'create_payment'
+      );
+      if (isDuplicate) return Response.json({ success: true, idempotent: true });
+
+      try {
         const templates = await base44.asServiceRole.entities.RecurringInvoice.filter({
           stripe_subscription_id: subscriptionId
         });
 
         if (templates.length > 0) {
           const template = templates[0];
-          
-          // Get next invoice number
-          const counterRes = await base44.asServiceRole.functions.invoke('getNextCounter', { 
-            counter_key: 'invoice_number' 
+
+          const counterRes = await base44.asServiceRole.functions.invoke('getNextCounter', {
+            counter_key: 'invoice_number'
           });
           const invoiceNumber = `INV-${String(counterRes.next_value).padStart(5, '0')}`;
 
-          // Create invoice record in MCI Connect
           const newInvoice = await base44.asServiceRole.entities.Invoice.create({
             invoice_number: invoiceNumber,
             customer_id: template.customer_id,
@@ -93,11 +125,10 @@ Deno.serve(async (req) => {
             amount_paid: template.total,
             balance: 0,
             payment_date: new Date().toISOString().split('T')[0],
-            transaction_id: invoice.payment_intent,
+            transaction_id: stripeInvoice.payment_intent,
           });
 
-          // Create transaction
-          await base44.asServiceRole.entities.Transaction.create({
+          const transaction = await base44.asServiceRole.entities.Transaction.create({
             type: 'income',
             amount: template.total,
             category: 'sales',
@@ -107,137 +138,131 @@ Deno.serve(async (req) => {
             reconciliation_status: 'matched',
             matched_invoice_id: newInvoice.id,
             matched_invoice_number: invoiceNumber,
-            stripe_payment_intent_id: invoice.payment_intent,
+            stripe_payment_intent_id: stripeInvoice.payment_intent,
           });
 
-          // Update template stats
           await base44.asServiceRole.entities.RecurringInvoice.update(template.id, {
             invoices_generated: (template.invoices_generated || 0) + 1,
             last_invoice_id: newInvoice.id,
             last_generated_date: new Date().toISOString().split('T')[0],
           });
 
+          await markIdempotencyComplete(base44, record.id, transaction.id);
           console.log('✅ Recurring invoice created:', invoiceNumber);
+        } else {
+          await markIdempotencyComplete(base44, record.id, 'no-template');
         }
+      } catch (err) {
+        await markIdempotencyFailed(base44, record.id, err.message);
+        throw err;
       }
 
       return Response.json({ success: true });
     }
 
-    // Handle checkout.session.completed
+    // ─────────────────────────────────────────────────────────────
+    // EVENT: checkout.session.completed (One-time invoice payments)
+    // ─────────────────────────────────────────────────────────────
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
       const metadata = session.metadata;
 
       console.log('💳 Payment completed:', session.id);
-      console.log('📋 Metadata:', metadata);
 
-      const invoiceId = metadata.invoice_id;
-      const invoiceNumber = metadata.invoice_number;
+      const invoiceId = metadata?.invoice_id;
+      const invoiceNumber = metadata?.invoice_number;
 
       if (!invoiceId) {
         console.error('❌ No invoice_id in metadata');
         return Response.json({ error: 'No invoice_id' }, { status: 400 });
       }
 
-      // IDEMPOTENCY GUARD: Check if this payment_intent was already processed
-      if (session.payment_intent) {
-        const existing = await base44.asServiceRole.entities.Transaction.filter({
-          stripe_payment_intent_id: session.payment_intent
-        });
-        if (existing.length > 0) {
-          console.log('⚠️ Duplicate webhook - payment_intent already processed:', session.payment_intent);
-          return Response.json({ success: true, idempotent: true });
+      // IDEMPOTENCY: use Stripe event.id as the canonical key
+      const { isDuplicate, record } = await checkAndClaimIdempotency(
+        base44, event.id, 'create_payment'
+      );
+      if (isDuplicate) return Response.json({ success: true, idempotent: true });
+
+      try {
+        const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoiceId });
+        if (invoices.length === 0) {
+          await markIdempotencyFailed(base44, record.id, `Invoice not found: ${invoiceId}`);
+          console.error('❌ Invoice not found:', invoiceId);
+          return Response.json({ error: 'Invoice not found' }, { status: 404 });
         }
-      }
 
-      // Get invoice
-      const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoiceId });
-      if (invoices.length === 0) {
-        console.error('❌ Invoice not found:', invoiceId);
-        return Response.json({ error: 'Invoice not found' }, { status: 404 });
-      }
+        const invoice = invoices[0];
+        const amountPaid = Math.round(session.amount_total) / 100; // cents → dollars, precision safe
+        const newTotalPaid = Math.round(((invoice.amount_paid || 0) + amountPaid) * 100) / 100;
+        const newBalance = Math.round((invoice.total - newTotalPaid) * 100) / 100;
+        const newStatus = newBalance <= 0.01 ? 'paid' : 'partial';
 
-      const invoice = invoices[0];
-      const amountPaid = session.amount_total / 100; // Convert from cents
-      const newTotalPaid = (invoice.amount_paid || 0) + amountPaid;
-      const newBalance = invoice.total - newTotalPaid;
+        await base44.asServiceRole.entities.Invoice.update(invoiceId, {
+          amount_paid: newTotalPaid,
+          balance: Math.max(0, newBalance),
+          status: newStatus,
+          payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date,
+          transaction_id: session.payment_intent,
+        });
 
-      // Update invoice
-      const newStatus = newBalance <= 0.01 ? 'paid' : 'partial';
+        console.log('✅ Invoice updated:', invoiceId, 'Status:', newStatus);
 
-      await base44.asServiceRole.entities.Invoice.update(invoiceId, {
-        amount_paid: newTotalPaid,
-        balance: Math.max(0, newBalance),
-        status: newStatus,
-        payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date,
-        transaction_id: session.payment_intent,
-      });
+        const transaction = await base44.asServiceRole.entities.Transaction.create({
+          type: 'income',
+          amount: amountPaid,
+          category: 'sales',
+          description: `Payment for Invoice ${invoiceNumber} - ${invoice.customer_name}`,
+          date: new Date().toISOString().split('T')[0],
+          payment_method: 'stripe',
+          reconciliation_status: 'matched',
+          matched_invoice_id: invoiceId,
+          matched_invoice_number: invoiceNumber,
+          stripe_payment_intent_id: session.payment_intent,
+        });
 
-      console.log('✅ Invoice updated:', invoiceId, 'Status:', newStatus);
+        await markIdempotencyComplete(base44, record.id, transaction.id);
+        console.log('✅ Transaction created:', transaction.id);
 
-      // Create Transaction record
-      await base44.asServiceRole.entities.Transaction.create({
-        type: 'income',
-        amount: amountPaid,
-        category: 'sales',
-        description: `Payment for Invoice ${invoiceNumber} - ${invoice.customer_name}`,
-        date: new Date().toISOString().split('T')[0],
-        payment_method: 'stripe',
-        reconciliation_status: 'matched',
-        matched_invoice_id: invoiceId,
-        matched_invoice_number: invoiceNumber,
-        stripe_payment_intent_id: session.payment_intent,
-      });
-
-      console.log('✅ Transaction created for invoice:', invoiceNumber);
-
-      // Detect customer language preference
-      let language = 'en'; // Default to English
-      if (invoice.customer_id) {
-        try {
-          const customers = await base44.asServiceRole.entities.Customer.filter({ id: invoice.customer_id });
-          if (customers.length > 0 && customers[0].preferred_language) {
-            language = customers[0].preferred_language;
+        // Send receipt email
+        let language = 'en';
+        if (invoice.customer_id) {
+          try {
+            const customers = await base44.asServiceRole.entities.Customer.filter({ id: invoice.customer_id });
+            if (customers.length > 0 && customers[0].preferred_language) {
+              language = customers[0].preferred_language;
+            }
+          } catch (e) {
+            console.warn('Could not fetch customer language:', e.message);
           }
-        } catch (error) {
-          console.warn('Could not fetch customer language, using default:', error);
         }
+
+        if (invoice.customer_email) {
+          const emailBody = language === 'es'
+            ? `Estimado(a) ${invoice.customer_name},\n\nHemos recibido tu pago de $${amountPaid.toFixed(2)} para la factura ${invoiceNumber}.\n\nGracias por tu pago.\n\nMCI Team`
+            : `Dear ${invoice.customer_name},\n\nWe have received your payment of $${amountPaid.toFixed(2)} for invoice ${invoiceNumber}.\n\nThank you for your payment.\n\nMCI Team`;
+
+          await base44.asServiceRole.integrations.Core.SendEmail({
+            to: invoice.customer_email,
+            subject: language === 'es' ? `Recibo de Pago - ${invoiceNumber}` : `Payment Receipt - ${invoiceNumber}`,
+            body: emailBody,
+            from_name: 'MCI Connect',
+          });
+          console.log('✅ Receipt email sent to:', invoice.customer_email);
+        }
+
+      } catch (err) {
+        await markIdempotencyFailed(base44, record.id, err.message);
+        throw err;
       }
 
-      // Send receipt email
-      const emailBody = language === 'es'
-        ? `Estimado(a) ${invoice.customer_name},\n\nHemos recibido tu pago de $${amountPaid.toFixed(2)} para la factura ${invoiceNumber}.\n\nGracias por tu pago.\n\nMCI Team`
-        : `Dear ${invoice.customer_name},\n\nWe have received your payment of $${amountPaid.toFixed(2)} for invoice ${invoiceNumber}.\n\nThank you for your payment.\n\nMCI Team`;
-
-      if (invoice.customer_email) {
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: invoice.customer_email,
-          subject: language === 'es' 
-            ? `Recibo de Pago - ${invoiceNumber}` 
-            : `Payment Receipt - ${invoiceNumber}`,
-          body: emailBody,
-          from_name: 'MCI Connect',
-        });
-
-        console.log('✅ Receipt email sent to:', invoice.customer_email, 'in', language);
-      }
-
-      return Response.json({ 
-        success: true,
-        message: 'Payment processed successfully' 
-      });
+      return Response.json({ success: true, message: 'Payment processed successfully' });
     }
 
-    // Other events (future expansion)
     console.log('ℹ️ Unhandled event type:', event.type);
     return Response.json({ received: true });
 
   } catch (error) {
     console.error('❌ Webhook processing failed:', error);
-    return Response.json({
-      error: error.message,
-      success: false,
-    }, { status: 500 });
+    return Response.json({ error: error.message, success: false }, { status: 500 });
   }
 });
