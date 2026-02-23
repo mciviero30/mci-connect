@@ -242,45 +242,48 @@ export default function Empleados() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
+  const inviteSingle = async (employee) => {
+    const fullName = employee.full_name || employee.email?.split('@')[0] || 'Employee';
+    if (!employee.email) throw new Error(`${fullName} has no email — cannot invite.`);
+
+    await base44.functions.invoke('sendInvitationEmail', { to: employee.email, fullName, language });
+    await base44.users.inviteUser(employee.email, employee.role || 'user');
+
+    // Update EmployeeDirectory status (directory_id is the EmployeeDirectory record id)
+    if (employee.directory_id) {
+      await base44.entities.EmployeeDirectory.update(employee.directory_id, {
+        status: 'invited',
+        last_synced_at: new Date().toISOString(),
+      });
+    }
+  };
+
   const inviteMutation = useMutation({
-    mutationFn: async (employee) => {
-      const fullName = employee.full_name || employee.email.split('@')[0];
-      
-      await base44.functions.invoke('sendInvitationEmail', {
-        to: employee.email,
-        fullName,
-        language
-      });
-
-      await base44.users.inviteUser(employee.email, employee.role || 'user');
-      
-      await base44.entities.User.update(employee.id, { 
-        employment_status: 'invited',
-        last_invitation_sent: new Date().toISOString(),
-        invitation_count: (employee.invitation_count || 0) + 1
-      });
-
-      // PHASE 4: Lifecycle Hardening - Sync status to EmployeeDirectory
-      const existingDirectory = await base44.entities.EmployeeDirectory.list();
-      const directoryEntry = existingDirectory.find(d => 
-        d.employee_email?.toLowerCase().trim() === employee.email.toLowerCase().trim()
-      );
-      
-      if (directoryEntry) {
-        await base44.entities.EmployeeDirectory.update(directoryEntry.id, {
-          status: 'invited',
-          last_synced_at: new Date().toISOString()
-        });
-      }
-    },
+    mutationFn: (employee) => inviteSingle(employee),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['employees'] });
-      await queryClient.refetchQueries({ queryKey: ['employees'] });
       toast.success('Invitation sent!');
     },
     onError: (error) => {
       handleError(error, 'Invitation sent');
     }
+  });
+
+  const bulkInviteMutation = useMutation({
+    mutationFn: async () => {
+      const toInvite = pendingEmployees.filter(e => selectedPending.has(e.id || e.directory_id));
+      let sent = 0;
+      for (const emp of toInvite) {
+        try { await inviteSingle(emp); sent++; } catch (_) {}
+      }
+      return sent;
+    },
+    onSuccess: async (sent) => {
+      setSelectedPending(new Set());
+      await queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success(`${sent} invitation(s) sent!`);
+    },
+    onError: (error) => handleError(error, 'Bulk invite'),
   });
 
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
