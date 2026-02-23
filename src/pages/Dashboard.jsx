@@ -263,21 +263,22 @@ export default function Dashboard() {
     initialData: [],
   });
 
-  // SSOT: Use PendingEmployee for employee listings (EmployeeDirectory causes 500 errors)
+  // SSOT: Use EmployeeProfile linked to User
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        const pending = await base44.entities.PendingEmployee.filter({ status: 'active' }, '-created_date');
+        // Fetch active users with their profiles
+        const profiles = await base44.entities.EmployeeProfile.filter({ status: 'active' }, '-created_date');
         
-        return pending.map(p => ({
-          id: p.id,
-          email: p.email,
+        return profiles.map(p => ({
+          id: p.user_id,
+          email: null, // Fetched separately if needed
           full_name: `${p.first_name} ${p.last_name}`.trim(),
-          position: p.position,
-          department: p.department,
-          employment_status: 'active',
-          dob: p.dob || null
+          position: null, // No position field in EmployeeProfile v2
+          department: null,
+          employment_status: p.status,
+          dob: p.date_of_birth || null
         }));
       } catch (err) {
         console.error('allEmployees query failed:', err);
