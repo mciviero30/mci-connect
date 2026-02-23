@@ -496,8 +496,91 @@ export default function Empleados() {
              </TabsList>
            </div>
 
+          {/* DUPLICATES TAB */}
+           <TabsContent value="duplicates">
+             <Card className="mb-4 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+               <CardContent className="p-4">
+                 <p className="text-sm text-red-800 dark:text-red-200">
+                   ⚠️ These employees appear to be duplicates (same name or email). Select and delete to clean up.
+                 </p>
+               </CardContent>
+             </Card>
+
+             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+               <div className="flex items-center gap-3">
+                 <button
+                   onClick={() => {
+                     if (selectedPending.size === duplicateEmployees.length) {
+                       setSelectedPending(new Set());
+                     } else {
+                       setSelectedPending(new Set(duplicateEmployees.map(e => e.id || e.directory_id)));
+                     }
+                   }}
+                   className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                 >
+                   {selectedPending.size === duplicateEmployees.length && duplicateEmployees.length > 0
+                     ? <CheckSquare className="w-5 h-5 text-blue-600" />
+                     : <Square className="w-5 h-5" />
+                   }
+                   {selectedPending.size > 0 ? `${selectedPending.size} selected` : 'Select all'}
+                 </button>
+               </div>
+
+               {selectedPending.size > 0 && (
+                 <Button
+                   className="bg-red-600 hover:bg-red-700 text-white"
+                   onClick={() => {
+                     if (window.confirm(`Delete ${selectedPending.size} duplicate(s)?`)) {
+                       bulkDeleteMutation.mutate();
+                     }
+                   }}
+                   disabled={bulkDeleteMutation.isPending}
+                 >
+                   <Trash2 className="w-4 h-4 mr-2" />
+                   {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete Selected (${selectedPending.size})`}
+                 </Button>
+               )}
+             </div>
+
+             {duplicateEmployees.length === 0 ? (
+               <Card className="p-8 text-center">
+                 <p className="text-slate-500">No duplicates found.</p>
+               </Card>
+             ) : (
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                 {duplicateEmployees.map(emp => {
+                   const key = emp.id || emp.directory_id;
+                   const isSelected = selectedPending.has(key);
+                   return (
+                     <div
+                       key={key}
+                       className={`relative rounded-xl border-2 transition-all cursor-pointer ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-red-200'}`}
+                       onClick={() => {
+                         setSelectedPending(prev => {
+                           const next = new Set(prev);
+                           isSelected ? next.delete(key) : next.add(key);
+                           return next;
+                         });
+                       }}
+                     >
+                       {isSelected && (
+                         <div className="absolute top-2 right-2 z-10">
+                           <CheckSquare className="w-5 h-5 text-blue-600" />
+                         </div>
+                       )}
+                       <ModernEmployeeCard
+                         employee={emp}
+                         onboardingProgress={employeeProgress[emp.id]}
+                       />
+                     </div>
+                   );
+                 })}
+               </div>
+             )}
+           </TabsContent>
+
           {/* PENDING TAB */}
-          <TabsContent value="pending">
+           <TabsContent value="pending">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <button
