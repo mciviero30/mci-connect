@@ -15,14 +15,16 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
  * }
  */
 /**
- * Helper: Get ISO week number for a date
+ * Helper: Get ISO week key (YYYY-W##) to avoid year collision
  */
-function getISOWeek(date) {
+function getISOWeekKey(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  const isoYear = d.getUTCFullYear();
+  const yearStart = new Date(Date.UTC(isoYear, 0, 1));
+  const weekNum = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${isoYear}-W${String(weekNum).padStart(2, '0')}`;
 }
 
 Deno.serve(async (req) => {
@@ -99,31 +101,26 @@ Deno.serve(async (req) => {
 
     for (const employee of employees) {
       try {
-        // A) Pull TimeEntry records for period (server-side filtered)
+        // A) Pull TimeEntry records for period (server-side date filtering)
         const timeEntries = await base44.asServiceRole.entities.TimeEntry.filter(
           {
-            user_id: employee.user_id
+            user_id: employee.user_id,
+            date: { $gte: batch.period_start, $lte: batch.period_end }
           },
           '',
           1000
         );
 
-        // Filter by date range
-        const periodTimeEntries = timeEntries.filter(te => {
-          const teDate = new Date(te.date);
-          return teDate >= periodStart && teDate <= periodEnd;
-        });
-
-        // B) Calculate hours per ISO week
+        // B) Calculate hours per ISO week (with year collision protection)
         const weeklyHours = {};
 
-        periodTimeEntries.forEach(te => {
+        timeEntries.forEach(te => {
           const teDate = new Date(te.date);
-          const isoWeek = getISOWeek(teDate);
-          if (!weeklyHours[isoWeek]) {
-            weeklyHours[isoWeek] = 0;
+          const isoWeekKey = getISOWeekKey(teDate);
+          if (!weeklyHours[isoWeekKey]) {
+            weeklyHours[isoWeekKey] = 0;
           }
-          weeklyHours[isoWeek] += te.hours_worked || 0;
+          weeklyHours[isoWeekKey] += te.hours_worked || 0;
         });
 
         // C) Calculate overtime per week, sum across all weeks
