@@ -304,10 +304,10 @@ export default function Empleados() {
     const excludeOwner = (list) => hasFullAccess ? list : list.filter(e => e.email !== OWNER_EMAIL);
 
     return {
-      pendingEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'pending_invitation'))),
-      invitedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'invited'))),
-      activeEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'active' || !e.employment_status))),
-      archivedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'archived'))),
+      pendingEmployees: filterEmployees(excludeOwner(employees.filter(e => e.dir_status === 'pending' || e.employment_status === 'pending_invitation'))),
+      invitedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.dir_status === 'invited' || e.employment_status === 'invited'))),
+      activeEmployees: filterEmployees(excludeOwner(employees.filter(e => e.dir_status === 'active' || e.employment_status === 'active'))),
+      archivedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.dir_status === 'archived' || e.employment_status === 'archived'))),
       deletedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'deleted')))
     };
   }, [employees, searchTerm, hasFullAccess]);
