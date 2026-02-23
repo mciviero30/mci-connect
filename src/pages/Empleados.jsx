@@ -162,21 +162,13 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: Merge User + EmployeeDirectory + PendingEmployee
+  // SSOT: Merge EmployeeDirectory + PendingEmployee (User.list() causes 500 errors)
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        // Fetch each source independently
-        let allUsers = [];
         let directory = [];
         let pending = [];
-
-        try {
-          allUsers = await base44.entities.User.list();
-        } catch (e) {
-          console.error('User.list() failed:', e);
-        }
 
         try {
           directory = await base44.entities.EmployeeDirectory.list('-created_date');
@@ -190,53 +182,31 @@ export default function Empleados() {
           console.error('PendingEmployee.list() failed:', e);
         }
 
-        // Build user map
-        const userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
-
         // Map EmployeeDirectory records
         const dirResult = directory.map(d => ({
           id: d.user_id || d.id,
           directory_id: d.id,
           email: d.employee_email,
           full_name: d.full_name,
-          first_name: d.first_name,
-          last_name: d.last_name,
+          first_name: d.first_name || '',
+          last_name: d.last_name || '',
           position: d.position,
           department: d.department,
           phone: d.phone,
           team_id: d.team_id,
           team_name: d.team_name,
           profile_photo_url: d.profile_photo_url,
-          employment_status: userMap[d.user_id]?.employment_status || d.status || 'pending',
+          employment_status: d.status || 'pending',
           dir_status: d.status || 'pending',
-          role: userMap[d.user_id]?.role || 'user',
-          hourly_rate: userMap[d.user_id]?.hourly_rate,
-          onboarding_completed: userMap[d.user_id]?.onboarding_completed,
+          role: 'user',
+          hourly_rate: null,
+          onboarding_completed: false,
         }));
 
-        // Add active User records not in Directory
-        const dirEmails = new Set(dirResult.map(d => d.email?.toLowerCase()));
-        const activeUsersNotInDir = allUsers
-          .filter(u => u.employment_status === 'active' && !dirEmails.has(u.email?.toLowerCase()))
-          .map(u => ({
-            id: u.id,
-            email: u.email,
-            full_name: u.full_name,
-            first_name: u.first_name,
-            last_name: u.last_name,
-            position: u.position || '',
-            phone: u.phone || '',
-            employment_status: 'active',
-            dir_status: 'active',
-            role: u.role || 'user',
-            hourly_rate: u.hourly_rate,
-            onboarding_completed: u.onboarding_completed,
-          }));
-
         // Add PendingEmployee not in Directory
-        const existingEmails = new Set([...dirEmails, ...activeUsersNotInDir.map(u => u.email?.toLowerCase())]);
+        const dirEmails = new Set(dirResult.map(d => d.email?.toLowerCase()));
         const pendingResult = pending
-          .filter(p => p.email && !existingEmails.has(p.email.toLowerCase()))
+          .filter(p => p.email && !dirEmails.has(p.email.toLowerCase()))
           .map(p => ({
             id: p.id,
             pending_id: p.id,
@@ -252,7 +222,7 @@ export default function Empleados() {
             hourly_rate: null,
           }));
 
-        const allEmployees = [...dirResult, ...activeUsersNotInDir, ...pendingResult];
+        const allEmployees = [...dirResult, ...pendingResult];
         
         // Sort alphabetically by full name
         return allEmployees.sort((a, b) => {
