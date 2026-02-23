@@ -331,12 +331,12 @@ export default function Dashboard() {
   });
 
   const { data: certifications = [] } = useQuery({
-    queryKey: ['myCertifications', user?.email],
+    queryKey: ['myCertifications', user?.id],
     queryFn: async () => {
-      if (!user?.email) return [];
-      return base44.entities.Certification.filter({ employee_email: user.email }, '-expiration_date');
+      if (!user?.id) return [];
+      return base44.entities.Certification.filter({ user_id: user.id }, '-expiration_date');
     },
-    enabled: !!user?.email && !isAdmin,
+    enabled: !!user?.id && !isAdmin,
     staleTime: 1800000,
     gcTime: 3600000,
     refetchOnMount: false,
