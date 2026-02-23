@@ -39,13 +39,15 @@ Deno.serve(async (req) => {
       try {
         const fullName = `${emp.firstName} ${emp.lastName}`.trim();
         
-        // Create as PendingEmployee - allows creation without email
-        const created = await base44.asServiceRole.entities.PendingEmployee.create({
+        // Create as EmployeeProfile with placeholder hire_date
+        const created = await base44.asServiceRole.entities.EmployeeProfile.create({
           first_name: emp.firstName,
           last_name: emp.lastName,
           full_name: fullName,
-          email: "", // Empty for now - user will fill in
-          status: "pending"
+          hire_date: new Date().toISOString().split('T')[0], // Today's date
+          employment_status: "active",
+          is_active: true,
+          user_id: null // No user yet - will be added when invited
         });
 
         result.created++;
