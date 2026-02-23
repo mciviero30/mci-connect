@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
       console.log('💰 Subscription payment received:', stripeInvoice.id);
 
       // IDEMPOTENCY: use Stripe event.id as the canonical key
-      const { isDuplicate, record } = await checkAndClaimIdempotency(
+      const { isDuplicate, record } = await claimIdempotency(
         base44, event.id, 'create_payment'
       );
       if (isDuplicate) return Response.json({ success: true, idempotent: true });
@@ -183,7 +183,7 @@ Deno.serve(async (req) => {
       }
 
       // IDEMPOTENCY: use Stripe event.id as the canonical key
-      const { isDuplicate, record } = await checkAndClaimIdempotency(
+      const { isDuplicate, record } = await claimIdempotency(
         base44, event.id, 'create_payment'
       );
       if (isDuplicate) return Response.json({ success: true, idempotent: true });
