@@ -28,18 +28,18 @@ Deno.serve(async (req) => {
 
     for (const entityName of entitiesToCleanup) {
       try {
-        // Check if entity exists by attempting to fetch schema
+        let records = [];
         try {
-          await base44.asServiceRole.entities[entityName].schema();
-        } catch (schemaErr) {
-          result.entities_not_found.push(entityName);
-          continue;
+          records = await base44.asServiceRole.entities[entityName].list('', 1000);
+        } catch (err) {
+          if (err.message?.includes('not found') || err.status === 404) {
+            result.entities_not_found.push(entityName);
+            continue;
+          }
+          throw err;
         }
 
-        // Entity exists - delete all records
-        const records = await base44.asServiceRole.entities[entityName].list('', 1000);
         let deletedCount = 0;
-
         for (const record of records) {
           await base44.asServiceRole.entities[entityName].delete(record.id);
           deletedCount++;
