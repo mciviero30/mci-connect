@@ -202,16 +202,7 @@ Deno.serve(async (req) => {
         const newBalance = Math.round((invoice.total - newTotalPaid) * 100) / 100;
         const newStatus = newBalance <= 0.01 ? 'paid' : 'partial';
 
-        await base44.asServiceRole.entities.Invoice.update(invoiceId, {
-          amount_paid: newTotalPaid,
-          balance: Math.max(0, newBalance),
-          status: newStatus,
-          payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date,
-          transaction_id: session.payment_intent,
-        });
-
-        console.log('✅ Invoice updated:', invoiceId, 'Status:', newStatus);
-
+        // 1️⃣ Create Transaction FIRST — if this fails, Invoice is untouched, Stripe retry is safe
         const transaction = await base44.asServiceRole.entities.Transaction.create({
           type: 'income',
           amount: amountPaid,
@@ -225,8 +216,21 @@ Deno.serve(async (req) => {
           stripe_payment_intent_id: session.payment_intent,
         });
 
-        await markIdempotencyComplete(base44, record.id, transaction.id);
         console.log('✅ Transaction created:', transaction.id);
+
+        // 2️⃣ Update Invoice AFTER Transaction is safely persisted
+        await base44.asServiceRole.entities.Invoice.update(invoiceId, {
+          amount_paid: newTotalPaid,
+          balance: Math.max(0, newBalance),
+          status: newStatus,
+          payment_date: newStatus === 'paid' ? new Date().toISOString().split('T')[0] : invoice.payment_date,
+          transaction_id: session.payment_intent,
+        });
+
+        console.log('✅ Invoice updated:', invoiceId, 'Status:', newStatus);
+
+        // 3️⃣ Mark idempotency complete only after both writes succeed
+        await markIdempotencyComplete(base44, record.id, transaction.id);
 
         // Send receipt email
         let language = 'en';
