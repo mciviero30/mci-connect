@@ -227,10 +227,8 @@ Deno.serve(async (req) => {
           const newProfile = await base44.asServiceRole.entities.EmployeeProfile.create(profileData);
           rollback.created_profiles.push(newProfile.id);
           result.created_profiles++;
-          existingProfiles.set(userId, newProfile);
 
         } else {
-          const existingProfile = existingProfiles.get(userId);
 
           if (mode === 'create_only') {
             result.skipped++;
