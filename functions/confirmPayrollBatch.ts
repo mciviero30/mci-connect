@@ -331,6 +331,7 @@ Deno.serve(async (req) => {
     return Response.json({
       success: true,
       batch_id: batch.id,
+      transaction_id: payrollTransaction?.id,
       allocation_count: createdAllocations.length,
       total_allocated: allocSum.toFixed(2),
       is_locked: true,
