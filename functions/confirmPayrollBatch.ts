@@ -325,7 +325,7 @@ Deno.serve(async (req) => {
       action_description: `Confirmed payroll batch for ${employee_name} (${period_start} to ${period_end}): $${total_paid.toFixed(2)} across ${allocations.length} jobs`,
       before_state: null,
       after_state: { batch_id: batch.id, status: 'confirmed', total_paid, allocation_count: allocations.length, is_locked: true },
-      metadata: { employee_id, period_start, period_end, file_hash: file_hash.substring(0, 16) + '...', job_update_count: jobsAppliedCount }
+      metadata: { employee_id, period_start, period_end, file_hash: file_hash.substring(0, 16) + '...', job_update_count: jobsAppliedCount, transaction_id: payrollTransaction?.id }
     }).catch(err => console.warn('[confirmPayrollBatch] Audit log failed (non-critical):', err.message));
 
     return Response.json({
