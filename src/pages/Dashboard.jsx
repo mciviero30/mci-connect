@@ -267,20 +267,24 @@ export default function Dashboard() {
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      // Fetch from EmployeeDirectory with active status
-      const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name');
-      
-      // Map to standardized format
-      return directory.map(d => ({
-          id: d.user_id || d.id,
-          email: d.employee_email,
-          full_name: d.full_name,
-          position: d.position,
-          department: d.department,
-          employment_status: 'active',
-          // I4 FIX: preserve dob from directory record
-          dob: d.dob || null
-        }));
+      try {
+        // Fetch from EmployeeDirectory with active status
+        const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, '-created_date');
+        
+        // Map to standardized format
+        return directory.map(d => ({
+            id: d.user_id || d.id,
+            email: d.employee_email,
+            full_name: d.full_name,
+            position: d.position,
+            department: d.department,
+            employment_status: 'active',
+            dob: d.dob || null
+          }));
+      } catch (err) {
+        console.error('allEmployees query failed:', err);
+        return [];
+      }
     },
     enabled: needsAdminData || widgets.some(w => w.type === 'birthdays-today'),
     staleTime: 1800000,
