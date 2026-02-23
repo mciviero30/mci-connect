@@ -576,6 +576,8 @@ export default function Empleados() {
           </DialogContent>
         </Dialog>
 
+        <ImportEmployeesDialog open={showImportDialog} onClose={() => setShowImportDialog(false)} />
+
         <OnboardingDetailsModal
           employee={selectedEmployee}
           tasks={selectedEmployee ? (employeeProgress[selectedEmployee.id]?.tasks || []) : []}
