@@ -196,7 +196,7 @@ export default function Teams() {
   const getTeamStats = (teamId, teamName) => {
     const teamEmployees = employees.filter(e => {
       const isInTeam = (e.team_id === teamId || e.team_name === teamName);
-      const isActive = !e.employment_status || e.employment_status === 'active' || e.employment_status === 'pending_registration';
+      const isActive = !e.status || e.status === 'active' || e.status === 'pending' || e.status === 'invited';
       return isInTeam && isActive;
     });
 
