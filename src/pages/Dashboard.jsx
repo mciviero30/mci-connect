@@ -177,18 +177,18 @@ export default function Dashboard() {
   });
 
   const { data: expenses = [] } = useQuery({
-    queryKey: ['myExpenses', user?.email],
+    queryKey: ['myExpenses', user?.id],
     queryFn: async () => {
-      if (!user?.email) return [];
+      if (!user?.id) return [];
       // Admins see all expenses, employees see only their own
       if (isAdmin) {
         return base44.entities.Expense.list('-date', 200);
       }
       return base44.entities.Expense.filter({
-        employee_email: user.email
+        user_id: user.id
       }, '-date', 50);
     },
-    enabled: !!user?.email && needsExpenseData,
+    enabled: !!user?.id && needsExpenseData,
     staleTime: 600000,
     gcTime: 900000,
     refetchOnMount: false,
