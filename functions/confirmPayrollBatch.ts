@@ -116,32 +116,34 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Block on file_hash duplicate
-    const existingByHash = await base44.asServiceRole.entities.PayrollBatch.filter({
-      file_hash,
-      status: 'confirmed'
-    });
-    if (existingByHash.length > 0) {
-      return Response.json({
-        error: 'Duplicate payroll batch detected',
-        details: `A confirmed batch with the same file/period already exists (ID: ${existingByHash[0].id})`,
-        existing_batch_id: existingByHash[0].id
-      }, { status: 409 });
-    }
+    // Block on file_hash duplicate (skip in recovery mode)
+    if (!isRecoveryMode) {
+      const existingByHash = await base44.asServiceRole.entities.PayrollBatch.filter({
+        file_hash,
+        status: 'confirmed'
+      });
+      if (existingByHash.length > 0) {
+        return Response.json({
+          error: 'Duplicate payroll batch detected',
+          details: `A confirmed batch with the same file/period already exists (ID: ${existingByHash[0].id})`,
+          existing_batch_id: existingByHash[0].id
+        }, { status: 409 });
+      }
 
-    // Block on employee+period duplicate (belt-and-suspenders)
-    const existingByPeriod = await base44.asServiceRole.entities.PayrollBatch.filter({
-      employee_id,
-      period_start,
-      period_end,
-      status: 'confirmed'
-    });
-    if (existingByPeriod.length > 0) {
-      return Response.json({
-        error: 'Duplicate payroll batch detected',
-        details: `A confirmed batch already exists for this employee and period (ID: ${existingByPeriod[0].id})`,
-        existing_batch_id: existingByPeriod[0].id
-      }, { status: 409 });
+      // Block on employee+period duplicate (belt-and-suspenders)
+      const existingByPeriod = await base44.asServiceRole.entities.PayrollBatch.filter({
+        employee_id,
+        period_start,
+        period_end,
+        status: 'confirmed'
+      });
+      if (existingByPeriod.length > 0) {
+        return Response.json({
+          error: 'Duplicate payroll batch detected',
+          details: `A confirmed batch already exists for this employee and period (ID: ${existingByPeriod[0].id})`,
+          existing_batch_id: existingByPeriod[0].id
+        }, { status: 409 });
+      }
     }
 
     console.log(`[confirmPayrollBatch] Starting for ${employee_name} (${period_start} → ${period_end})`);
