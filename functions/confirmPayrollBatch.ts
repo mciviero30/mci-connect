@@ -480,6 +480,26 @@ async function _rollback(base44, batchId, createdAllocations, originalCosts, pay
     console.error(`[confirmPayrollBatch] Transaction ${payrollTransaction.id} deleted (rollback)`);
   }
 
+  // Unlock TimeEntries linked to this batch
+  try {
+    const lockedEntries = await base44.asServiceRole.entities.TimeEntry.filter({
+      payroll_batch_id: batchId
+    });
+
+    for (const entry of lockedEntries) {
+      await base44.asServiceRole.entities.TimeEntry.update(entry.id, {
+        payroll_batch_id: null,
+        is_paid: false,
+        is_locked: false,
+        paid_at: null
+      });
+    }
+
+    console.error(`[confirmPayrollBatch] Unlocked ${lockedEntries.length} TimeEntries (rollback)`);
+  } catch (unlockErr) {
+    console.error(`[confirmPayrollBatch] CRITICAL: Failed to unlock TimeEntries during rollback:`, unlockErr.message);
+  }
+
   for (const alloc of createdAllocations) {
     await base44.asServiceRole.entities.PayrollAllocation.delete(alloc.id).catch(e => console.error('[confirmPayrollBatch] Alloc delete failed:', e.message));
   }
