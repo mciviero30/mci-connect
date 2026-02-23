@@ -136,7 +136,7 @@ export default function ImportEmployeesDialog({ open, onClose }) {
             throw new Error("Missing name (first or last name required)");
           }
 
-          // Save full data to PendingEmployee (SSN, DOB, t-shirt, address, etc.)
+          // Save full data to PendingEmployee only (SSOT)
           await base44.entities.PendingEmployee.create({
             first_name: row.first_name || row.full_name.split(" ")[0] || "Unknown",
             last_name: row.last_name || row.full_name.split(" ").slice(1).join(" ") || "",
@@ -148,19 +148,6 @@ export default function ImportEmployeesDialog({ open, onClose }) {
             dob: row.dob?.trim() || "",
             tshirt_size: row.tshirt_size?.trim() || "",
             status: "pending",
-          });
-
-          // Also save to EmployeeDirectory for directory visibility
-          await base44.entities.EmployeeDirectory.create({
-            employee_email: row.employee_email?.trim() || "",
-            full_name: row.full_name,
-            first_name: row.first_name || row.full_name.split(" ")[0] || "Unknown",
-            last_name: row.last_name || row.full_name.split(" ").slice(1).join(" ") || "",
-            position: row.position?.trim() || "",
-            phone: row.phone?.trim() || "",
-            status: "pending",
-            sync_source: "manual",
-            last_synced_at: new Date().toISOString(),
           });
 
           success.push(row);
