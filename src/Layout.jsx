@@ -1449,12 +1449,27 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             );
           }
 
+          // Error during auth check
+          if (error && !user) {
+            return (
+              <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
+                <div className="text-center max-w-md">
+                  <p className="text-red-600 mb-4">Error de autenticación</p>
+                  <p className="text-slate-600 dark:text-slate-400 mb-4 text-sm">{error?.message || 'No se pudo conectar. Por favor, recarga la página.'}</p>
+                  <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                    Recargar
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
           // No user and not loading - show login prompt
           if (!user && !isLoading) {
             return (
               <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
                 <div className="text-center">
-                  <p className="text-slate-600 dark:text-slate-400 mb-4">Redirecting to login...</p>
+                  <p className="text-slate-600 dark:text-slate-400 mb-4">Redirigiendo a login...</p>
                 </div>
               </div>
             );
