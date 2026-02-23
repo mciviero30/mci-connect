@@ -160,47 +160,51 @@ export default function Empleados() {
     queryFn: async () => {
       try {
         const [profiles, users, pending] = await Promise.all([
-          base44.entities.EmployeeProfile.filter({ user_id: { $ne: null } }, '-created_date'),
+          base44.entities.EmployeeProfile.list('-created_date'),
           base44.entities.User.list(),
-          base44.entities.PendingEmployee.filter({ migration_status: { $ne: 'success' } }, '-created_date')
+          base44.entities.PendingEmployee.list('-created_date')
         ]);
 
-        // Map ACTIVE EmployeeProfile records (synced with User)
-        const activeEmployees = profiles.map(p => {
-          const user = users.find(u => u.id === p.user_id);
-          return {
-            id: p.user_id, // Primary key is user_id
+        // Map ACTIVE EmployeeProfile records (only those with user_id)
+        const activeEmployees = profiles
+          .filter(p => p.user_id) // Only include if linked to User
+          .map(p => {
+            const user = users.find(u => u.id === p.user_id);
+            return {
+              id: p.user_id, // Primary key is user_id
+              profile_id: p.id,
+              email: user?.email || '',
+              full_name: user?.full_name || `${p.first_name} ${p.last_name}`.trim(),
+              first_name: p.first_name,
+              last_name: p.last_name,
+              position: p.position,
+              phone: p.phone || '',
+              employment_status: p.employment_status,
+              dir_status: p.employment_status,
+              role: user?.role || 'user',
+              hourly_rate: p.hourly_rate || null,
+              type: 'active'
+            };
+          });
+
+        // Map PENDING EmployeeProfile records (not migrated yet)
+        const pendingEmployees = pending
+          .filter(p => p.migration_status !== 'success') // Exclude migrated
+          .map(p => ({
+            id: p.id,
             profile_id: p.id,
-            email: user?.email || '',
-            full_name: user?.full_name || `${p.first_name} ${p.last_name}`.trim(),
+            email: p.email || '',
+            full_name: `${p.first_name} ${p.last_name}`.trim(),
             first_name: p.first_name,
             last_name: p.last_name,
-            position: p.position,
+            position: p.position || null,
             phone: p.phone || '',
-            employment_status: p.employment_status,
-            dir_status: p.employment_status,
-            role: user?.role || 'user',
-            hourly_rate: p.hourly_rate || null,
-            type: 'active'
-          };
-        });
-
-        // Map PENDING EmployeeProfile records (no User yet)
-        const pendingEmployees = pending.map(p => ({
-          id: p.id,
-          profile_id: p.id,
-          email: p.email || '',
-          full_name: `${p.first_name} ${p.last_name}`.trim(),
-          first_name: p.first_name,
-          last_name: p.last_name,
-          position: p.position || null,
-          phone: p.phone || '',
-          employment_status: p.status,
-          dir_status: p.status,
-          role: 'user',
-          hourly_rate: null,
-          type: 'pending'
-        }));
+            employment_status: p.status,
+            dir_status: p.status,
+            role: 'user',
+            hourly_rate: null,
+            type: 'pending'
+          }));
 
         // Combine and sort
         return [...activeEmployees, ...pendingEmployees].sort((a, b) => {
