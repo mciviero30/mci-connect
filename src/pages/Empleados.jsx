@@ -162,51 +162,14 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: Merge EmployeeDirectory + PendingEmployee (User.list() causes 500 errors)
+  // SSOT: Use PendingEmployee only (EmployeeDirectory.list() causes 500 errors)
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        let directory = [];
-        let pending = [];
-
-        try {
-          directory = await base44.entities.EmployeeDirectory.list('-created_date');
-        } catch (e) {
-          console.error('EmployeeDirectory.list() failed:', e);
-        }
-
-        try {
-          pending = await base44.entities.PendingEmployee.list('-created_date');
-        } catch (e) {
-          console.error('PendingEmployee.list() failed:', e);
-        }
-
-        // Map EmployeeDirectory records
-        const dirResult = directory.map(d => ({
-          id: d.user_id || d.id,
-          directory_id: d.id,
-          email: d.employee_email,
-          full_name: d.full_name,
-          first_name: d.first_name || '',
-          last_name: d.last_name || '',
-          position: d.position,
-          department: d.department,
-          phone: d.phone,
-          team_id: d.team_id,
-          team_name: d.team_name,
-          profile_photo_url: d.profile_photo_url,
-          employment_status: d.status || 'pending',
-          dir_status: d.status || 'pending',
-          role: 'user',
-          hourly_rate: null,
-          onboarding_completed: false,
-        }));
-
-        // Add PendingEmployee not in Directory
-        const dirEmails = new Set(dirResult.map(d => d.email?.toLowerCase()));
-        const pendingResult = pending
-          .filter(p => p.email && !dirEmails.has(p.email.toLowerCase()))
+        const pending = await base44.entities.PendingEmployee.list('-created_date');
+        
+        return pending
           .map(p => ({
             id: p.id,
             pending_id: p.id,
@@ -220,18 +183,14 @@ export default function Empleados() {
             dir_status: p.status || 'pending',
             role: 'user',
             hourly_rate: null,
-          }));
-
-        const allEmployees = [...dirResult, ...pendingResult];
-        
-        // Sort alphabetically by full name
-        return allEmployees.sort((a, b) => {
-          const nameA = (a.full_name || '').toLowerCase();
-          const nameB = (b.full_name || '').toLowerCase();
-          return nameA.localeCompare(nameB);
-        });
+          }))
+          .sort((a, b) => {
+            const nameA = (a.full_name || '').toLowerCase();
+            const nameB = (b.full_name || '').toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
       } catch (err) {
-        console.error('Query error:', err);
+        console.error('employees query failed:', err);
         return [];
       }
     },
