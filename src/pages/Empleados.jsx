@@ -154,15 +154,19 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: Use User + EmployeeProfile
+  // SSOT: Use User + EmployeeProfile + PendingEmployee
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        const profiles = await base44.entities.EmployeeProfile.list('-created_date');
-        const users = await base44.entities.User.list();
+        const [profiles, users, pending] = await Promise.all([
+          base44.entities.EmployeeProfile.list('-created_date'),
+          base44.entities.User.list(),
+          base44.entities.PendingEmployee.list('-created_date')
+        ]);
 
-        return profiles
+        // Map EmployeeProfile records
+        const profileEmployees = profiles
           .map(p => {
             const user = users.find(u => u.id === p.user_id);
             return {
@@ -172,19 +176,38 @@ export default function Empleados() {
               full_name: `${p.first_name} ${p.last_name}`.trim(),
               first_name: p.first_name,
               last_name: p.last_name,
-              position: null, // Not in v2 schema
+              position: null,
               phone: p.phone || '',
-              employment_status: p.status,
-              dir_status: p.status,
+              employment_status: p.employment_status || 'active',
+              dir_status: p.employment_status || 'active',
               role: user?.role || 'user',
               hourly_rate: p.hourly_rate || null,
             };
-          })
-          .sort((a, b) => {
-            const nameA = (a.full_name || '').toLowerCase();
-            const nameB = (b.full_name || '').toLowerCase();
-            return nameA.localeCompare(nameB);
           });
+
+        // Map PendingEmployee records (no user_id yet)
+        const pendingEmployees = pending.map(p => ({
+          id: p.id,
+          profile_id: p.id,
+          email: p.email || '',
+          full_name: `${p.first_name} ${p.last_name}`.trim(),
+          first_name: p.first_name,
+          last_name: p.last_name,
+          position: p.position || null,
+          phone: p.phone || '',
+          employment_status: 'pending',
+          dir_status: 'pending',
+          role: 'user',
+          hourly_rate: null,
+          isPending: true
+        }));
+
+        // Combine and sort
+        return [...profileEmployees, ...pendingEmployees].sort((a, b) => {
+          const nameA = (a.full_name || '').toLowerCase();
+          const nameB = (b.full_name || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
       } catch (err) {
         console.error('employees query failed:', err);
         return [];
