@@ -132,28 +132,32 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: Use PendingEmployee only (EmployeeDirectory.list() causes 500 errors)
+  // SSOT: Use User + EmployeeProfile
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        const pending = await base44.entities.PendingEmployee.list('-created_date');
-        
-        return pending
-          .map(p => ({
-            id: p.id,
-            pending_id: p.id,
-            email: p.email,
-            full_name: `${p.first_name} ${p.last_name}`.trim(),
-            first_name: p.first_name,
-            last_name: p.last_name,
-            position: p.position || '',
-            phone: p.phone || '',
-            employment_status: p.status || 'pending',
-            dir_status: p.status || 'pending',
-            role: 'user',
-            hourly_rate: null,
-          }))
+        const profiles = await base44.entities.EmployeeProfile.list('-created_date');
+        const users = await base44.entities.User.list();
+
+        return profiles
+          .map(p => {
+            const user = users.find(u => u.id === p.user_id);
+            return {
+              id: p.user_id,
+              profile_id: p.id,
+              email: user?.email || '',
+              full_name: `${p.first_name} ${p.last_name}`.trim(),
+              first_name: p.first_name,
+              last_name: p.last_name,
+              position: null, // Not in v2 schema
+              phone: p.phone || '',
+              employment_status: p.status,
+              dir_status: p.status,
+              role: user?.role || 'user',
+              hourly_rate: p.hourly_rate || null,
+            };
+          })
           .sort((a, b) => {
             const nameA = (a.full_name || '').toLowerCase();
             const nameB = (b.full_name || '').toLowerCase();
