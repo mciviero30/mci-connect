@@ -154,40 +154,38 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: Use User + EmployeeProfile + PendingEmployee
+  // SSOT: Separate EmployeeProfile (with User) from PendingEmployee (pre-registration)
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       try {
         const [profiles, users, pending] = await Promise.all([
-          base44.entities.EmployeeProfile.list('-created_date'),
+          base44.entities.EmployeeProfile.filter({ user_id: { $ne: null } }, '-created_date'),
           base44.entities.User.list(),
-          base44.entities.PendingEmployee.list('-created_date')
+          base44.entities.PendingEmployee.filter({ migration_status: { $ne: 'success' } }, '-created_date')
         ]);
 
-        // Map EmployeeProfile records
-        const profileEmployees = profiles
-          .filter(p => p.first_name || p.last_name) // Skip empty profiles
-          .map(p => {
-            const user = users.find(u => u.id === p.user_id);
-            return {
-              id: p.user_id || p.id, // Use user_id if exists, otherwise profile id
-              profile_id: p.id,
-              email: user?.email || '',
-              full_name: `${p.first_name || ''} ${p.last_name || ''}`.trim(),
-              first_name: p.first_name || '',
-              last_name: p.last_name || '',
-              position: null,
-              phone: p.phone || '',
-              employment_status: p.employment_status || 'active',
-              dir_status: p.employment_status || 'active',
-              role: user?.role || 'user',
-              hourly_rate: p.hourly_rate || null,
-              has_user: !!p.user_id // Flag to track if synced to User
-            };
-          });
+        // Map ACTIVE EmployeeProfile records (synced with User)
+        const activeEmployees = profiles.map(p => {
+          const user = users.find(u => u.id === p.user_id);
+          return {
+            id: p.user_id, // Primary key is user_id
+            profile_id: p.id,
+            email: user?.email || '',
+            full_name: user?.full_name || `${p.first_name} ${p.last_name}`.trim(),
+            first_name: p.first_name,
+            last_name: p.last_name,
+            position: p.position,
+            phone: p.phone || '',
+            employment_status: p.employment_status,
+            dir_status: p.employment_status,
+            role: user?.role || 'user',
+            hourly_rate: p.hourly_rate || null,
+            type: 'active'
+          };
+        });
 
-        // Map PendingEmployee records (no user_id yet)
+        // Map PENDING EmployeeProfile records (no User yet)
         const pendingEmployees = pending.map(p => ({
           id: p.id,
           profile_id: p.id,
@@ -197,15 +195,15 @@ export default function Empleados() {
           last_name: p.last_name,
           position: p.position || null,
           phone: p.phone || '',
-          employment_status: 'pending',
-          dir_status: 'pending',
+          employment_status: p.status,
+          dir_status: p.status,
           role: 'user',
           hourly_rate: null,
-          isPending: true
+          type: 'pending'
         }));
 
         // Combine and sort
-        return [...profileEmployees, ...pendingEmployees].sort((a, b) => {
+        return [...activeEmployees, ...pendingEmployees].sort((a, b) => {
           const nameA = (a.full_name || '').toLowerCase();
           const nameB = (b.full_name || '').toLowerCase();
           return nameA.localeCompare(nameB);
@@ -362,11 +360,11 @@ export default function Empleados() {
     });
 
     return {
-      pendingEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'pending' || e.employment_status === 'pending' || e.isPending)))),
-      invitedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'invited' || e.employment_status === 'invited')))),
-      activeEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => (e.dir_status === 'active' || e.employment_status === 'active') && !e.isPending)))),
-      archivedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'archived' || e.employment_status === 'archived')))),
-      deletedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'deleted')))),
+      pendingEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.type === 'pending')))),
+      invitedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'invited')))),
+      activeEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.type === 'active' && e.employment_status === 'active')))),
+      archivedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'archived')))),
+      deletedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'terminated')))),
       duplicateEmployees: filterEmployees(duplicates)
     };
   }, [employees, searchTerm, hasFullAccess]);
