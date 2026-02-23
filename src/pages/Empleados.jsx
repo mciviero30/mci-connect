@@ -18,75 +18,45 @@ import { useToast } from "@/components/ui/toast";
 import { createPageUrl } from "@/utils";
 
 const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
-  const { t } = useLanguage();
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const { handleError } = useErrorHandler(); // WF-C1 FIX: moved here (top-level, not inside callback)
-  const [formData, setFormData] = useState({});
+   const { t } = useLanguage();
+   const queryClient = useQueryClient();
+   const toast = useToast();
+   const { handleError } = useErrorHandler();
+   const [formData, setFormData] = useState({});
 
-  const mutation = useMutation({
-    mutationFn: async (data) => {
-      const firstName = data.first_name?.charAt(0).toUpperCase() + data.first_name?.slice(1).toLowerCase() || '';
-      const lastName = data.last_name?.charAt(0).toUpperCase() + data.last_name?.slice(1).toLowerCase() || '';
-      const fullName = firstName && lastName ? `${firstName} ${lastName}`.trim() : '';
+   const mutation = useMutation({
+     mutationFn: async (data) => {
+       const firstName = data.first_name?.charAt(0).toUpperCase() + data.first_name?.slice(1).toLowerCase() || '';
+       const lastName = data.last_name?.charAt(0).toUpperCase() + data.last_name?.slice(1).toLowerCase() || '';
+       const fullName = firstName && lastName ? `${firstName} ${lastName}`.trim() : '';
 
-      const payload = {
-        ...data,
-        first_name: firstName,
-        last_name: lastName,
-        full_name: fullName,
-        hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
-        role: data.role || 'user',
-        employment_status: employee?.id ? employee.employment_status : 'pending_invitation'
-      };
+       const payload = {
+         ...data,
+         first_name: firstName,
+         last_name: lastName,
+         full_name: fullName,
+         hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
+         role: data.role || 'user',
+         status: 'pending'
+       };
 
-      let userRecord;
-      if (employee?.id) {
-        userRecord = await base44.entities.User.update(employee.id, payload);
-      } else {
-        userRecord = await base44.entities.User.create(payload);
-      }
-
-      // PHASE 4: Lifecycle Hardening - Sync to EmployeeDirectory
-      const directoryData = {
-        user_id: userRecord.id || employee?.id,
-        employee_email: userRecord.email || data.email,
-        full_name: fullName,
-        first_name: firstName,
-        last_name: lastName,
-        position: data.position || '',
-        department: data.department || '',
-        phone: data.phone || '',
-        team_id: data.team_id || '',
-        team_name: data.team_name || '',
-        status: userRecord.employment_status === 'active' ? 'active' : 'pending',
-        sync_source: 'user_direct',
-        last_synced_at: new Date().toISOString()
-      };
-
-      const existingDirectory = await base44.entities.EmployeeDirectory.list();
-      const directoryEntry = existingDirectory.find(d => 
-        d.employee_email?.toLowerCase().trim() === (userRecord.email || data.email).toLowerCase().trim()
-      );
-
-      if (directoryEntry) {
-        await base44.entities.EmployeeDirectory.update(directoryEntry.id, directoryData);
-      } else {
-        await base44.entities.EmployeeDirectory.create(directoryData);
-      }
-
-      return userRecord;
-    },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ['employees'] });
-      await queryClient.refetchQueries({ queryKey: ['employees'] });
-      toast.success(employee ? 'Employee updated!' : 'Employee created!');
-      onClose();
-    },
-    onError: (error) => {
-      handleError(error, employee ? 'Employee updated' : 'Employee created');
-    }
-  });
+       // Update PendingEmployee record if editing
+       if (employee?.pending_id) {
+         return await base44.entities.PendingEmployee.update(employee.pending_id, payload);
+       } else {
+         // Create new PendingEmployee record
+         return await base44.entities.PendingEmployee.create(payload);
+       }
+     },
+     onSuccess: async () => {
+       await queryClient.invalidateQueries({ queryKey: ['employees'] });
+       toast.success(employee ? 'Employee updated!' : 'Employee created!');
+       onClose();
+     },
+     onError: (error) => {
+       handleError(error, employee ? 'Employee updated' : 'Employee created');
+     }
+   });
 
   return (
     <div className="space-y-4 max-h-[85vh] overflow-y-auto p-4">
