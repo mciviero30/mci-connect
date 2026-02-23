@@ -403,7 +403,15 @@ export default function Empleados() {
               </p>
             </div>
             
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowImportDialog(true)}
+                className="h-10 border-green-300 text-green-700 hover:bg-green-50 px-3"
+              >
+                <Upload className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Import Excel</span>
+              </Button>
               <Button 
                 onClick={() => { setEditingEmployee(null); setShowDialog(true); }} 
                 className="h-10 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md px-4"
