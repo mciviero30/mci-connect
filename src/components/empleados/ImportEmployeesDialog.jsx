@@ -25,49 +25,82 @@ export default function ImportEmployeesDialog({ open, onClose }) {
       try {
         const wb = XLSX.read(evt.target.result, { type: "binary" });
         const ws = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-        if (!rows.length) {
+        // Read raw rows with no header inference — we'll detect headers manually
+        const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: "" });
+
+        if (!rawRows.length) {
           setError("No data found in file.");
           return;
         }
 
-        // Normalize headers — support variations
-        const normalized = rows.map((row) => {
-          const get = (...keys) => {
-            for (const k of keys) {
-              const found = Object.keys(row).find(
-                (rk) => rk.trim().toLowerCase() === k.toLowerCase()
-              );
-              if (found && row[found] !== "") return String(row[found]).trim();
-            }
-            return "";
-          };
+        // Find the header row: first row where any cell contains "first name", "email", "name", etc.
+        const headerKeywords = ["first name", "firstname", "first_name", "email", "nombre"];
+        let headerRowIdx = 0;
+        for (let i = 0; i < Math.min(5, rawRows.length); i++) {
+          const cells = rawRows[i].map(c => String(c).toLowerCase().trim());
+          if (cells.some(c => headerKeywords.some(k => c.includes(k)))) {
+            headerRowIdx = i;
+            break;
+          }
+        }
 
-          const firstName = get("first_name", "first name", "firstname");
-          const lastName = get("last_name", "last name", "lastname");
-          const fullName =
-            get("full_name", "full name", "name") ||
-            (firstName && lastName ? `${firstName} ${lastName}` : firstName || lastName);
-          const email = get("email", "email address");
+        const headers = rawRows[headerRowIdx].map(c => String(c).toLowerCase().trim());
+        const dataRows = rawRows.slice(headerRowIdx + 1).filter(r => r.some(c => c !== ""));
+
+        if (!dataRows.length) {
+          setError("No data rows found after the header row.");
+          return;
+        }
+
+        // Flexible column finder
+        const colIdx = (...keywords) => {
+          for (const kw of keywords) {
+            const idx = headers.findIndex(h => h.includes(kw));
+            if (idx !== -1) return idx;
+          }
+          return -1;
+        };
+
+        const firstNameIdx = colIdx("first name", "firstname", "first_name");
+        const lastNameIdx = colIdx("last name", "lastname", "last_name");
+        const emailIdx = colIdx("email");
+        const phoneIdx = colIdx("mobile", "phone");
+        const titleIdx = colIdx("title", "position", "job title");
+        const ssnIdx = colIdx("ssn", "tax");
+        const addressIdx = colIdx("address");
+        const birthdayIdx = colIdx("birthday", "dob", "birth");
+        const tshirtIdx = colIdx("t-shirt", "tshirt", "shirt");
+
+        const getCell = (row, idx) => idx !== -1 && row[idx] !== undefined && row[idx] !== "" 
+          ? String(row[idx]).trim() 
+          : "";
+
+        const normalized = dataRows.map(row => {
+          const firstName = getCell(row, firstNameIdx);
+          const lastName = getCell(row, lastNameIdx);
+          const fullName = firstName && lastName 
+            ? `${firstName} ${lastName}` 
+            : firstName || lastName;
 
           return {
             first_name: firstName,
             last_name: lastName,
             full_name: fullName,
-            employee_email: email,
-            position: get("position", "title", "job title"),
-            department: get("department", "dept"),
-            phone: get("phone", "phone number", "mobile"),
-            team_name: get("team", "team_name"),
-            hourly_rate: get("hourly_rate", "hourly rate", "rate"),
+            employee_email: getCell(row, emailIdx).toLowerCase(),
+            phone: getCell(row, phoneIdx),
+            position: getCell(row, titleIdx),
+            ssn_tax_id: getCell(row, ssnIdx),
+            address: getCell(row, addressIdx),
+            dob: getCell(row, birthdayIdx),
+            tshirt_size: getCell(row, tshirtIdx),
           };
         });
 
         // Filter rows that have at least a name
         const valid = normalized.filter((r) => r.full_name || r.first_name);
         if (!valid.length) {
-          setError("No valid rows found. Make sure columns include at least 'first_name'/'last_name' or 'full_name'.");
+          setError("No valid rows found. Make sure the file has name columns.");
           return;
         }
 
