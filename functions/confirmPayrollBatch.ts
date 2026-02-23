@@ -387,7 +387,7 @@ Deno.serve(async (req) => {
  * originalCosts is the pre-mutation snapshot: { job_id: original_real_cost }
  * We restore directly from the snapshot — no arithmetic reversal.
  */
-async function _rollback(base44, batchId, createdAllocations, originalCosts, payrollTransaction) {
+async function _rollback(base44, batchId, createdAllocations, originalCosts, payrollTransaction, idempotencyRecord, errorMessage) {
   console.error(`[confirmPayrollBatch] ROLLBACK INITIATED for batch ${batchId}`);
 
   // Restore job real_costs from snapshot
