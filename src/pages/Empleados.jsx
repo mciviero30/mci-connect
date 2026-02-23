@@ -120,10 +120,12 @@ export default function Empleados() {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [showDialog, setShowDialog] = useState(false);
+  const [showImportDialog, setShowImportDialog] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('active');
   const [page, setPage] = useState(1);
+  const [selectedPending, setSelectedPending] = useState(new Set());
   const ITEMS_PER_PAGE = 12;
   
   const { data: currentUser } = useQuery({
