@@ -48,25 +48,8 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
          };
          return await base44.entities.EmployeeProfile.update(employee.profile_id, profilePayload);
        } else {
-         // CREATE: New User + EmployeeProfile
-         const newUser = await base44.entities.User.create({
-           email: data.email,
-           full_name: fullName,
-           role: 'user'
-         });
-
-         return await base44.entities.EmployeeProfile.create({
-           user_id: newUser.id,
-           first_name: firstName,
-           last_name: lastName,
-           hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
-           phone: data.phone || null,
-           address: data.address || null,
-           t_shirt_size: data.tshirt_size || null,
-           hire_date: data.hire_date || null,
-           employment_type: data.employment_type || 'W2',
-           employment_status: 'active'
-         });
+         // CREATE: FORBIDDEN - EmployeeProfile only via syncInvitationOnRegister
+         throw new Error('Employee must be invited before profile creation. Create an EmployeeInvitation first.');
        }
      },
      onSuccess: async () => {
@@ -91,13 +74,13 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
         <Button variant="outline" onClick={onClose}>Cancel</Button>
         <Button 
           onClick={() => {
-            if (!formData.email) {
-              alert('Email is required');
+            if (!employee?.id && !formData.hire_date) {
+              alert('hire_date is required');
               return;
             }
             mutation.mutate(formData);
           }} 
-          disabled={mutation.isPending || !formData.email}
+          disabled={mutation.isPending || (!employee?.id && !formData.hire_date)}
         >
           {mutation.isPending ? 'Saving...' : employee ? 'Update' : 'Create Employee'}
         </Button>
