@@ -186,7 +186,21 @@ Deno.serve(async (req) => {
       const { isDuplicate, record } = await claimIdempotency(
         base44, event.id, 'create_payment'
       );
-      if (isDuplicate) return Response.json({ success: true, idempotent: true });
+
+      if (isDuplicate) {
+        // Fetch existing record to check status — only skip if fully completed
+        const existing = await base44.asServiceRole.entities.IdempotencyRecord.filter({
+          mutation_id: event.id
+        });
+
+        if (existing.length > 0 && existing[0].status === 'completed') {
+          console.log('✅ Stripe event already fully processed.');
+          return Response.json({ success: true, idempotent: true });
+        }
+
+        // status === 'pending' or 'failed' → previous run crashed mid-flight, reprocess
+        console.log('⚠️ Stripe event previously pending/failed — reprocessing.');
+      }
 
       try {
         const invoices = await base44.asServiceRole.entities.Invoice.filter({ id: invoiceId });
