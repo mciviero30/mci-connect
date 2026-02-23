@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
+import ImportEmployeesDialog from "@/components/empleados/ImportEmployeesDialog";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
 import EditEmployeeForm from "@/components/empleados/EditEmployeeForm";
 import { useToast } from "@/components/ui/toast";
