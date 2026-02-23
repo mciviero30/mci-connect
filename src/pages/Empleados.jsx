@@ -300,9 +300,10 @@ export default function Empleados() {
   });
 
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
+  const INVISIBLE_EMAIL = 'mciviero30@gmail.com'; // Invisible employee - has full access but not listed
   
   // Memoized filtered lists for performance
-  const { pendingEmployees, invitedEmployees, activeEmployees, archivedEmployees, deletedEmployees } = useMemo(() => {
+  const { pendingEmployees, invitedEmployees, activeEmployees, archivedEmployees, deletedEmployees, duplicateEmployees } = useMemo(() => {
     const filterEmployees = (empList) => {
       if (!searchTerm) return empList;
       const term = searchTerm.toLowerCase();
@@ -315,13 +316,33 @@ export default function Empleados() {
     };
 
     const excludeOwner = (list) => hasFullAccess ? list : list.filter(e => e.email !== OWNER_EMAIL);
+    const excludeInvisible = (list) => list.filter(e => e.email !== INVISIBLE_EMAIL);
+
+    // Detect duplicates: same name or email appearing multiple times
+    const allFiltered = excludeInvisible(employees);
+    const nameCounts = {};
+    const emailCounts = {};
+    
+    allFiltered.forEach(emp => {
+      const name = emp.full_name?.toLowerCase() || '';
+      const email = emp.email?.toLowerCase() || '';
+      if (name) nameCounts[name] = (nameCounts[name] || 0) + 1;
+      if (email) emailCounts[email] = (emailCounts[email] || 0) + 1;
+    });
+
+    const duplicates = allFiltered.filter(emp => {
+      const name = emp.full_name?.toLowerCase() || '';
+      const email = emp.email?.toLowerCase() || '';
+      return (name && nameCounts[name] > 1) || (email && emailCounts[email] > 1);
+    });
 
     return {
-      pendingEmployees: filterEmployees(excludeOwner(employees.filter(e => e.dir_status === 'pending' || e.employment_status === 'pending_invitation'))),
-      invitedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.dir_status === 'invited' || e.employment_status === 'invited'))),
-      activeEmployees: filterEmployees(excludeOwner(employees.filter(e => e.dir_status === 'active' || e.employment_status === 'active'))),
-      archivedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.dir_status === 'archived' || e.employment_status === 'archived'))),
-      deletedEmployees: filterEmployees(excludeOwner(employees.filter(e => e.employment_status === 'deleted')))
+      pendingEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'pending' || e.employment_status === 'pending_invitation')))),
+      invitedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'invited' || e.employment_status === 'invited')))),
+      activeEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'active' || e.employment_status === 'active')))),
+      archivedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'archived' || e.employment_status === 'archived')))),
+      deletedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'deleted')))),
+      duplicateEmployees: filterEmployees(duplicates)
     };
   }, [employees, searchTerm, hasFullAccess]);
 
