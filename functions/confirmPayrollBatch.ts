@@ -64,6 +64,7 @@ Deno.serve(async (req) => {
     // ============================================================
     // IDEMPOTENCY CLAIM — FIRST MUTATION, before anything else
     // ============================================================
+    let isRecoveryMode = false;
     let idempotencyRecord;
     try {
       idempotencyRecord = await base44.asServiceRole.entities.IdempotencyRecord.create({
