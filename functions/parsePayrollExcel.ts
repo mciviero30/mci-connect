@@ -106,15 +106,17 @@ Deno.serve(async (req) => {
         // Init employee record if first time seeing this name
         if (!empMap.has(nameKey)) {
           const ssnRaw = row['SSN'];
+          const rawPay = row['Total pay'];
+          const initPay = (rawPay !== '' && rawPay !== null && rawPay !== undefined) ? (parseFloat(rawPay) || 0) : 0;
           empMap.set(nameKey, {
-            connecteam_name: fullName,
-            first_name: firstName,
-            last_name: lastName,
-            ssn: ssnRaw ? String(ssnRaw).trim().replace(/\D/g, '') : '',
-            total_pay: parseFloat(row['Total pay']) || 0,
-            hourly_rate: row['Hourly rate (USD)'] ? parseFloat(row['Hourly rate (USD)']) : null,
-            jobMap: new Map()
-          });
+              connecteam_name: fullName,
+              first_name: firstName,
+              last_name: lastName,
+              ssn: ssnRaw ? String(ssnRaw).trim().replace(/\D/g, '') : '',
+              total_pay: initPay,
+              hourly_rate: row['Hourly rate (USD)'] ? parseFloat(row['Hourly rate (USD)']) : null,
+              jobMap: new Map()
+            });
         } else {
           // Accumulate total_pay: take max seen (last row with non-zero wins if currently 0)
           const emp = empMap.get(nameKey);
