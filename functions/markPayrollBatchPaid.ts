@@ -47,41 +47,25 @@ Deno.serve(async (req) => {
       paid_at: new Date().toISOString()
     });
 
-    // 2. Update linked commissions
-    // Get all allocations for this batch to find employees
-    const allocations = await base44.asServiceRole.entities.PayrollAllocation.filter(
-      { batch_id: batch_id },
+    // 2. Mark linked commissions as paid
+    // Only update commissions that are already linked to THIS batch
+    const linkedCommissions = await base44.asServiceRole.entities.Commission.filter(
+      {
+        linked_batch_id: batch_id,
+        status: 'approved'
+      },
       '',
       1000
     );
 
     let commissionsUpdated = 0;
 
-    if (allocations && allocations.length > 0) {
-      const employeeIds = [...new Set(allocations.map(a => a.employee_profile_id))];
-
-      for (const empId of employeeIds) {
-        // Get approved commissions for this employee with no linked batch
-        const commissions = await base44.asServiceRole.entities.Commission.filter(
-          {
-            employee_profile_id: empId,
-            status: 'approved',
-            linked_batch_id: null
-          },
-          '',
-          1000
-        );
-
-        // Update each commission
-        if (commissions && commissions.length > 0) {
-          for (const comm of commissions) {
-            await base44.asServiceRole.entities.Commission.update(comm.id, {
-              status: 'paid',
-              linked_batch_id: batch_id
-            });
-            commissionsUpdated++;
-          }
-        }
+    if (linkedCommissions && linkedCommissions.length > 0) {
+      for (const comm of linkedCommissions) {
+        await base44.asServiceRole.entities.Commission.update(comm.id, {
+          status: 'paid'
+        });
+        commissionsUpdated++;
       }
     }
 
