@@ -285,7 +285,7 @@ Deno.serve(async (req) => {
       console.log(`[confirmPayrollBatch] Transaction created: ${payrollTransaction.id} ($${total_paid.toFixed(2)})`);
     } catch (err) {
       console.error(`[confirmPayrollBatch] Transaction.create FAILED:`, err.message);
-      await _rollback(base44, batch.id, createdAllocations, originalCosts, null);
+      await _rollback(base44, batch.id, createdAllocations, originalCosts, null, idempotencyRecord, err.message);
       return Response.json({
         success: false,
         error: `Failed to create payroll Transaction: ${err.message}. Entire batch rolled back.`
