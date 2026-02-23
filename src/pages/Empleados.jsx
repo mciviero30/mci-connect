@@ -162,91 +162,85 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: PendingEmployee + EmployeeDirectory (merged view)
+  // SSOT: EmployeeDirectory is the single source of truth (with PendingEmployee fallback)
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      // Get both PendingEmployee and EmployeeDirectory
-      const [pendingList, directoryList] = await Promise.all([
-        base44.entities.PendingEmployee.list('-created_date'),
-        base44.entities.EmployeeDirectory.list('-created_date'),
-      ]);
+      try {
+        const directory = await base44.entities.EmployeeDirectory.list('-created_date');
 
-      // Batch fetch users
-      const allUserIds = [...new Set([
-        ...pendingList.filter(p => p.user_id).map(p => p.user_id),
-        ...directoryList.filter(d => d.user_id).map(d => d.user_id)
-      ])];
-      let userMap = {};
-      if (allUserIds.length > 0) {
+        // Batch fetch users only once (not N+1)
+        const userIds = [...new Set(directory.filter(d => d.user_id).map(d => d.user_id))];
+        let userMap = {};
+        if (userIds.length > 0) {
+          try {
+            const allUsers = await base44.entities.User.list();
+            userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+          } catch (_) {
+            // User.list() may fail for non-admin; fall back gracefully
+            userMap = {};
+          }
+        }
+
+        const dirResult = directory.map(d => {
+          const user = d.user_id ? userMap[d.user_id] : null;
+          // Map EmployeeDirectory.status to employment_status for UI
+          const dir_status = d.status || 'pending';
+          const employment_status = user?.employment_status || dir_status;
+          return {
+            id: d.user_id || d.id,
+            directory_id: d.id,
+            email: d.employee_email,
+            full_name: d.full_name,
+            first_name: d.first_name,
+            last_name: d.last_name,
+            position: d.position,
+            department: d.department,
+            phone: d.phone,
+            team_id: d.team_id,
+            team_name: d.team_name,
+            profile_photo_url: d.profile_photo_url,
+            employment_status,
+            dir_status,
+            role: user?.role || 'user',
+            hourly_rate: user?.hourly_rate,
+            onboarding_completed: user?.onboarding_completed,
+            invitation_count: user?.invitation_count,
+            last_invitation_sent: user?.last_invitation_sent,
+          };
+        });
+
+        // Also fetch PendingEmployee (without user_id) to get imported but not yet in Directory
         try {
-          const allUsers = await base44.entities.User.list();
-          userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
+          const pending = await base44.entities.PendingEmployee.list('-created_date');
+          const existingEmails = new Set(dirResult.map(d => d.email?.toLowerCase()));
+          
+          const pendingResult = pending
+            .filter(p => p.email && !existingEmails.has(p.email.toLowerCase()))
+            .map(p => ({
+              id: p.id,
+              pending_id: p.id,
+              email: p.email,
+              full_name: `${p.first_name} ${p.last_name}`.trim(),
+              first_name: p.first_name,
+              last_name: p.last_name,
+              position: p.position || '',
+              phone: p.phone || '',
+              employment_status: p.status || 'pending',
+              dir_status: p.status || 'pending',
+              role: 'user',
+              hourly_rate: null,
+            }));
+
+          return [...dirResult, ...pendingResult];
         } catch (_) {
-          userMap = {};
+          // If PendingEmployee fails, just return Directory
+          return dirResult;
         }
+      } catch (err) {
+        console.error('Query error:', err);
+        return [];
       }
-
-      // Map PendingEmployee records
-      const pendingMapped = pendingList.map(p => {
-        const user = p.user_id ? userMap[p.user_id] : null;
-        return {
-          id: p.user_id || p.id,
-          pending_id: p.id,
-          email: p.email,
-          full_name: `${p.first_name} ${p.last_name}`.trim(),
-          first_name: p.first_name,
-          last_name: p.last_name,
-          position: p.position || '',
-          phone: p.phone || '',
-          employment_status: p.status,
-          dir_status: p.status,
-          role: user?.role || 'user',
-          hourly_rate: user?.hourly_rate,
-        };
-      });
-
-      // Map EmployeeDirectory records
-      const dirMapped = directoryList.map(d => {
-        const user = d.user_id ? userMap[d.user_id] : null;
-        const dir_status = d.status || 'pending';
-        const employment_status = user?.employment_status || dir_status;
-        return {
-          id: d.user_id || d.id,
-          directory_id: d.id,
-          email: d.employee_email,
-          full_name: d.full_name,
-          first_name: d.first_name,
-          last_name: d.last_name,
-          position: d.position,
-          department: d.department,
-          phone: d.phone,
-          team_id: d.team_id,
-          team_name: d.team_name,
-          profile_photo_url: d.profile_photo_url,
-          employment_status,
-          dir_status,
-          role: user?.role || 'user',
-          hourly_rate: user?.hourly_rate,
-          onboarding_completed: user?.onboarding_completed,
-          invitation_count: user?.invitation_count,
-          last_invitation_sent: user?.last_invitation_sent,
-        };
-      });
-
-      // Merge: avoid duplicates by email
-      const merged = new Map();
-      pendingMapped.forEach(p => merged.set(p.email, { ...p, _source: 'pending' }));
-      dirMapped.forEach(d => {
-        if (merged.has(d.email)) {
-          // Directory takes precedence (more complete data)
-          merged.set(d.email, { ...d, _source: 'directory' });
-        } else {
-          merged.set(d.email, { ...d, _source: 'directory' });
-        }
-      });
-
-      return Array.from(merged.values());
     },
     staleTime: 30000
   });
