@@ -412,5 +412,13 @@ async function _rollback(base44, batchId, createdAllocations, originalCosts, pay
   }
   await base44.asServiceRole.entities.PayrollBatch.delete(batchId).catch(e => console.error('[confirmPayrollBatch] Batch delete failed:', e.message));
 
+  // Mark idempotency as failed so retries can re-enter the flow
+  if (idempotencyRecord?.id) {
+    await base44.asServiceRole.entities.IdempotencyRecord.update(idempotencyRecord.id, {
+      status: 'failed',
+      error_message: errorMessage || 'Unknown error'
+    }).catch(() => {});
+  }
+
   console.error(`[confirmPayrollBatch] Rollback complete for batch ${batchId}`);
 }
