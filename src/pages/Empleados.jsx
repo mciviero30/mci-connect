@@ -169,7 +169,7 @@ export default function Empleados() {
       try {
         // Fetch all sources
         const [allUsers, directory, pending] = await Promise.all([
-          base44.entities.User.list().catch(() => []),
+          base44.entities.User.list('-created_date').catch(() => []),
           base44.entities.EmployeeDirectory.list('-created_date').catch(() => []),
           base44.entities.PendingEmployee.list('-created_date').catch(() => []),
         ]);
