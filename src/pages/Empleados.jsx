@@ -44,7 +44,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
            t_shirt_size: data.tshirt_size || null,
            hire_date: data.hire_date || null,
            employment_type: data.employment_type || 'W2',
-           status: data.status || 'active'
+           employment_status: data.employment_status || 'active'
          };
          return await base44.entities.EmployeeProfile.update(employee.profile_id, profilePayload);
        } else {
@@ -52,8 +52,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
          const newUser = await base44.entities.User.create({
            email: data.email,
            full_name: fullName,
-           role: 'user',
-           employment_status: 'active'
+           role: 'user'
          });
 
          return await base44.entities.EmployeeProfile.create({
@@ -66,7 +65,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
            t_shirt_size: data.tshirt_size || null,
            hire_date: data.hire_date || null,
            employment_type: data.employment_type || 'W2',
-           status: 'active'
+           employment_status: 'active'
          });
        }
      },
@@ -240,7 +239,7 @@ export default function Empleados() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
-  // Invite from EmployeeInvitation
+  // Invite from EmployeeInvitation (send email, mark as pending)
   const inviteSingle = async (invitation) => {
     if (!invitation.email) throw new Error('Email required to invite');
 
@@ -251,10 +250,10 @@ export default function Empleados() {
       language 
     });
 
-    // Update EmployeeInvitation status
+    // Update invitation: status stays pending, track last send
     await base44.entities.EmployeeInvitation.update(invitation.id, {
-      status: 'accepted',
-      accepted_date: new Date().toISOString()
+      status: 'pending',
+      last_sent_date: new Date().toISOString()
     });
   };
 
