@@ -206,7 +206,12 @@ Deno.serve(async (req) => {
 
     // STEP 2 — Filter: employee must have jobs and total_pay > 0
     const rawJobs = Array.isArray(rawEmp.jobs) ? rawEmp.jobs : [];
-    const validJobs = rawJobs.filter(j => j.name && parseHours(j.hours) > 0);
+    // Support both old format (name/hours) and new format (excel_job_name/total_hours)
+    const validJobs = rawJobs.filter(j => {
+      const jobName = j.excel_job_name || j.name || '';
+      const jobHours = j.total_hours !== undefined ? j.total_hours : j.hours;
+      return jobName && parseHours(jobHours) > 0;
+    });
     if (validJobs.length === 0) continue;
     if (total_pay <= 0) continue;
 
@@ -216,12 +221,16 @@ Deno.serve(async (req) => {
     // STEP 3 — Match each job and build job preview entries
     const jobEntries = [];
     for (const rawJob of validJobs) {
-      const excel_job_name = rawJob.name.trim();
-      const total_hours = round2(parseHours(rawJob.hours));
+      const excel_job_name = (rawJob.excel_job_name || rawJob.name || '').trim();
+      const jobHoursRaw = rawJob.total_hours !== undefined ? rawJob.total_hours : rawJob.hours;
+      const total_hours = round2(parseHours(jobHoursRaw));
       const { matched_job_id, match_status } = matchJob(excel_job_name);
 
       // Distribute pay proportionally by hours (best estimate for preview)
-      const empTotalHours = round2(validJobs.reduce((s, j) => s + parseHours(j.hours), 0));
+      const empTotalHours = round2(validJobs.reduce((s, j) => {
+        const h = j.total_hours !== undefined ? j.total_hours : j.hours;
+        return s + parseHours(h);
+      }, 0));
       const proportion = empTotalHours > 0 ? total_hours / empTotalHours : 0;
       const estimated_pay = round2(total_pay * proportion);
 
