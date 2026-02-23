@@ -499,15 +499,29 @@ export default function Empleados() {
               </div>
 
               {selectedPending.size > 0 && (
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => bulkInviteMutation.mutate()}
-                  disabled={bulkInviteMutation.isPending}
-                >
-                  {bulkInviteMutation.isPending
-                    ? 'Sending...'
-                    : `Invite Selected (${selectedPending.size})`}
-                </Button>
+                <>
+                  <Button
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => bulkInviteMutation.mutate()}
+                    disabled={bulkInviteMutation.isPending}
+                  >
+                    {bulkInviteMutation.isPending
+                      ? 'Sending...'
+                      : `Invite Selected (${selectedPending.size})`}
+                  </Button>
+                  <Button
+                    className="bg-red-600 hover:bg-red-700 text-white"
+                    onClick={() => {
+                      if (window.confirm(`Delete ${selectedPending.size} employee(s)?`)) {
+                        bulkDeleteMutation.mutate();
+                      }
+                    }}
+                    disabled={bulkDeleteMutation.isPending}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete Selected (${selectedPending.size})`}
+                  </Button>
+                </>
               )}
             </div>
 
