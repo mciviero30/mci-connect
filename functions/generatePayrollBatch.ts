@@ -14,6 +14,17 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
  *   batch_id: string
  * }
  */
+/**
+ * Helper: Get ISO week number for a date
+ */
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -88,11 +99,10 @@ Deno.serve(async (req) => {
 
     for (const employee of employees) {
       try {
-        // A) Pull TimeEntry records for period
+        // A) Pull TimeEntry records for period (server-side filtered)
         const timeEntries = await base44.asServiceRole.entities.TimeEntry.filter(
           {
-            user_id: employee.user_id,
-            // Note: TimeEntry stores 'date' as string, need to compare
+            user_id: employee.user_id
           },
           '',
           1000
@@ -104,23 +114,34 @@ Deno.serve(async (req) => {
           return teDate >= periodStart && teDate <= periodEnd;
         });
 
-        // B) Calculate hours
-        const totalHours = periodTimeEntries.reduce((sum, te) => sum + (te.hours_worked || 0), 0);
+        // B) Calculate hours per ISO week
+        const weeklyHours = {};
 
-        // C) Simple overtime rule: if > 40 hours, remainder is OT
-        let regularHours = totalHours;
+        periodTimeEntries.forEach(te => {
+          const teDate = new Date(te.date);
+          const isoWeek = getISOWeek(teDate);
+          if (!weeklyHours[isoWeek]) {
+            weeklyHours[isoWeek] = 0;
+          }
+          weeklyHours[isoWeek] += te.hours_worked || 0;
+        });
+
+        // C) Calculate overtime per week, sum across all weeks
+        let regularHours = 0;
         let overtimeHours = 0;
 
-        if (totalHours > 40) {
-          regularHours = 40;
-          overtimeHours = totalHours - 40;
-        }
+        Object.values(weeklyHours).forEach(weekTotal => {
+          const weekRegular = Math.min(40, weekTotal);
+          const weekOvertime = Math.max(0, weekTotal - 40);
+          regularHours += weekRegular;
+          overtimeHours += weekOvertime;
+        });
 
         // D) Snapshot rates
         const hourlyRate = employee.hourly_rate || 0;
         const overtimeMultiplier = employee.overtime_multiplier || 1.5;
 
-        // E) Pull approved commissions
+        // E) Pull approved unlinked commissions
         const commissions = await base44.asServiceRole.entities.Commission.filter(
           {
             employee_profile_id: employee.id,
@@ -131,7 +152,17 @@ Deno.serve(async (req) => {
           1000
         );
 
-        const commissionTotal = commissions ? commissions.reduce((sum, c) => sum + (c.calculated_amount || 0), 0) : 0;
+        let commissionTotal = 0;
+
+        // Link commissions immediately to this batch
+        if (commissions && commissions.length > 0) {
+          for (const comm of commissions) {
+            await base44.asServiceRole.entities.Commission.update(comm.id, {
+              linked_batch_id: batch_id
+            });
+            commissionTotal += comm.calculated_amount || 0;
+          }
+        }
 
         // F) Calculate pay
         const regularPay = regularHours * hourlyRate;
