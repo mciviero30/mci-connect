@@ -25,20 +25,20 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Also clean up invited users (employment_status = 'invited')
-    const users = await base44.asServiceRole.entities.User.list();
-    const invitedUsers = users.filter(u => u.employment_status === 'invited');
-    
+    // Also clean up EmployeeDirectory entries that are pending/invited
     let invitedDeleted = 0;
-    for (const user of invitedUsers) {
-      try {
-        await base44.asServiceRole.entities.User.update(user.id, { 
-          employment_status: 'deleted' 
-        });
-        invitedDeleted++;
-      } catch (error) {
-        errors.push({ email: user.email, error: error.message });
+    try {
+      const dirEntries = await base44.asServiceRole.entities.EmployeeDirectory.filter({ status: 'invited' });
+      for (const entry of dirEntries) {
+        try {
+          await base44.asServiceRole.entities.EmployeeDirectory.update(entry.id, { status: 'archived' });
+          invitedDeleted++;
+        } catch (error) {
+          errors.push({ email: entry.employee_email, error: error.message });
+        }
       }
+    } catch (e) {
+      console.warn('Could not clean invited directory entries:', e.message);
     }
 
     return Response.json({
