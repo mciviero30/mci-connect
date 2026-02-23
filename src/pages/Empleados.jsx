@@ -283,6 +283,26 @@ export default function Empleados() {
     onError: (error) => handleError(error, 'Bulk invite'),
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async () => {
+      const toDelete = pendingEmployees.filter(e => selectedPending.has(e.id || e.directory_id));
+      let deleted = 0;
+      for (const emp of toDelete) {
+        try {
+          await base44.entities.PendingEmployee.delete(emp.id);
+          deleted++;
+        } catch (_) {}
+      }
+      return deleted;
+    },
+    onSuccess: async (deleted) => {
+      setSelectedPending(new Set());
+      await queryClient.invalidateQueries({ queryKey: ['employees'] });
+      toast.success(`${deleted} employee(s) deleted!`);
+    },
+    onError: (error) => handleError(error, 'Bulk delete'),
+  });
+
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
   
   // Memoized filtered lists for performance
