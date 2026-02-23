@@ -198,15 +198,15 @@ export default function Dashboard() {
   });
 
   const { data: drivingLogs = [] } = useQuery({
-    queryKey: ['myDrivingLogs', user?.email],
+    queryKey: ['myDrivingLogs', user?.id],
     queryFn: async () => {
-      if (!user?.email) return [];
+      if (!user?.id) return [];
       return base44.entities.DrivingLog.filter({
-        employee_email: user.email,
+        user_id: user.id,
         status: 'approved'
       }, '-date', 50);
     },
-    enabled: !!user?.email && needsEmployeeData,
+    enabled: !!user?.id && needsEmployeeData,
     staleTime: 600000,
     gcTime: 900000,
     refetchOnMount: false,
