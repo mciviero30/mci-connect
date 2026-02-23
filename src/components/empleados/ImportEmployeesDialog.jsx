@@ -132,18 +132,17 @@ export default function ImportEmployeesDialog({ open, onClose }) {
 
         try {
           await base44.entities.EmployeeDirectory.create({
-            employee_email: row.employee_email || "",
-            full_name: row.full_name,
-            first_name: row.first_name,
-            last_name: row.last_name,
-            position: row.position,
-            department: row.department,
-            phone: row.phone,
-            team_name: row.team_name,
-            status: "pending",
-            sync_source: "manual",
-            last_synced_at: new Date().toISOString(),
-          });
+              employee_email: row.employee_email || "",
+              full_name: row.full_name,
+              first_name: row.first_name,
+              last_name: row.last_name,
+              position: row.position,
+              department: row.department || "",
+              phone: row.phone,
+              status: "pending",
+              sync_source: "manual",
+              last_synced_at: new Date().toISOString(),
+            });
           success.push(row);
           if (emailKey) existingEmails.add(emailKey);
         } catch (err) {
