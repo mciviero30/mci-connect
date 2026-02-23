@@ -43,7 +43,8 @@ Deno.serve(async (req) => {
     const rollback = {
       created_users: [],
       created_profiles: [],
-      updated_profiles: []
+      updated_profiles: [],
+      updated_users: []
     };
 
     // PHASE 1: PRE-VALIDATION (NO WRITES)
