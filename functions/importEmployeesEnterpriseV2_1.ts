@@ -360,6 +360,14 @@ Deno.serve(async (req) => {
           }
         }
 
+        for (const { userId, snapshot } of rollback.updated_users) {
+          try {
+            await base44.asServiceRole.entities.User.update(userId, snapshot);
+          } catch (e) {
+            console.error(`Rollback failed for user ${userId}`);
+          }
+        }
+
         return Response.json(result);
       }
     }
