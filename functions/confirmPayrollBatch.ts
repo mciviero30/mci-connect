@@ -16,6 +16,9 @@ import crypto from 'node:crypto';
  * - financial_year_locked = true on any affected Job → hard reject
  */
 Deno.serve(async (req) => {
+  let idempotencyRecord = null;
+  let isRecoveryMode = false;
+
   try {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
