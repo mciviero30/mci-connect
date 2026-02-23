@@ -314,6 +314,47 @@ Deno.serve(async (req) => {
     }
 
     // ============================================================
+    // LOCK TIME ENTRIES — Freeze historical hours for this employee+period
+    // CRITICAL: failure = FULL ROLLBACK
+    // ============================================================
+    const paidAt = new Date().toISOString();
+    const timeEntries = await base44.asServiceRole.entities.TimeEntry.filter({
+      employee_id: employee_id,
+      date: { $gte: period_start, $lte: period_end }
+    }).catch(() => []);
+
+    // Fallback: filter by employee_email if user_id-based filter returns nothing
+    let entriesToLock = timeEntries;
+    if (entriesToLock.length === 0) {
+      entriesToLock = await base44.asServiceRole.entities.TimeEntry.filter({
+        employee_email: body.employee_email || '',
+        date: { $gte: period_start, $lte: period_end }
+      }).catch(() => []);
+    }
+
+    console.log(`[confirmPayrollBatch] Locking ${entriesToLock.length} TimeEntries for ${employee_name} (${period_start} → ${period_end})`);
+
+    for (const entry of entriesToLock) {
+      try {
+        await base44.asServiceRole.entities.TimeEntry.update(entry.id, {
+          payroll_batch_id: batch.id,
+          is_paid: true,
+          is_locked: true,
+          paid_at: paidAt
+        });
+      } catch (err) {
+        console.error(`[confirmPayrollBatch] TimeEntry lock FAILED for ${entry.id}:`, err.message);
+        await _rollback(base44, batch.id, createdAllocations, originalCosts, payrollTransaction, idempotencyRecord, err.message);
+        return Response.json({
+          success: false,
+          error: `Failed to lock TimeEntry ${entry.id}: ${err.message}. Entire batch rolled back.`
+        }, { status: 500 });
+      }
+    }
+
+    console.log(`[confirmPayrollBatch] All ${entriesToLock.length} TimeEntries locked.`);
+
+    // ============================================================
     // Create draft invoices for placeholder jobs (non-critical, does NOT block)
     // ============================================================
     const placeholderAllocations = allocations.filter(a => a.is_placeholder && a.job_id);
