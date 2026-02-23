@@ -154,7 +154,7 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: EmployeeProfile only (1:1 with User via user_id)
+  // SSOT: EmployeeProfile only (1:1 with User via user_id, no admin)
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
@@ -164,14 +164,11 @@ export default function Empleados() {
           base44.entities.User.list()
         ]);
 
-        // Map EmployeeProfile records (all have user_id by schema enforcement)
-        const workforce = profiles
-          .filter(p => p.user_id) // Safety: ensure user_id exists
+        return profiles
+          .filter(p => p.user_id)
           .map(p => {
             const user = users.find(u => u.id === p.user_id);
-            // Exclude admin
             if (user?.email === 'mciviero30@gmail.com') return null;
-            
             return {
               id: p.user_id,
               profile_id: p.id,
@@ -186,12 +183,24 @@ export default function Empleados() {
               hourly_rate: p.hourly_rate || null
             };
           })
-          .filter(Boolean) // Remove nulls (admin)
+          .filter(Boolean)
           .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase()));
-
-        return workforce;
       } catch (err) {
         console.error('employees query failed:', err);
+        return [];
+      }
+    },
+    staleTime: 30000
+  });
+
+  // EmployeeInvitation bridge query (pre-registration)
+  const { data: invitations = [] } = useQuery({
+    queryKey: ['employeeInvitations'],
+    queryFn: async () => {
+      try {
+        return await base44.entities.EmployeeInvitation.list('-invited_date');
+      } catch (err) {
+        console.error('invitations query failed:', err);
         return [];
       }
     },
@@ -213,25 +222,16 @@ export default function Empleados() {
     initialData: []
   });
 
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  // Onboarding progress by user_id only (no email fallback)
   const employeeProgress = useMemo(() => {
     if (!employees.length || !onboardingForms.length) return {};
     
     const progressMap = {};
     employees.forEach(emp => {
-      // Match by user_id first, then fallback to email
-      const empForms = onboardingForms.filter(f => {
-        if (emp.id && f.user_id) {
-          return f.user_id === emp.id && f.status === 'completed';
-        }
-        // Legacy email fallback
-        return f.employee_email === emp.email && f.status === 'completed';
-      });
+      const empForms = onboardingForms.filter(f => f.user_id === emp.id && f.status === 'completed');
       const completed = empForms.length;
       const total = 4;
-      const percentage = Math.round((completed / total) * 100);
-      
-      progressMap[emp.id] = { percentage, completed, total, forms: empForms };
+      progressMap[emp.id] = { percentage: Math.round((completed / total) * 100), completed, total, forms: empForms };
     });
     
     return progressMap;
@@ -240,20 +240,22 @@ export default function Empleados() {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
-  const inviteSingle = async (employee) => {
-    const fullName = employee.full_name || employee.email?.split('@')[0] || 'Employee';
-    if (!employee.email) throw new Error(`${fullName} has no email — cannot invite.`);
+  // Invite from EmployeeInvitation
+  const inviteSingle = async (invitation) => {
+    if (!invitation.email) throw new Error('Email required to invite');
 
-    await base44.functions.invoke('sendInvitationEmail', { to: employee.email, fullName, language });
-    await base44.users.inviteUser(employee.email, employee.role || 'user');
+    const fullName = `${invitation.first_name} ${invitation.last_name}`.trim();
+    await base44.functions.invoke('sendInvitationEmail', { 
+      to: invitation.email, 
+      fullName, 
+      language 
+    });
 
-    // Update EmployeeDirectory status (directory_id is the EmployeeDirectory record id)
-    if (employee.directory_id) {
-      await base44.entities.EmployeeDirectory.update(employee.directory_id, {
-        status: 'invited',
-        last_synced_at: new Date().toISOString(),
-      });
-    }
+    // Update EmployeeInvitation status
+    await base44.entities.EmployeeInvitation.update(invitation.id, {
+      status: 'accepted',
+      accepted_date: new Date().toISOString()
+    });
   };
 
   const inviteMutation = useMutation({
@@ -269,86 +271,43 @@ export default function Empleados() {
 
   const bulkInviteMutation = useMutation({
     mutationFn: async () => {
-      const toInvite = pendingEmployees.filter(e => selectedPending.has(e.id || e.directory_id));
+      const toInvite = invitations.filter(e => selectedPending.has(e.id));
       let sent = 0;
-      for (const emp of toInvite) {
-        try { await inviteSingle(emp); sent++; } catch (_) {}
+      for (const inv of toInvite) {
+        try { await inviteSingle(inv); sent++; } catch (_) {}
       }
       return sent;
     },
     onSuccess: async (sent) => {
       setSelectedPending(new Set());
-      await queryClient.invalidateQueries({ queryKey: ['employees'] });
+      await queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
       toast.success(`${sent} invitation(s) sent!`);
     },
     onError: (error) => handleError(error, 'Bulk invite'),
   });
 
-  const bulkDeleteMutation = useMutation({
-    mutationFn: async () => {
-      const toDelete = pendingEmployees.filter(e => selectedPending.has(e.id || e.directory_id));
-      let deleted = 0;
-      for (const emp of toDelete) {
-        try {
-          await base44.entities.PendingEmployee.delete(emp.id);
-          deleted++;
-        } catch (_) {}
-      }
-      return deleted;
-    },
-    onSuccess: async (deleted) => {
-      setSelectedPending(new Set());
-      await queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success(`${deleted} employee(s) deleted!`);
-    },
-    onError: (error) => handleError(error, 'Bulk delete'),
-  });
-
   const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
   const INVISIBLE_EMAIL = 'mciviero30@gmail.com'; // Invisible employee - has full access but not listed
   
-  // Memoized filtered lists for performance
-  const { pendingEmployees, invitedEmployees, activeEmployees, archivedEmployees, deletedEmployees, duplicateEmployees } = useMemo(() => {
+  // Filtered lists by employment_status (clean, no duplication logic)
+  const { activeEmployees, inactiveEmployees, onLeaveEmployees, terminatedEmployees } = useMemo(() => {
     const filterEmployees = (empList) => {
       if (!searchTerm) return empList;
       const term = searchTerm.toLowerCase();
       return empList.filter(emp => 
         emp.full_name?.toLowerCase().includes(term) ||
         emp.email?.toLowerCase().includes(term) ||
-        emp.position?.toLowerCase().includes(term) ||
-        emp.team_name?.toLowerCase().includes(term)
+        emp.position?.toLowerCase().includes(term)
       );
     };
 
-    const excludeOwner = (list) => hasFullAccess ? list : list.filter(e => e.email !== OWNER_EMAIL);
-    const excludeInvisible = (list) => list.filter(e => e.email !== INVISIBLE_EMAIL);
-
-    // Detect duplicates: same name or email appearing multiple times
-    const allFiltered = excludeInvisible(employees);
-    const nameCounts = {};
-    const emailCounts = {};
-    
-    allFiltered.forEach(emp => {
-      const name = emp.full_name?.toLowerCase() || '';
-      const email = emp.email?.toLowerCase() || '';
-      if (name) nameCounts[name] = (nameCounts[name] || 0) + 1;
-      if (email) emailCounts[email] = (emailCounts[email] || 0) + 1;
-    });
-
-    const duplicates = allFiltered.filter(emp => {
-      const name = emp.full_name?.toLowerCase() || '';
-      const email = emp.email?.toLowerCase() || '';
-      return (name && nameCounts[name] > 1) || (email && emailCounts[email] > 1);
-    });
-
     return {
-      activeEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'active')))),
-      inactiveEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'inactive')))),
-      onLeaveEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'on_leave')))),
-      terminatedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'terminated')))),
-      duplicateEmployees: filterEmployees(duplicates)
+      activeEmployees: filterEmployees(employees.filter(e => e.employment_status === 'active')),
+      inactiveEmployees: filterEmployees(employees.filter(e => e.employment_status === 'inactive')),
+      onLeaveEmployees: filterEmployees(employees.filter(e => e.employment_status === 'on_leave')),
+      terminatedEmployees: filterEmployees(employees.filter(e => e.employment_status === 'terminated'))
     };
-  }, [employees, searchTerm, hasFullAccess]);
+  }, [employees, searchTerm]);
 
   const paginateEmployees = (empList) => {
     const start = (page - 1) * ITEMS_PER_PAGE;
@@ -479,225 +438,123 @@ export default function Empleados() {
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); setPage(1); }} className="space-y-4 sm:space-y-6">
            <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
              <TabsList className="bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 inline-flex min-w-max sm:min-w-0">
-               <TabsTrigger value="duplicates" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px] bg-red-50 text-red-700 data-[state=active]:bg-red-100">
-                 Duplicates ({duplicateEmployees.length})
+               <TabsTrigger value="invitations" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 Invitations ({invitations.length})
                </TabsTrigger>
                <TabsTrigger value="active" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
                  Active ({activeEmployees.length})
                </TabsTrigger>
-               <TabsTrigger value="pending" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                 Pending ({pendingEmployees.length})
+               <TabsTrigger value="inactive" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 Inactive ({inactiveEmployees.length})
                </TabsTrigger>
-               <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                 Invited ({invitedEmployees.length})
+               <TabsTrigger value="on_leave" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 On Leave ({onLeaveEmployees.length})
                </TabsTrigger>
-               <TabsTrigger value="archived" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                 Archived ({archivedEmployees.length})
-               </TabsTrigger>
-               <TabsTrigger value="deleted" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                 Deleted ({deletedEmployees.length})
+               <TabsTrigger value="terminated" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 Terminated ({terminatedEmployees.length})
                </TabsTrigger>
              </TabsList>
-           </div>
+            </div>
 
-          {/* DUPLICATES TAB */}
-           <TabsContent value="duplicates">
-             <Card className="mb-4 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+          {/* INVITATIONS TAB (EmployeeInvitation bridge) */}
+           <TabsContent value="invitations">
+             <Card className="mb-4 bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
                <CardContent className="p-4">
-                 <p className="text-sm text-red-800 dark:text-red-200">
-                   ⚠️ These employees appear to be duplicates (same name or email). Select and delete to clean up.
+                 <p className="text-sm text-amber-800 dark:text-amber-200">
+                   📧 Pre-registration invitations. Send email or delete as needed.
                  </p>
                </CardContent>
              </Card>
 
-             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-               <div className="flex items-center gap-3">
-                 <button
-                   onClick={() => {
-                     if (selectedPending.size === duplicateEmployees.length) {
-                       setSelectedPending(new Set());
-                     } else {
-                       setSelectedPending(new Set(duplicateEmployees.map(e => e.id || e.directory_id)));
-                     }
-                   }}
-                   className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
-                 >
-                   {selectedPending.size === duplicateEmployees.length && duplicateEmployees.length > 0
-                     ? <CheckSquare className="w-5 h-5 text-blue-600" />
-                     : <Square className="w-5 h-5" />
-                   }
-                   {selectedPending.size > 0 ? `${selectedPending.size} selected` : 'Select all'}
-                 </button>
-               </div>
-
-               {selectedPending.size > 0 && (
-                 <Button
-                   className="bg-red-600 hover:bg-red-700 text-white"
-                   onClick={() => {
-                     if (window.confirm(`Delete ${selectedPending.size} duplicate(s)?`)) {
-                       bulkDeleteMutation.mutate();
-                     }
-                   }}
-                   disabled={bulkDeleteMutation.isPending}
-                 >
-                   <Trash2 className="w-4 h-4 mr-2" />
-                   {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete Selected (${selectedPending.size})`}
-                 </Button>
-               )}
-             </div>
-
-             {duplicateEmployees.length === 0 ? (
+             {invitations.length === 0 ? (
                <Card className="p-8 text-center">
-                 <p className="text-slate-500">No duplicates found.</p>
+                 <p className="text-slate-500">No pending invitations.</p>
                </Card>
              ) : (
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                 {duplicateEmployees.map(emp => {
-                   const key = emp.id || emp.directory_id;
-                   const isSelected = selectedPending.has(key);
-                   return (
-                     <div
-                       key={key}
-                       className={`relative rounded-xl border-2 transition-all cursor-pointer ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-red-200'}`}
+               <>
+                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                   <div className="flex items-center gap-3">
+                     <button
                        onClick={() => {
-                         setSelectedPending(prev => {
-                           const next = new Set(prev);
-                           isSelected ? next.delete(key) : next.add(key);
-                           return next;
-                         });
+                         if (selectedPending.size === invitations.length) {
+                           setSelectedPending(new Set());
+                         } else {
+                           setSelectedPending(new Set(invitations.map(i => i.id)));
+                         }
                        }}
+                       className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
                      >
-                       {isSelected && (
-                         <div className="absolute top-2 right-2 z-10">
-                           <CheckSquare className="w-5 h-5 text-blue-600" />
+                       {selectedPending.size === invitations.length && invitations.length > 0
+                         ? <CheckSquare className="w-5 h-5 text-blue-600" />
+                         : <Square className="w-5 h-5" />
+                       }
+                       {selectedPending.size > 0 ? `${selectedPending.size} selected` : 'Select all'}
+                     </button>
+                   </div>
+
+                   {selectedPending.size > 0 && (
+                     <Button
+                       className="bg-blue-600 hover:bg-blue-700 text-white"
+                       onClick={() => bulkInviteMutation.mutate()}
+                       disabled={bulkInviteMutation.isPending}
+                     >
+                       {bulkInviteMutation.isPending ? 'Sending...' : `Send Selected (${selectedPending.size})`}
+                     </Button>
+                   )}
+                 </div>
+
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                   {invitations.map(inv => {
+                     const isSelected = selectedPending.has(inv.id);
+                     return (
+                       <div
+                         key={inv.id}
+                         className={`relative rounded-xl border-2 p-4 transition-all cursor-pointer ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-slate-200'}`}
+                         onClick={() => {
+                           setSelectedPending(prev => {
+                             const next = new Set(prev);
+                             isSelected ? next.delete(inv.id) : next.add(inv.id);
+                             return next;
+                           });
+                         }}
+                       >
+                         {isSelected && (
+                           <div className="absolute top-2 right-2 z-10">
+                             <CheckSquare className="w-5 h-5 text-blue-600" />
+                           </div>
+                         )}
+                         <div className="text-sm">
+                           <p className="font-semibold text-slate-900">{inv.first_name} {inv.last_name}</p>
+                           <p className="text-xs text-slate-500">{inv.email}</p>
+                           {inv.position && <p className="text-xs text-slate-600 mt-1">{inv.position}</p>}
+                           <p className="text-xs text-slate-400 mt-2">Status: <span className="font-medium capitalize">{inv.status}</span></p>
                          </div>
-                       )}
-                       <ModernEmployeeCard
-                         employee={emp}
-                         onboardingProgress={employeeProgress[emp.id]}
-                       />
-                     </div>
-                   );
-                 })}
-               </div>
+                       </div>
+                     );
+                   })}
+                 </div>
+               </>
              )}
            </TabsContent>
-
-          {/* PENDING TAB */}
-           <TabsContent value="pending">
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    if (selectedPending.size === pendingEmployees.length) {
-                      setSelectedPending(new Set());
-                    } else {
-                      setSelectedPending(new Set(pendingEmployees.map(e => e.id || e.directory_id)));
-                    }
-                  }}
-                  className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
-                >
-                  {selectedPending.size === pendingEmployees.length && pendingEmployees.length > 0
-                    ? <CheckSquare className="w-5 h-5 text-blue-600" />
-                    : <Square className="w-5 h-5" />
-                  }
-                  {selectedPending.size > 0 ? `${selectedPending.size} selected` : 'Select all'}
-                </button>
-              </div>
-
-              {selectedPending.size > 0 && (
-                <>
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => bulkInviteMutation.mutate()}
-                    disabled={bulkInviteMutation.isPending}
-                  >
-                    {bulkInviteMutation.isPending
-                      ? 'Sending...'
-                      : `Invite Selected (${selectedPending.size})`}
-                  </Button>
-                  <Button
-                    className="bg-red-600 hover:bg-red-700 text-white"
-                    onClick={() => {
-                      if (window.confirm(`Delete ${selectedPending.size} employee(s)?`)) {
-                        bulkDeleteMutation.mutate();
-                      }
-                    }}
-                    disabled={bulkDeleteMutation.isPending}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete Selected (${selectedPending.size})`}
-                  </Button>
-                </>
-              )}
-            </div>
-
-            {pendingEmployees.length === 0 ? (
-              <Card className="p-8 text-center">
-                <p className="text-slate-500">No pending employees — import a list or add one manually.</p>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                {pendingEmployees.map(emp => {
-                  const key = emp.id || emp.directory_id;
-                  const isSelected = selectedPending.has(key);
-                  return (
-                    <div
-                      key={key}
-                      className={`relative rounded-xl border-2 transition-all cursor-pointer ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-transparent'}`}
-                      onClick={() => {
-                        setSelectedPending(prev => {
-                          const next = new Set(prev);
-                          isSelected ? next.delete(key) : next.add(key);
-                          return next;
-                        });
-                      }}
-                    >
-                      {isSelected && (
-                        <div className="absolute top-2 right-2 z-10">
-                          <CheckSquare className="w-5 h-5 text-blue-600" />
-                        </div>
-                      )}
-                      <ModernEmployeeCard
-                        employee={emp}
-                        onInvite={(e) => { e?.stopPropagation?.(); inviteMutation.mutate(emp); }}
-                        isInviting={inviteMutation.isPending}
-                        showInviteButton={true}
-                        onboardingProgress={employeeProgress[emp.id]}
-                        onViewDetails={handleViewOnboarding}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </TabsContent>
-
-          {/* INVITED TAB */}
-          <TabsContent value="invited">
-            <Card className="mb-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-              <CardContent className="p-4">
-                <p className="text-sm text-blue-800 dark:text-blue-200">
-                  ℹ️ Invited employees are waiting to accept invitation and register.
-                </p>
-              </CardContent>
-            </Card>
-            <EmployeeGrid employees={invitedEmployees} showInviteButton={true} />
-          </TabsContent>
 
           {/* ACTIVE TAB */}
           <TabsContent value="active">
             <EmployeeGrid employees={activeEmployees} />
           </TabsContent>
 
-          {/* ARCHIVED TAB */}
-          <TabsContent value="archived">
-            <EmployeeGrid employees={archivedEmployees} />
+          {/* INACTIVE TAB */}
+          <TabsContent value="inactive">
+            <EmployeeGrid employees={inactiveEmployees} />
           </TabsContent>
 
-          {/* DELETED TAB */}
-          <TabsContent value="deleted">
-            <EmployeeGrid employees={deletedEmployees} />
+          {/* ON LEAVE TAB */}
+          <TabsContent value="on_leave">
+            <EmployeeGrid employees={onLeaveEmployees} />
+          </TabsContent>
+
+          {/* TERMINATED TAB */}
+          <TabsContent value="terminated">
+            <EmployeeGrid employees={terminatedEmployees} />
           </TabsContent>
         </Tabs>
 
