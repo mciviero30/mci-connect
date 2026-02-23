@@ -235,9 +235,9 @@ export default function Dashboard() {
   });
 
   const { data: assignments = [] } = useQuery({
-    queryKey: ['myAssignments', user?.email],
+    queryKey: ['myAssignments', user?.id],
     queryFn: async () => {
-      if (!user?.email) return [];
+      if (!user?.id) return [];
       const now = new Date();
       const weekStart = startOfWeek(now, { weekStartsOn: 1 });
       const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
@@ -246,7 +246,7 @@ export default function Dashboard() {
       const allAssignments = isAdmin 
         ? await base44.entities.JobAssignment.list('-date')
         : await base44.entities.JobAssignment.filter({
-            employee_email: user.email
+            user_id: user.id
           }, '-date');
 
       return allAssignments.filter(a => {
@@ -254,7 +254,7 @@ export default function Dashboard() {
         return assignDate >= weekStart && assignDate <= weekEnd;
       });
     },
-    enabled: !!user?.email && needsAssignmentData,
+    enabled: !!user?.id && needsAssignmentData,
     staleTime: 600000,
     gcTime: 900000,
     refetchOnMount: false,
