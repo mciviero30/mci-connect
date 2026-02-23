@@ -360,9 +360,9 @@ export default function Empleados() {
     });
 
     return {
-      pendingEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'pending' || e.employment_status === 'pending_invitation')))),
+      pendingEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'pending' || e.employment_status === 'pending' || e.isPending)))),
       invitedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'invited' || e.employment_status === 'invited')))),
-      activeEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'active' || e.employment_status === 'active')))),
+      activeEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => (e.dir_status === 'active' || e.employment_status === 'active') && !e.isPending)))),
       archivedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.dir_status === 'archived' || e.employment_status === 'archived')))),
       deletedEmployees: filterEmployees(excludeOwner(excludeInvisible(employees.filter(e => e.employment_status === 'deleted')))),
       duplicateEmployees: filterEmployees(duplicates)
