@@ -360,6 +360,12 @@ Deno.serve(async (req) => {
       metadata: { employee_id, period_start, period_end, file_hash: file_hash.substring(0, 16) + '...', job_update_count: jobsAppliedCount, transaction_id: payrollTransaction?.id }
     }).catch(err => console.warn('[confirmPayrollBatch] Audit log failed (non-critical):', err.message));
 
+    // Mark idempotency as completed
+    await base44.asServiceRole.entities.IdempotencyRecord.update(idempotencyRecord.id, {
+      status: 'completed',
+      entity_id: batch.id
+    }).catch(e => console.warn('[confirmPayrollBatch] IdempotencyRecord complete update failed:', e.message));
+
     return Response.json({
       success: true,
       batch_id: batch.id,
