@@ -760,13 +760,27 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
     }
   ];
 
+  const adminNavigation_PEOPLE = {
+    section: 'PEOPLE',
+    items: [
+      { title: 'Employees', url: createPageUrl("Empleados"), icon: Users },
+      { title: 'My Profile', url: createPageUrl("EmployeeProfile"), icon: User },
+      { title: 'Teams', url: createPageUrl("Teams"), icon: MapPin },
+      { title: 'Performance', url: createPageUrl("PerformanceManagement"), icon: Award },
+      { title: 'Skill Matrix', url: createPageUrl("SkillMatrix"), icon: Award },
+      { title: 'Goals & OKRs', url: createPageUrl("Goals"), icon: Target },
+      { title: 'Team Goals', url: createPageUrl("TeamGoals"), icon: Users },
+      { title: 'Recognitions', url: createPageUrl("Recognitions"), icon: Award },
+    ]
+  };
+
   const employeeNavigation = [
     {
       section: 'HOME',
       icon: LayoutDashboard,
       items: [
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
-        { title: 'My Profile', url: createPageUrl("MyProfile"), icon: User },
+        { title: 'My Profile', url: createPageUrl("EmployeeProfile"), icon: User },
         { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
         { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
         { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
