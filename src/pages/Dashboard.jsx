@@ -159,15 +159,15 @@ export default function Dashboard() {
 
   // DATA QUERIES - Optimized with increased staleTime and conditional loading
   const { data: timeEntries = [] } = useQuery({
-    queryKey: ['myTimeEntries', user?.email],
+    queryKey: ['myTimeEntries', user?.id],
     queryFn: async () => {
-      if (!user?.email) return [];
+      if (!user?.id) return [];
       return base44.entities.TimeEntry.filter({
-        employee_email: user.email,
+        user_id: user.id,
         status: 'approved'
       }, '-date', 100);
     },
-    enabled: !!user?.email && needsEmployeeData,
+    enabled: !!user?.id && needsEmployeeData,
     staleTime: 600000,
     gcTime: 900000,
     refetchOnMount: false,
