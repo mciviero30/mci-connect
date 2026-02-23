@@ -162,44 +162,28 @@ export default function Empleados() {
     );
   }
 
-  // SSOT: EmployeeDirectory is the only source for employee listings
+  // SSOT: EmployeeDirectory is the single source of truth
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      // Fetch from EmployeeDirectory, then enrich with User data
       const directory = await base44.entities.EmployeeDirectory.list('-created_date');
-      
-      // PHASE 5: Defensive Logging
-      if (import.meta.env?.DEV) {
-        const missingUserIds = directory.filter(d => !d.user_id && d.status === 'active');
-        if (missingUserIds.length > 0) {
-          console.warn('⚠️ SSOT WARNING: Active EmployeeDirectory records missing user_id', {
-            count: missingUserIds.length,
-            emails: missingUserIds.map(d => d.employee_email)
-          });
-        }
+
+      // Batch fetch users only once (not N+1)
+      const userIds = [...new Set(directory.filter(d => d.user_id).map(d => d.user_id))];
+      let userMap = {};
+      if (userIds.length > 0) {
+        const allUsers = await base44.entities.User.list();
+        userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
       }
-      
-      // Enrich with User entity data (for employment_status, role, etc.)
-      const userIds = directory.filter(d => d.user_id).map(d => d.user_id);
-      const users = await Promise.all(
-        userIds.map(id => base44.entities.User.filter({ id }).catch(() => []))
-      );
-      const userMap = users.flat().reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
-      
+
       return directory.map(d => {
-        const user = userMap[d.user_id];
-        
-        // PHASE 5: Defensive Logging
-        if (import.meta.env?.DEV && !d.user_id && d.status === 'active') {
-          console.error('❌ CRITICAL: Active employee missing user_id', { 
-            email: d.employee_email,
-            full_name: d.full_name 
-          });
-        }
-        
+        const user = d.user_id ? userMap[d.user_id] : null;
+        // Map EmployeeDirectory.status to employment_status for UI
+        const dir_status = d.status || 'pending';
+        const employment_status = user?.employment_status || dir_status;
         return {
           id: d.user_id || d.id,
+          directory_id: d.id,
           email: d.employee_email,
           full_name: d.full_name,
           first_name: d.first_name,
@@ -210,13 +194,13 @@ export default function Empleados() {
           team_id: d.team_id,
           team_name: d.team_name,
           profile_photo_url: d.profile_photo_url,
-          // User entity data
-          employment_status: user?.employment_status || 'active',
+          employment_status,
+          dir_status,
           role: user?.role || 'user',
           hourly_rate: user?.hourly_rate,
           onboarding_completed: user?.onboarding_completed,
           invitation_count: user?.invitation_count,
-          last_invitation_sent: user?.last_invitation_sent
+          last_invitation_sent: user?.last_invitation_sent,
         };
       });
     },
