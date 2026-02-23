@@ -313,9 +313,9 @@ function PreviewStep({ previewData, onConfirmed, onBack }) {
           <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
           <div>
             <p className="text-sm font-semibold text-amber-800">
-              {summary.jobs_not_found} job(s) not matched in system
+              {summary.jobs_not_found} job(s) not matched — se crearán como placeholders
             </p>
-            <p className="text-xs text-amber-600 mt-0.5">All jobs must be matched before confirmation is allowed.</p>
+            <p className="text-xs text-amber-600 mt-0.5">Puedes confirmar igualmente. Los jobs sin match se importarán como placeholders.</p>
           </div>
         </div>
       )}
