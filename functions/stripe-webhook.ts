@@ -7,30 +7,35 @@ import Stripe from 'npm:stripe@17.5.0';
  * This prevents double-processing on Stripe retries regardless of Transaction state.
  */
 
-async function checkAndClaimIdempotency(base44, stripeEventId, mutationType) {
-  // Check if event was already processed
-  const existing = await base44.asServiceRole.entities.IdempotencyRecord.filter({
-    mutation_id: stripeEventId
-  });
-  if (existing.length > 0) {
-    console.log(`⚠️ Duplicate Stripe event - already processed: ${stripeEventId}`);
-    return { isDuplicate: true, record: existing[0] };
+async function claimIdempotency(base44, stripeEventId, mutationType) {
+  try {
+    const record = await base44.asServiceRole.entities.IdempotencyRecord.create({
+      request_id: stripeEventId,
+      mutation_id: stripeEventId,
+      mutation_type: mutationType,
+      user_id: 'stripe-webhook',
+      entity_type: 'Payment',
+      entity_id: stripeEventId,
+      created_at: new Date().toISOString(),
+      is_permanent: true,
+      status: 'pending',
+    });
+
+    console.log(`🔐 Idempotency claimed: ${stripeEventId}`);
+    return { isDuplicate: false, record };
+
+  } catch (err) {
+    // Unique constraint violation = already processed
+    if (
+      err.message?.toLowerCase().includes('unique') ||
+      err.message?.toLowerCase().includes('duplicate')
+    ) {
+      console.log(`⚠️ Duplicate Stripe event (atomic guard): ${stripeEventId}`);
+      return { isDuplicate: true };
+    }
+
+    throw err;
   }
-
-  // Claim the event atomically by creating the record (pending)
-  const record = await base44.asServiceRole.entities.IdempotencyRecord.create({
-    request_id: stripeEventId,
-    mutation_id: stripeEventId,
-    mutation_type: mutationType,
-    user_id: 'stripe-webhook',
-    entity_type: 'Payment',
-    entity_id: stripeEventId,
-    created_at: new Date().toISOString(),
-    is_permanent: true,
-    status: 'pending',
-  });
-
-  return { isDuplicate: false, record };
 }
 
 async function markIdempotencyComplete(base44, recordId, entityId) {
