@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
           full_name: fullName,
           hire_date: new Date().toISOString().split('T')[0], // Today's date
           employment_status: "active",
-          is_active: true,
-          user_id: null // No user yet - will be added when invited
+          is_active: true
+          // Skip user_id - don't include it at all if not required
         });
 
         result.created++;
