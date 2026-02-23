@@ -8,10 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Banknote, Plus, Lock, CheckCircle, DollarSign, Shield } from 'lucide-react';
+import { Banknote, Plus, Lock, CheckCircle, DollarSign, Shield, Upload } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { createPageUrl } from '@/utils';
 
 const statusBadgeConfig = {
   draft: { label: 'Draft', className: 'bg-slate-100 text-slate-800' },
@@ -28,7 +27,7 @@ const CreateBatchModal = ({ open, onClose, onSuccess }) => {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      return await base44.asServiceRole.entities.PayrollBatch.create({
+      return await base44.entities.PayrollBatch.create({
         period_start: data.period_start,
         period_end: data.period_end,
         status: 'draft'
@@ -87,6 +86,127 @@ const CreateBatchModal = ({ open, onClose, onSuccess }) => {
   );
 };
 
+// ==================== IMPORT HISTORICAL MODAL ====================
+const ImportHistoricalModal = ({ open, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({ period_start: '', period_end: '', csvFile: null });
+  const [preview, setPreview] = useState(null);
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFormData({ ...formData, csvFile: file });
+
+    // Parse CSV for preview
+    const text = await file.text();
+    const lines = text.split('\n').filter(l => l.trim());
+    const headers = lines[0]?.split(',') || [];
+    const data = lines.slice(1, 4).map(line => line.split(','));
+    setPreview({ headers, data });
+  };
+
+  const importMutation = useMutation({
+    mutationFn: async (data) => {
+      const fileContent = await data.csvFile.text();
+      return await base44.functions.invoke('importHistoricalPayrollBatch', {
+        period_start: data.period_start,
+        period_end: data.period_end,
+        csv_content: fileContent
+      });
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
+      toast.success('Historical payroll imported');
+      onSuccess(result.batch_id);
+      onClose();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    }
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Import Historical Payroll</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium">Period Start</label>
+              <Input
+                type="date"
+                value={formData.period_start}
+                onChange={(e) => setFormData({ ...formData, period_start: e.target.value })}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Period End</label>
+              <Input
+                type="date"
+                value={formData.period_end}
+                onChange={(e) => setFormData({ ...formData, period_end: e.target.value })}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium">CSV File (employee_id, regular_hours, overtime_hours, commission_total)</label>
+            <Input
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+              className="mt-1"
+            />
+          </div>
+
+          {preview && (
+            <div className="border rounded p-4 bg-slate-50">
+              <p className="text-sm font-medium mb-2">Preview (first 3 rows)</p>
+              <div className="overflow-x-auto">
+                <table className="text-xs border-collapse">
+                  <thead>
+                    <tr>
+                      {preview.headers.map((h, i) => (
+                        <th key={i} className="border px-2 py-1 text-left">{h.trim()}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {preview.data.map((row, i) => (
+                      <tr key={i}>
+                        {row.map((cell, j) => (
+                          <td key={j} className="border px-2 py-1">{cell.trim()}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={onClose}>Cancel</Button>
+            <Button
+              onClick={() => importMutation.mutate(formData)}
+              disabled={!formData.period_start || !formData.period_end || !formData.csvFile || importMutation.isPending}
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8]"
+            >
+              {importMutation.isPending ? 'Importing...' : 'Import Batch'}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ==================== CONFIRMATION DIALOG ====================
 const ConfirmActionDialog = ({ open, title, description, onConfirm, isLoading, onCancel }) => {
   return (
@@ -111,49 +231,68 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
   const toast = useToast();
   const [confirmAction, setConfirmAction] = useState(null);
 
-  // Fetch allocations
+  // Fetch allocations with batch loaded employee data (NO N+1)
   const { data: allocations = [], isLoading: allocLoading } = useQuery({
     queryKey: ['payrollAllocations', batch.id],
     queryFn: async () => {
-      const allocs = await base44.asServiceRole.entities.PayrollAllocation.filter(
+      const allocs = await base44.entities.PayrollAllocation.filter(
         { batch_id: batch.id },
         '',
         1000
       );
 
-      // Enrich with employee names
-      const enriched = await Promise.all(
-        (allocs || []).map(async (alloc) => {
-          const profiles = await base44.asServiceRole.entities.EmployeeProfile.filter(
-            { id: alloc.employee_profile_id },
-            '',
-            1
-          );
-          const profile = profiles?.[0];
-          const user = profile?.user_id
-            ? (await base44.asServiceRole.entities.User.filter({ id: profile.user_id }, '', 1))?.[0]
-            : null;
+      // Extract unique profile IDs
+      const uniqueProfileIds = [...new Set((allocs || []).map(a => a.employee_profile_id))];
 
-          return {
-            ...alloc,
-            employee_name: user?.full_name || profile?.first_name || 'Unknown'
-          };
-        })
+      // Batch fetch profiles
+      const profiles = await Promise.all(
+        uniqueProfileIds.map(pid =>
+          base44.entities.EmployeeProfile.filter({ id: pid }, '', 1).then(p => p?.[0])
+        )
       );
-      return enriched;
+
+      // Extract unique user IDs
+      const uniqueUserIds = [...new Set(profiles.filter(Boolean).map(p => p.user_id))];
+
+      // Batch fetch users
+      const users = await Promise.all(
+        uniqueUserIds.map(uid =>
+          base44.entities.User.filter({ id: uid }, '', 1).then(u => u?.[0])
+        )
+      );
+
+      // Create lookup maps
+      const profileMap = Object.fromEntries(profiles.filter(Boolean).map(p => [p.id, p]));
+      const userMap = Object.fromEntries(users.filter(Boolean).map(u => [u.id, u]));
+
+      // Enrich allocations locally
+      return (allocs || []).map(alloc => {
+        const profile = profileMap[alloc.employee_profile_id];
+        const user = profile ? userMap[profile.user_id] : null;
+        return {
+          ...alloc,
+          employee_name: user?.full_name || profile?.first_name || 'Unknown'
+        };
+      });
     },
     enabled: !!batch.id
   });
 
+  // Refetch selected batch explicitly
+  const refetchBatch = async () => {
+    const updated = await base44.entities.PayrollBatch.filter({ id: batch.id }, '', 1);
+    return updated?.[0];
+  };
+
   // State machine mutations
   const generateMutation = useMutation({
     mutationFn: () =>
-      base44.asServiceRole.functions.invoke('generatePayrollBatch', { batch_id: batch.id }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
+      base44.functions.invoke('generatePayrollBatch', { batch_id: batch.id }),
+    onSuccess: async () => {
+      const refreshedBatch = await refetchBatch();
       queryClient.invalidateQueries({ queryKey: ['payrollAllocations', batch.id] });
       toast.success('Payroll generated');
-      onActionSuccess();
+      onActionSuccess(refreshedBatch);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -162,12 +301,13 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
 
   const lockMutation = useMutation({
     mutationFn: () =>
-      base44.asServiceRole.functions.invoke('lockPayrollBatch', { batch_id: batch.id }),
-    onSuccess: () => {
+      base44.functions.invoke('lockPayrollBatch', { batch_id: batch.id }),
+    onSuccess: async () => {
+      const refreshedBatch = await refetchBatch();
       queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
       toast.success('Batch locked');
       setConfirmAction(null);
-      onActionSuccess();
+      onActionSuccess(refreshedBatch);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -176,12 +316,13 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
 
   const approveMutation = useMutation({
     mutationFn: () =>
-      base44.asServiceRole.functions.invoke('approvePayrollBatch', { batch_id: batch.id }),
-    onSuccess: () => {
+      base44.functions.invoke('approvePayrollBatch', { batch_id: batch.id }),
+    onSuccess: async () => {
+      const refreshedBatch = await refetchBatch();
       queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
       toast.success('Batch approved');
       setConfirmAction(null);
-      onActionSuccess();
+      onActionSuccess(refreshedBatch);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -190,13 +331,14 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
 
   const markPaidMutation = useMutation({
     mutationFn: () =>
-      base44.asServiceRole.functions.invoke('markPayrollBatchPaid', { batch_id: batch.id }),
-    onSuccess: () => {
+      base44.functions.invoke('markPayrollBatchPaid', { batch_id: batch.id }),
+    onSuccess: async () => {
+      const refreshedBatch = await refetchBatch();
       queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
       queryClient.invalidateQueries({ queryKey: ['payrollAllocations', batch.id] });
       toast.success('Batch marked as paid');
       setConfirmAction(null);
-      onActionSuccess();
+      onActionSuccess(refreshedBatch);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -368,7 +510,9 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
 export default function PayrollDashboard() {
   const { t } = useLanguage();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState(null);
+  const queryClient = useQueryClient();
 
   // Check admin access
   const { data: currentUser } = useQuery({
@@ -399,10 +543,25 @@ export default function PayrollDashboard() {
   const { data: batches = [], isLoading } = useQuery({
     queryKey: ['payrollBatches'],
     queryFn: async () => {
-      const result = await base44.asServiceRole.entities.PayrollBatch.list('-period_start', 100);
+      const result = await base44.entities.PayrollBatch.list('-period_start', 100);
       return result || [];
     }
   });
+
+  const handleBatchDetailActionSuccess = async (refreshedBatch) => {
+    if (refreshedBatch) {
+      setSelectedBatch(refreshedBatch);
+    }
+  };
+
+  const handleImportSuccess = async (batchId) => {
+    // Refetch batch and navigate to detail view
+    const newBatch = await base44.entities.PayrollBatch.filter({ id: batchId }, '', 1);
+    if (newBatch?.[0]) {
+      setSelectedBatch(newBatch[0]);
+      queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
+    }
+  };
 
   if (selectedBatch) {
     return (
@@ -411,10 +570,7 @@ export default function PayrollDashboard() {
           <BatchDetailView
             batch={selectedBatch}
             onBack={() => setSelectedBatch(null)}
-            onActionSuccess={() => {
-              const updated = batches.find(b => b.id === selectedBatch.id);
-              if (updated) setSelectedBatch({ ...updated });
-            }}
+            onActionSuccess={handleBatchDetailActionSuccess}
           />
         </div>
       </div>
@@ -435,13 +591,23 @@ export default function PayrollDashboard() {
               <p className="text-slate-600 dark:text-slate-400">Manage payroll batches and allocations</p>
             </div>
           </div>
-          <Button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Batch
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowImportModal(true)}
+              variant="outline"
+              className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Import Historical
+            </Button>
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Create Batch
+            </Button>
+          </div>
         </div>
 
         {/* Batches Table */}
@@ -518,6 +684,13 @@ export default function PayrollDashboard() {
           open={showCreateModal}
           onClose={() => setShowCreateModal(false)}
           onSuccess={() => setShowCreateModal(false)}
+        />
+
+        {/* Import Historical Modal */}
+        <ImportHistoricalModal
+          open={showImportModal}
+          onClose={() => setShowImportModal(false)}
+          onSuccess={handleImportSuccess}
         />
       </div>
     </div>

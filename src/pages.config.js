@@ -156,8 +156,9 @@ import Papelera from './pages/Papelera';
 import PaymentReconciliation from './pages/PaymentReconciliation';
 import PaymentSuccess from './pages/PaymentSuccess';
 import PayrollAutoFlow from './pages/PayrollAutoFlow';
-import PayrollImportLedger from './pages/PayrollImportLedger';
+import PayrollDashboard from './pages/PayrollDashboard';
 import PerDiem from './pages/PerDiem';
+import PayrollImportLedger from './pages/PayrollImportLedger';
 import payrollimportledgerV2 from './pages/PayrollImportLedger_v2';
 import PerformanceManagement from './pages/PerformanceManagement';
 import ProfitabilityDashboard from './pages/ProfitabilityDashboard';
@@ -199,7 +200,6 @@ import VerRFI from './pages/VerRFI';
 import VerSubmittal from './pages/VerSubmittal';
 import WelcomeMessage from './pages/WelcomeMessage';
 import WorkAuthorizations from './pages/WorkAuthorizations';
-import PayrollDashboard from './pages/PayrollDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -313,8 +313,9 @@ export const PAGES = {
     "PaymentReconciliation": PaymentReconciliation,
     "PaymentSuccess": PaymentSuccess,
     "PayrollAutoFlow": PayrollAutoFlow,
-    "PayrollImportLedger": PayrollImportLedger,
+    "PayrollDashboard": PayrollDashboard,
     "PerDiem": PerDiem,
+    "PayrollImportLedger": PayrollImportLedger,
     "PayrollImportLedger_v2": payrollimportledgerV2,
     "PerformanceManagement": PerformanceManagement,
     "ProfitabilityDashboard": ProfitabilityDashboard,
@@ -356,7 +357,6 @@ export const PAGES = {
     "VerSubmittal": VerSubmittal,
     "WelcomeMessage": WelcomeMessage,
     "WorkAuthorizations": WorkAuthorizations,
-    "PayrollDashboard": PayrollDashboard,
 }
 
 export const pagesConfig = {
