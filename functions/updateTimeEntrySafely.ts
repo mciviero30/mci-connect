@@ -27,6 +27,16 @@ Deno.serve(async (req) => {
 
     const existingRecord = records[0];
 
+    // GUARD: Check if payroll-locked
+    if (existingRecord.is_locked === true) {
+      return Response.json({
+        error: `This time entry has been locked by payroll batch ${existingRecord.payroll_batch_id || '(unknown)'}. Paid records cannot be edited or deleted.`,
+        is_locked: true,
+        payroll_batch_id: existingRecord.payroll_batch_id,
+        paid_at: existingRecord.paid_at
+      }, { status: 403 });
+    }
+
     // GUARD: Check if billed
     if (existingRecord.billed_at) {
       // Admin override: Allow unbilling
