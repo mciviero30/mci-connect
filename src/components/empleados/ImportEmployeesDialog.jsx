@@ -131,18 +131,33 @@ export default function ImportEmployeesDialog({ open, onClose }) {
         }
 
         try {
+          // Save full data to PendingEmployee (SSN, DOB, t-shirt, address, etc.)
+          await base44.entities.PendingEmployee.create({
+            first_name: row.first_name,
+            last_name: row.last_name,
+            email: row.employee_email || "",
+            phone: row.phone || "",
+            position: row.position || "",
+            ssn_tax_id: row.ssn_tax_id || "",
+            address: row.address || "",
+            dob: row.dob || "",
+            tshirt_size: row.tshirt_size || "",
+            status: "pending",
+          });
+
+          // Also save to EmployeeDirectory for directory visibility
           await base44.entities.EmployeeDirectory.create({
-              employee_email: row.employee_email || "",
-              full_name: row.full_name,
-              first_name: row.first_name,
-              last_name: row.last_name,
-              position: row.position,
-              department: row.department || "",
-              phone: row.phone,
-              status: "pending",
-              sync_source: "manual",
-              last_synced_at: new Date().toISOString(),
-            });
+            employee_email: row.employee_email || "",
+            full_name: row.full_name,
+            first_name: row.first_name,
+            last_name: row.last_name,
+            position: row.position || "",
+            phone: row.phone || "",
+            status: "pending",
+            sync_source: "manual",
+            last_synced_at: new Date().toISOString(),
+          });
+
           success.push(row);
           if (emailKey) existingEmails.add(emailKey);
         } catch (err) {
