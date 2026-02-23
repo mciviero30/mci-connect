@@ -444,6 +444,12 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[confirmPayrollBatch] Fatal error:', error);
+    if (idempotencyRecord?.id) {
+      await base44.asServiceRole.entities.IdempotencyRecord.update(
+        idempotencyRecord.id,
+        { status: 'failed', error_message: error.message || 'Unhandled fatal error' }
+      ).catch(() => {});
+    }
     return Response.json({ success: false, error: error.message || 'Failed to confirm payroll batch' }, { status: 500 });
   }
 });
