@@ -41,15 +41,19 @@ Deno.serve(async (req) => {
     const invitation = invitations[0];
 
     // 2. Create EmployeeProfile linked to user
-    // STRICT: hire_date is required in schema
-    const hireDate = invitation.hire_date || new Date().toISOString().split('T')[0];
+    // STRICT: hire_date must exist in invitation — no silent defaults
+    if (!invitation.hire_date) {
+      return Response.json({
+        error: 'Invitation missing hire_date. Cannot create EmployeeProfile.'
+      }, { status: 400 });
+    }
 
     const profileData = {
       user_id: user_id,
       first_name: invitation.first_name || full_name?.split(' ')[0] || '',
       last_name: invitation.last_name || full_name?.split(' ')[1] || '',
       position: invitation.position || null,
-      hire_date: hireDate,
+      hire_date: invitation.hire_date,
       employment_status: 'active',
       is_active: true,
       employment_type: 'full_time',

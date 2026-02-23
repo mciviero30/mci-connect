@@ -32,6 +32,10 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
 
        if (employee?.id) {
          // UPDATE: User + EmployeeProfile
+         if (!data.hire_date) {
+           throw new Error('hire_date is required');
+         }
+
          const userPayload = { full_name: fullName };
          await base44.entities.User.update(employee.id, userPayload);
 
@@ -42,7 +46,7 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
            phone: data.phone || null,
            address: data.address || null,
            t_shirt_size: data.tshirt_size || null,
-           hire_date: data.hire_date || null,
+           hire_date: data.hire_date,
            employment_type: data.employment_type || 'W2',
            employment_status: data.employment_status || 'active'
          };
