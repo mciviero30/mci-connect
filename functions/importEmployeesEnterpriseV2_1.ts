@@ -168,8 +168,12 @@ Deno.serve(async (req) => {
       try {
         // STEP A: Find or create User
         let userId;
-        if (existingUsers.has(emp.email)) {
-          userId = existingUsers.get(emp.email);
+        let existingUser = null;
+        const usersByEmail = await base44.asServiceRole.entities.User.filter({ email: emp.email });
+        
+        if (usersByEmail.length > 0) {
+          existingUser = usersByEmail[0];
+          userId = existingUser.id;
         } else {
           const fullName = `${emp.first_name || ''} ${emp.last_name || ''}`.trim();
           const newUser = await base44.asServiceRole.entities.User.create({
@@ -180,11 +184,12 @@ Deno.serve(async (req) => {
           userId = newUser.id;
           rollback.created_users.push(userId);
           result.created_users++;
-          existingUsers.set(emp.email, userId);
         }
 
         // STEP B: Find or handle EmployeeProfile
-        const profileExists = existingProfiles.has(userId);
+        const profilesByUserId = await base44.asServiceRole.entities.EmployeeProfile.filter({ user_id: userId });
+        const profileExists = profilesByUserId.length > 0;
+        const existingProfile = profileExists ? profilesByUserId[0] : null;
         const fullName = `${emp.first_name || ''} ${emp.last_name || ''}`.trim();
 
         if (!profileExists) {
