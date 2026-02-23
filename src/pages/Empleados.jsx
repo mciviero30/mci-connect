@@ -30,22 +30,44 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
        const lastName = data.last_name?.charAt(0).toUpperCase() + data.last_name?.slice(1).toLowerCase() || '';
        const fullName = firstName && lastName ? `${firstName} ${lastName}`.trim() : '';
 
-       const payload = {
-         ...data,
-         first_name: firstName,
-         last_name: lastName,
-         full_name: fullName,
-         hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
-         role: data.role || 'user',
-         status: 'pending'
-       };
+       if (employee?.id) {
+         // UPDATE: User + EmployeeProfile
+         const userPayload = { full_name: fullName };
+         await base44.entities.User.update(employee.id, userPayload);
 
-       // Update PendingEmployee record if editing
-       if (employee?.pending_id) {
-         return await base44.entities.PendingEmployee.update(employee.pending_id, payload);
+         const profilePayload = {
+           first_name: firstName,
+           last_name: lastName,
+           hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
+           phone: data.phone || null,
+           address: data.address || null,
+           t_shirt_size: data.tshirt_size || null,
+           hire_date: data.hire_date || null,
+           employment_type: data.employment_type || 'W2',
+           status: data.status || 'active'
+         };
+         return await base44.entities.EmployeeProfile.update(employee.profile_id, profilePayload);
        } else {
-         // Create new PendingEmployee record
-         return await base44.entities.PendingEmployee.create(payload);
+         // CREATE: New User + EmployeeProfile
+         const newUser = await base44.entities.User.create({
+           email: data.email,
+           full_name: fullName,
+           role: 'user',
+           employment_status: 'active'
+         });
+
+         return await base44.entities.EmployeeProfile.create({
+           user_id: newUser.id,
+           first_name: firstName,
+           last_name: lastName,
+           hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
+           phone: data.phone || null,
+           address: data.address || null,
+           t_shirt_size: data.tshirt_size || null,
+           hire_date: data.hire_date || null,
+           employment_type: data.employment_type || 'W2',
+           status: 'active'
+         });
        }
      },
      onSuccess: async () => {
