@@ -85,8 +85,7 @@ export default function Teams() {
       // VALIDATION: Check for associated employees
       const associatedEmployees = employees.filter(e => 
         (e.team_id === team.id || e.team_name === team.team_name) &&
-        e.employment_status !== 'deleted' &&
-        e.employment_status !== 'archived'
+        e.status !== 'archived'
       );
 
       // VALIDATION: Check for associated jobs
