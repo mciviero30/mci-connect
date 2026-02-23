@@ -61,6 +61,38 @@ Deno.serve(async (req) => {
 
     const file_hash = crypto.createHash('sha256').update(hashInput).digest('hex');
 
+    // ============================================================
+    // IDEMPOTENCY CLAIM — FIRST MUTATION, before anything else
+    // ============================================================
+    let idempotencyRecord;
+    try {
+      idempotencyRecord = await base44.asServiceRole.entities.IdempotencyRecord.create({
+        request_id: file_hash,
+        mutation_id: file_hash,
+        mutation_type: 'create_payroll',
+        user_id: user.email,
+        entity_type: 'PayrollBatch',
+        entity_id: file_hash,
+        created_at: new Date().toISOString(),
+        is_permanent: true,
+        status: 'pending',
+      });
+      console.log(`🔐 Payroll idempotency claimed: ${file_hash}`);
+    } catch (err) {
+      if (
+        err.message?.toLowerCase().includes('unique') ||
+        err.message?.toLowerCase().includes('duplicate')
+      ) {
+        console.log(`⚠️ Duplicate payroll batch attempt: ${file_hash}`);
+        return Response.json({
+          success: true,
+          idempotent: true,
+          message: 'Payroll batch already processed.'
+        });
+      }
+      throw err;
+    }
+
     // Block on file_hash duplicate
     const existingByHash = await base44.asServiceRole.entities.PayrollBatch.filter({
       file_hash,
