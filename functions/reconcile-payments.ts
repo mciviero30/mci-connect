@@ -26,11 +26,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Transaction or invoice not found' }, { status: 404 });
     }
 
-    // Validate amounts match (within $1 tolerance)
-    const amountDiff = Math.abs(transaction.amount - invoice.total);
+    // Validate amounts match against remaining balance (within $1 tolerance)
+    const invoiceBalance = invoice.balance ?? (invoice.total - (invoice.amount_paid || 0));
+    const amountDiff = Math.abs(transaction.amount - invoiceBalance);
     if (amountDiff > 1) {
       return Response.json({ 
-        error: `Amount mismatch: Transaction $${transaction.amount} vs Invoice $${invoice.total}`,
+        error: `Amount mismatch: Transaction $${transaction.amount} vs Invoice balance $${invoiceBalance.toFixed(2)}`,
         warning: true
       }, { status: 400 });
     }

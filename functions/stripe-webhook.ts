@@ -46,7 +46,18 @@ Deno.serve(async (req) => {
 
       if (subscriptionId) {
         console.log('💰 Subscription payment received:', invoice.id);
-        
+
+        // IDEMPOTENCY GUARD: Check if this payment_intent was already processed
+        if (invoice.payment_intent) {
+          const existing = await base44.asServiceRole.entities.Transaction.filter({
+            stripe_payment_intent_id: invoice.payment_intent
+          });
+          if (existing.length > 0) {
+            console.log('⚠️ Duplicate webhook - invoice.paid already processed:', invoice.payment_intent);
+            return Response.json({ success: true, idempotent: true });
+          }
+        }
+
         // Find recurring invoice template
         const templates = await base44.asServiceRole.entities.RecurringInvoice.filter({
           stripe_subscription_id: subscriptionId
@@ -127,6 +138,17 @@ Deno.serve(async (req) => {
       if (!invoiceId) {
         console.error('❌ No invoice_id in metadata');
         return Response.json({ error: 'No invoice_id' }, { status: 400 });
+      }
+
+      // IDEMPOTENCY GUARD: Check if this payment_intent was already processed
+      if (session.payment_intent) {
+        const existing = await base44.asServiceRole.entities.Transaction.filter({
+          stripe_payment_intent_id: session.payment_intent
+        });
+        if (existing.length > 0) {
+          console.log('⚠️ Duplicate webhook - payment_intent already processed:', session.payment_intent);
+          return Response.json({ success: true, idempotent: true });
+        }
       }
 
       // Get invoice
