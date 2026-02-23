@@ -167,12 +167,28 @@ export default function Empleados() {
     queryKey: ['employees'],
     queryFn: async () => {
       try {
-        // Fetch all sources
-        const [allUsers, directory, pending] = await Promise.all([
-          base44.entities.User.list('-created_date').catch(() => []),
-          base44.entities.EmployeeDirectory.list('-created_date').catch(() => []),
-          base44.entities.PendingEmployee.list('-created_date').catch(() => []),
-        ]);
+        // Fetch each source independently
+        let allUsers = [];
+        let directory = [];
+        let pending = [];
+
+        try {
+          allUsers = await base44.entities.User.list();
+        } catch (e) {
+          console.error('User.list() failed:', e);
+        }
+
+        try {
+          directory = await base44.entities.EmployeeDirectory.list('-created_date');
+        } catch (e) {
+          console.error('EmployeeDirectory.list() failed:', e);
+        }
+
+        try {
+          pending = await base44.entities.PendingEmployee.list('-created_date');
+        } catch (e) {
+          console.error('PendingEmployee.list() failed:', e);
+        }
 
         // Build user map
         const userMap = allUsers.reduce((acc, u) => ({ ...acc, [u.id]: u }), {});
