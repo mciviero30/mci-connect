@@ -70,21 +70,28 @@ function UploadStep({ onPreviewReady }) {
       ]);
 
       // Step 1: Parse Excel
-      const parsed = await base44.functions.invoke("parsePayrollExcel", {
+      const parseResult = await base44.functions.invoke("parsePayrollExcel", {
         hourly_file_base64,
         driving_file_base64,
       });
 
+      // Handle both direct response and wrapped response
+      const parsed = parseResult?.data || parseResult;
+
       if (!parsed?.employees?.length) {
-        throw new Error("No employee data found in the uploaded files.");
+        throw new Error(
+          parsed?.error ||
+          `No employee data found in the uploaded files. (success=${parsed?.success}, count=${parsed?.employee_count})`
+        );
       }
 
       // Step 2: Preview
-      const preview = await base44.functions.invoke("previewPayrollImport", {
+      const previewResult = await base44.functions.invoke("previewPayrollImport", {
         employees: parsed.employees,
         period_start: periodStart,
         period_end: periodEnd,
       });
+      const preview = previewResult?.data || previewResult;
 
       if (!preview?.success) {
         throw new Error(preview?.error || "Preview generation failed.");
