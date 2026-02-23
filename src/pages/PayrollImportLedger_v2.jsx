@@ -244,7 +244,7 @@ function PreviewStep({ previewData, onConfirmed, onBack }) {
 
   const hasUnmatchedEmployees = summary.employees_not_found > 0;
   const hasUnmatchedJobs = summary.jobs_not_found > 0;
-  const canConfirm = !hasUnmatchedEmployees && !hasUnmatchedJobs;
+  const canConfirm = !hasUnmatchedEmployees; // Jobs sin match son advertencia, no bloquean
 
   const { mutate: confirm, isPending } = useMutation({
     mutationFn: async () => {
