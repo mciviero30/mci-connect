@@ -232,7 +232,7 @@ Deno.serve(async (req) => {
         console.log(`[confirmPayrollBatch] Job ${update.job_id}: real_cost ${originalCosts[update.job_id]} → ${update.newRealCost}`);
       } catch (err) {
         console.error(`[confirmPayrollBatch] Job real_cost update FAILED for ${update.job_id}:`, err.message);
-        await _rollback(base44, batch.id, createdAllocations, originalCosts, null);
+        await _rollback(base44, batch.id, createdAllocations, originalCosts, null, idempotencyRecord, err.message);
         return Response.json({
           success: false,
           error: `Job real_cost update failed for "${update.job_name}" (${update.job_id}): ${err.message}. Entire batch rolled back.`,
