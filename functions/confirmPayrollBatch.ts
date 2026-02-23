@@ -104,8 +104,9 @@ Deno.serve(async (req) => {
           }
 
           if (record.status === 'pending' || record.status === 'failed') {
-            console.log('⚠️ Payroll idempotency was pending/failed — reprocessing for recovery.');
+            console.log('⚠️ Recovery mode activated.');
             idempotencyRecord = record; // Reuse existing record
+            isRecoveryMode = true;
           }
         }
 
