@@ -473,25 +473,28 @@ export default function Empleados() {
         </Card>
 
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); setPage(1); }} className="space-y-4 sm:space-y-6">
-          <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
-            <TabsList className="bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 inline-flex min-w-max sm:min-w-0">
-              <TabsTrigger value="active" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                Active ({activeEmployees.length})
-              </TabsTrigger>
-              <TabsTrigger value="pending" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                Pending ({pendingEmployees.length})
-              </TabsTrigger>
-              <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                Invited ({invitedEmployees.length})
-              </TabsTrigger>
-              <TabsTrigger value="archived" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                Archived ({archivedEmployees.length})
-              </TabsTrigger>
-              <TabsTrigger value="deleted" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                Deleted ({deletedEmployees.length})
-              </TabsTrigger>
-            </TabsList>
-          </div>
+           <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+             <TabsList className="bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 inline-flex min-w-max sm:min-w-0">
+               <TabsTrigger value="duplicates" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px] bg-red-50 text-red-700 data-[state=active]:bg-red-100">
+                 Duplicates ({duplicateEmployees.length})
+               </TabsTrigger>
+               <TabsTrigger value="active" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 Active ({activeEmployees.length})
+               </TabsTrigger>
+               <TabsTrigger value="pending" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 Pending ({pendingEmployees.length})
+               </TabsTrigger>
+               <TabsTrigger value="invited" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 Invited ({invitedEmployees.length})
+               </TabsTrigger>
+               <TabsTrigger value="archived" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 Archived ({archivedEmployees.length})
+               </TabsTrigger>
+               <TabsTrigger value="deleted" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
+                 Deleted ({deletedEmployees.length})
+               </TabsTrigger>
+             </TabsList>
+           </div>
 
           {/* PENDING TAB */}
           <TabsContent value="pending">
