@@ -252,7 +252,14 @@ export default function Empleados() {
             hourly_rate: null,
           }));
 
-        return [...dirResult, ...activeUsersNotInDir, ...pendingResult];
+        const allEmployees = [...dirResult, ...activeUsersNotInDir, ...pendingResult];
+        
+        // Sort alphabetically by full name
+        return allEmployees.sort((a, b) => {
+          const nameA = (a.full_name || '').toLowerCase();
+          const nameB = (b.full_name || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
       } catch (err) {
         console.error('Query error:', err);
         return [];
