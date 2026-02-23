@@ -461,14 +461,78 @@ export default function Empleados() {
 
           {/* PENDING TAB */}
           <TabsContent value="pending">
-            <Card className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
-              <CardContent className="p-4">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  ℹ️ These employees need to be invited. Click "Invite" to send invitation email.
-                </p>
-              </CardContent>
-            </Card>
-            <EmployeeGrid employees={pendingEmployees} showInviteButton={true} />
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    if (selectedPending.size === pendingEmployees.length) {
+                      setSelectedPending(new Set());
+                    } else {
+                      setSelectedPending(new Set(pendingEmployees.map(e => e.id || e.directory_id)));
+                    }
+                  }}
+                  className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  {selectedPending.size === pendingEmployees.length && pendingEmployees.length > 0
+                    ? <CheckSquare className="w-5 h-5 text-blue-600" />
+                    : <Square className="w-5 h-5" />
+                  }
+                  {selectedPending.size > 0 ? `${selectedPending.size} selected` : 'Select all'}
+                </button>
+              </div>
+
+              {selectedPending.size > 0 && (
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => bulkInviteMutation.mutate()}
+                  disabled={bulkInviteMutation.isPending}
+                >
+                  {bulkInviteMutation.isPending
+                    ? 'Sending...'
+                    : `Invite Selected (${selectedPending.size})`}
+                </Button>
+              )}
+            </div>
+
+            {pendingEmployees.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-slate-500">No pending employees — import a list or add one manually.</p>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                {pendingEmployees.map(emp => {
+                  const key = emp.id || emp.directory_id;
+                  const isSelected = selectedPending.has(key);
+                  return (
+                    <div
+                      key={key}
+                      className={`relative rounded-xl border-2 transition-all cursor-pointer ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-transparent'}`}
+                      onClick={() => {
+                        setSelectedPending(prev => {
+                          const next = new Set(prev);
+                          isSelected ? next.delete(key) : next.add(key);
+                          return next;
+                        });
+                      }}
+                    >
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 z-10">
+                          <CheckSquare className="w-5 h-5 text-blue-600" />
+                        </div>
+                      )}
+                      <ModernEmployeeCard
+                        employee={emp}
+                        onInvite={(e) => { e?.stopPropagation?.(); inviteMutation.mutate(emp); }}
+                        isInviting={inviteMutation.isPending}
+                        showInviteButton={true}
+                        onboardingProgress={employeeProgress[emp.id]}
+                        onViewDetails={handleViewOnboarding}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </TabsContent>
 
           {/* INVITED TAB */}
