@@ -83,14 +83,35 @@ Deno.serve(async (req) => {
         err.message?.toLowerCase().includes('unique') ||
         err.message?.toLowerCase().includes('duplicate')
       ) {
-        console.log(`⚠️ Duplicate payroll batch attempt: ${file_hash}`);
-        return Response.json({
-          success: true,
-          idempotent: true,
-          message: 'Payroll batch already processed.'
+        console.log(`⚠️ Duplicate idempotency key detected: ${file_hash} — checking status...`);
+
+        // Duplicate detected — fetch existing record
+        const existing = await base44.asServiceRole.entities.IdempotencyRecord.filter({
+          mutation_id: file_hash
         });
+
+        if (existing.length > 0) {
+          const record = existing[0];
+
+          if (record.status === 'completed') {
+            console.log('✅ Payroll already fully processed.');
+            return Response.json({
+              success: true,
+              idempotent: true,
+              message: 'Payroll batch already processed.'
+            });
+          }
+
+          if (record.status === 'pending' || record.status === 'failed') {
+            console.log('⚠️ Payroll idempotency was pending/failed — reprocessing for recovery.');
+            idempotencyRecord = record; // Reuse existing record
+          }
+        }
+
+        // If no record found or status allows retry, fall through and continue
+      } else {
+        throw err;
       }
-      throw err;
     }
 
     // Block on file_hash duplicate
