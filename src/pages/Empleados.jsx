@@ -270,7 +270,14 @@ export default function Empleados() {
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['onboardingForms'],
-    queryFn: () => base44.entities.OnboardingForm.list(),
+    queryFn: async () => {
+      try {
+        return await base44.entities.OnboardingForm.list();
+      } catch (err) {
+        console.error('onboardingForms query failed:', err);
+        return [];
+      }
+    },
     staleTime: 60000,
     enabled: employees.length > 0,
     initialData: []
