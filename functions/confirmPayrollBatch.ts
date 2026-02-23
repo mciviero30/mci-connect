@@ -234,6 +234,33 @@ Deno.serve(async (req) => {
     console.log(`[confirmPayrollBatch] All ${jobsAppliedCount} job real_cost updates + recalculations succeeded`);
 
     // ============================================================
+    // CREATE TRANSACTION — Payroll expense in Contabilidad
+    // CRITICAL: failure = FULL ROLLBACK (no silent failure)
+    // Must occur AFTER all job updates succeed, BEFORE locking
+    // ============================================================
+    let payrollTransaction = null;
+    try {
+      payrollTransaction = await base44.asServiceRole.entities.Transaction.create({
+        type: 'expense',
+        amount: Number(total_paid.toFixed(2)),
+        category: 'salaries',
+        description: `Payroll - ${employee_name} (${period_start} → ${period_end})`,
+        date: period_end,
+        payment_method: 'bank_transfer',
+        reconciliation_status: 'reviewed',
+        notes: `PayrollBatch ID: ${batch.id}`
+      });
+      console.log(`[confirmPayrollBatch] Transaction created: ${payrollTransaction.id} ($${total_paid.toFixed(2)})`);
+    } catch (err) {
+      console.error(`[confirmPayrollBatch] Transaction.create FAILED:`, err.message);
+      await _rollback(base44, batch.id, createdAllocations, originalCosts, null);
+      return Response.json({
+        success: false,
+        error: `Failed to create payroll Transaction: ${err.message}. Entire batch rolled back.`
+      }, { status: 500 });
+    }
+
+    // ============================================================
     // Create draft invoices for placeholder jobs (non-critical, does NOT block)
     // ============================================================
     const placeholderAllocations = allocations.filter(a => a.is_placeholder && a.job_id);
