@@ -131,28 +131,33 @@ export default function ImportEmployeesDialog({ open, onClose }) {
         }
 
         try {
+          // Validate required fields
+          if (!row.first_name && !row.last_name && !row.full_name) {
+            throw new Error("Missing name (first or last name required)");
+          }
+
           // Save full data to PendingEmployee (SSN, DOB, t-shirt, address, etc.)
           await base44.entities.PendingEmployee.create({
-            first_name: row.first_name,
-            last_name: row.last_name,
-            email: row.employee_email || "",
-            phone: row.phone || "",
-            position: row.position || "",
-            ssn_tax_id: row.ssn_tax_id || "",
-            address: row.address || "",
-            dob: row.dob || "",
-            tshirt_size: row.tshirt_size || "",
+            first_name: row.first_name || row.full_name.split(" ")[0] || "Unknown",
+            last_name: row.last_name || row.full_name.split(" ").slice(1).join(" ") || "",
+            email: row.employee_email?.trim() || "",
+            phone: row.phone?.trim() || "",
+            position: row.position?.trim() || "",
+            ssn_tax_id: row.ssn_tax_id?.trim() || "",
+            address: row.address?.trim() || "",
+            dob: row.dob?.trim() || "",
+            tshirt_size: row.tshirt_size?.trim() || "",
             status: "pending",
           });
 
           // Also save to EmployeeDirectory for directory visibility
           await base44.entities.EmployeeDirectory.create({
-            employee_email: row.employee_email || "",
+            employee_email: row.employee_email?.trim() || "",
             full_name: row.full_name,
-            first_name: row.first_name,
-            last_name: row.last_name,
-            position: row.position || "",
-            phone: row.phone || "",
+            first_name: row.first_name || row.full_name.split(" ")[0] || "Unknown",
+            last_name: row.last_name || row.full_name.split(" ").slice(1).join(" ") || "",
+            position: row.position?.trim() || "",
+            phone: row.phone?.trim() || "",
             status: "pending",
             sync_source: "manual",
             last_synced_at: new Date().toISOString(),
@@ -161,6 +166,7 @@ export default function ImportEmployeesDialog({ open, onClose }) {
           success.push(row);
           if (emailKey) existingEmails.add(emailKey);
         } catch (err) {
+          console.error("Import error for", row.full_name, ":", err);
           failed.push({ ...row, reason: err.message });
         }
       }
