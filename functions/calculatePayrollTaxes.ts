@@ -73,7 +73,17 @@ Deno.serve(async (req) => {
 
     for (const alloc of allocations) {
       const profile = profileMap[alloc.employee_profile_id];
-      const taxClass = profile?.tax_classification || 'w2';
+
+      if (!profile?.tax_classification) {
+        throw new Error(`Employee ${alloc.employee_profile_id} is missing tax_classification`);
+      }
+
+      const taxClass = profile.tax_classification.toLowerCase();
+
+      if (taxClass !== 'w2' && taxClass !== '1099') {
+        throw new Error(`Invalid tax_classification "${taxClass}" for employee ${alloc.employee_profile_id}`);
+      }
+
       const grossPay = alloc.gross_pay || 0;
 
       // Use stored withholding from profile (default 0 if not set)
