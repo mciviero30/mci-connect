@@ -199,6 +199,18 @@ Deno.serve(async (req) => {
       total_gross: totalGross
     });
 
+    // Audit log
+    const user = await base44.auth.me();
+    if (user) {
+      await base44.asServiceRole.entities.PayrollAuditLog.create({
+        batch_id: batch_id,
+        action: 'generate',
+        performed_by_user_id: user.id,
+        timestamp: new Date().toISOString(),
+        metadata: { allocations_created: allocations.length, totals: { totalRegularHours, totalOvertimeHours, totalCommissions, totalGross } }
+      });
+    }
+
     return Response.json({
       success: true,
       message: 'Payroll batch generated',

@@ -46,6 +46,18 @@ Deno.serve(async (req) => {
       approved_at: new Date().toISOString()
     });
 
+    // Audit log
+    const user = await base44.auth.me();
+    if (user) {
+      await base44.asServiceRole.entities.PayrollAuditLog.create({
+        batch_id: batch_id,
+        action: 'approve',
+        performed_by_user_id: user.id,
+        timestamp: new Date().toISOString(),
+        metadata: {}
+      });
+    }
+
     return Response.json({
       success: true,
       message: 'Batch approved successfully',
