@@ -652,10 +652,12 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Employee</TableHead>
-                    <TableHead className="text-right">Regular Hours</TableHead>
-                    <TableHead className="text-right">Overtime Hours</TableHead>
-                    <TableHead className="text-right">Commission</TableHead>
-                    <TableHead className="text-right">Gross Pay</TableHead>
+                          <TableHead className="text-right">Regular Hours</TableHead>
+                          <TableHead className="text-right">Overtime Hours</TableHead>
+                          <TableHead className="text-right">Commission</TableHead>
+                          <TableHead className="text-right">Gross Pay</TableHead>
+                          <TableHead className="text-right">Net Pay</TableHead>
+                          <TableHead className="text-right">Employer Cost</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
