@@ -2,12 +2,13 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
  * PAYROLL ENTERPRISE CORE — Lock Batch
- * 
+ *
  * Transitions batch from draft to locked.
  * Requires PayrollTaxBreakdown records to exist before locking.
  * Creates immutable PayrollBatchLiability snapshot on lock.
+ * Prevents double snapshot creation.
  * After locked: batch becomes immutable except for status transitions.
- * 
+ *
  * Payload: { batch_id: string }
  */
 Deno.serve(async (req) => {
@@ -44,6 +45,18 @@ Deno.serve(async (req) => {
     if (!taxBreakdowns || taxBreakdowns.length === 0) {
       return Response.json({
         error: 'Cannot lock batch. Taxes must be calculated first.'
+      }, { status: 400 });
+    }
+
+    // Prevent double snapshot
+    const existingSnapshot = await base44.asServiceRole.entities.PayrollBatchLiability.filter(
+      { batch_id },
+      '',
+      1
+    );
+    if (existingSnapshot && existingSnapshot.length > 0) {
+      return Response.json({
+        error: 'Liability snapshot already exists for this batch.'
       }, { status: 400 });
     }
 

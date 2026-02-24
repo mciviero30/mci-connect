@@ -347,6 +347,17 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
     enabled: !!batch.id
   });
 
+  // Fetch liability snapshot (read-only)
+  const { data: liabilitySnapshotArr = [] } = useQuery({
+    queryKey: ['payrollLiability', batch.id],
+    queryFn: async () => {
+      const result = await base44.entities.PayrollBatchLiability.filter({ batch_id: batch.id }, '', 1);
+      return result || [];
+    },
+    enabled: !!batch.id
+  });
+  const liabilitySnapshot = liabilitySnapshotArr[0] || null;
+
   // Build tax lookup by allocation_id
   const taxMap = React.useMemo(() => 
     Object.fromEntries(taxBreakdowns.map(t => [t.allocation_id, t])),
