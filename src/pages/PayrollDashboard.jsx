@@ -462,7 +462,19 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
 
   return (
     <div className="space-y-6">
-      <Button variant="outline" onClick={onBack}>← Back to Batches</Button>
+      <div className="flex items-center justify-between">
+        <Button variant="outline" onClick={onBack}>← Back to Batches</Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportCSV} disabled={exportingCSV}>
+            <Download className="w-4 h-4 mr-2" />
+            {exportingCSV ? 'Exporting...' : 'Export CSV'}
+          </Button>
+          <Button variant="outline" onClick={handleExportPDF} disabled={exportingPDF}>
+            <FileText className="w-4 h-4 mr-2" />
+            {exportingPDF ? 'Exporting...' : 'Export PDF'}
+          </Button>
+        </div>
+      </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
