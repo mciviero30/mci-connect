@@ -337,6 +337,26 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
     enabled: !!batch.id
   });
 
+  // Fetch tax breakdowns
+  const { data: taxBreakdowns = [] } = useQuery({
+    queryKey: ['payrollTaxBreakdowns', batch.id],
+    queryFn: async () => {
+      const breakdowns = await base44.entities.PayrollTaxBreakdown.filter({ batch_id: batch.id }, '', 1000);
+      return breakdowns || [];
+    },
+    enabled: !!batch.id
+  });
+
+  // Build tax lookup by allocation_id
+  const taxMap = React.useMemo(() => 
+    Object.fromEntries(taxBreakdowns.map(t => [t.allocation_id, t])),
+    [taxBreakdowns]
+  );
+
+  const totalNetPay = taxBreakdowns.reduce((s, t) => s + (t.net_pay || 0), 0);
+  const totalEmployerCost = taxBreakdowns.reduce((s, t) => s + (t.employer_total_cost || 0), 0);
+  const hasTaxes = taxBreakdowns.length > 0;
+
   // Fetch audit log
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['payrollAuditLog', batch.id],
