@@ -395,6 +395,20 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
     }
   };
 
+  const handleCalculateTaxes = async () => {
+    setCalculatingTaxes(true);
+    try {
+      await calculatePayrollTaxes({ batch_id: batch.id });
+      queryClient.invalidateQueries({ queryKey: ['payrollTaxBreakdowns', batch.id] });
+      queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
+      toast.success('Taxes calculated successfully');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setCalculatingTaxes(false);
+    }
+  };
+
   const handleExportPDF = async () => {
     setExportingPDF(true);
     try {
