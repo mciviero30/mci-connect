@@ -335,6 +335,64 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
     enabled: !!batch.id
   });
 
+  // Fetch audit log
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ['payrollAuditLog', batch.id],
+    queryFn: async () => {
+      const logs = await base44.entities.PayrollAuditLog.filter({ batch_id: batch.id }, '-timestamp', 50);
+      if (!logs || logs.length === 0) return [];
+      // Enrich with user names
+      const userIds = [...new Set(logs.map(l => l.performed_by_user_id))];
+      const users = await Promise.all(
+        userIds.map(uid => base44.entities.User.filter({ id: uid }, '', 1).then(r => r?.[0]))
+      );
+      const userMap = Object.fromEntries(users.filter(Boolean).map(u => [u.id, u]));
+      return logs.map(l => ({ ...l, performed_by_name: userMap[l.performed_by_user_id]?.full_name || 'Unknown' }));
+    },
+    enabled: !!batch.id
+  });
+
+  // Export handlers
+  const handleExportCSV = async () => {
+    setExportingCSV(true);
+    try {
+      const res = await exportPayrollBatchCSV({ batch_id: batch.id });
+      const blob = new Blob([res.data], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `payroll_${batch.period_start}_${batch.period_end}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setExportingCSV(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    setExportingPDF(true);
+    try {
+      const res = await exportPayrollBatchPDF({ batch_id: batch.id });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `payroll_${batch.period_start}_${batch.period_end}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      a.remove();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
   // Refetch selected batch explicitly
   const refetchBatch = async () => {
     const updated = await base44.entities.PayrollBatch.filter({ id: batch.id }, '', 1);
