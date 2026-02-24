@@ -539,14 +539,34 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Commissions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">${batch.total_commissions?.toFixed(2) || '0.00'}</p>
-          </CardContent>
-        </Card>
-      </div>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Commissions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">${batch.total_commissions?.toFixed(2) || '0.00'}</p>
+            </CardContent>
+          </Card>
+          {hasTaxes && (
+            <Card className="border-green-200 bg-green-50 dark:bg-green-900/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-green-800 dark:text-green-300">Total Net Pay</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-green-700 dark:text-green-400">${totalNetPay.toFixed(2)}</p>
+              </CardContent>
+            </Card>
+          )}
+          {hasTaxes && (
+            <Card className="border-orange-200 bg-orange-50 dark:bg-orange-900/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-orange-800 dark:text-orange-300">Employer Total Cost</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-2xl font-bold text-orange-700 dark:text-orange-400">${totalEmployerCost.toFixed(2)}</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
       {/* State Machine Buttons */}
       <Card>
