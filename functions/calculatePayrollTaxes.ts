@@ -58,14 +58,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch all employee profiles in batch (batch to avoid N+1)
+    // Batch fetch all employee profiles (no N+1)
     const uniqueProfileIds = [...new Set(allocations.map(a => a.employee_profile_id))];
-    const profiles = await Promise.all(
-      uniqueProfileIds.map(pid =>
-        base44.asServiceRole.entities.EmployeeProfile.filter({ id: pid }, '', 1).then(r => r?.[0])
-      )
+    const profiles = await base44.asServiceRole.entities.EmployeeProfile.filter(
+      { id: { $in: uniqueProfileIds } },
+      '',
+      1000
     );
-    const profileMap = Object.fromEntries(profiles.filter(Boolean).map(p => [p.id, p]));
+    const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
 
     // Calculate taxes per allocation
     const now = new Date().toISOString();
