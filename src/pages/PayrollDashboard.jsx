@@ -585,13 +585,28 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
                   {generateMutation.isPending ? 'Generating...' : 'Generate Payroll'}
                 </Button>
                 <Button
+                  onClick={handleCalculateTaxes}
+                  disabled={calculatingTaxes}
+                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                >
+                  <Calculator className="w-4 h-4 mr-2" />
+                  {calculatingTaxes ? 'Calculating...' : hasTaxes ? 'Recalculate Taxes' : 'Calculate Taxes'}
+                </Button>
+                <Button
                   onClick={() => setConfirmAction('lock')}
-                  disabled={lockMutation.isPending}
+                  disabled={lockMutation.isPending || !hasTaxes}
                   variant="outline"
+                  title={!hasTaxes ? 'Calculate taxes before locking' : ''}
                 >
                   <Lock className="w-4 h-4 mr-2" />
                   Lock Batch
                 </Button>
+                {!hasTaxes && (
+                  <p className="text-xs text-amber-600 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    Calculate taxes before locking
+                  </p>
+                )}
               </>
             )}
             {batch.status === 'locked' && (
