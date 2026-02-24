@@ -672,6 +672,18 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
                       <TableCell className="text-right">{alloc.overtime_hours?.toFixed(1)}</TableCell>
                       <TableCell className="text-right">${alloc.commission_total?.toFixed(2)}</TableCell>
                       <TableCell className="text-right font-bold">${alloc.gross_pay?.toFixed(2)}</TableCell>
+                      <TableCell className="text-right">
+                        {taxMap[alloc.id]
+                          ? <span className="font-semibold text-green-700">${taxMap[alloc.id].net_pay?.toFixed(2)}</span>
+                          : <Badge className="bg-amber-100 text-amber-700 text-xs">Taxes not calculated</Badge>
+                        }
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {taxMap[alloc.id]
+                          ? <span className="text-orange-700">${taxMap[alloc.id].employer_total_cost?.toFixed(2)}</span>
+                          : <span className="text-slate-400">—</span>
+                        }
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
