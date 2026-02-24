@@ -113,6 +113,11 @@ Deno.serve(async (req) => {
         };
       } else {
         // W2 calculations
+        // TODO Phase 4:
+        // - Apply Social Security wage cap
+        // - Apply FUTA wage cap
+        // - Implement state-specific SUTA rates
+        // - Integrate W4 federal withholding tables
         const socialSecurityEmployee = parseFloat((grossPay * 0.062).toFixed(2));
         const medicareEmployee = parseFloat((grossPay * 0.0145).toFixed(2));
         const socialSecurityEmployer = socialSecurityEmployee;
