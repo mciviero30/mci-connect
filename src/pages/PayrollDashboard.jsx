@@ -589,8 +589,12 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
                 </TableHeader>
                 <TableBody>
                   {allocations.map((alloc) => (
-                    <TableRow key={alloc.id}>
-                      <TableCell className="font-medium">{alloc.employee_name}</TableCell>
+                    <TableRow
+                      key={alloc.id}
+                      className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800"
+                      onClick={() => setDrilldownAlloc(alloc)}
+                    >
+                      <TableCell className="font-medium text-blue-700 underline">{alloc.employee_name}</TableCell>
                       <TableCell className="text-right">{alloc.regular_hours?.toFixed(1)}</TableCell>
                       <TableCell className="text-right">{alloc.overtime_hours?.toFixed(1)}</TableCell>
                       <TableCell className="text-right">${alloc.commission_total?.toFixed(2)}</TableCell>
