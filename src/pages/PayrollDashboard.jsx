@@ -8,11 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Banknote, Plus, Lock, CheckCircle, DollarSign, Shield, Upload, FileText, Download } from 'lucide-react';
+import { Banknote, Plus, Lock, CheckCircle, DollarSign, Shield, Upload, FileText, Download, Calculator, AlertCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/toast';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { exportPayrollBatchCSV } from '@/functions/exportPayrollBatchCSV';
 import { exportPayrollBatchPDF } from '@/functions/exportPayrollBatchPDF';
+import { calculatePayrollTaxes } from '@/functions/calculatePayrollTaxes';
 
 const statusBadgeConfig = {
   draft: { label: 'Draft', className: 'bg-slate-100 text-slate-800' },
