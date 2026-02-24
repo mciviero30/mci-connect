@@ -465,12 +465,13 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
     mutationFn: () =>
       base44.functions.invoke('lockPayrollBatch', { batch_id: batch.id }),
     onSuccess: async () => {
-      const refreshedBatch = await refetchBatch();
-      queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
-      toast.success('Batch locked');
-      setConfirmAction(null);
-      onActionSuccess(refreshedBatch);
-    },
+        const refreshedBatch = await refetchBatch();
+        queryClient.invalidateQueries({ queryKey: ['payrollBatches'] });
+        queryClient.invalidateQueries({ queryKey: ['payrollLiability', batch.id] });
+        toast.success('Batch locked');
+        setConfirmAction(null);
+        onActionSuccess(refreshedBatch);
+      },
     onError: (error) => {
       toast.error(error.message);
     }
