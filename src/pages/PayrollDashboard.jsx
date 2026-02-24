@@ -227,11 +227,66 @@ const ConfirmActionDialog = ({ open, title, description, onConfirm, isLoading, o
   );
 };
 
+// ==================== EMPLOYEE DRILLDOWN MODAL ====================
+const EmployeeDrilldownModal = ({ alloc, onClose }) => {
+  if (!alloc) return null;
+  return (
+    <Dialog open={!!alloc} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{alloc.employee_name} — Allocation Detail</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 text-sm">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+              <p className="text-xs text-slate-500">Regular Hours</p>
+              <p className="text-lg font-bold">{alloc.regular_hours?.toFixed(1)}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+              <p className="text-xs text-slate-500">Overtime Hours</p>
+              <p className="text-lg font-bold">{alloc.overtime_hours?.toFixed(1)}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+              <p className="text-xs text-slate-500">Hourly Rate (Snapshot)</p>
+              <p className="text-lg font-bold">${alloc.hourly_rate_snapshot?.toFixed(2)}</p>
+            </div>
+            <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
+              <p className="text-xs text-slate-500">OT Multiplier (Snapshot)</p>
+              <p className="text-lg font-bold">{alloc.overtime_multiplier_snapshot}×</p>
+            </div>
+          </div>
+          <div className="border-t pt-3 space-y-2">
+            <div className="flex justify-between">
+              <span className="text-slate-600">Regular Pay</span>
+              <span>${alloc.regular_pay?.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-600">Overtime Pay</span>
+              <span>${alloc.overtime_pay?.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-600">Commission</span>
+              <span>${alloc.commission_total?.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between font-bold text-base border-t pt-2">
+              <span>Gross Pay</span>
+              <span>${alloc.gross_pay?.toFixed(2)}</span>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // ==================== BATCH DETAIL VIEW ====================
 const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [confirmAction, setConfirmAction] = useState(null);
+  const [drilldownAlloc, setDrilldownAlloc] = useState(null);
+  const [exportingCSV, setExportingCSV] = useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   // Fetch allocations with batch loaded employee data (NO N+1)
   const { data: allocations = [], isLoading: allocLoading } = useQuery({
