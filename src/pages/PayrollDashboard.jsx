@@ -704,6 +704,48 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
         </CardContent>
       </Card>
 
+      {/* Liability Snapshot */}
+      {liabilitySnapshot ? (
+        <Card className="border-blue-200 dark:border-blue-800">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-blue-800 dark:text-blue-300">
+              <Shield className="w-5 h-5" />
+              Payroll Liability Snapshot
+              <span className="ml-auto text-xs font-normal text-slate-400 italic">Read-only · Locked</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
+              {[
+                { label: 'Total Gross Pay', value: liabilitySnapshot.total_gross_pay },
+                { label: 'Total Net Pay', value: liabilitySnapshot.total_net_pay },
+                { label: 'Employee FICA', value: liabilitySnapshot.total_employee_fica },
+                { label: 'Employer FICA', value: liabilitySnapshot.total_employer_fica },
+                { label: 'Federal Withholding', value: liabilitySnapshot.total_federal_withholding },
+                { label: 'State Withholding', value: liabilitySnapshot.total_state_withholding },
+                { label: 'FUTA', value: liabilitySnapshot.total_futa },
+                { label: 'SUTA', value: liabilitySnapshot.total_suta },
+                { label: 'Total Employer Tax', value: liabilitySnapshot.total_employer_tax },
+              ].map(({ label, value }) => (
+                <div key={label} className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3">
+                  <p className="text-xs text-slate-500 mb-1">{label}</p>
+                  <p className="font-semibold text-slate-800 dark:text-slate-200">${(value || 0).toFixed(2)}</p>
+                </div>
+              ))}
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-900/30 border-2 border-blue-300 dark:border-blue-700 rounded-xl p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">Total Cash Required</p>
+                <p className="text-xs text-blue-500 dark:text-blue-400">Net pay + all employer taxes</p>
+              </div>
+              <p className="text-3xl font-bold text-blue-800 dark:text-blue-200">${(liabilitySnapshot.total_cash_required || 0).toFixed(2)}</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : batch.status === 'draft' ? (
+        <p className="text-sm text-slate-400 italic px-1">Liability snapshot will be created when batch is locked.</p>
+      ) : null}
+
       {/* Audit Log */}
       <Card>
         <CardHeader>

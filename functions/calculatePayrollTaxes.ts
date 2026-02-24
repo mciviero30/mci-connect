@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
 
     if (batch.status !== 'draft') {
       return Response.json(
-        { error: `Cannot calculate taxes on a batch with status "${batch.status}". Only "draft" batches are allowed.` },
+        { error: 'Cannot recalculate taxes after batch is locked.' },
         { status: 400 }
       );
     }
