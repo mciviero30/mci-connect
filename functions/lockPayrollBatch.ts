@@ -4,13 +4,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
  * PAYROLL ENTERPRISE CORE — Lock Batch
  * 
  * Transitions batch from draft to locked.
+ * Requires PayrollTaxBreakdown records to exist before locking.
+ * Creates immutable PayrollBatchLiability snapshot on lock.
  * After locked: batch becomes immutable except for status transitions.
- * generatePayrollBatch will throw error for locked batches.
  * 
- * Payload:
- * {
- *   batch_id: string
- * }
+ * Payload: { batch_id: string }
  */
 Deno.serve(async (req) => {
   try {
@@ -22,12 +20,7 @@ Deno.serve(async (req) => {
     }
 
     // Validate batch exists
-    const batches = await base44.asServiceRole.entities.PayrollBatch.filter(
-      { id: batch_id },
-      '',
-      1
-    );
-
+    const batches = await base44.asServiceRole.entities.PayrollBatch.filter({ id: batch_id }, '', 1);
     if (!batches || batches.length === 0) {
       return Response.json({ error: 'Batch not found' }, { status: 404 });
     }
@@ -41,30 +34,79 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // Require tax breakdowns before locking
+    const taxBreakdowns = await base44.asServiceRole.entities.PayrollTaxBreakdown.filter(
+      { batch_id },
+      '',
+      1000
+    );
+
+    if (!taxBreakdowns || taxBreakdowns.length === 0) {
+      return Response.json({
+        error: 'Cannot lock batch. Taxes must be calculated first.'
+      }, { status: 400 });
+    }
+
+    // Calculate liability totals from tax breakdowns
+    const totalGrossPay = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.gross_pay || 0), 0).toFixed(2));
+    const totalNetPay = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.net_pay || 0), 0).toFixed(2));
+    const totalEmployeeFica = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.social_security_employee || 0) + (t.medicare_employee || 0), 0).toFixed(2));
+    const totalEmployerFica = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.social_security_employer || 0) + (t.medicare_employer || 0), 0).toFixed(2));
+    const totalFederalWithholding = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.federal_withholding || 0), 0).toFixed(2));
+    const totalStateWithholding = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.state_withholding || 0), 0).toFixed(2));
+    const totalFuta = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.futa || 0), 0).toFixed(2));
+    const totalSuta = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.suta || 0), 0).toFixed(2));
+    const totalEmployerTax = parseFloat((totalEmployerFica + totalFuta + totalSuta).toFixed(2));
+    const totalCashRequired = parseFloat((totalNetPay + totalEmployerTax).toFixed(2));
+
+    const now = new Date().toISOString();
+
+    // Create immutable liability snapshot
+    await base44.asServiceRole.entities.PayrollBatchLiability.create({
+      batch_id,
+      total_gross_pay: totalGrossPay,
+      total_net_pay: totalNetPay,
+      total_employee_fica: totalEmployeeFica,
+      total_employer_fica: totalEmployerFica,
+      total_federal_withholding: totalFederalWithholding,
+      total_state_withholding: totalStateWithholding,
+      total_futa: totalFuta,
+      total_suta: totalSuta,
+      total_employer_tax: totalEmployerTax,
+      total_cash_required: totalCashRequired,
+      snapshot_created_at: now
+    });
+
+    console.log(`Liability snapshot created for batch ${batch_id}: total_cash_required=${totalCashRequired}`);
+
     // Lock batch
     const locked = await base44.asServiceRole.entities.PayrollBatch.update(batch_id, {
       status: 'locked',
-      locked_at: new Date().toISOString()
+      locked_at: now
     });
 
     // Audit log
     const user = await base44.auth.me();
     if (user) {
       await base44.asServiceRole.entities.PayrollAuditLog.create({
-        batch_id: batch_id,
+        batch_id,
         action: 'lock',
         performed_by_user_id: user.id,
-        timestamp: new Date().toISOString(),
-        metadata: {}
+        timestamp: now,
+        metadata: {
+          liability_snapshot_created: true,
+          total_cash_required: totalCashRequired
+        }
       });
     }
 
     return Response.json({
       success: true,
       message: 'Batch locked successfully',
-      batch_id: batch_id,
+      batch_id,
       status: 'locked',
-      locked_at: locked.locked_at
+      locked_at: locked.locked_at,
+      total_cash_required: totalCashRequired
     });
 
   } catch (error) {
