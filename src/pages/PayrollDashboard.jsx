@@ -608,6 +608,43 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
         </CardContent>
       </Card>
 
+      {/* Audit Log */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Audit Log</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {auditLogs.length === 0 ? (
+            <p className="text-slate-500 text-sm">No audit entries yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {auditLogs.map((log) => (
+                <div key={log.id} className="flex items-center justify-between py-2 border-b last:border-0">
+                  <div className="flex items-center gap-3">
+                    <Badge className={
+                      log.action === 'generate' ? 'bg-blue-100 text-blue-800' :
+                      log.action === 'lock' ? 'bg-amber-100 text-amber-800' :
+                      log.action === 'approve' ? 'bg-purple-100 text-purple-800' :
+                      log.action === 'pay' ? 'bg-green-100 text-green-800' :
+                      'bg-slate-100 text-slate-800'
+                    }>
+                      {log.action}
+                    </Badge>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{log.performed_by_name}</span>
+                  </div>
+                  <span className="text-xs text-slate-500">
+                    {new Date(log.timestamp).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Employee Drilldown */}
+      <EmployeeDrilldownModal alloc={drilldownAlloc} onClose={() => setDrilldownAlloc(null)} />
+
       {/* Confirmation Dialogs */}
       <ConfirmActionDialog
         open={confirmAction === 'lock'}
