@@ -288,6 +288,7 @@ const BatchDetailView = ({ batch, onBack, onActionSuccess }) => {
   const [drilldownAlloc, setDrilldownAlloc] = useState(null);
   const [exportingCSV, setExportingCSV] = useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
+  const [calculatingTaxes, setCalculatingTaxes] = useState(false);
 
   // Fetch allocations with batch loaded employee data (NO N+1)
   const { data: allocations = [], isLoading: allocLoading } = useQuery({
