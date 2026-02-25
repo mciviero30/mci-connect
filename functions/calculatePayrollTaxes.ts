@@ -4,6 +4,7 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
+    // SECTION 1: Role enforcement — MUST be first
     const user = await base44.auth.me();
     if (!user || (user.role !== 'admin' && user.role !== 'ceo')) {
       return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
@@ -23,25 +24,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'PayrollBatch not found' }, { status: 404 });
     }
 
+    // SECTION 2: Immutability — batch must be draft
     if (batch.status !== 'draft') {
       return Response.json(
-        { error: 'Cannot recalculate taxes after batch is locked.' },
+        { error: 'Entity cannot be modified after PayrollBatch is locked.' },
         { status: 400 }
       );
-    }
-
-    // Delete existing breakdowns for this batch
-    const existingBreakdowns = await base44.asServiceRole.entities.PayrollTaxBreakdown.filter(
-      { batch_id },
-      '',
-      1000
-    );
-
-    if (existingBreakdowns?.length > 0) {
-      await Promise.all(
-        existingBreakdowns.map(b => base44.asServiceRole.entities.PayrollTaxBreakdown.delete(b.id))
-      );
-      console.log(`Deleted ${existingBreakdowns.length} existing tax breakdowns for batch ${batch_id}`);
     }
 
     // Fetch all allocations for this batch
@@ -67,93 +55,68 @@ Deno.serve(async (req) => {
     );
     const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
 
-    // Calculate taxes per allocation
+    // SECTION 4: Block W2 employees until withholding engine is implemented
+    for (const alloc of allocations) {
+      const profile = profileMap[alloc.employee_profile_id];
+      if (!profile?.tax_classification) {
+        return Response.json(
+          { error: `Employee ${alloc.employee_profile_id} is missing tax_classification. Cannot calculate taxes.` },
+          { status: 400 }
+        );
+      }
+      if (profile.tax_classification.toLowerCase() === 'w2') {
+        return Response.json(
+          { error: 'Payroll for W2 employees is currently disabled until withholding engine is implemented.' },
+          { status: 400 }
+        );
+      }
+      if (profile.tax_classification.toLowerCase() !== '1099') {
+        return Response.json(
+          { error: `Invalid tax_classification "${profile.tax_classification}" for employee ${alloc.employee_profile_id}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    // SECTION 2: Delete existing breakdowns only after immutability confirmed
+    const existingBreakdowns = await base44.asServiceRole.entities.PayrollTaxBreakdown.filter(
+      { batch_id },
+      '',
+      1000
+    );
+    if (existingBreakdowns?.length > 0) {
+      await Promise.all(
+        existingBreakdowns.map(b => base44.asServiceRole.entities.PayrollTaxBreakdown.delete(b.id))
+      );
+      console.log(`Deleted ${existingBreakdowns.length} existing tax breakdowns for batch ${batch_id}`);
+    }
+
+    // Calculate taxes per allocation (1099 only at this stage)
     const now = new Date().toISOString();
     const breakdownsToCreate = [];
 
     for (const alloc of allocations) {
-      const profile = profileMap[alloc.employee_profile_id];
-
-      if (!profile?.tax_classification) {
-        throw new Error(`Employee ${alloc.employee_profile_id} is missing tax_classification`);
-      }
-
-      const taxClass = profile.tax_classification.toLowerCase();
-
-      if (taxClass !== 'w2' && taxClass !== '1099') {
-        throw new Error(`Invalid tax_classification "${taxClass}" for employee ${alloc.employee_profile_id}`);
-      }
-
       const grossPay = alloc.gross_pay || 0;
 
-      // Use stored withholding from profile (default 0 if not set)
-      const federalWithholding = profile?.federal_allowances ? 0 : 0; // placeholder — Step 2 will integrate W4 withholding tables
-      const stateWithholding = 0; // placeholder — Step 2 will integrate state tables
-
-      let breakdown;
-
-      if (taxClass === '1099') {
-        breakdown = {
-          batch_id,
-          allocation_id: alloc.id,
-          employee_profile_id: alloc.employee_profile_id,
-          tax_classification: '1099',
-          gross_pay: grossPay,
-          federal_withholding: 0,
-          state_withholding: 0,
-          social_security_employee: 0,
-          medicare_employee: 0,
-          social_security_employer: 0,
-          medicare_employer: 0,
-          futa: 0,
-          suta: 0,
-          net_pay: grossPay,
-          employer_total_cost: grossPay,
-          calculated_at: now
-        };
-      } else {
-        // W2 calculations
-        // TODO Phase 4:
-        // - Apply Social Security wage cap
-        // - Apply FUTA wage cap
-        // - Implement state-specific SUTA rates
-        // - Integrate W4 federal withholding tables
-        const socialSecurityEmployee = parseFloat((grossPay * 0.062).toFixed(2));
-        const medicareEmployee = parseFloat((grossPay * 0.0145).toFixed(2));
-        const socialSecurityEmployer = socialSecurityEmployee;
-        const medicareEmployer = medicareEmployee;
-        const futa = parseFloat((grossPay * 0.006).toFixed(2));
-        const suta = parseFloat((grossPay * 0.02).toFixed(2));
-
-        const netPay = parseFloat(
-          (grossPay - federalWithholding - stateWithholding - socialSecurityEmployee - medicareEmployee).toFixed(2)
-        );
-
-        const employerTotalCost = parseFloat(
-          (grossPay + socialSecurityEmployer + medicareEmployer + futa + suta).toFixed(2)
-        );
-
-        breakdown = {
-          batch_id,
-          allocation_id: alloc.id,
-          employee_profile_id: alloc.employee_profile_id,
-          tax_classification: 'w2',
-          gross_pay: grossPay,
-          federal_withholding: federalWithholding,
-          state_withholding: stateWithholding,
-          social_security_employee: socialSecurityEmployee,
-          medicare_employee: medicareEmployee,
-          social_security_employer: socialSecurityEmployer,
-          medicare_employer: medicareEmployer,
-          futa,
-          suta,
-          net_pay: netPay,
-          employer_total_cost: employerTotalCost,
-          calculated_at: now
-        };
-      }
-
-      breakdownsToCreate.push(breakdown);
+      // 1099: no withholding, no employer taxes
+      breakdownsToCreate.push({
+        batch_id,
+        allocation_id: alloc.id,
+        employee_profile_id: alloc.employee_profile_id,
+        tax_classification: '1099',
+        gross_pay: grossPay,
+        federal_withholding: 0,
+        state_withholding: 0,
+        social_security_employee: 0,
+        medicare_employee: 0,
+        social_security_employer: 0,
+        medicare_employer: 0,
+        futa: 0,
+        suta: 0,
+        net_pay: grossPay,
+        employer_total_cost: grossPay,
+        calculated_at: now
+      });
     }
 
     // Bulk create breakdowns
@@ -161,25 +124,16 @@ Deno.serve(async (req) => {
       breakdownsToCreate.map(b => base44.asServiceRole.entities.PayrollTaxBreakdown.create(b))
     );
 
-    // Compute totals for response
-    const totalNetPay = parseFloat(
-      breakdownsToCreate.reduce((sum, b) => sum + b.net_pay, 0).toFixed(2)
-    );
-    const totalEmployerCost = parseFloat(
-      breakdownsToCreate.reduce((sum, b) => sum + b.employer_total_cost, 0).toFixed(2)
-    );
+    const totalNetPay = parseFloat(breakdownsToCreate.reduce((sum, b) => sum + b.net_pay, 0).toFixed(2));
+    const totalEmployerCost = parseFloat(breakdownsToCreate.reduce((sum, b) => sum + b.employer_total_cost, 0).toFixed(2));
 
-    // Write audit log
+    // SECTION 6: Audit log always written
     await base44.asServiceRole.entities.PayrollAuditLog.create({
       batch_id,
       action: 'calculate_taxes',
       performed_by_user_id: user.id,
       timestamp: now,
-      metadata: {
-        breakdowns_created: created.length,
-        total_net_pay: totalNetPay,
-        total_employer_cost: totalEmployerCost
-      }
+      metadata: { breakdowns_created: created.length, total_net_pay: totalNetPay, total_employer_cost: totalEmployerCost }
     });
 
     console.log(`Tax calculation complete for batch ${batch_id}: ${created.length} breakdowns created`);

@@ -1,34 +1,28 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-/**
- * PAYROLL ENTERPRISE CORE — Lock Batch
- *
- * Transitions batch from draft to locked.
- * Requires PayrollTaxBreakdown records to exist before locking.
- * Creates immutable PayrollBatchLiability snapshot on lock.
- * Prevents double snapshot creation.
- * After locked: batch becomes immutable except for status transitions.
- *
- * Payload: { batch_id: string }
- */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // SECTION 1: Role enforcement — MUST be first
+    const user = await base44.auth.me();
+    if (!user || (user.role !== 'admin' && user.role !== 'ceo')) {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+
     const { batch_id } = await req.json();
 
     if (!batch_id) {
       return Response.json({ error: 'batch_id required' }, { status: 400 });
     }
 
-    // Validate batch exists
     const batches = await base44.asServiceRole.entities.PayrollBatch.filter({ id: batch_id }, '', 1);
     if (!batches || batches.length === 0) {
       return Response.json({ error: 'Batch not found' }, { status: 404 });
     }
-
     const batch = batches[0];
 
-    // Only allow if draft
+    // SECTION 2: Immutability — only draft can be locked
     if (batch.status !== 'draft') {
       return Response.json({
         error: `Cannot lock batch in ${batch.status} status. Only draft batches can be locked.`
@@ -48,7 +42,7 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
-    // Prevent double snapshot
+    // SECTION 5: Prevent double snapshot — PayrollBatchLiability is immutable
     const existingSnapshot = await base44.asServiceRole.entities.PayrollBatchLiability.filter(
       { batch_id },
       '',
@@ -56,7 +50,7 @@ Deno.serve(async (req) => {
     );
     if (existingSnapshot && existingSnapshot.length > 0) {
       return Response.json({
-        error: 'Liability snapshot already exists for this batch.'
+        error: 'Liability snapshot already exists for this batch. PayrollBatchLiability is immutable.'
       }, { status: 400 });
     }
 
@@ -98,20 +92,19 @@ Deno.serve(async (req) => {
       locked_at: now
     });
 
-    // Audit log
-    const user = await base44.auth.me();
-    if (user) {
-      await base44.asServiceRole.entities.PayrollAuditLog.create({
-        batch_id,
-        action: 'lock',
-        performed_by_user_id: user.id,
-        timestamp: now,
-        metadata: {
-          liability_snapshot_created: true,
-          total_cash_required: totalCashRequired
-        }
-      });
-    }
+    // SECTION 6: Audit log always written
+    await base44.asServiceRole.entities.PayrollAuditLog.create({
+      batch_id,
+      action: 'lock',
+      performed_by_user_id: user.id,
+      timestamp: now,
+      metadata: {
+        liability_snapshot_created: true,
+        total_cash_required: totalCashRequired,
+        period_start: batch.period_start,
+        period_end: batch.period_end
+      }
+    });
 
     return Response.json({
       success: true,
