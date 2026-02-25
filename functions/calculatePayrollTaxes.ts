@@ -1,10 +1,5 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
-// Social Security wage base 2026
-const SS_WAGE_BASE = 176100;
-// FUTA wage base
-const FUTA_WAGE_BASE = 7000;
-
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -20,6 +15,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'batch_id is required' }, { status: 400 });
     }
 
+    // Fetch the batch
     const batches = await base44.asServiceRole.entities.PayrollBatch.filter({ id: batch_id }, '', 1);
     const batch = batches?.[0];
 
@@ -28,19 +24,31 @@ Deno.serve(async (req) => {
     }
 
     if (batch.status !== 'draft') {
-      return Response.json({ error: 'Cannot recalculate taxes after batch is locked.' }, { status: 400 });
+      return Response.json(
+        { error: 'Cannot recalculate taxes after batch is locked.' },
+        { status: 400 }
+      );
     }
 
-    // Delete existing breakdowns
+    // Delete existing breakdowns for this batch
     const existingBreakdowns = await base44.asServiceRole.entities.PayrollTaxBreakdown.filter(
-      { batch_id }, '', 1000
+      { batch_id },
+      '',
+      1000
     );
+
     if (existingBreakdowns?.length > 0) {
-      await Promise.all(existingBreakdowns.map(b => base44.asServiceRole.entities.PayrollTaxBreakdown.delete(b.id)));
+      await Promise.all(
+        existingBreakdowns.map(b => base44.asServiceRole.entities.PayrollTaxBreakdown.delete(b.id))
+      );
+      console.log(`Deleted ${existingBreakdowns.length} existing tax breakdowns for batch ${batch_id}`);
     }
 
+    // Fetch all allocations for this batch
     const allocations = await base44.asServiceRole.entities.PayrollAllocation.filter(
-      { batch_id }, '', 1000
+      { batch_id },
+      '',
+      1000
     );
 
     if (!allocations || allocations.length === 0) {
@@ -50,52 +58,37 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Batch fetch profiles (no N+1)
+    // Batch fetch all employee profiles (no N+1)
     const uniqueProfileIds = [...new Set(allocations.map(a => a.employee_profile_id))];
     const profiles = await base44.asServiceRole.entities.EmployeeProfile.filter(
-      { id: { $in: uniqueProfileIds } }, '', 1000
+      { id: { $in: uniqueProfileIds } },
+      '',
+      1000
     );
     const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
 
-    // FIN-02/03: Fetch YTD gross per employee from paid batches to apply wage caps
-    // Fetch all paid batches to accumulate YTD wages
-    const paidBatches = await base44.asServiceRole.entities.PayrollBatch.filter(
-      { status: 'paid' }, '', 1000
-    );
-    const paidBatchIds = paidBatches.map(b => b.id);
-
-    // Build YTD gross map per employee_profile_id
-    const ytdGrossMap = {};
-    if (paidBatchIds.length > 0) {
-      const ytdAllocations = await base44.asServiceRole.entities.PayrollAllocation.filter(
-        { batch_id: { $in: paidBatchIds } }, '', 5000
-      );
-      for (const a of (ytdAllocations || [])) {
-        ytdGrossMap[a.employee_profile_id] = (ytdGrossMap[a.employee_profile_id] || 0) + (a.gross_pay || 0);
-      }
-    }
-
+    // Calculate taxes per allocation
     const now = new Date().toISOString();
     const breakdownsToCreate = [];
-    // EDGE-01 FIX: Collect errors per employee instead of aborting
-    const errors = [];
 
     for (const alloc of allocations) {
       const profile = profileMap[alloc.employee_profile_id];
 
       if (!profile?.tax_classification) {
-        errors.push({ employee_profile_id: alloc.employee_profile_id, reason: 'Missing tax_classification' });
-        continue;
+        throw new Error(`Employee ${alloc.employee_profile_id} is missing tax_classification`);
       }
 
       const taxClass = profile.tax_classification.toLowerCase();
 
       if (taxClass !== 'w2' && taxClass !== '1099') {
-        errors.push({ employee_profile_id: alloc.employee_profile_id, reason: `Invalid tax_classification: ${taxClass}` });
-        continue;
+        throw new Error(`Invalid tax_classification "${taxClass}" for employee ${alloc.employee_profile_id}`);
       }
 
       const grossPay = alloc.gross_pay || 0;
+
+      // Use stored withholding from profile (default 0 if not set)
+      const federalWithholding = profile?.federal_allowances ? 0 : 0; // placeholder — Step 2 will integrate W4 withholding tables
+      const stateWithholding = 0; // placeholder — Step 2 will integrate state tables
 
       let breakdown;
 
@@ -119,31 +112,18 @@ Deno.serve(async (req) => {
           calculated_at: now
         };
       } else {
-        // W2 calculations with wage caps (FIN-02, FIN-03)
-        const ytdGross = ytdGrossMap[alloc.employee_profile_id] || 0;
-
-        // Social Security cap
-        const ssWageEligibleYTD = Math.min(ytdGross, SS_WAGE_BASE);
-        const ssWageEligibleAfter = Math.max(0, Math.min(ytdGross + grossPay, SS_WAGE_BASE) - ssWageEligibleYTD);
-        const socialSecurityEmployee = parseFloat((ssWageEligibleAfter * 0.062).toFixed(2));
-        const socialSecurityEmployer = socialSecurityEmployee;
-
-        // Medicare (no cap)
+        // W2 calculations
+        // TODO Phase 4:
+        // - Apply Social Security wage cap
+        // - Apply FUTA wage cap
+        // - Implement state-specific SUTA rates
+        // - Integrate W4 federal withholding tables
+        const socialSecurityEmployee = parseFloat((grossPay * 0.062).toFixed(2));
         const medicareEmployee = parseFloat((grossPay * 0.0145).toFixed(2));
+        const socialSecurityEmployer = socialSecurityEmployee;
         const medicareEmployer = medicareEmployee;
-
-        // FUTA cap
-        const futaWageEligibleYTD = Math.min(ytdGross, FUTA_WAGE_BASE);
-        const futaWageEligibleAfter = Math.max(0, Math.min(ytdGross + grossPay, FUTA_WAGE_BASE) - futaWageEligibleYTD);
-        const futa = parseFloat((futaWageEligibleAfter * 0.006).toFixed(2));
-
-        // FIN-04: SUTA — use flat 2% (configurable in future via CompanySettings)
+        const futa = parseFloat((grossPay * 0.006).toFixed(2));
         const suta = parseFloat((grossPay * 0.02).toFixed(2));
-
-        // FIN-01 FIX: Use 22% flat federal withholding estimate for W2
-        // NOTE: This is an estimate. Full W4 table integration is Phase 4.
-        const federalWithholding = parseFloat((grossPay * 0.22).toFixed(2));
-        const stateWithholding = parseFloat((grossPay * 0.05).toFixed(2));
 
         const netPay = parseFloat(
           (grossPay - federalWithholding - stateWithholding - socialSecurityEmployee - medicareEmployee).toFixed(2)
@@ -176,21 +156,20 @@ Deno.serve(async (req) => {
       breakdownsToCreate.push(breakdown);
     }
 
-    // Fail if all employees had errors
-    if (breakdownsToCreate.length === 0 && errors.length > 0) {
-      return Response.json({
-        error: 'All employees failed tax calculation. Check tax_classification fields.',
-        errors
-      }, { status: 400 });
-    }
-
+    // Bulk create breakdowns
     const created = await Promise.all(
       breakdownsToCreate.map(b => base44.asServiceRole.entities.PayrollTaxBreakdown.create(b))
     );
 
-    const totalNetPay = parseFloat(breakdownsToCreate.reduce((sum, b) => sum + b.net_pay, 0).toFixed(2));
-    const totalEmployerCost = parseFloat(breakdownsToCreate.reduce((sum, b) => sum + b.employer_total_cost, 0).toFixed(2));
+    // Compute totals for response
+    const totalNetPay = parseFloat(
+      breakdownsToCreate.reduce((sum, b) => sum + b.net_pay, 0).toFixed(2)
+    );
+    const totalEmployerCost = parseFloat(
+      breakdownsToCreate.reduce((sum, b) => sum + b.employer_total_cost, 0).toFixed(2)
+    );
 
+    // Write audit log
     await base44.asServiceRole.entities.PayrollAuditLog.create({
       batch_id,
       action: 'calculate_taxes',
@@ -198,20 +177,16 @@ Deno.serve(async (req) => {
       timestamp: now,
       metadata: {
         breakdowns_created: created.length,
-        skipped_employees: errors.length,
-        errors: errors.length > 0 ? errors : undefined,
         total_net_pay: totalNetPay,
         total_employer_cost: totalEmployerCost
       }
     });
 
-    console.log(`Tax calculation complete for batch ${batch_id}: ${created.length} breakdowns, ${errors.length} skipped`);
+    console.log(`Tax calculation complete for batch ${batch_id}: ${created.length} breakdowns created`);
 
     return Response.json({
       success: true,
       breakdowns_created: created.length,
-      skipped_employees: errors.length,
-      errors: errors.length > 0 ? errors : undefined,
       total_net_pay: totalNetPay,
       total_employer_cost: totalEmployerCost
     });

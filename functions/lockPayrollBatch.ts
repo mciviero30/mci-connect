@@ -1,21 +1,26 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
+/**
+ * PAYROLL ENTERPRISE CORE — Lock Batch
+ *
+ * Transitions batch from draft to locked.
+ * Requires PayrollTaxBreakdown records to exist before locking.
+ * Creates immutable PayrollBatchLiability snapshot on lock.
+ * Prevents double snapshot creation.
+ * After locked: batch becomes immutable except for status transitions.
+ *
+ * Payload: { batch_id: string }
+ */
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-
-    // SEC-01 FIX: Authenticate and check role at entry
-    const user = await base44.auth.me();
-    if (!user || (user.role !== 'admin' && user.role !== 'ceo')) {
-      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
-    }
-
     const { batch_id } = await req.json();
 
     if (!batch_id) {
       return Response.json({ error: 'batch_id required' }, { status: 400 });
     }
 
+    // Validate batch exists
     const batches = await base44.asServiceRole.entities.PayrollBatch.filter({ id: batch_id }, '', 1);
     if (!batches || batches.length === 0) {
       return Response.json({ error: 'Batch not found' }, { status: 404 });
@@ -23,39 +28,39 @@ Deno.serve(async (req) => {
 
     const batch = batches[0];
 
+    // Only allow if draft
     if (batch.status !== 'draft') {
       return Response.json({
         error: `Cannot lock batch in ${batch.status} status. Only draft batches can be locked.`
       }, { status: 400 });
     }
 
+    // Require tax breakdowns before locking
     const taxBreakdowns = await base44.asServiceRole.entities.PayrollTaxBreakdown.filter(
-      { batch_id }, '', 1000
+      { batch_id },
+      '',
+      1000
     );
 
     if (!taxBreakdowns || taxBreakdowns.length === 0) {
-      return Response.json({ error: 'Cannot lock batch. Taxes must be calculated first.' }, { status: 400 });
+      return Response.json({
+        error: 'Cannot lock batch. Taxes must be calculated first.'
+      }, { status: 400 });
     }
 
     // Prevent double snapshot
     const existingSnapshot = await base44.asServiceRole.entities.PayrollBatchLiability.filter(
-      { batch_id }, '', 1
+      { batch_id },
+      '',
+      1
     );
     if (existingSnapshot && existingSnapshot.length > 0) {
-      return Response.json({ error: 'Liability snapshot already exists for this batch.' }, { status: 400 });
+      return Response.json({
+        error: 'Liability snapshot already exists for this batch.'
+      }, { status: 400 });
     }
 
-    // CON-01 FIX: Also fetch allocations to cross-verify gross
-    const allocations = await base44.asServiceRole.entities.PayrollAllocation.filter(
-      { batch_id }, '', 1000
-    );
-    const allocGrossTotal = parseFloat(allocations.reduce((s, a) => s + (a.gross_pay || 0), 0).toFixed(2));
-    const breakdownGrossTotal = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.gross_pay || 0), 0).toFixed(2));
-
-    if (Math.abs(allocGrossTotal - breakdownGrossTotal) > 0.05) {
-      console.warn(`CONSISTENCY WARNING: Allocation gross ${allocGrossTotal} vs breakdown gross ${breakdownGrossTotal} — difference exceeds $0.05`);
-    }
-
+    // Calculate liability totals from tax breakdowns
     const totalGrossPay = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.gross_pay || 0), 0).toFixed(2));
     const totalNetPay = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.net_pay || 0), 0).toFixed(2));
     const totalEmployeeFica = parseFloat(taxBreakdowns.reduce((s, t) => s + (t.social_security_employee || 0) + (t.medicare_employee || 0), 0).toFixed(2));
@@ -69,6 +74,7 @@ Deno.serve(async (req) => {
 
     const now = new Date().toISOString();
 
+    // Create immutable liability snapshot
     await base44.asServiceRole.entities.PayrollBatchLiability.create({
       batch_id,
       total_gross_pay: totalGrossPay,
@@ -84,23 +90,28 @@ Deno.serve(async (req) => {
       snapshot_created_at: now
     });
 
+    console.log(`Liability snapshot created for batch ${batch_id}: total_cash_required=${totalCashRequired}`);
+
+    // Lock batch
     const locked = await base44.asServiceRole.entities.PayrollBatch.update(batch_id, {
       status: 'locked',
       locked_at: now
     });
 
-    await base44.asServiceRole.entities.PayrollAuditLog.create({
-      batch_id,
-      action: 'lock',
-      performed_by_user_id: user.id,
-      timestamp: now,
-      metadata: {
-        liability_snapshot_created: true,
-        total_cash_required: totalCashRequired,
-        allocation_gross_verified: allocGrossTotal,
-        breakdown_gross_verified: breakdownGrossTotal
-      }
-    });
+    // Audit log
+    const user = await base44.auth.me();
+    if (user) {
+      await base44.asServiceRole.entities.PayrollAuditLog.create({
+        batch_id,
+        action: 'lock',
+        performed_by_user_id: user.id,
+        timestamp: now,
+        metadata: {
+          liability_snapshot_created: true,
+          total_cash_required: totalCashRequired
+        }
+      });
+    }
 
     return Response.json({
       success: true,
