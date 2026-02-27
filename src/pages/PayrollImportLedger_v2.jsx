@@ -2,8 +2,8 @@ import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Upload, ChevronDown, ChevronRight, CheckCircle2, AlertTriangle, XCircle, Clock, Users, DollarSign, Briefcase } from "lucide-react";
+import { Upload, ChevronDown, ChevronRight, CheckCircle2, AlertTriangle, XCircle, Clock, Users, DollarSign, Briefcase, ChevronLeft, RotateCcw } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 // ─── Auth Guard ────────────────────────────────────────────────────────────────
 function useAuthorizedUser() {
