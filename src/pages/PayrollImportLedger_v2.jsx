@@ -643,6 +643,20 @@ export default function PayrollImportLedger_v2() {
             setConfirmationResult(null);
             setStep("upload");
           }}
+          onViewDetail={(batchId) => {
+            setSelectedBatchId(batchId);
+            setStep("detail");
+          }}
+        />
+      )}
+
+      {step === "detail" && selectedBatchId && (
+        <BatchDetailStep
+          batchId={selectedBatchId}
+          onBack={() => {
+            setSelectedBatchId(null);
+            setStep("history");
+          }}
         />
       )}
     </div>
