@@ -353,8 +353,156 @@ function PreviewStep({ previewData, onConfirmed, onBack }) {
   );
 }
 
+// ─── Step 3: Batch Detail ──────────────────────────────────────────────────────
+function BatchDetailStep({ batchId, onBack }) {
+  const queryClient = useQueryClient();
+  const [reverseDialogOpen, setReverseDialogOpen] = useState(false);
+
+  const { data: batches = [] } = useQuery({
+    queryKey: ["payrollBatches_v2"],
+    queryFn: () => base44.entities.PayrollBatch.list("-created_date", 50),
+    staleTime: 0,
+  });
+
+  const { data: allocations = [] } = useQuery({
+    queryKey: ["batchAllocations_v2", batchId],
+    queryFn: () => base44.entities.PayrollAllocation.filter({ payroll_batch_id: batchId }),
+    enabled: !!batchId,
+  });
+
+  const { data: auditLogs = [] } = useQuery({
+    queryKey: ["auditLogs_v2", batchId],
+    queryFn: () => base44.entities.AuditLog.filter({ entity_id: batchId, entity_type: "PayrollBatch" }, "-created_date"),
+    enabled: !!batchId,
+  });
+
+  const { data: user } = useQuery({ queryKey: ["currentUser"], queryFn: () => base44.auth.me(), staleTime: Infinity });
+
+  const reverseMutation = useMutation({
+    mutationFn: async () => {
+      await base44.functions.invoke("reversePayrollBatch", {
+        batch_id: batchId,
+        reason: `Reversed by ${user?.full_name || user?.email}`,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["payrollBatches_v2"] });
+      queryClient.invalidateQueries({ queryKey: ["batchAllocations_v2", batchId] });
+      setReverseDialogOpen(false);
+      onBack();
+    },
+  });
+
+  const batch = batches.find(b => b.id === batchId);
+  if (!batch) return null;
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-5">
+      <Button variant="ghost" size="sm" onClick={onBack} className="mb-2">
+        <ChevronLeft className="w-4 h-4 mr-1" /> Back to History
+      </Button>
+
+      {/* Header */}
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div>
+            <p className="text-xs text-slate-500 uppercase font-semibold">Employee</p>
+            <p className="font-semibold text-slate-900 mt-1">{batch.employee_name}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 uppercase font-semibold">Period</p>
+            <p className="text-sm font-semibold text-slate-900 mt-1">{batch.period_start} → {batch.period_end}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 uppercase font-semibold">Total Paid</p>
+            <p className="text-lg font-bold text-emerald-700 mt-1">{fmt(batch.total_paid)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 uppercase font-semibold">Status</p>
+            <span className={`inline-block mt-1 text-xs font-bold px-2 py-1 rounded ${
+              batch.status === "confirmed" ? "bg-emerald-100 text-emerald-700" :
+              batch.status === "reversed" ? "bg-red-100 text-red-700" :
+              "bg-amber-100 text-amber-700"
+            }`}>
+              {batch.status?.toUpperCase()}
+            </span>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 uppercase font-semibold">Batch ID</p>
+            <p className="font-mono text-xs text-slate-500 mt-1">{batchId?.substring(0, 8)}...</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Allocations */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
+          <DollarSign className="w-4 h-4 text-slate-400" />
+          <h3 className="text-sm font-semibold text-slate-900">Allocation Breakdown ({allocations.length})</h3>
+        </div>
+        <div className="divide-y divide-slate-100">
+          {allocations.map((a) => (
+            <div key={a.id} className="flex items-center justify-between px-5 py-3">
+              <div>
+                <p className="text-sm font-medium text-slate-900">{a.job_name}</p>
+                <p className="text-xs text-slate-500">{a.hours_worked} hrs · {a.allocation_percentage?.toFixed(1)}%</p>
+                {a.is_rounding_adjustment && <p className="text-xs text-amber-600">⚠️ Rounding adjustment</p>}
+              </div>
+              <p className="font-bold text-slate-900">{fmt(a.allocated_amount)}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Audit Trail */}
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="px-5 py-3 border-b border-slate-100 flex items-center gap-2">
+          <Clock className="w-4 h-4 text-slate-400" />
+          <h3 className="text-sm font-semibold text-slate-900">Audit Trail</h3>
+        </div>
+        {auditLogs.length === 0 ? (
+          <p className="p-5 text-sm text-slate-400">No audit events</p>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {auditLogs.map((log) => (
+              <div key={log.id} className="px-5 py-3 border-l-4 border-blue-400">
+                <p className="text-xs font-semibold text-slate-700">{log.event_type?.replace(/_/g, ' ').toUpperCase()}</p>
+                <p className="text-xs text-slate-500">By {log.performed_by_name || log.performed_by}</p>
+                <p className="text-xs text-slate-400">{new Date(log.created_date).toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Reverse */}
+      {batch.status === "confirmed" && (
+        <Button variant="destructive" onClick={() => setReverseDialogOpen(true)} disabled={reverseMutation.isPending}>
+          <RotateCcw className="w-4 h-4 mr-2" />
+          Reverse Batch
+        </Button>
+      )}
+
+      <AlertDialog open={reverseDialogOpen} onOpenChange={setReverseDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reverse Payroll Batch?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will subtract all allocated amounts from Job total_cost and recalculate profits & commissions. Allocations will be marked as 'reversed' but not deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogAction onClick={() => reverseMutation.mutate()} disabled={reverseMutation.isPending} className="bg-red-600">
+            {reverseMutation.isPending ? "Reversing..." : "Reverse Batch"}
+          </AlertDialogAction>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
 // ─── Step 3: History ───────────────────────────────────────────────────────────
-function HistoryStep({ confirmationResult, onNewImport }) {
+function HistoryStep({ confirmationResult, onNewImport, onViewDetail }) {
   const { data: batches = [], isLoading } = useQuery({
     queryKey: ["payrollBatches_v2"],
     queryFn: () =>
@@ -396,7 +544,7 @@ function HistoryStep({ confirmationResult, onNewImport }) {
         ) : (
           <div className="divide-y divide-slate-100">
             {batches.map((b) => (
-              <div key={b.id} className="flex items-center gap-4 px-5 py-3">
+              <div key={b.id} className="flex items-center gap-4 px-5 py-3 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => onViewDetail(b.id)}>
                 <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-slate-900">{b.employee_name}</p>
@@ -406,7 +554,7 @@ function HistoryStep({ confirmationResult, onNewImport }) {
                   <p className="text-sm font-semibold text-slate-900">{fmt(b.total_paid)}</p>
                   <p className="text-xs text-slate-400">{b.allocation_count} alloc{b.allocation_count !== 1 ? "s" : ""}</p>
                 </div>
-                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${b.status === "confirmed" ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${b.status === "confirmed" ? "bg-green-100 text-green-700" : b.status === "reversed" ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-500"}`}>
                   {b.status}
                 </span>
               </div>
