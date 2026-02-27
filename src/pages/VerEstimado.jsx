@@ -58,6 +58,12 @@ export default function VerEstimado() {
   const quoteId = urlParams.get('id');
   const { toggleFocusMode } = useUI();
 
+  const { data: user } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity
+  });
+
   const [paymentDialog, setPaymentDialog] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
 
