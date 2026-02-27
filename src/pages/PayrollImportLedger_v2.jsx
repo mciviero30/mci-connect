@@ -569,9 +569,10 @@ function HistoryStep({ confirmationResult, onNewImport, onViewDetail }) {
 // ─── Root Page ─────────────────────────────────────────────────────────────────
 export default function PayrollImportLedger_v2() {
   const { data: user, isLoading: userLoading } = useAuthorizedUser();
-  const [step, setStep] = useState("upload"); // upload | preview | history
+  const [step, setStep] = useState("upload"); // upload | preview | history | detail
   const [previewData, setPreviewData] = useState(null);
   const [confirmationResult, setConfirmationResult] = useState(null);
+  const [selectedBatchId, setSelectedBatchId] = useState(null);
 
   if (userLoading) {
     return (
