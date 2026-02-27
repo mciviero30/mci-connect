@@ -59,7 +59,7 @@ export default function Trabajos() {
   });
   
   // Smart pagination - Only fetch 20 jobs at a time
-  const paginationFilters = {};
+  const paginationFilters = { deleted_at: null };
   if (statusFilter !== 'all') paginationFilters.status = statusFilter;
   if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
   
