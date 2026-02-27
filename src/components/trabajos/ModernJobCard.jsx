@@ -240,6 +240,35 @@ export default function ModernJobCard({ job, onEdit }) {
                 {formatCurrency(contractAmount)}
               </span>
             </div>
+
+            {/* All invoices summary */}
+            {invoiceCount > 1 && (
+              <div className="mt-2 pt-2 border-t border-red-100 dark:border-red-800/30 space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                    <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
+                      Total Invoiced ({invoiceCount})
+                    </span>
+                  </div>
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                    {formatCurrency(totalInvoiced)}
+                  </span>
+                </div>
+                {totalPaid > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">Paid</span>
+                    <span className="text-xs font-bold text-green-600 dark:text-green-400">{formatCurrency(totalPaid)}</span>
+                  </div>
+                )}
+                {(totalInvoiced - totalPaid) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-amber-600 dark:text-amber-400 font-medium">Outstanding</span>
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400">{formatCurrency(totalInvoiced - totalPaid)}</span>
+                  </div>
+                )}
+              </div>
+            )}
             
             {estimatedCost > 0 && (
               <div className="flex items-center justify-between pt-3 border-t border-red-100 dark:border-red-800/30 mt-2">
