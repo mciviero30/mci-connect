@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, Eye, Users, Calendar, TrendingUp, MoreVertical, Edit, Trash2, CheckCircle, AlertTriangle, Clock } from "lucide-react";
+import { MapPin, DollarSign, Eye, Users, Calendar, TrendingUp, MoreVertical, Edit, Trash2, CheckCircle, AlertTriangle, Clock, FileText } from "lucide-react";
 import SwipeableListItem from '@/components/shared/SwipeableListItem';
 import { createPageUrl } from "@/utils";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { base44 } from "@/api/base44Client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
 import FavoriteButton from "@/components/shared/FavoriteButton";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
@@ -26,6 +26,18 @@ export default function ModernJobCard({ job, onEdit }) {
   const toast = useToast();
 
   const { data: user } = useCurrentUser();
+
+  // Fetch all invoices for this job
+  const { data: jobInvoices = [] } = useQuery({
+    queryKey: ['job-invoices', job.id],
+    queryFn: () => base44.entities.Invoice.filter({ job_id: job.id, deleted_at: null }),
+    enabled: !!job.id,
+    staleTime: 60000,
+  });
+
+  const totalInvoiced = jobInvoices.filter(inv => !inv.deleted_at).reduce((sum, inv) => sum + (inv.total || 0), 0);
+  const totalPaid = jobInvoices.filter(inv => !inv.deleted_at).reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
+  const invoiceCount = jobInvoices.filter(inv => !inv.deleted_at).length;
 
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Job.delete(id),
