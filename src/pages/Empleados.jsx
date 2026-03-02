@@ -94,16 +94,10 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       <div className="flex gap-2 justify-end pt-4">
         <Button variant="outline" onClick={onClose}>Cancel</Button>
         <Button 
-          onClick={() => {
-            if (!employee?.id && !formData.hire_date) {
-              alert('hire_date is required');
-              return;
-            }
-            mutation.mutate(formData);
-          }} 
-          disabled={mutation.isPending || (!employee?.id && !formData.hire_date)}
+          onClick={() => mutation.mutate(formData)} 
+          disabled={mutation.isPending}
         >
-          {mutation.isPending ? 'Saving...' : employee ? 'Update' : 'Create Employee'}
+          {mutation.isPending ? 'Saving...' : employee ? 'Update Employee' : 'Create Employee'}
         </Button>
       </div>
     </div>
