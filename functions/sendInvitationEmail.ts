@@ -14,69 +14,25 @@ Deno.serve(async (req) => {
 
     const appUrl = Deno.env.get('APP_URL') || 'https://mci-connect.base44.app';
 
-    const subject = language === 'es'
+    const isSpanish = language === 'es';
+
+    const subject = isSpanish
       ? 'Bienvenido a MCI Connect - Tu invitación al equipo'
       : 'Welcome to MCI Connect - Your Team Invitation';
 
-    const body = language === 'es'
-      ? `
-Hola ${fullName},
+    const body = isSpanish
+      ? `Hola ${fullName},\n\nTe damos la bienvenida al equipo de MCI. Has sido invitado a MCI Connect.\n\nAccede aquí: ${appUrl}\n\nSi no tienes cuenta, revisa el correo de Base44 para la invitación (puede estar en spam).\n\nBienvenido,\nEl Equipo MCI`
+      : `Hi ${fullName},\n\nWelcome to the MCI team! You have been invited to MCI Connect.\n\nAccess the platform here: ${appUrl}\n\nIf you don't have an account yet, check your email for a Base44 invitation (may be in spam).\n\nWelcome,\nThe MCI Team`;
 
-Te damos la bienvenida al equipo de MCI. Has sido invitado a unirte a MCI Connect, nuestra plataforma integral de gestión empresarial.
-
-MCI Connect te da acceso a:
-• Control de Tiempo: Entrada/salida con geolocalización y aprobación de horas
-• Gestión de Gastos: Categorización AI de gastos y reembolsos
-• Nómina Automatizada: Cálculo automático de pago con reportes detallados
-• Calendario Inteligente: Asignaciones y disponibilidad de equipo
-• MCI Field: Gestión de proyectos en campo - planos, fotos y tareas
-• Facturación y Estimados: Creación con inteligencia artificial
-
-Pasos para activar tu cuenta:
-1. Revisa tu correo de Base44 (puede estar en spam)
-2. Haz clic en "Aceptar Invitación"
-3. Crea tu contraseña
-4. Accede a la plataforma en: ${appUrl}
-
-Si tienes preguntas, contacta a tu supervisor.
-
-Bienvenido al equipo,
-El Equipo MCI
-      `.trim()
-      : `
-Hi ${fullName},
-
-Welcome to the MCI team! You have been invited to join MCI Connect, our comprehensive business management platform.
-
-MCI Connect gives you access to:
-• Time Tracking: Clock in/out with geolocation and hours approval
-• Expense Management: AI categorization and automated reimbursements
-• Automated Payroll: Automatic pay calculation with detailed reports
-• Smart Calendar: Job assignments and team availability
-• MCI Field: Field project management - blueprints, photos and tasks
-• Invoicing & Estimates: AI-powered creation
-
-Steps to activate your account:
-1. Check your Base44 invitation email (may be in spam)
-2. Click "Accept Invitation"
-3. Create your password
-4. Access the platform at: ${appUrl}
-
-If you have questions, please contact your supervisor.
-
-Welcome to the team,
-The MCI Team
-      `.trim();
-
-    // Use Base44's built-in email (no SendGrid credits needed)
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    // Use Base44's built-in SendEmail integration
+    const result = await base44.asServiceRole.integrations.Core.SendEmail({
       to,
       subject,
       body,
       from_name: 'MCI Connect'
     });
 
-    console.log(`[sendInvitationEmail] ✅ Email sent successfully to ${to}`);
+    console.log(`[sendInvitationEmail] ✅ Email sent to ${to}`, result);
 
     return Response.json({
       success: true,
