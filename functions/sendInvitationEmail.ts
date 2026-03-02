@@ -12,18 +12,7 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Missing required fields: to, fullName' }, { status: 400 });
     }
 
-    const sendgridApiKey = Deno.env.get('SENDGRID_API_KEY');
-    const sendgridFromEmail = Deno.env.get('SENDGRID_FROM_EMAIL');
-
-    if (!sendgridApiKey || !sendgridFromEmail) {
-      return Response.json({ error: 'SendGrid credentials not configured' }, { status: 500 });
-    }
-
-    const logoUrl = 'https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png';
-
-    // Send password reset to allow user to set password
     const appUrl = Deno.env.get('APP_URL') || 'https://mci-connect.base44.app';
-    const setupPasswordUrl = `${appUrl}`;
 
     const htmlBody = language === 'es'
       ? `
