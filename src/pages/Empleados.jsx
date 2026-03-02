@@ -26,43 +26,60 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
 
    const mutation = useMutation({
      mutationFn: async (data) => {
-       const firstName = data.first_name?.charAt(0).toUpperCase() + data.first_name?.slice(1).toLowerCase() || '';
-       const lastName = data.last_name?.charAt(0).toUpperCase() + data.last_name?.slice(1).toLowerCase() || '';
-       const fullName = firstName && lastName ? `${firstName} ${lastName}`.trim() : '';
+       const firstName = (data.first_name || '').charAt(0).toUpperCase() + (data.first_name || '').slice(1);
+       const lastName = (data.last_name || '').charAt(0).toUpperCase() + (data.last_name || '').slice(1);
 
        if (employee?.id) {
          // UPDATE: User + EmployeeProfile
-         if (!data.hire_date) {
-           throw new Error('hire_date is required');
-         }
-
+         const fullName = `${firstName} ${lastName}`.trim();
          const userPayload = { full_name: fullName };
          await base44.entities.User.update(employee.id, userPayload);
 
-         const profilePayload = {
+         if (employee.profile_id) {
+           const profilePayload = {
+             first_name: firstName,
+             last_name: lastName,
+             hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
+             phone: data.phone || null,
+             address: data.address || null,
+             t_shirt_size: data.tshirt_size || null,
+             hire_date: data.hire_date || null,
+             employment_type: data.employment_type || 'W2',
+             employment_status: data.employment_status || 'active'
+           };
+           return await base44.entities.EmployeeProfile.update(employee.profile_id, profilePayload);
+         }
+       } else {
+         // CREATE: EmployeeInvitation (pre-registration bridge)
+         if (!data.email) throw new Error('Email is required');
+         if (!firstName || !lastName) throw new Error('First and last name are required');
+
+         return await base44.entities.EmployeeInvitation.create({
+           email: data.email,
            first_name: firstName,
            last_name: lastName,
-           hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
-           phone: data.phone || null,
-           address: data.address || null,
-           t_shirt_size: data.tshirt_size || null,
-           hire_date: data.hire_date,
-           employment_type: data.employment_type || 'W2',
-           employment_status: data.employment_status || 'active'
-         };
-         return await base44.entities.EmployeeProfile.update(employee.profile_id, profilePayload);
-       } else {
-         // CREATE: FORBIDDEN - EmployeeProfile only via syncInvitationOnRegister
-         throw new Error('Employee must be invited before profile creation. Create an EmployeeInvitation first.');
+           position: data.position || '',
+           department: data.department || '',
+           team_id: data.team_id || '',
+           team_name: data.team_name || '',
+           phone: data.phone || '',
+           address: data.address || '',
+           tshirt_size: data.tshirt_size || '',
+           hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
+           role: data.role || 'user',
+           status: 'pending',
+           invited_date: new Date().toISOString(),
+         });
        }
      },
      onSuccess: async () => {
        await queryClient.invalidateQueries({ queryKey: ['employees'] });
-       toast.success(employee ? 'Employee updated!' : 'Employee created!');
+       await queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
+       toast.success(employee ? 'Employee updated!' : 'Invitation created! Go to the Invitations tab to send the email.');
        onClose();
      },
      onError: (error) => {
-       handleError(error, employee ? 'Employee updated' : 'Employee created');
+       handleError(error, employee ? 'Employee update' : 'Employee creation');
      }
    });
 
