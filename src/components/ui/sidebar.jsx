@@ -441,52 +441,46 @@ const sidebarMenuButtonVariants = cva(
   }
 )
 
-const SidebarMenuButton = React.forwardRef((
-  {
-    asChild = false,
-    isActive = false,
-    variant = "default",
-    size = "default",
-    tooltip,
-    className,
-    ...props
-  },
+function SidebarMenuButtonComponent(
+  { asChild, isActive, variant, size, tooltip, className, ...props },
   ref
-) => {
-  const Comp = asChild ? Slot : "button"
-  const { isMobile, state } = useSidebar()
+) {
+  const asChildVal = asChild === undefined ? false : asChild;
+  const isActiveVal = isActive === undefined ? false : isActive;
+  const variantVal = variant === undefined ? "default" : variant;
+  const sizeVal = size === undefined ? "default" : size;
+  const Comp = asChildVal ? Slot : "button";
+  const { isMobile, state } = useSidebar();
 
   const button = (
     <Comp
       ref={ref}
       data-sidebar="menu-button"
-      data-size={size}
-      data-active={isActive}
-      className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+      data-size={sizeVal}
+      data-active={isActiveVal}
+      className={cn(sidebarMenuButtonVariants({ variant: variantVal, size: sizeVal }), className)}
       {...props} />
-  )
+  );
 
   if (!tooltip) {
-    return button
+    return button;
   }
 
-  if (typeof tooltip === "string") {
-    tooltip = {
-      children: tooltip,
-    }
-  }
+  const tooltipProps = typeof tooltip === "string" ? { children: tooltip } : tooltip;
 
   return (
-    (<Tooltip>
+    <Tooltip>
       <TooltipTrigger asChild>{button}</TooltipTrigger>
       <TooltipContent
         side="right"
         align="center"
         hidden={state !== "collapsed" || isMobile}
-        {...tooltip} />
-    </Tooltip>)
+        {...tooltipProps} />
+    </Tooltip>
   );
-})
+}
+
+const SidebarMenuButton = React.forwardRef(SidebarMenuButtonComponent);
 SidebarMenuButton.displayName = "SidebarMenuButton"
 
 const SidebarMenuAction = React.forwardRef(({ className, asChild = false, showOnHover = false, ...props }, ref) => {
