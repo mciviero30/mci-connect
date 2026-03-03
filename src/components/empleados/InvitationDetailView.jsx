@@ -170,9 +170,9 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
       {/* Contact */}
       <div className="space-y-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Contact</p>
-        <Row icon={Mail} label="Email" value={invitation.email} />
-        <Row icon={Phone} label="Phone" value={invitation.phone} />
-        <Row icon={MapPin} label="Address" value={invitation.address} />
+        <Row icon={Mail} label="Email" value={saved.email} />
+        <Row icon={Phone} label="Phone" value={saved.phone} />
+        <Row icon={MapPin} label="Address" value={saved.address} />
       </div>
 
       {/* Employment */}
