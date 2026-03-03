@@ -59,6 +59,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
     address: invitation.address || '',
     position: invitation.position || '',
     department: invitation.department || '',
+    team_id: invitation.team_id || '',
     team_name: invitation.team_name || '',
     hourly_rate: invitation.hourly_rate || '',
     tshirt_size: invitation.tshirt_size || '',
