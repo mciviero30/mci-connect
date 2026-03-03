@@ -506,24 +506,37 @@ export default function Empleados() {
                      return (
                        <div
                          key={inv.id}
-                         className={`relative rounded-xl border-2 p-4 transition-all cursor-pointer ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-slate-200'}`}
-                         onClick={() => {
-                           setSelectedPending(prev => {
-                             const next = new Set(prev);
-                             isSelected ? next.delete(inv.id) : next.add(inv.id);
-                             return next;
-                           });
-                         }}
+                         className={`relative rounded-xl border-2 p-4 transition-all bg-white dark:bg-[#282828] ${isSelected ? 'border-blue-500 bg-blue-50/50' : 'border-slate-200 dark:border-slate-700'}`}
                        >
-                         {isSelected && (
-                           <div className="absolute top-2 right-2 z-10">
-                             <CheckSquare className="w-5 h-5 text-blue-600" />
+                         {/* Checkbox area */}
+                         <div
+                           className="absolute top-2 right-2 z-10 cursor-pointer"
+                           onClick={() => {
+                             setSelectedPending(prev => {
+                               const next = new Set(prev);
+                               isSelected ? next.delete(inv.id) : next.add(inv.id);
+                               return next;
+                             });
+                           }}
+                         >
+                           {isSelected
+                             ? <CheckSquare className="w-5 h-5 text-blue-600" />
+                             : <Square className="w-5 h-5 text-slate-300" />
+                           }
+                         </div>
+
+                         {/* Clickable content to open edit dialog */}
+                         <div
+                           className="text-sm cursor-pointer"
+                           onClick={() => { setEditingInvitation(inv); setShowInvitationDialog(true); }}
+                         >
+                           <div className="w-10 h-10 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-base mb-2">
+                             {(inv.first_name?.[0] || inv.email?.[0] || '?').toUpperCase()}
                            </div>
-                         )}
-                         <div className="text-sm">
-                           <p className="font-semibold text-slate-900">{inv.first_name} {inv.last_name}</p>
-                           <p className="text-xs text-slate-500">{inv.email}</p>
-                           {inv.position && <p className="text-xs text-slate-600 mt-1">{inv.position}</p>}
+                           <p className="font-semibold text-slate-900 dark:text-white pr-6">{inv.first_name} {inv.last_name}</p>
+                           <p className="text-xs text-slate-500 dark:text-slate-400">{inv.email}</p>
+                           {inv.position && <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">{inv.position}</p>}
+                           {inv.team_name && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Team: {inv.team_name}</p>}
                            <p className="text-xs text-slate-400 mt-2">Status: <span className="font-medium capitalize">{inv.status}</span></p>
                          </div>
                        </div>
