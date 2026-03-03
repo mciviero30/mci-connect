@@ -602,6 +602,7 @@ export default function Empleados() {
                 onInvite={() => inviteMutation.mutate(editingInvitation)}
                 isInviting={inviteMutation.isPending}
                 queryClient={queryClient}
+                onSaved={(updated) => setEditingInvitation(updated)}
               />
             )}
           </DialogContent>
