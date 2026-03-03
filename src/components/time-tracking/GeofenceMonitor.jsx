@@ -125,9 +125,9 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
     checkIntervalRef.current = setInterval(checkGeofence, 15000);
 
     return () => {
-      if (checkIntervalRef.current) {
-        clearInterval(checkIntervalRef.current);
-      }
+      if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
+      if (autoClockOutTimerRef.current) clearTimeout(autoClockOutTimerRef.current);
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, [activeSession, job, user, language, onAutoClockOut]);
 
