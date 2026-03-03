@@ -179,7 +179,10 @@ export default function Empleados() {
               first_name: p.first_name,
               last_name: p.last_name,
               position: p.position,
+              department: p.department || '',
               phone: p.phone || '',
+              team_id: p.team_id || '',
+              team_name: p.team_name || '',
               employment_status: p.employment_status,
               role: user?.role || 'user',
               hourly_rate: p.hourly_rate || null
