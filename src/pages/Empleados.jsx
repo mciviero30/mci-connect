@@ -258,7 +258,7 @@ export default function Empleados() {
   };
 
   const inviteMutation = useMutation({
-    mutationFn: (employee) => inviteSingle(employee),
+    mutationFn: (employee) => inviteSingle(employee || editingInvitation),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['employees'] });
       toast.success('Invitation sent!');
