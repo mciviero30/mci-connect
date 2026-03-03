@@ -124,7 +124,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
               value={form.team_id || ''}
               onChange={(e) => {
                 const selected = teams.find(t => t.id === e.target.value);
-                setForm(prev => ({ ...prev, team_id: e.target.value, team_name: selected?.name || '' }));
+                setForm(prev => ({ ...prev, team_id: e.target.value, team_name: selected?.team_name || '' }));
               }}
               className="w-full h-10 px-3 border rounded-md text-sm bg-white dark:bg-slate-800"
             >
