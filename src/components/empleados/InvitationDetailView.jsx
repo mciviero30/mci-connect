@@ -186,8 +186,17 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
         <p className="text-xs font-semibold text-red-500 uppercase tracking-wider flex items-center gap-1">
           <ShieldAlert className="w-3.5 h-3.5" /> Sensitive Information
         </p>
-        <Row icon={Calendar} label="Date of Birth" value={invitation.dob} />
-        <Row icon={ShieldAlert} label="SSN / Tax ID" value={invitation.ssn_tax_id} />
+        {canViewSensitive ? (
+          <>
+            <Row icon={Calendar} label="Date of Birth" value={invitation.dob} />
+            <Row icon={ShieldAlert} label="SSN / Tax ID" value={invitation.ssn_tax_id} />
+          </>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-amber-800">
+            <Lock className="w-4 h-4 flex-shrink-0" />
+            Restricted — Admin, CEO, or HR access required.
+          </div>
+        )}
       </div>
 
       {invitation.last_sent_date && (
