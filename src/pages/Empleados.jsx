@@ -68,6 +68,8 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
            tshirt_size: data.tshirt_size || '',
            hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
            role: data.role || 'user',
+           dob: data.dob || '',
+           ssn_tax_id: data.ssn_tax_id || '',
            status: 'pending',
            invited_date: new Date().toISOString(),
          });
