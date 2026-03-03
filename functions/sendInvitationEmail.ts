@@ -24,15 +24,15 @@ Deno.serve(async (req) => {
       ? `Hola ${fullName},\n\nTe damos la bienvenida al equipo de MCI. Has sido invitado a MCI Connect.\n\nAccede aquí: ${appUrl}\n\nSi no tienes cuenta, revisa el correo de Base44 para la invitación (puede estar en spam).\n\nBienvenido,\nEl Equipo MCI`
       : `Hi ${fullName},\n\nWelcome to the MCI team! You have been invited to MCI Connect.\n\nAccess the platform here: ${appUrl}\n\nIf you don't have an account yet, check your email for a Base44 invitation (may be in spam).\n\nWelcome,\nThe MCI Team`;
 
-    // Use Base44's built-in SendEmail integration
-    const result = await base44.asServiceRole.integrations.Core.SendEmail({
+    // Use Base44's built-in SendEmail integration (no SendGrid needed)
+    await base44.asServiceRole.integrations.Core.SendEmail({
       to,
       subject,
       body,
       from_name: 'MCI Connect'
     });
 
-    console.log(`[sendInvitationEmail] ✅ Email sent to ${to}`, result);
+    console.log(`[sendInvitationEmail] ✅ Email sent to ${to}`);
 
     return Response.json({
       success: true,
