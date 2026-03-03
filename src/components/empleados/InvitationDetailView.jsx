@@ -118,6 +118,19 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
               <option value="HR">HR</option>
             </select>
           </div>
+          <div className="col-span-2"><Label className="text-xs">Team</Label>
+            <select
+              value={form.team_id || ''}
+              onChange={(e) => {
+                const selected = teams.find(t => t.id === e.target.value);
+                setForm(prev => ({ ...prev, team_id: e.target.value, team_name: selected?.name || '' }));
+              }}
+              className="w-full h-10 px-3 border rounded-md text-sm bg-white dark:bg-slate-800"
+            >
+              <option value="">No team</option>
+              {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select>
+          </div>
           <div><Label className="text-xs">T-Shirt Size</Label>
             <select value={form.tshirt_size} onChange={f('tshirt_size')} className="w-full h-10 px-3 border rounded-md text-sm bg-white dark:bg-slate-800">
               <option value="">Select</option>
