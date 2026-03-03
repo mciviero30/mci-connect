@@ -115,6 +115,8 @@ export default function Empleados() {
   const [activeTab, setActiveTab] = useState('active');
   const [page, setPage] = useState(1);
   const [selectedPending, setSelectedPending] = useState(new Set());
+  const [showInvitationDialog, setShowInvitationDialog] = useState(false);
+  const [editingInvitation, setEditingInvitation] = useState(null);
   const ITEMS_PER_PAGE = 12;
   
   const { data: currentUser } = useQuery({
