@@ -585,6 +585,25 @@ export default function Empleados() {
 
         <ImportEmployeesDialog open={showImportDialog} onClose={() => setShowImportDialog(false)} />
 
+        {/* Invitation detail/edit dialog */}
+        <Dialog open={showInvitationDialog} onOpenChange={(open) => { setShowInvitationDialog(open); if (!open) setEditingInvitation(null); }}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Invitation Details</DialogTitle>
+            </DialogHeader>
+            {editingInvitation && (
+              <InvitationDetailView
+                invitation={editingInvitation}
+                language={language}
+                onClose={() => { setShowInvitationDialog(false); setEditingInvitation(null); }}
+                onInvite={() => inviteMutation.mutate(editingInvitation)}
+                isInviting={inviteMutation.isPending}
+                queryClient={queryClient}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
         <OnboardingDetailsModal
           employee={selectedEmployee}
           tasks={selectedEmployee ? (employeeProgress[selectedEmployee.id]?.tasks || []) : []}
