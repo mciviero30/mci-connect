@@ -204,9 +204,9 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
         )}
       </div>
 
-      {invitation.last_sent_date && (
+      {saved.last_sent_date && (
         <p className="text-xs text-slate-400 px-1">
-          Last sent: {new Date(invitation.last_sent_date).toLocaleDateString()}
+          Last sent: {new Date(saved.last_sent_date).toLocaleDateString()}
         </p>
       )}
 
