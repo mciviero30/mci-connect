@@ -152,11 +152,27 @@ Deno.serve(async (req) => {
           const jobNumberResponse = await base44.asServiceRole.functions.invoke('generateJobNumber', {});
           const job_number = jobNumberResponse?.data?.job_number || jobNumberResponse?.job_number;
           
+          // Auto-geocode address from invoice
+          let jobLatitude = null;
+          let jobLongitude = null;
+          if (invoice.job_address) {
+            const coords = await geocodeAddress(invoice.job_address);
+            if (coords) {
+              jobLatitude = coords.latitude;
+              jobLongitude = coords.longitude;
+              console.log(`[Provisioning] ✅ GPS geocoded for "${invoice.job_name}": ${jobLatitude}, ${jobLongitude}`);
+            } else {
+              console.warn(`[Provisioning] ⚠️ Could not geocode address for "${invoice.job_name}": ${invoice.job_address}`);
+            }
+          }
+
           job = await base44.asServiceRole.entities.Job.create({
             name: invoice.job_name,
             job_number: job_number,
             authorization_id: invoice.authorization_id, // REQUIRED: Link to WorkAuthorization
             address: invoice.job_address || '',
+            latitude: jobLatitude,
+            longitude: jobLongitude,
             customer_id: invoice.customer_id || '',
             customer_name: invoice.customer_name || '',
             contract_amount: invoice.total || 0,
