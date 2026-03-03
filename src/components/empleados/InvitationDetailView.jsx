@@ -34,14 +34,21 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
   const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  // Keep a local copy of saved data so the detail view reflects updates immediately
-  const [saved, setSaved] = useState(invitation);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
     queryFn: () => base44.auth.me(),
     staleTime: Infinity,
   });
+
+  // Always fetch fresh data from DB when dialog opens
+  const { data: freshInvitation } = useQuery({
+    queryKey: ['invitation-detail', invitation.id],
+    queryFn: () => base44.entities.EmployeeInvitation.filter({ id: invitation.id }).then(r => r[0] || invitation),
+    staleTime: 0,
+  });
+
+  const saved = freshInvitation || invitation;
 
   const canViewSensitive = ['admin', 'ceo', 'hr'].includes((currentUser?.role || '').toLowerCase()) ||
     (currentUser?.position || '').toLowerCase() === 'hr';
@@ -67,6 +74,27 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
     ssn_tax_id: invitation.ssn_tax_id || '',
     role: invitation.role || 'user',
   });
+
+  // Sync form with fresh data when it loads
+  useEffect(() => {
+    if (freshInvitation) {
+      setForm({
+        first_name: freshInvitation.first_name || '',
+        last_name: freshInvitation.last_name || '',
+        phone: freshInvitation.phone || '',
+        address: freshInvitation.address || '',
+        position: freshInvitation.position || '',
+        department: freshInvitation.department || '',
+        team_id: freshInvitation.team_id || '',
+        team_name: freshInvitation.team_name || '',
+        hourly_rate: freshInvitation.hourly_rate || '',
+        tshirt_size: freshInvitation.tshirt_size || '',
+        dob: freshInvitation.dob || '',
+        ssn_tax_id: freshInvitation.ssn_tax_id || '',
+        role: freshInvitation.role || 'user',
+      });
+    }
+  }, [freshInvitation?.id]);
 
   const fullName = `${saved.first_name || ''} ${saved.last_name || ''}`.trim() || saved.email;
   const initials = (saved.first_name?.[0] || saved.email?.[0] || '?').toUpperCase();
