@@ -9,12 +9,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { calculateDistance } from '@/components/utils/geolocation';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
+const GRACE_PERIOD_MS = 15 * 60 * 1000; // 15 minutes
+
 export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
   const { language } = useLanguage();
   const [outOfRange, setOutOfRange] = useState(false);
   const [distanceFromSite, setDistanceFromSite] = useState(0);
+  const [countdown, setCountdown] = useState(null); // seconds remaining
   const alertSentRef = useRef(false);
   const checkIntervalRef = useRef(null);
+  const autoClockOutTimerRef = useRef(null);
+  const countdownIntervalRef = useRef(null);
 
   const { data: user } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
