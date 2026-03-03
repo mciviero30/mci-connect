@@ -228,6 +228,31 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
         }
       }
 
+      // Always update EmployeeProfile (this is where team, hourly_rate, etc. live)
+      if (employee.profile_id) {
+        await base44.entities.EmployeeProfile.update(employee.profile_id, {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          phone: data.phone,
+          address: data.address,
+          dob: data.dob,
+          tshirt_size: data.tshirt_size,
+          team_id: data.team_id,
+          team_name: selectedTeam?.team_name || data.team_name || '',
+          team_role: data.team_role,
+          department: data.department,
+          position: data.position,
+          direct_manager_name: data.direct_manager_name,
+          hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
+          hourly_rate_overtime: data.hourly_rate_overtime ? parseFloat(data.hourly_rate_overtime) : null,
+          per_diem_amount: data.per_diem_amount ? parseFloat(data.per_diem_amount) : null,
+          pay_frequency: data.pay_frequency,
+          hire_date: data.hire_date,
+          ssn_tax_id: data.ssn_tax_id,
+          employment_status: data.employment_status || employee.employment_status,
+        });
+      }
+
       // PHASE 4: Lifecycle Hardening - Sync to EmployeeDirectory with user_id
       const existingDirectory = await base44.entities.EmployeeDirectory.list();
       const directoryEntry = existingDirectory.find(d => d.employee_email === employee.email);
