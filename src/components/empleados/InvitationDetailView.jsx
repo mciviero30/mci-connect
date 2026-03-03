@@ -46,6 +46,12 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
   const canViewSensitive = ['admin', 'ceo', 'hr'].includes((currentUser?.role || '').toLowerCase()) ||
     (currentUser?.position || '').toLowerCase() === 'hr';
 
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams-list'],
+    queryFn: () => base44.entities.Team.list(),
+    staleTime: 60000,
+  });
+
   const [form, setForm] = useState({
     first_name: invitation.first_name || '',
     last_name: invitation.last_name || '',
