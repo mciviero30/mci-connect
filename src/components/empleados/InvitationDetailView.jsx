@@ -129,7 +129,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
               className="w-full h-10 px-3 border rounded-md text-sm bg-white dark:bg-slate-800"
             >
               <option value="">No team</option>
-              {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              {teams.map(t => <option key={t.id} value={t.id}>{t.team_name}</option>)}
             </select>
           </div>
           <div><Label className="text-xs">T-Shirt Size</Label>
