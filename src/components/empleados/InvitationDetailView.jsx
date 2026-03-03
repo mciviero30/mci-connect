@@ -34,6 +34,8 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
   const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Keep a local copy of saved data so the detail view reflects updates immediately
+  const [saved, setSaved] = useState(invitation);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
@@ -43,6 +45,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
 
   const canViewSensitive = ['admin', 'ceo', 'hr'].includes((currentUser?.role || '').toLowerCase()) ||
     (currentUser?.position || '').toLowerCase() === 'hr';
+
   const [form, setForm] = useState({
     first_name: invitation.first_name || '',
     last_name: invitation.last_name || '',
@@ -58,8 +61,8 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
     role: invitation.role || 'user',
   });
 
-  const fullName = `${invitation.first_name || ''} ${invitation.last_name || ''}`.trim() || invitation.email;
-  const initials = (invitation.first_name?.[0] || invitation.email?.[0] || '?').toUpperCase();
+  const fullName = `${saved.first_name || ''} ${saved.last_name || ''}`.trim() || saved.email;
+  const initials = (saved.first_name?.[0] || saved.email?.[0] || '?').toUpperCase();
 
   const handleSave = async () => {
     setSaving(true);
