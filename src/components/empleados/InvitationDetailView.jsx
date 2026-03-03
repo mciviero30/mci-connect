@@ -34,6 +34,15 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
   const toast = useToast();
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
+  });
+
+  const canViewSensitive = ['admin', 'ceo', 'hr'].includes((currentUser?.role || '').toLowerCase()) ||
+    (currentUser?.position || '').toLowerCase() === 'hr';
   const [form, setForm] = useState({
     first_name: invitation.first_name || '',
     last_name: invitation.last_name || '',
