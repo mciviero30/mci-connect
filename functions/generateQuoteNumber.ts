@@ -15,12 +15,24 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Use atomic counter for thread-safe number generation
-    const { data } = await base44.asServiceRole.functions.invoke('getNextCounter', {
-      counter_key: 'quote'
+    // Use atomic counter directly (avoid cross-function auth issues)
+    const counter_key = 'quote';
+    const counters = await base44.asServiceRole.entities.Counter.filter({ counter_key });
+    let counter;
+    if (counters.length === 0) {
+      counter = await base44.asServiceRole.entities.Counter.create({
+        counter_key,
+        current_value: 0,
+        last_increment_date: new Date().toISOString()
+      });
+    } else {
+      counter = counters[0];
+    }
+    const nextNumber = counter.current_value + 1;
+    await base44.asServiceRole.entities.Counter.update(counter.id, {
+      current_value: nextNumber,
+      last_increment_date: new Date().toISOString()
     });
-    
-    const nextNumber = data.value;
     const formattedNumber = `EST-${String(nextNumber).padStart(5, '0')}`;
 
     // GUARDRAIL: Validate format before returning
