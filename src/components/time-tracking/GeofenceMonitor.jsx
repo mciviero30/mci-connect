@@ -151,9 +151,16 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
             </p>
             <p className="text-sm font-semibold">
               {language === 'es' 
-                ? `${distanceFromSite}m del proyecto. Auto cierre en 30s`
-                : `${distanceFromSite}m from project. Auto clock-out in 30s`}
+                ? `${distanceFromSite}m del proyecto.`
+                : `${distanceFromSite}m from project.`}
             </p>
+            {countdown !== null && (
+              <p className="text-xs font-bold mt-1 opacity-90">
+                {language === 'es'
+                  ? `Auto cierre en ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')} — ¡Regresa al sitio!`
+                  : `Auto clock-out in ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')} — Return to site!`}
+              </p>
+            )}
           </div>
         </div>
       </motion.div>
