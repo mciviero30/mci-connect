@@ -29,7 +29,7 @@ const Row = ({ icon: Icon, label, value }) => {
   );
 };
 
-export default function InvitationDetailView({ invitation, onClose, onInvite, isInviting }) {
+export default function InvitationDetailView({ invitation, onClose, onInvite, isInviting, onSaved }) {
   const queryClient = useQueryClient();
   const toast = useToast();
   const [editing, setEditing] = useState(false);
