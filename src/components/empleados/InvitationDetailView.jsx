@@ -87,8 +87,8 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
       hourly_rate: form.hourly_rate ? parseFloat(form.hourly_rate) : null,
     };
     await base44.entities.EmployeeInvitation.update(invitation.id, payload);
+    setSaved(prev => ({ ...prev, ...payload }));
     await queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
-    await queryClient.invalidateQueries({ queryKey: ['invitation-detail', invitation.id] });
     toast.success('Invitation updated!');
     setSaving(false);
     setEditing(false);
