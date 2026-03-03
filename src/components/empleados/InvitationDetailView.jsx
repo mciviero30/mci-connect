@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Phone, MapPin, Users, Send, Briefcase, DollarSign, ShieldAlert, Shirt, Calendar, Pencil, Save, X } from "lucide-react";
+import { Mail, Phone, MapPin, Users, Send, Briefcase, DollarSign, ShieldAlert, Shirt, Calendar, Pencil, Save, X, Lock } from "lucide-react";
 import { base44 } from "@/api/base44Client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
 
 const Row = ({ icon: Icon, label, value }) => {
