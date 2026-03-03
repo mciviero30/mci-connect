@@ -178,12 +178,12 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
       {/* Employment */}
       <div className="space-y-3 bg-slate-50 dark:bg-slate-800 rounded-xl p-4">
         <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Employment</p>
-        <Row icon={Briefcase} label="Position" value={invitation.position} />
-        <Row icon={Users} label="Department" value={invitation.department} />
-        <Row icon={MapPin} label="Team" value={invitation.team_name} />
-        <Row icon={DollarSign} label="Hourly Rate" value={invitation.hourly_rate ? `$${invitation.hourly_rate}/hr` : null} />
-        <Row icon={Shirt} label="T-Shirt Size" value={invitation.tshirt_size} />
-        <Row icon={Users} label="System Role" value={invitation.role} />
+        <Row icon={Briefcase} label="Position" value={saved.position} />
+        <Row icon={Users} label="Department" value={saved.department} />
+        <Row icon={MapPin} label="Team" value={saved.team_name} />
+        <Row icon={DollarSign} label="Hourly Rate" value={saved.hourly_rate ? `$${saved.hourly_rate}/hr` : null} />
+        <Row icon={Shirt} label="T-Shirt Size" value={saved.tshirt_size} />
+        <Row icon={Users} label="System Role" value={saved.role} />
       </div>
 
       {/* Sensitive */}
