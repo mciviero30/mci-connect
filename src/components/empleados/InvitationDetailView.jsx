@@ -120,8 +120,17 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
               <option value="admin">Admin</option>
             </select>
           </div>
-          <div><Label className="text-xs">Date of Birth</Label><Input type="date" value={form.dob} onChange={f('dob')} /></div>
-          <div><Label className="text-xs">SSN / Tax ID</Label><Input value={form.ssn_tax_id} onChange={f('ssn_tax_id')} placeholder="XXX-XX-XXXX" /></div>
+          {canViewSensitive ? (
+            <>
+              <div><Label className="text-xs">Date of Birth</Label><Input type="date" value={form.dob} onChange={f('dob')} /></div>
+              <div><Label className="text-xs">SSN / Tax ID</Label><Input value={form.ssn_tax_id} onChange={f('ssn_tax_id')} placeholder="XXX-XX-XXXX" /></div>
+            </>
+          ) : (
+            <div className="col-span-2 flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+              <Lock className="w-4 h-4 flex-shrink-0" />
+              DOB and SSN/Tax ID require Admin, CEO, or HR access.
+            </div>
+          )}
         </div>
         <div className="flex gap-2 justify-end pt-2">
           <Button variant="outline" onClick={() => setEditing(false)} disabled={saving}><X className="w-4 h-4 mr-1" />Cancel</Button>
