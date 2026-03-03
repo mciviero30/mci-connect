@@ -61,7 +61,7 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
         if (distance > maxRadius) {
           setOutOfRange(true);
 
-          // Send alert only once
+          // Start grace period timer only once per exit event
           if (!alertSentRef.current) {
             alertSentRef.current = true;
 
@@ -71,8 +71,8 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
               type: 'geofence_exit',
               title: language === 'es' ? '⚠️ Saliste del Área de Trabajo' : '⚠️ You Left Work Area',
               body: language === 'es'
-                ? `Has salido del área permitida (${Math.round(distance)}m). Tu sesión se cerrará automáticamente.`
-                : `You've left the allowed area (${Math.round(distance)}m). Your session will auto clock-out.`,
+                ? `Has salido del área permitida (${Math.round(distance)}m). Tienes 15 minutos para regresar o se cerrará tu sesión.`
+                : `You've left the allowed area (${Math.round(distance)}m). You have 15 minutes to return or your session will auto clock-out.`,
               url: '/TimeTracking',
               priority: 'urgent'
             });
@@ -84,19 +84,35 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
                 type: 'security_alert',
                 title: language === 'es' ? '🚨 Empleado Salió del Geofence' : '🚨 Employee Left Geofence',
                 body: language === 'es'
-                  ? `${user.full_name} salió del área de ${job.name} (${Math.round(distance)}m)`
-                  : `${user.full_name} left ${job.name} area (${Math.round(distance)}m)`,
+                  ? `${user.full_name} salió del área de ${job.name} (${Math.round(distance)}m). Auto clock-out en 15 min si no regresa.`
+                  : `${user.full_name} left ${job.name} area (${Math.round(distance)}m). Auto clock-out in 15 min if not returning.`,
                 url: '/Horarios',
                 priority: 'high'
               })));
 
-            // Auto clock-out after 30 seconds warning
-            setTimeout(() => {
+            // Start countdown display
+            setCountdown(GRACE_PERIOD_MS / 1000);
+            countdownIntervalRef.current = setInterval(() => {
+              setCountdown(prev => (prev > 0 ? prev - 1 : 0));
+            }, 1000);
+
+            // Auto clock-out after 15 minutes grace period
+            autoClockOutTimerRef.current = setTimeout(() => {
               onAutoClockOut();
-            }, 30000);
+            }, GRACE_PERIOD_MS);
           }
         } else {
+          // Employee returned to geofence — cancel auto clock-out
+          if (autoClockOutTimerRef.current) {
+            clearTimeout(autoClockOutTimerRef.current);
+            autoClockOutTimerRef.current = null;
+          }
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = null;
+          }
           setOutOfRange(false);
+          setCountdown(null);
           alertSentRef.current = false;
         }
       } catch (error) {
