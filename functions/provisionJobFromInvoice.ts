@@ -1,6 +1,33 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 /**
+ * Geocode an address using Google Maps API
+ */
+async function geocodeAddress(address) {
+  if (!address) return null;
+  const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
+  if (!apiKey) {
+    console.warn('[Geocode] GOOGLE_MAPS_API_KEY not set');
+    return null;
+  }
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.status === 'OK' && data.results.length > 0) {
+      const loc = data.results[0].geometry.location;
+      console.log(`[Geocode] ✅ ${address} → lat:${loc.lat}, lng:${loc.lng}`);
+      return { latitude: loc.lat, longitude: loc.lng };
+    }
+    console.warn(`[Geocode] ❌ Status: ${data.status} for address: ${address}`);
+    return null;
+  } catch (e) {
+    console.error('[Geocode] Error:', e.message);
+    return null;
+  }
+}
+
+/**
  * Idempotent Job Provisioning Function
  * 
  * Ensures complete job setup:
