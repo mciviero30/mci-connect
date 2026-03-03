@@ -193,8 +193,8 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
         </p>
         {canViewSensitive ? (
           <>
-            <Row icon={Calendar} label="Date of Birth" value={invitation.dob} />
-            <Row icon={ShieldAlert} label="SSN / Tax ID" value={invitation.ssn_tax_id} />
+            <Row icon={Calendar} label="Date of Birth" value={saved.dob} />
+            <Row icon={ShieldAlert} label="SSN / Tax ID" value={saved.ssn_tax_id} />
           </>
         ) : (
           <div className="flex items-center gap-2 text-sm text-amber-800">
