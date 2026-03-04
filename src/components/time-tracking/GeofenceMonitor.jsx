@@ -10,6 +10,22 @@ import { calculateDistance } from '@/components/utils/geolocation';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 const GRACE_PERIOD_MS = 15 * 60 * 1000; // 15 minutes
+const MAX_DAILY_ADMIN_ALERTS = 4;
+
+// Track how many times we've alerted admin today for this employee+job
+function getAdminAlertCount(userId, jobId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = `geofence_alerts_${userId}_${jobId}_${today}`;
+  return parseInt(localStorage.getItem(key) || '0', 10);
+}
+
+function incrementAdminAlertCount(userId, jobId) {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = `geofence_alerts_${userId}_${jobId}_${today}`;
+  const newCount = getAdminAlertCount(userId, jobId) + 1;
+  localStorage.setItem(key, String(newCount));
+  return newCount;
+}
 
 export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
   const { language } = useLanguage();
