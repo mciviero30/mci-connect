@@ -4,6 +4,7 @@ import { format, isSameDay, isValid } from 'date-fns';
 import { Plus, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { isMyShift as checkIsMyShift } from '@/components/calendario/calendarHelpers';
 
 export default function DayView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, isAdmin, currentUser }) {
   const validDate = isValid(new Date(currentDate)) ? new Date(currentDate) : new Date();

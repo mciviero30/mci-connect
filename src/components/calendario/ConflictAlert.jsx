@@ -3,29 +3,11 @@ import { AlertTriangle, Clock, User, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { detectConflicts as detectConflictsHelper } from '@/components/calendario/calendarHelpers';
 
+// Re-export from SSOT helper for backwards compatibility
 export function detectConflicts(shifts, newShift) {
-  if (!newShift.date || !newShift.start_time || !newShift.end_time) return [];
-
-  const [newStartH, newStartM] = newShift.start_time.split(':').map(Number);
-  const [newEndH, newEndM] = newShift.end_time.split(':').map(Number);
-  const newStart = newStartH * 60 + newStartM;
-  const newEnd = newEndH * 60 + newEndM;
-
-  return shifts.filter(shift => {
-    if (shift.id === newShift.id) return false;
-    if (shift.date !== newShift.date) return false;
-    if (newShift.employee_email && shift.employee_email !== newShift.employee_email) return false;
-    if (!shift.start_time || !shift.end_time) return false;
-
-    const [startH, startM] = shift.start_time.split(':').map(Number);
-    const [endH, endM] = shift.end_time.split(':').map(Number);
-    const start = startH * 60 + startM;
-    const end = endH * 60 + endM;
-
-    // Check overlap
-    return (newStart < end && newEnd > start);
-  });
+  return detectConflictsHelper(shifts, newShift);
 }
 
 export default function ConflictAlert({ 

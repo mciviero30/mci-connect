@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Users, Clock, Navigation, CheckCircle, XCircle, X, Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { isMyShift as checkIsMyShift } from '@/components/calendario/calendarHelpers';
 
 export default function ShiftDetailCard({ 
   open, 
