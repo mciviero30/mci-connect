@@ -37,11 +37,10 @@ export default function AgendaView({
       return a.start_time.localeCompare(b.start_time);
     });
 
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const isMyShift = (shift) => {
     if (!currentUser) return false;
-    // Match by user_id first, fallback to email
-    return shift.user_id ? shift.user_id === currentUser.id : shift.employee_email === currentUser.email;
+    if (shift.user_id && currentUser.id) return shift.user_id === currentUser.id;
+    return shift.employee_email === currentUser.email;
   };
 
   return (
@@ -85,7 +84,7 @@ export default function AgendaView({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="font-semibold text-slate-900 dark:text-white">
-                        {shift.title || shift.job_name || (language === 'es' ? 'Sin título' : 'Untitled')}
+                        {shift.shift_title || shift.job_name || (language === 'es' ? 'Sin título' : 'Untitled')}
                       </span>
                       {STATUS_ICONS[shift.status]}
                     </div>

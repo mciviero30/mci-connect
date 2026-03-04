@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
 import { Clock, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
+import { getShiftsForEmployeeDay as getShiftsDualKey } from '@/components/calendario/calendarHelpers';
 
 export default function TimelineView({ 
   currentDate, 

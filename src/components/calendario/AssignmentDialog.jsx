@@ -45,7 +45,9 @@ export default function AssignmentDialog({
 
   useEffect(() => {
     if (shift) {
-      setSelectedEmployees(shift.employee_email ? [shift.employee_email] : []);
+      // Dual-key: prefer employee_email for picker (it stores emails), fallback gracefully
+      const empEmail = shift.employee_email || '';
+      setSelectedEmployees(empEmail ? [empEmail] : []);
       setJobId(shift.job_id || '');
       setShiftTitle(shift.shift_title || '');
       setStartDate(shift.date || format(new Date(), 'yyyy-MM-dd'));
@@ -386,12 +388,12 @@ export default function AssignmentDialog({
           {isAppointment && (
             <div>
               <Label className="text-slate-700 font-semibold mb-2 block">Related Job (Optional)</Label>
-              <Select value={jobId} onValueChange={setJobId}>
+              <Select value={jobId || '__none__'} onValueChange={(v) => setJobId(v === '__none__' ? '' : v)}>
                 <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900 focus:border-[#1E3A8A]">
                   <SelectValue placeholder="Link to a job (optional)" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200 shadow-lg z-50" align="start">
-                  <SelectItem value={null} className="text-slate-900">None</SelectItem>
+                  <SelectItem value="__none__" className="text-slate-900">None</SelectItem>
                   {(jobs || []).map(job => (
                     <SelectItem key={job.id} value={job.id} className="text-slate-900">
                       <div className="flex items-center gap-2">
