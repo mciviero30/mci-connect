@@ -70,16 +70,39 @@ export default function TimeReports() {
     return filtered;
   }, [timeEntries, dateRange, selectedJob]);
 
-  // Calculate project costing
-  const projectCosts = useMemo(() => {
-    const costs = {};
-    
+  // Calculate weekly OT per employee (work hours only, driving excluded — Mon-Sun week)
+  const weeklyWorkHoursPerEmployee = useMemo(() => {
+    // weekKey = "userId_YYYY-Www" (ISO Mon-Sun)
+    const weekMap = {};
     filteredEntries.forEach(entry => {
+      if (entry.work_type === 'driving') return; // driving never counts toward OT
+      const empKey = entry.user_id || entry.employee_email;
+      const d = new Date(entry.date + 'T12:00:00'); // noon to avoid DST issues
+      // ISO week: Monday = day 1
+      const dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1; // 0=Mon … 6=Sun
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - dayOfWeek);
+      const weekKey = `${empKey}_${monday.toISOString().split('T')[0]}`;
+      if (!weekMap[weekKey]) weekMap[weekKey] = 0;
+      weekMap[weekKey] += entry.hours_worked || 0;
+    });
+    return weekMap;
+  }, [filteredEntries]);
+
+  // Calculate project costing using weekly OT rule
+  const projectCosts = useMemo(() => {
+    // First pass: build per-employee weekly cumulative tracker
+    const empWeekCumulative = {}; // empKey_weekKey → hours consumed so far
+
+    // Sort entries by date so we process them in order
+    const sorted = [...filteredEntries].sort((a, b) => a.date.localeCompare(b.date));
+
+    const costs = {};
+
+    sorted.forEach(entry => {
       const jobId = entry.job_id || 'no-job';
       if (!costs[jobId]) {
         const job = jobs.find(j => j.id === entry.job_id);
-        const employee = employees.find(e => e.email === entry.employee_email);
-        
         costs[jobId] = {
           jobId,
           jobName: job?.name || 'No Job',
@@ -87,24 +110,46 @@ export default function TimeReports() {
           totalHours: 0,
           normalHours: 0,
           overtimeHours: 0,
+          drivingHours: 0,
           laborCost: 0,
           employees: new Set()
         };
       }
-      
-      const employee = employees.find(e => e.email === entry.employee_email);
+
+      const empKey = entry.user_id || entry.employee_email;
+      // SSOT: prefer user_id, fallback to email for legacy entries
+      const employee = employees.find(e => e.user_id === entry.user_id)
+        || employees.find(e => e.employee_email === entry.employee_email);
       const hourlyRate = employee?.hourly_rate || 20;
       const hours = entry.hours_worked || 0;
-      const overtimeMultiplier = entry.hour_type === 'overtime' ? 1.5 : 1;
-      
+      const isDriving = entry.work_type === 'driving';
+
       costs[jobId].totalHours += hours;
-      if (entry.hour_type === 'overtime') {
-        costs[jobId].overtimeHours += hours;
-      } else {
-        costs[jobId].normalHours += hours;
+      costs[jobId].employees.add(empKey);
+
+      if (isDriving) {
+        costs[jobId].drivingHours += hours;
+        costs[jobId].laborCost += hours * hourlyRate; // driving at regular rate always
+        return;
       }
-      costs[jobId].laborCost += hours * hourlyRate * overtimeMultiplier;
-      costs[jobId].employees.add(entry.employee_email);
+
+      // Determine OT for this work entry based on weekly cumulative
+      const d = new Date(entry.date + 'T12:00:00');
+      const dayOfWeek = d.getDay() === 0 ? 6 : d.getDay() - 1;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() - dayOfWeek);
+      const weekKey = `${empKey}_${monday.toISOString().split('T')[0]}`;
+
+      if (!empWeekCumulative[weekKey]) empWeekCumulative[weekKey] = 0;
+      const prevCumulative = empWeekCumulative[weekKey];
+      empWeekCumulative[weekKey] += hours;
+
+      const regularPortion = Math.max(0, Math.min(hours, 40 - prevCumulative));
+      const overtimePortion = hours - regularPortion;
+
+      costs[jobId].normalHours += regularPortion;
+      costs[jobId].overtimeHours += overtimePortion;
+      costs[jobId].laborCost += regularPortion * hourlyRate + overtimePortion * hourlyRate * 1.5;
     });
 
     return Object.values(costs)
