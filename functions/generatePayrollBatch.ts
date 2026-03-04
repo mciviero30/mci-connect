@@ -136,9 +136,11 @@ Deno.serve(async (req) => {
           }
         }
 
+        const drivingRate = employee.driving_hourly_rate || hourlyRate; // driving at regular rate
         const regularPay = regularHours * hourlyRate;
         const overtimePay = overtimeHours * hourlyRate * overtimeMultiplier;
-        const grossPay = regularPay + overtimePay + commissionTotal;
+        const drivingPay = drivingHours * drivingRate;
+        const grossPay = regularPay + overtimePay + drivingPay + commissionTotal;
 
         const allocation = await base44.asServiceRole.entities.PayrollAllocation.create({
           batch_id,
