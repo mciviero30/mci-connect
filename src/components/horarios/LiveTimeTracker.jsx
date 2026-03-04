@@ -651,9 +651,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
               : `❌ OUT OF RANGE: You are ${Math.round(checkOutDistanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock out.`);
             
             // Notify admins (parallel)
-            const admins = await base44.entities.User.filter({ role: 'admin' });
+            const admins = await base44.entities.EmployeeDirectory.filter({ role: 'admin', employment_status: 'active' });
             await Promise.all(admins.map(admin => sendNotification({
-                recipientEmail: admin.email,
+                recipientEmail: admin.employee_email || admin.email,
                 recipientName: admin.full_name,
                 type: 'security_alert',
                 priority: 'urgent',
