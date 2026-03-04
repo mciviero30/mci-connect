@@ -9,12 +9,14 @@ export default function WeekResourceView({ employees, assignments, days, onAdd, 
     const assignmentsByEmployeeAndDate = useMemo(() => {
         const grid = {};
         employees.forEach(emp => {
-            grid[emp.email] = {};
+            const empKey = emp.id || emp.email;
+            grid[empKey] = {};
             days.forEach(day => {
                 const dayKey = format(day, 'yyyy-MM-dd');
-                grid[emp.email][dayKey] = assignments.filter(a => 
-                    a.employee_email === emp.email && isSameDay(new Date(a.date.replace(/-/g, '/')), day)
-                );
+                grid[empKey][dayKey] = assignments.filter(a => {
+                    const sameEmp = (emp.id && a.user_id) ? a.user_id === emp.id : a.employee_email === emp.email;
+                    return sameEmp && isSameDay(new Date(a.date.replace(/-/g, '/')), day);
+                });
             });
         });
         return grid;
@@ -37,15 +39,17 @@ export default function WeekResourceView({ employees, assignments, days, onAdd, 
                 ))}
 
                 {/* Body */}
-                {employees.map(employee => (
-                    <React.Fragment key={employee.email}>
+                {employees.filter(e => e.employment_status === 'active').map(employee => {
+                    const empKey = employee.id || employee.email;
+                    return (
+                    <React.Fragment key={empKey}>
                         <div className="flex items-center gap-2 p-2 border-r border-b font-medium text-slate-800 text-sm">
                             <User className="w-4 h-4 flex-shrink-0" />
                             <span className="truncate">{employee.full_name}</span>
                         </div>
                         {days.map(day => {
                             const dayKey = format(day, 'yyyy-MM-dd');
-                            const cellAssignments = assignmentsByEmployeeAndDate[employee.email]?.[dayKey] || [];
+                            const cellAssignments = assignmentsByEmployeeAndDate[empKey]?.[dayKey] || [];
                             return (
                                 <div key={day.toString()} className="relative p-1 border-r border-b min-h-[80px] group">
                                     <Button variant="ghost" size="icon" onClick={() => onAdd(day, employee)} className="absolute top-1 right-1 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity z-10">
@@ -66,7 +70,8 @@ export default function WeekResourceView({ employees, assignments, days, onAdd, 
                             );
                         })}
                     </React.Fragment>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

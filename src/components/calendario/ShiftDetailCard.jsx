@@ -57,8 +57,10 @@ export default function ShiftDetailCard({
     return null;
   };
 
-  // Get assigned crew member
-  const assignedEmployee = employees.find(emp => emp.email === shift.employee_email);
+  // Get assigned crew member — dual-key: user_id first, email fallback
+  const assignedEmployee = employees.find(emp => 
+    shift.user_id ? emp.id === shift.user_id : emp.email === shift.employee_email
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

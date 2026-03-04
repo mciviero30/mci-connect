@@ -48,8 +48,11 @@ export default function CopyWeekDialog({
         newShifts.push({
           ...shift,
           id: undefined,
+          created_date: undefined,
+          updated_date: undefined,
+          created_by: undefined,
           date: format(newDate, 'yyyy-MM-dd'),
-          status: 'pending'
+          status: 'scheduled'
         });
       }
     }

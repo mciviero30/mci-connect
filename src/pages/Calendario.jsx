@@ -156,7 +156,11 @@ export default function Calendario() {
         full_name: d.full_name || `${d.first_name || ''} ${d.last_name || ''}`.trim(),
         first_name: d.first_name,
         last_name: d.last_name,
-        employment_status: d.status
+        employment_status: d.status,
+        profile_photo_url: d.profile_photo_url,
+        avatar_image_url: d.avatar_image_url,
+        position: d.position,
+        department: d.department
       }));
     },
     initialData: [],
