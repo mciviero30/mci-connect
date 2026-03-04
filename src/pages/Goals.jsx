@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Target, Plus, Filter, TrendingUp } from 'lucide-react';
 import PageHeader from '../components/shared/PageHeader';
 import { useLanguage } from '@/components/i18n/LanguageContext';
+import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import GoalForm from '../components/goals/GoalForm';
@@ -24,26 +25,28 @@ export default function Goals() {
   const [viewMode, setViewMode] = useState('grid');
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });
 
   const { data: goals = [], isLoading } = useQuery({
-    queryKey: ['goals', user?.email],
+    queryKey: ['goals', user?.id, user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
+      if (!user) return [];
       const isAdmin = user.role === 'admin';
       
       if (isAdmin) {
         return await base44.entities.Goal.list('-created_date', 100);
       } else {
-        return await base44.entities.Goal.filter({
-          owner_email: user.email
-        }, '-created_date');
+        // Dual-Key Read: user_id preferred, email fallback (legacy)
+        const query = user.id
+          ? { owner_user_id: user.id }
+          : { owner_email: user.email };
+        return await base44.entities.Goal.filter(query, '-created_date');
       }
     },
-    enabled: !!user?.email,
+    enabled: !!user,
     staleTime: 600000, // 10 minutes
     cacheTime: 900000,
   });
@@ -58,6 +61,7 @@ export default function Goals() {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Goal.create({
       ...data,
+      owner_user_id: user?.id,        // SSOT: Write user_id
       owner_email: user.email,
       owner_name: user.full_name,
     }),

@@ -24,6 +24,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { canViewSensitiveEmployeeData, maskSSN, getSensitiveFieldDisplay } from "@/components/utils/employeeSecurity";
 import { buildUserQuery } from "@/components/utils/userResolution";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function MyProfile() {
   const { t } = useLanguage();
@@ -32,7 +33,7 @@ export default function MyProfile() {
   const [showPhotoManager, setShowPhotoManager] = useState(false);
   
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
   });
   
@@ -115,7 +116,7 @@ export default function MyProfile() {
     },
     onSuccess: async (updatedUser) => {
       // Direct cache update - NO INVALIDATION
-      queryClient.setQueryData(['currentUser'], updatedUser);
+      queryClient.setQueryData(CURRENT_USER_QUERY_KEY, updatedUser);
       setEditing(false);
     },
   });
