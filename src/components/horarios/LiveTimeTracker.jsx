@@ -911,8 +911,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
               <AlertTriangle className="w-6 h-6" />
               <span className="font-black text-base">
                 {language === 'es' 
-                  ? '¡LÍMITE EXCEDIDO! Contacta a tu supervisor AHORA' 
-                  : 'LIMIT EXCEEDED! Contact your supervisor NOW'}
+                  ? `¡LÍMITE DE ${maxHours}H ALCANZADO! Cierra tu turno ahora` 
+                  : `${maxHours}H LIMIT REACHED! Clock out now`}
               </span>
             </div>
           )}
