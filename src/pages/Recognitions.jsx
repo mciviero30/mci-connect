@@ -17,7 +17,7 @@ export default function Recognitions() {
   const [aiGeneratedContent, setAIGeneratedContent] = useState(null);
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });

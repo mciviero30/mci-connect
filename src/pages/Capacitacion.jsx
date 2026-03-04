@@ -21,7 +21,7 @@ export default function Capacitacion() {
   const [selectedCourse, setSelectedCourse] = useState(null);
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
@@ -33,9 +33,14 @@ export default function Capacitacion() {
     initialData: [],
   });
 
+  // Dual-Key Read: user_id preferred, email fallback (legacy)
   const { data: myProgress } = useQuery({
-    queryKey: ['myProgress', user?.email],
-    queryFn: () => user ? base44.entities.CourseProgress.filter({ employee_email: user.email }) : [],
+    queryKey: ['myProgress', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.CourseProgress.filter(query);
+    },
     initialData: [],
     enabled: !!user,
     staleTime: 300000,
@@ -47,6 +52,7 @@ export default function Capacitacion() {
     mutationFn: (courseId) => base44.entities.CourseProgress.create({
       course_id: courseId,
       course_title: courses.find(c => c.id === courseId)?.title,
+      user_id: user?.id,              // SSOT: Write user_id
       employee_email: user.email,
       employee_name: user.full_name,
       status: 'in_progress',
