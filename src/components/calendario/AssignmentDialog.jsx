@@ -277,6 +277,7 @@ export default function AssignmentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white border-0 rounded-2xl shadow-2xl">
         <DialogHeader>
+          <DialogDescription className="sr-only">Create or edit a job shift assignment</DialogDescription>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <DialogTitle className="text-2xl font-bold text-[#1E3A8A] flex items-center gap-3">
