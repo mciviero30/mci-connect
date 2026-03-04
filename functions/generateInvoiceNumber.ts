@@ -14,9 +14,11 @@ Deno.serve(async (req) => {
     }
 
     // Use getNextCounter for atomic, thread-safe number generation
-    const { data } = await base44.asServiceRole.functions.invoke('getNextCounter', {
+    const response = await base44.asServiceRole.functions.invoke('getNextCounter', {
       counter_key: 'invoice'
     });
+    
+    const data = response.data || response;
     
     const nextNumber = data.value;
     const formattedNumber = `INV-${String(nextNumber).padStart(5, '0')}`;
