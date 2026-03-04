@@ -45,7 +45,7 @@ export default function Calendario() {
   const { hasFullAccess } = usePermissions();
   const isAdmin = hasFullAccess;
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
   
   // Mobile detection: default to 'agenda' on small screens
