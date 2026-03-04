@@ -15,6 +15,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
 import { buildUserQuery } from "@/components/utils/userResolution";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
   const { t, language } = useLanguage();
@@ -114,7 +115,7 @@ export default function Manejo() {
   const [showForm, setShowForm] = useState(false);
   const [editingLog, setEditingLog] = useState(null);
   const queryClient = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
 
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: drivingLogs = [], isLoading } = useQuery({
