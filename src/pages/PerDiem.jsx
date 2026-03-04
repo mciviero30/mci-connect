@@ -13,6 +13,8 @@ import { format, differenceInDays, startOfMonth, endOfMonth, startOfYear } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 const PerDiemForm = ({ request, onSubmit, onCancel, isProcessing }) => {
   const { t } = useLanguage();

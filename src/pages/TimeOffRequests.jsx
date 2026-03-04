@@ -26,7 +26,7 @@ export default function TimeOffRequests() {
   const [language, setLanguage] = useState('en'); // Added for toast messages
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
