@@ -19,7 +19,7 @@ export default function ShiftDetailCard({
 }) {
   if (!shift) return null;
   
-  const isMyShift = currentUser && shift.employee_email === currentUser.email;
+  const isMyShift = checkIsMyShift(shift, currentUser);
   const isPending = shift.status === 'scheduled' && isMyShift;
   
   const handleGetDirections = () => {

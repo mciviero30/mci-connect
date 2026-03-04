@@ -30,9 +30,7 @@ export default function MonthView({ currentDate, shifts, onDateClick, onShiftCli
     return 'Event';
   };
 
-  const isMyShift = (shift) => {
-    return currentUser && shift.employee_email === currentUser.email;
-  };
+  const isMyShift = (shift) => checkIsMyShift(shift, currentUser);
 
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 

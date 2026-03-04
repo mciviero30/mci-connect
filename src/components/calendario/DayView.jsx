@@ -25,9 +25,7 @@ export default function DayView({ currentDate, shifts, onDateClick, onShiftClick
     return 'Event';
   };
 
-  const isMyShift = (shift) => {
-    return currentUser && shift.employee_email === currentUser.email;
-  };
+  const isMyShift = (shift) => checkIsMyShift(shift, currentUser);
 
   // GUARDRAIL: Ensure shifts is an array
   const dayShifts = (shifts || []).filter(s => {
