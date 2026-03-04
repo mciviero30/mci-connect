@@ -524,39 +524,80 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         return;
       }
 
-      // Validate maximum 14 hours
-      if (totalHours > 14) {
+      // HOUR LIMITS: work=10h, driving=16h, mixed work+driving=12h combined
+      const isDriving = activeSession.workType === 'driving';
+      const maxAllowed = isDriving ? 16 : 10;
+      
+      if (totalHours > maxAllowed) {
+        // AUTO CLOCK-OUT: cap hours at the limit and save the entry
+        const cappedHours = maxAllowed;
+        const capMsg = isDriving
+          ? (language === 'es' ? `Límite de conducción (${maxAllowed}h) alcanzado` : `Driving limit (${maxAllowed}h) reached`)
+          : (language === 'es' ? `Límite de trabajo (${maxAllowed}h) alcanzado` : `Work limit (${maxAllowed}h) reached`);
+
         sendNotification({
           recipientEmail: user.email,
           recipientName: user.full_name,
           type: 'time_exceeded',
           priority: 'urgent',
-          title: language === 'es' ? '🚨 Límite de Horas Excedido' : '🚨 Hour Limit Exceeded',
+          title: language === 'es' ? '⏰ Límite de Horas Alcanzado' : '⏰ Hour Limit Reached',
           message: language === 'es'
-            ? `Tu turno ha excedido las 14 horas (${totalHours.toFixed(1)}h). Contacta a tu supervisor.`
-            : `Your shift has exceeded 14 hours (${totalHours.toFixed(1)}h). Contact your supervisor.`,
+            ? `Tu turno fue cerrado automáticamente: ${capMsg}.`
+            : `Your shift was auto-closed: ${capMsg}.`,
           actionUrl: '/MisHoras',
           relatedEntityType: 'timeentry',
           sendEmail: true
         });
-        
+
         const admins = await base44.entities.User.filter({ role: 'admin' });
         await Promise.all(admins.map(admin => sendNotification({
-            recipientEmail: admin.email,
-            recipientName: admin.full_name,
-            type: 'approval_required',
-            priority: 'urgent',
-            title: language === 'es' ? '🚨 Turno Excede 14 Horas' : '🚨 Shift Exceeds 14 Hours',
-            message: language === 'es'
-              ? `${user.full_name} ha trabajado ${totalHours.toFixed(1)} horas en ${activeSession.jobName}`
-              : `${user.full_name} has worked ${totalHours.toFixed(1)} hours on ${activeSession.jobName}`,
-            actionUrl: '/Horarios',
-            relatedEntityType: 'timeentry'
-          })));
-        
-        alert(language === 'es'
-          ? '❌ Error: Límite máximo de turno (14 horas) excedido. Por favor contacta a tu supervisor.'
-          : '❌ Error: Maximum shift limit (14 hours) exceeded. Please contact your supervisor.');
+          recipientEmail: admin.email,
+          recipientName: admin.full_name,
+          type: 'approval_required',
+          priority: 'urgent',
+          title: language === 'es' ? '🚨 Cierre Automático por Límite de Horas' : '🚨 Auto Clock-Out: Hour Limit',
+          message: language === 'es'
+            ? `${user.full_name} fue cerrado automáticamente (${cappedHours}h) en ${activeSession.jobName}`
+            : `${user.full_name} was auto-clocked out (${cappedHours}h) at ${activeSession.jobName}`,
+          actionUrl: '/Horarios',
+          relatedEntityType: 'timeentry'
+        })));
+
+        // Save with capped hours and flag for review, then exit
+        const cappedData = {
+          user_id: user?.id,
+          employee_email: user.email,
+          employee_name: user.full_name,
+          job_id: activeSession.jobId,
+          job_name: activeSession.jobName,
+          date: format(new Date(), 'yyyy-MM-dd'),
+          check_in: activeSession.checkIn,
+          check_out: clockOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          check_in_latitude: activeSession.location.lat,
+          check_in_longitude: activeSession.location.lng,
+          check_out_latitude: location.lat,
+          check_out_longitude: location.lng,
+          hours_worked: Number(cappedHours.toFixed(2)),
+          breaks: activeSession.breaks || [],
+          total_break_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
+          hour_type: 'overtime',
+          work_type: activeSession.workType || 'normal',
+          task_details: activeSession.taskDetails || '',
+          status: 'pending',
+          geofence_validated: activeSession.workType === 'driving' ? false : true,
+          geofence_distance_meters: activeSession.distanceMeters,
+          requires_location_review: true,
+          exceeds_max_hours: true,
+          breaks_require_review: false,
+          notes: capMsg,
+        };
+
+        if (!user?.id) return;
+        onSave(cappedData);
+        localStorage.removeItem(storageKey);
+        setActiveSession(null);
+        setElapsed(0);
+        setLocationError(null);
         return;
       }
 
