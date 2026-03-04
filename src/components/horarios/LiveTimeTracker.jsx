@@ -400,7 +400,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           : `❌ OUT OF RANGE: You are ${Math.round(distanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock in.`);
         
         // Notify admins of attempted fraud (parallel)
-        const admins = await base44.entities.User.filter({ role: 'admin' });
+        const admins = await base44.entities.EmployeeDirectory.filter({ role: 'admin', employment_status: 'active' });
         await Promise.all(admins.map(admin => sendNotification({
             recipientEmail: admin.email,
             recipientName: admin.full_name,
