@@ -8,15 +8,22 @@ import { Badge } from "@/components/ui/badge";
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear } from 'date-fns';
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
+import { buildUserQuery } from "@/components/utils/userResolution";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function HorasManejo() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
 
+  // Dual-Key Read: user_id preferred, email fallback (legacy)
   const { data: drivingLogs = [], isLoading } = useQuery({
-    queryKey: ['myDrivingLogs', user?.email], 
-    queryFn: () => user ? base44.entities.DrivingLog.filter({ employee_email: user.email }, '-date') : [],
+    queryKey: ['myDrivingLogs', user?.id, user?.email], 
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.DrivingLog.filter(query, '-date');
+    },
     enabled: !!user,
   });
 
@@ -30,6 +37,7 @@ export default function HorasManejo() {
 
       return base44.entities.DrivingLog.create({
         ...entryData,
+        user_id: user?.id,        // SSOT: Write user_id
         employee_email: user.email,
         employee_name: user.full_name,
         rate_per_mile: ratePerMile,
