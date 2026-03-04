@@ -834,7 +834,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   
   if (activeSession) {
     const sessionHours = elapsed / 3600;
-    const exceedsMaxHours = sessionHours > 14;
+    // NEW LIMITS: work=10h, driving=16h, mixed=12h
+    const getMaxHours = (workType) => {
+      if (workType === 'driving') return 16;
+      return 10; // normal, setup, cleanup
+    };
+    const maxHours = getMaxHours(activeSession.workType);
+    const exceedsMaxHours = sessionHours >= maxHours;
 
     return (
       <Card className={`border-0 shadow-2xl mb-8 overflow-hidden ${
