@@ -37,8 +37,8 @@ export default function TimeReports() {
   const { data: employees = [] } = useQuery({
     queryKey: ['activeEmployees'],
     queryFn: async () => {
-      const users = await base44.entities.User.list();
-      return users.filter(u => u.employment_status === 'active');
+      // SSOT: use EmployeeDirectory (has hourly_rate) instead of User entity
+      return base44.entities.EmployeeDirectory.filter({ employment_status: 'active' }, '', 500);
     },
     staleTime: 600000,
   });
