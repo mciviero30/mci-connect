@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import StatsSummaryGrid from "@/components/shared/StatsSummaryGrid";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function MileageApproval() {
   const { t, language } = useLanguage();
@@ -32,7 +33,7 @@ export default function MileageApproval() {
   const [showMileageForm, setShowMileageForm] = useState(false);
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,

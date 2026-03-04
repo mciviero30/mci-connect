@@ -10,11 +10,12 @@ import TimeEntryList from "../components/horarios/TimeEntryList";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function Horarios() {
   const { t, language } = useLanguage();
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 300000,
     refetchOnMount: false,
