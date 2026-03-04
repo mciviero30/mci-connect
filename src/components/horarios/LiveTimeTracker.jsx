@@ -189,13 +189,27 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     }
   }, [storageKey]);
 
+  // Auto clock-out ref to prevent multiple triggers
+  const autoClockOutFiredRef = useRef(false);
+
   useEffect(() => {
     let interval;
     if (activeSession && !activeSession.onBreak) {
       interval = setInterval(() => {
-        setElapsed(Math.floor((Date.now() - activeSession.startTime) / 1000));
+        const secs = Math.floor((Date.now() - activeSession.startTime) / 1000);
+        setElapsed(secs);
+
+        // AUTO CLOCK-OUT when limit is reached
+        const maxSecs = (activeSession.workType === 'driving' ? 16 : 10) * 3600;
+        if (secs >= maxSecs && !autoClockOutFiredRef.current) {
+          autoClockOutFiredRef.current = true;
+          clearInterval(interval);
+          handleAutoClockOut();
+        }
       }, 1000);
     }
+    // Reset flag when session changes
+    if (!activeSession) autoClockOutFiredRef.current = false;
     return () => clearInterval(interval);
   }, [activeSession]);
 
