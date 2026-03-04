@@ -484,24 +484,36 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
         name: entry.employee_name,
         email: entry.employee_email,
         user_id: entry.user_id,
-        totalHours: 0,
-        regularHours: 0,
-        overtimeHours: 0,
+        totalHours: 0,       // all hours (work + driving)
+        workHours: 0,        // only non-driving hours (counts toward OT)
+        drivingHours: 0,     // driving hours (never count toward OT)
+        regularHours: 0,     // work hours up to 40h/week
+        overtimeHours: 0,    // work hours beyond 40h/week
         jobs: {},
         entries: []
       };
     }
     
     const hours = entry.hours_worked || 0;
+    const isDriving = entry.work_type === 'driving';
+    
     acc[key].totalHours += hours;
     
-    // Calculate regular vs OT (assuming 40h/week threshold)
-    if (acc[key].regularHours < 40) {
-      const regularToAdd = Math.min(hours, 40 - acc[key].regularHours);
-      acc[key].regularHours += regularToAdd;
-      acc[key].overtimeHours += Math.max(0, hours - regularToAdd);
+    if (isDriving) {
+      // Driving hours never count toward OT threshold
+      acc[key].drivingHours += hours;
     } else {
-      acc[key].overtimeHours += hours;
+      // Only work hours count toward 40h/week OT threshold
+      acc[key].workHours += hours;
+      if (acc[key].workHours <= 40) {
+        acc[key].regularHours += hours;
+      } else {
+        // Some or all of these hours are OT
+        const previousWorkHours = acc[key].workHours - hours;
+        const regularPortion = Math.max(0, 40 - previousWorkHours);
+        acc[key].regularHours += regularPortion;
+        acc[key].overtimeHours += hours - regularPortion;
+      }
     }
     
     // Track by job
