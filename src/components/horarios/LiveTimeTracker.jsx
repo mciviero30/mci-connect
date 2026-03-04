@@ -968,7 +968,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
               variant="destructive" 
               size="lg" 
               className="rounded-2xl h-14 px-8 font-bold text-base shadow-lg hover:scale-105 transition-transform bg-red-600 hover:bg-red-700" 
-              disabled={isLoading || exceedsMaxHours}
+              disabled={isLoading}
             >
               <Square className="w-5 h-5 mr-2"/>
               {language === 'es' ? 'Salida' : 'Clock Out'}
