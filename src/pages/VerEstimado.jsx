@@ -53,7 +53,7 @@ export default function VerEstimado() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const urlParams = new URLSearchParams(window.location.search);
   const quoteId = urlParams.get('id');
   const { toggleFocusMode } = useUI();
