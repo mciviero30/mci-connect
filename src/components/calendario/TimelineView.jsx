@@ -23,22 +23,19 @@ export default function TimelineView({
   
   const hours = Array.from({ length: 14 }, (_, i) => i + 7); // 7am to 8pm
   
-  const toggleEmployee = (email) => {
+  const toggleEmployee = (employeeId) => {
     const updated = new Set(expandedEmployees);
-    if (updated.has(email)) {
-      updated.delete(email);
+    if (updated.has(employeeId)) {
+      updated.delete(employeeId);
     } else {
-      updated.add(email);
+      updated.add(employeeId);
     }
     setExpandedEmployees(updated);
   };
 
-  const getShiftsForEmployeeDay = (employeeEmail, day) => {
-    return shifts.filter(s => 
-      s.employee_email === employeeEmail && 
-      s.date && 
-      isSameDay(new Date(s.date), day)
-    );
+  const getShiftsForEmployeeDay = (employee, day) => {
+    const dateStr = format(day, 'yyyy-MM-dd');
+    return getShiftsDualKey(shifts, employee, dateStr);
   };
 
   const getShiftPosition = (shift) => {
@@ -89,9 +86,12 @@ export default function TimelineView({
       </Card>
 
       {/* Employee Rows */}
-      {employees.map(employee => {
-        const isExpanded = expandedEmployees.has(employee.email);
-        const employeeShifts = shifts.filter(s => s.employee_email === employee.email);
+      {(employees || []).filter(e => e.employment_status === 'active').map(employee => {
+        const employeeKey = employee.id || employee.email;
+        const isExpanded = expandedEmployees.has(employeeKey);
+        const employeeShifts = shifts.filter(s =>
+          (employee.id && s.user_id) ? s.user_id === employee.id : s.employee_email === employee.email
+        );
         const weeklyHours = employeeShifts.reduce((sum, s) => {
           if (!s.start_time || !s.end_time) return sum;
           const [startH, startM] = s.start_time.split(':').map(Number);
@@ -101,7 +101,7 @@ export default function TimelineView({
         }, 0);
 
         return (
-          <Card key={employee.email} className="bg-white shadow-sm hover:shadow-md transition-shadow">
+          <Card key={employeeKey} className="bg-white shadow-sm hover:shadow-md transition-shadow">
             <CardContent className="p-3">
               <div className="grid grid-cols-8 gap-2 items-center">
                 {/* Employee Info */}
@@ -109,7 +109,7 @@ export default function TimelineView({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleEmployee(employee.email)}
+                    onClick={() => toggleEmployee(employeeKey)}
                     className="h-6 w-6 p-0"
                   >
                     {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -126,13 +126,13 @@ export default function TimelineView({
 
                 {/* Day Cells */}
                 {weekDays.map(day => {
-                  const dayShifts = getShiftsForEmployeeDay(employee.email, day);
+                  const dayShifts = getShiftsForEmployeeDay(employee, day);
                   
                   return (
                     <div 
                       key={day.toString()} 
                       className="relative h-12 bg-slate-50 rounded border border-slate-200 cursor-pointer hover:bg-slate-100"
-                      onClick={() => isAdmin && onCellClick(day, '09:00', employee.email)}
+                      onClick={() => isAdmin && onCellClick(day, '09:00', employee.email || employee.id)}
                     >
                       {/* Compact view */}
                       {!isExpanded && dayShifts.length > 0 && (
@@ -179,7 +179,7 @@ export default function TimelineView({
                 <div className="mt-2 pt-2 border-t border-slate-200">
                   <div className="text-xs text-slate-600 space-y-1">
                     {weekDays.map(day => {
-                      const dayShifts = getShiftsForEmployeeDay(employee.email, day);
+                      const dayShifts = getShiftsForEmployeeDay(employee, day);
                       if (dayShifts.length === 0) return null;
 
                       return (
