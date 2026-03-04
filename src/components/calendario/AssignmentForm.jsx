@@ -13,7 +13,7 @@ import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem } from "
 import { Badge } from "@/components/ui/badge";
 import { useNotificationService } from '../notifications/NotificationService';
 import { toast } from 'react-hot-toast';
-import { useTranslation } from 'react-i18next'; // Assuming i18n for 't' and 'language'
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
 const MultiSelectEmployees = ({ employees, selected, onSelect, isLoading }) => {
     return (

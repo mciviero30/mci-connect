@@ -31,6 +31,7 @@ Deno.serve(async (req) => {
 
     // Build payload with strict defaults
     const payload = {
+      user_id: shiftData.user_id || null, // SSOT: preserve user_id from frontend
       employee_email: shiftData.employee_email,
       employee_name: shiftData.employee_name,
       job_id: shiftData.job_id || '',
@@ -41,7 +42,9 @@ Deno.serve(async (req) => {
       start_time: shiftData.start_time || '08:00',
       end_time: shiftData.end_time || '17:00',
       status: shiftData.status || 'scheduled',
-      notes: shiftData.notes || ''
+      notes: shiftData.notes || '',
+      color: shiftData.color || '',
+      custom_color: shiftData.custom_color || '',
     };
 
     console.log('✅ Payload to save:', JSON.stringify(payload, null, 2));
