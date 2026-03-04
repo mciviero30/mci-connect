@@ -10,13 +10,15 @@ import { es } from 'date-fns/locale';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
 import { buildUserQuery } from "@/components/utils/userResolution";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { TrendingUp } from "lucide-react";
 
 export default function MyPayroll() {
   const { language } = useLanguage();
   const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const currentWeekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
 
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: timeEntries = [] } = useQuery({
