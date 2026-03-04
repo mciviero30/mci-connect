@@ -147,10 +147,12 @@ Deno.serve(async (req) => {
           employee_profile_id: employee.id,
           regular_hours: regularHours,
           overtime_hours: overtimeHours,
+          driving_hours: drivingHours,
           hourly_rate_snapshot: hourlyRate,
           overtime_multiplier_snapshot: overtimeMultiplier,
           regular_pay: regularPay,
           overtime_pay: overtimePay,
+          driving_pay: drivingPay,
           commission_total: commissionTotal,
           gross_pay: grossPay
         });
