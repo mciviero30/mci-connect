@@ -46,6 +46,7 @@ import JobTimeline from "../components/jobs/JobTimeline";
 import CostAccumulationChart from "../components/jobs/CostAccumulationChart";
 import { useToast } from "@/components/ui/toast";
 import ClientInvitationManager from "@/components/field/ClientInvitationManager";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function JobDetails() {
   const [searchParams] = useSearchParams();
@@ -63,7 +64,7 @@ export default function JobDetails() {
   const toast = useToast();
 
   const { data: user } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
   });
 

@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import PageHeader from "../components/shared/PageHeader";
 import { Briefcase, Clock, Calendar, TrendingUp, Target, Folder } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { buildUserQuery } from "@/components/utils/userResolution";
 import { format, addDays, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Progress } from "@/components/ui/progress";
@@ -13,19 +15,29 @@ import { Badge } from "@/components/ui/badge";
 export default function MisProyectos() {
   const { t, language } = useLanguage();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
 
+  // Dual-Key Read: user_id preferred, email fallback (legacy)
   const { data: assignments = [] } = useQuery({
-    queryKey: ['myAssignments', user?.email],
-    queryFn: () => base44.entities.JobAssignment.filter({ employee_email: user.email }, '-date'),
-    enabled: !!user?.email,
+    queryKey: ['myAssignments', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.JobAssignment.filter(query, '-date');
+    },
+    enabled: !!user,
     initialData: []
   });
 
+  // Dual-Key Read: user_id preferred, email fallback (legacy)
   const { data: timeEntries = [] } = useQuery({
-    queryKey: ['myTimeEntries', user?.email],
-    queryFn: () => base44.entities.TimeEntry.filter({ employee_email: user.email }, '-date', 100),
-    enabled: !!user?.email,
+    queryKey: ['myTimeEntries', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.TimeEntry.filter(query, '-date', 100);
+    },
+    enabled: !!user,
     initialData: []
   });
 
