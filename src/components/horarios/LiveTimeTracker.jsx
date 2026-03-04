@@ -109,15 +109,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     initialData: [],
   });
 
-  // Fetch today's scheduled shift for validation
-  // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
+  // Fetch today's scheduled shift for validation — from JobAssignment (calendar source of truth)
   const { data: todayAssignments = [] } = useQuery({
     queryKey: ['today-assignments', user?.id, user?.email],
     queryFn: async () => {
       if (!user) return [];
       const today = new Date().toISOString().split('T')[0];
       const query = buildUserQuery(user, 'user_id', 'employee_email');
-      return base44.entities.ScheduleShift.filter({
+      return base44.entities.JobAssignment.filter({
         ...query,
         date: today,
       });
