@@ -93,18 +93,26 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
               priority: 'urgent'
             });
 
-            // Notify admins (parallel)
-            const admins = await base44.entities.User.filter({ role: 'admin' });
-            await Promise.all(admins.map(admin => sendNotification({
+            // Notify admins with daily limit of 4 times
+            const alertCount = incrementAdminAlertCount(user.id, job.id);
+            if (alertCount <= MAX_DAILY_ADMIN_ALERTS) {
+              const admins = await base44.entities.User.filter({ role: 'admin' });
+              const isLastAlert = alertCount === MAX_DAILY_ADMIN_ALERTS;
+              await Promise.all(admins.map(admin => sendNotification({
                 userEmail: admin.email,
                 type: 'security_alert',
                 title: language === 'es' ? '🚨 Empleado Salió del Geofence' : '🚨 Employee Left Geofence',
-                body: language === 'es'
-                  ? `${user.full_name} salió del área de ${job.name} (${Math.round(distance)}m). Auto clock-out en 15 min si no regresa.`
-                  : `${user.full_name} left ${job.name} area (${Math.round(distance)}m). Auto clock-out in 15 min if not returning.`,
+                body: isLastAlert
+                  ? (language === 'es'
+                      ? `⚠️ ${user.full_name} ha salido del área 4 veces hoy en ${job.name}. Considera llamarle para verificar qué está pasando.`
+                      : `⚠️ ${user.full_name} has left ${job.name} area 4 times today. Consider calling them to check what's going on.`)
+                  : (language === 'es'
+                      ? `${user.full_name} salió del área de ${job.name} (${Math.round(distance)}m). Salida #${alertCount} hoy.`
+                      : `${user.full_name} left ${job.name} area (${Math.round(distance)}m). Exit #${alertCount} today.`),
                 url: '/Horarios',
-                priority: 'high'
+                priority: isLastAlert ? 'urgent' : 'high'
               })));
+            }
 
             // Start countdown display
             setCountdown(GRACE_PERIOD_MS / 1000);
