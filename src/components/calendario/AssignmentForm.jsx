@@ -428,12 +428,15 @@ export default function AssignmentForm({ onClose, existingAssignment, selectedDa
                         <Input 
                           type="number" 
                           value={maxHours} 
-                          onChange={e => setMaxHours(parseInt(e.target.value))} 
-                          min="4"
-                          max="12"
+                          onChange={e => setMaxHours(parseFloat(e.target.value))} 
+                          min="1"
+                          max="16"
                           step="0.5"
                           className="mt-1"
                         />
+                        <p className="text-xs text-slate-500 mt-1">
+                          {language === 'es' ? 'El reloj se cerrará automáticamente al alcanzar este límite' : 'Clock will auto-stop when this limit is reached'}
+                        </p>
                       </div>
                     </div>
                   )}
