@@ -978,8 +978,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           {exceedsMaxHours && (
             <p className="text-sm text-white/90 mt-4 font-semibold bg-red-900/40 p-3 rounded-xl">
               {language === 'es' 
-                ? '⚠️ No puedes cerrar automáticamente. Requiere revisión manual del supervisor.' 
-                : '⚠️ Cannot auto clock-out. Requires manual supervisor review.'}
+                ? `⚠️ Límite de ${maxHours}h alcanzado. Al cerrar, las horas serán registradas para revisión del supervisor.` 
+                : `⚠️ ${maxHours}h limit reached. On clock-out, hours will be flagged for supervisor review.`}
             </p>
           )}
         </CardContent>
