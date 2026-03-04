@@ -110,9 +110,7 @@ export default function Calendario() {
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['jobs'],
     queryFn: async () => {
-      const data = await base44.entities.Job.filter({ 
-        status: { $in: ['active', 'pending', 'in_progress'] }
-      });
+      const data = await base44.entities.Job.list();
       return data || [];
     },
     initialData: [],
