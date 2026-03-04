@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Clock, User, Calendar, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { getShiftsForEmployeeDay } from '@/components/calendario/calendarHelpers';
 
 export default function ConflictResolver({ 
   shifts, 
@@ -15,16 +16,20 @@ export default function ConflictResolver({
   const conflicts = [];
   
   shifts.forEach((shift, idx) => {
-    if (!shift.employee_email || !shift.date || !shift.start_time || !shift.end_time) return;
+    if (!shift.date || !shift.start_time || !shift.end_time) return;
     
-    // Check for overlapping shifts for same employee
-    const overlapping = shifts.filter((s, i) => 
-      i !== idx &&
-      s.employee_email === shift.employee_email &&
-      s.date === shift.date &&
-      s.start_time && s.end_time &&
-      !(s.end_time <= shift.start_time || s.start_time >= shift.end_time)
-    );
+    // Check for overlapping shifts for same employee (dual-key)
+    const overlapping = shifts.filter((s, i) => {
+      if (i === idx) return false;
+      if (s.date !== shift.date) return false;
+      if (!s.start_time || !s.end_time) return false;
+      // Dual-key match
+      const sameEmployee = (shift.user_id && s.user_id)
+        ? shift.user_id === s.user_id
+        : shift.employee_email && shift.employee_email === s.employee_email;
+      if (!sameEmployee) return false;
+      return !(s.end_time <= shift.start_time || s.start_time >= shift.end_time);
+    });
 
     if (overlapping.length > 0) {
       conflicts.push({
@@ -73,7 +78,10 @@ export default function ConflictResolver({
     );
   }
 
-  const getEmployee = (email) => employees.find(e => e.email === email);
+  const getEmployee = (shift) => {
+    if (shift.user_id) return employees.find(e => e.id === shift.user_id);
+    return employees.find(e => e.email === shift.employee_email);
+  };
 
   return (
     <Card className="bg-white border-red-200">
@@ -86,7 +94,7 @@ export default function ConflictResolver({
       <CardContent>
         <div className="space-y-3">
           {uniqueConflicts.map((conflict, idx) => {
-            const employee = getEmployee(conflict.shift.employee_email);
+            const employee = getEmployee(conflict.shift);
             
             return (
               <div key={idx} className="p-3 bg-red-50 rounded-lg border border-red-200">
