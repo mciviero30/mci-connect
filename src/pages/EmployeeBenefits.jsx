@@ -29,25 +29,29 @@ export default function EmployeeBenefits() {
   });
 
   const { data: documents = [] } = useQuery({
-    queryKey: ['myDocuments', user?.email],
+    queryKey: ['myDocuments', user?.id, user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
-      return base44.entities.EmployeeDocument.filter({
-        employee_email: user.email
-      }, '-created_date', 20);
+      if (!user) return [];
+      // Dual-Key Read: user_id preferred, email fallback (legacy)
+      const query = user.id
+        ? { user_id: user.id }
+        : { employee_email: user.email };
+      return base44.entities.EmployeeDocument.filter(query, '-created_date', 20);
     },
-    enabled: !!user?.email,
+    enabled: !!user,
   });
 
   const { data: certifications = [] } = useQuery({
-    queryKey: ['myCertifications', user?.email],
+    queryKey: ['myCertifications', user?.id, user?.email],
     queryFn: async () => {
-      if (!user?.email) return [];
-      return base44.entities.Certification.filter({
-        employee_email: user.email
-      }, '-issue_date');
+      if (!user) return [];
+      // Dual-Key Read: user_id preferred, email fallback (legacy)
+      const query = user.id
+        ? { user_id: user.id }
+        : { employee_email: user.email };
+      return base44.entities.Certification.filter(query, '-issue_date');
     },
-    enabled: !!user?.email,
+    enabled: !!user,
   });
 
   const benefitCards = [
