@@ -565,9 +565,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           sendEmail: true
         });
 
-        const admins = await base44.entities.User.filter({ role: 'admin' });
+        const admins = await base44.entities.EmployeeDirectory.filter({ role: 'admin', employment_status: 'active' });
         await Promise.all(admins.map(admin => sendNotification({
-          recipientEmail: admin.email,
+          recipientEmail: admin.employee_email || admin.email,
           recipientName: admin.full_name,
           type: 'approval_required',
           priority: 'urgent',
