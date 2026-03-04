@@ -707,7 +707,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         hours_worked: Number(totalHours.toFixed(2)),
         breaks: activeSession.breaks || [],
         total_break_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
-        hour_type: totalHours > 8 ? 'overtime' : 'normal',
+        hour_type: 'normal', // OT is calculated weekly (>40h work hrs), not per shift
         work_type: activeSession.workType || 'normal',
         task_details: activeSession.taskDetails || '',
         status: 'pending',
