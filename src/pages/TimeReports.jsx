@@ -70,6 +70,7 @@ export default function TimeReports() {
     return filtered;
   }, [timeEntries, dateRange, selectedJob]);
 
+  // (Weekly OT tracking — used inside projectCosts memo below)
   // Calculate weekly OT per employee (work hours only, driving excluded — Mon-Sun week)
   const weeklyWorkHoursPerEmployee = useMemo(() => {
     // weekKey = "userId_YYYY-Www" (ISO Mon-Sun)
