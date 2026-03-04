@@ -96,16 +96,25 @@ Deno.serve(async (req) => {
           1000
         );
 
-        const weeklyHours = {};
+        // RULE: OT = work hours > 40/week (Mon-Sun). Driving hours NEVER count toward OT.
+        const weeklyWorkHours = {}; // only non-driving
+        const drivingHoursTotal = { total: 0 };
+
         timeEntries.forEach(te => {
+          if (te.work_type === 'driving') {
+            drivingHoursTotal.total += te.hours_worked || 0;
+            return; // driving excluded from OT calculation
+          }
           const isoWeekKey = getISOWeekKey(new Date(te.date));
-          if (!weeklyHours[isoWeekKey]) weeklyHours[isoWeekKey] = 0;
-          weeklyHours[isoWeekKey] += te.hours_worked || 0;
+          if (!weeklyWorkHours[isoWeekKey]) weeklyWorkHours[isoWeekKey] = 0;
+          weeklyWorkHours[isoWeekKey] += te.hours_worked || 0;
         });
 
         let regularHours = 0;
         let overtimeHours = 0;
-        Object.values(weeklyHours).forEach(weekTotal => {
+        let drivingHours = drivingHoursTotal.total;
+
+        Object.values(weeklyWorkHours).forEach(weekTotal => {
           regularHours += Math.min(40, weekTotal);
           overtimeHours += Math.max(0, weekTotal - 40);
         });
