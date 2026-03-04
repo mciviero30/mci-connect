@@ -889,12 +889,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   
   if (activeSession) {
     const sessionHours = elapsed / 3600;
-    // NEW LIMITS: work=10h, driving=16h, mixed=12h
-    const getMaxHours = (workType) => {
+    // MAX HOURS: use scheduled shift if available, otherwise defaults (work=10h, driving=16h)
+    const getMaxHours = (workType, scheduledShift) => {
+      if (scheduledShift?.enforce_scheduled_hours && scheduledShift?.max_daily_hours) {
+        return scheduledShift.max_daily_hours;
+      }
       if (workType === 'driving') return 16;
-      return 10; // normal, setup, cleanup
+      return 10;
     };
-    const maxHours = getMaxHours(activeSession.workType);
+    const maxHours = getMaxHours(activeSession.workType, activeSession.scheduledShift);
     const exceedsMaxHours = sessionHours >= maxHours;
 
     return (
