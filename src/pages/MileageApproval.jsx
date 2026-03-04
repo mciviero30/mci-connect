@@ -39,9 +39,21 @@ export default function MileageApproval() {
     refetchOnWindowFocus: false
   });
 
+  // EMPLOYEE SSOT: EmployeeDirectory is canonical source (not User.list())
   const { data: employees } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: async () => {
+      const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name');
+      return directory.map(d => ({
+        id: d.user_id || d.id,
+        email: d.employee_email,
+        full_name: d.full_name || `${d.first_name || ''} ${d.last_name || ''}`.trim(),
+        first_name: d.first_name,
+        last_name: d.last_name,
+        employment_status: d.status,
+        hourly_rate: d.hourly_rate
+      }));
+    },
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
@@ -194,7 +206,7 @@ export default function MileageApproval() {
     createMileageMutation.mutate(mileageFormData);
   };
 
-  const activeEmployees = employees.filter(e => !e.employment_status || e.employment_status === 'active');
+  const activeEmployees = employees.filter(e => e.employment_status === 'active');
   const activeJobs = jobs.filter(j => j.status === 'active');
 
   const pendingLogs = drivingLogs.filter(d => d.status === 'pending');

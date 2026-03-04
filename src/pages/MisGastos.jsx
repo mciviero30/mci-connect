@@ -33,7 +33,7 @@ export default function MisGastos() {
     queryKey: ['myExpenses', user?.id, user?.email],
     queryFn: async () => {
       if (!user) return [];
-      const query = buildUserQuery(user, 'employee_user_id', 'employee_email');
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
       return base44.entities.Expense.filter(query, '-date');
     },
     enabled: !!user,
@@ -50,7 +50,7 @@ export default function MisGastos() {
       // Enforce employee_user_id on new expense
       const writeData = {
         ...data,
-        employee_user_id: user?.id,
+        user_id: user?.id,
         employee_email: user.email,
         employee_name: user.full_name,
         status: 'pending',
