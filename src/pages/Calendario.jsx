@@ -298,7 +298,8 @@ export default function Calendario() {
     if (eventType === 'time_off') {
       window.location.href = createPageUrl('TimeOffRequests');
     } else {
-      // PERFORMANCE: No invalidation on dialog open (cache is fresh)
+      // CRITICAL: Refetch jobs when opening dialog to ensure data is loaded
+      queryClient.invalidateQueries({ queryKey: ['jobs'] });
       setShowDialog(true);
     }
   };
