@@ -199,8 +199,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         const secs = Math.floor((Date.now() - activeSession.startTime) / 1000);
         setElapsed(secs);
 
-        // AUTO CLOCK-OUT when limit is reached
-        const maxSecs = (activeSession.workType === 'driving' ? 16 : 10) * 3600;
+        // AUTO CLOCK-OUT when limit is reached — use shift limit if set
+        const shiftMax = activeSession.scheduledShift?.enforce_scheduled_hours && activeSession.scheduledShift?.max_daily_hours
+          ? activeSession.scheduledShift.max_daily_hours
+          : (activeSession.workType === 'driving' ? 16 : 10);
+        const maxSecs = shiftMax * 3600;
         if (secs >= maxSecs && !autoClockOutFiredRef.current) {
           autoClockOutFiredRef.current = true;
           clearInterval(interval);
