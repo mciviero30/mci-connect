@@ -64,8 +64,7 @@ const MultiSelectEmployees = ({ employees, selected, onSelect, isLoading }) => {
 
 
 export default function AssignmentForm({ onClose, existingAssignment, selectedDate }) {
-    const { t, i18n } = useTranslation();
-    const language = i18n.language;
+    const { t, language } = useLanguage();
     const queryClient = useQueryClient();
 
     const [employeeEmails, setEmployeeEmails] = useState(
