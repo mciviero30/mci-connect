@@ -512,7 +512,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       }
       
       const endTime = clockOutTime.getTime();
-      const totalHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
+      // MIDNIGHT CROSS FIX: Use actual timestamps (ms), not time strings — always correct
+      const rawHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
+      const totalHours = Math.max(0, rawHours);
       
       // Validate against max daily hours if shift enforces it
       if (shift && shift.enforce_scheduled_hours && totalHours > (shift.max_daily_hours || 8)) {
@@ -956,7 +958,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     try {
       const location = await getLocation();
       const endTime = Date.now();
-      const totalHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
+      // MIDNIGHT CROSS FIX: Use actual timestamps (ms) — always correct across midnight
+      const totalHours = Math.max(0, (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60));
 
       // WRITE GUARD — STRICT MODE for TimeEntry (blocks without user_id)
       const autoClockOutData = {
