@@ -13,6 +13,7 @@ import PageHeader from "../components/shared/PageHeader";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { notifyAnnouncement } from "../components/notifications/notificationHelpers";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function NewsFeed() {
   const { t } = useLanguage();
@@ -24,7 +25,7 @@ export default function NewsFeed() {
   const [showAIGenerator, setShowAIGenerator] = useState(false);
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });
@@ -70,6 +71,7 @@ export default function NewsFeed() {
     mutationFn: async (postData) => {
       const newPostResult = await base44.entities.Post.create({
         ...postData,
+        author_user_id: user?.id,        // SSOT: Write user_id
         author_email: user.email,
         author_name: user.full_name,
       });

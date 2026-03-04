@@ -26,6 +26,7 @@ import ChatUnreadBadge from "../components/chat/ChatUnreadBadge";
 import OnlineStatusManager from "../components/chat/OnlineStatusManager";
 import UserStatusIndicator from "@/components/chat/UserStatusIndicator";
 import { sendNotification } from "../components/notifications/PushNotificationService";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 const EMOJIS = [
   '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇',
@@ -153,7 +154,7 @@ export default function Chat() {
   const [showExportDialog, setShowExportDialog] = useState(false);
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });
@@ -378,6 +379,7 @@ export default function Chat() {
     }
 
     const messageData = {
+      sender_user_id: user?.id,        // SSOT: Write user_id
       sender_email: user.email,
       sender_name: user.full_name,
       message: messageContent,

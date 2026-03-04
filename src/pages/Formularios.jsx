@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function Formularios() {
   const { t } = useLanguage();
@@ -22,7 +23,7 @@ export default function Formularios() {
   const [responses, setResponses] = useState({});
 
   const { data: user } = useQuery({ 
-    queryKey: ['currentUser'],
+    queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: 30000
   });
@@ -62,6 +63,7 @@ export default function Formularios() {
     submitMutation.mutate({
       template_id: selectedForm.id,
       template_name: selectedForm.name,
+      submitted_by_user_id: user?.id,   // SSOT: Write user_id
       submitted_by_email: user.email,
       submitted_by_name: user.full_name,
       submission_date: new Date().toISOString(),
