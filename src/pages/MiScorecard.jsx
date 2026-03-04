@@ -12,26 +12,39 @@ import { RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 export default function MiScorecard() {
   const { t, language } = useLanguage();
 
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
 
+  // Dual-Key Reads: user_id preferred, email fallback (legacy)
   const { data: timeEntries = [] } = useQuery({
-    queryKey: ['myTimeEntries', user?.email],
-    queryFn: () => base44.entities.TimeEntry.filter({ employee_email: user.email }, '-date', 100),
-    enabled: !!user?.email,
+    queryKey: ['myTimeEntries', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.TimeEntry.filter(query, '-date', 100);
+    },
+    enabled: !!user,
     initialData: []
   });
 
   const { data: recognitions = [] } = useQuery({
-    queryKey: ['myRecognitions', user?.email],
-    queryFn: () => base44.entities.Recognition.filter({ employee_email: user.email }, '-date'),
-    enabled: !!user?.email,
+    queryKey: ['myRecognitions', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.Recognition.filter(query, '-date');
+    },
+    enabled: !!user,
     initialData: []
   });
 
   const { data: certifications = [] } = useQuery({
-    queryKey: ['myCertifications', user?.email],
-    queryFn: () => base44.entities.Certification.filter({ employee_email: user.email }, '-expiration_date'),
-    enabled: !!user?.email,
+    queryKey: ['myCertifications', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.Certification.filter(query, '-expiration_date');
+    },
+    enabled: !!user,
     initialData: []
   });
 

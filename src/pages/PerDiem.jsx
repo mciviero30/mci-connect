@@ -110,17 +110,23 @@ export default function PerDiem() {
   const [showForm, setShowForm] = useState(false);
   const [editingRequest, setEditingRequest] = useState(null);
   const queryClient = useQueryClient();
-  const { data: user } = useQuery({ queryKey: ['currentUser'] });
+  const { data: user } = useQuery({ queryKey: CURRENT_USER_QUERY_KEY });
 
+  // Dual-Key Read: user_id preferred, email fallback (legacy)
   const { data: perDiemRequests = [], isLoading } = useQuery({
-    queryKey: ['myPerDiem', user?.email],
-    queryFn: () => user ? base44.entities.Expense.filter({ employee_email: user.email, category: 'per_diem' }, '-date') : [],
+    queryKey: ['myPerDiem', user?.id, user?.email],
+    queryFn: () => {
+      if (!user) return [];
+      const query = { ...buildUserQuery(user, 'user_id', 'employee_email'), category: 'per_diem' };
+      return base44.entities.Expense.filter(query, '-date');
+    },
     enabled: !!user,
   });
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.Expense.create({
       ...data,
+      user_id: user?.id,              // SSOT: Write user_id
       employee_email: user.email,
       employee_name: user.full_name,
       category: 'per_diem',

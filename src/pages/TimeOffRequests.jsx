@@ -16,6 +16,7 @@ import { notifyTimeOffStatus } from "../components/notifications/notificationHel
 import { toast } from "sonner"; // Assuming sonner for toast notifications
 import { Toaster } from "@/components/ui/sonner"; // Assuming Toaster component for sonner
 import { buildUserQuery } from "@/components/utils/userResolution";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function TimeOffRequests() {
   const queryClient = useQueryClient();
