@@ -447,8 +447,10 @@ export default function TimeReports() {
 }
 
 function calculateEntryCost(entry, employees) {
-  const employee = employees.find(e => e.email === entry.employee_email);
+  // SSOT: prefer user_id match, fallback to email for legacy entries
+  const employee = employees.find(e => e.user_id === entry.user_id)
+    || employees.find(e => e.employee_email === entry.employee_email);
   const hourlyRate = employee?.hourly_rate || 20;
-  const overtimeMultiplier = entry.hour_type === 'overtime' ? 1.5 : 1;
-  return (entry.hours_worked || 0) * hourlyRate * overtimeMultiplier;
+  // Driving always at regular rate; work OT is computed weekly in projectCosts, not per-entry
+  return (entry.hours_worked || 0) * hourlyRate;
 }
