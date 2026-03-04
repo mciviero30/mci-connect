@@ -110,12 +110,18 @@ export default function Calendario() {
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['jobs'],
     queryFn: async () => {
-      const data = await base44.entities.Job.list();
-      return data || [];
+      try {
+        const data = await base44.entities.Job.list();
+        console.log('✅ Jobs loaded:', data?.length);
+        return data || [];
+      } catch (error) {
+        console.error('❌ Error loading jobs:', error);
+        return [];
+      }
     },
     initialData: [],
     staleTime: 600000,
-    refetchOnMount: false,
+    refetchOnMount: 'stale',
     refetchOnWindowFocus: false,
     gcTime: Infinity
   });
