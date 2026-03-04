@@ -991,7 +991,7 @@ export default function Calendario() {
               shifts={shifts}
               currentDate={currentDate}
               timeOffRequests={timeOffRequests}
-              onEmployeeClick={(emp) => setEmployeeFilter(emp.email)}
+              onEmployeeClick={(emp) => setEmployeeFilter(emp.id || emp.email)}
               language={language}
             />
           </div>

@@ -16,23 +16,26 @@ export default function TeamAvailability({
   const getEmployeeStatus = (employee) => {
     const dateStr = format(currentDate, 'yyyy-MM-dd');
     
-    // Check time-off
-    const hasTimeOff = timeOffRequests.some(req => 
-      req.employee_email === employee.email &&
-      req.status === 'approved' &&
-      req.start_date <= dateStr &&
-      req.end_date >= dateStr
-    );
+    // Check time-off (dual-key: user_id preferred, fallback email)
+    const hasTimeOff = timeOffRequests.some(req => {
+      const matchById = employee.id && req.user_id && req.user_id === employee.id;
+      const matchByEmail = req.employee_email === employee.email;
+      return (matchById || matchByEmail) &&
+        req.status === 'approved' &&
+        req.start_date <= dateStr &&
+        req.end_date >= dateStr;
+    });
     
     if (hasTimeOff) {
       return { status: 'off', label: language === 'es' ? 'Ausente' : 'Off', color: 'text-orange-500 bg-orange-100 dark:bg-orange-900/30' };
     }
 
-    // Check shifts for the day
-    const dayShifts = shifts.filter(s => 
-      s.employee_email === employee.email &&
-      s.date === dateStr
-    );
+    // Check shifts for the day (dual-key: user_id preferred, fallback email)
+    const dayShifts = shifts.filter(s => {
+      if (s.date !== dateStr) return false;
+      if (employee.id && s.user_id) return s.user_id === employee.id;
+      return s.employee_email === employee.email;
+    });
 
     if (dayShifts.length === 0) {
       return { status: 'available', label: language === 'es' ? 'Disponible' : 'Available', color: 'text-green-500 bg-green-100 dark:bg-green-900/30' };
