@@ -192,6 +192,7 @@ Lawrenceville, Georgia 30043, U.S.A`
             name: quote.job_name,
             job_number: job_number,
             address: quote.job_address,
+            authorization_id: authorization.id,
             customer_id: quote.customer_id,
             customer_name: quote.customer_name,
             contract_amount: quote.total,
