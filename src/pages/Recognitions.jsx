@@ -9,6 +9,7 @@ import RecognitionFeed from '../components/recognition/RecognitionFeed';
 import TopRecognitionsWidget from '../components/recognition/TopRecognitionsWidget';
 import GiveKudosDialog from '../components/recognition/GiveKudosDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
 export default function Recognitions() {
   const [showKudosDialog, setShowKudosDialog] = useState(false);

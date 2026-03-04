@@ -11,6 +11,8 @@ import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { buildUserQuery } from "@/components/utils/userResolution";
 
 export default function Capacitacion() {
   const { t } = useLanguage();
