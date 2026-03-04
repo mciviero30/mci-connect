@@ -156,143 +156,146 @@ Lawrenceville, Georgia 30043, U.S.A`
     mutationFn: async () => {
       console.log('🔄 Converting quote to invoice from VerEstimado...', quote);
       
-      // CRITICAL: Immediately mark as converting to prevent double-clicks
-      await base44.entities.Quote.update(quote.id, { 
-        status: 'converted_to_invoice'
-      });
-      
-      // AUTO-CREATE WorkAuthorization for approved quotes
-      console.log('🔐 Auto-creating WorkAuthorization...');
-      const authorization = await base44.entities.WorkAuthorization.create({
-        customer_id: quote.customer_id,
-        customer_name: quote.customer_name,
-        authorization_type: 'fixed',
-        approval_source: 'signed_quote',
-        authorization_number: quote.quote_number,
-        approved_amount: quote.total,
-        approved_at: new Date().toISOString(),
-        verified_by_user_id: user?.id,
-        verified_by_email: user?.email,
-        verified_by_name: user?.full_name,
-        verification_notes: `Auto-generated from Quote ${quote.quote_number}`,
-        linked_quote_id: quote.id,
-        status: 'approved'
-      });
-      console.log('✅ WorkAuthorization created:', authorization.id);
-      
-      let jobId = quote.job_id;
-      let wasJobCreated = false;
-      let mciFieldSyncSuccess = false;
-      
-      // CRITICAL: Create Job in MCI Connect when converting to Invoice
-      if (!jobId) {
-        console.log('📁 Creating new job in MCI Connect...');
-        
-        // Generate job number
-        const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
-        const job_number = jobNumberData.job_number;
-        
-        const newJob = await base44.entities.Job.create({
-          name: quote.job_name,
-          job_number: job_number,
-          address: quote.job_address,
+      try {
+        // AUTO-CREATE WorkAuthorization for approved quotes
+        console.log('🔐 Auto-creating WorkAuthorization...');
+        const authorization = await base44.entities.WorkAuthorization.create({
           customer_id: quote.customer_id,
           customer_name: quote.customer_name,
-          contract_amount: quote.total,
-          estimated_cost: quote.estimated_cost || 0,
-          estimated_hours: quote.estimated_hours || 0,
-          status: 'active',
-          team_id: quote.team_id,
-          team_name: quote.team_name,
-          color: 'blue',
-          description: `Created from Quote ${quote.quote_number}`
+          authorization_type: 'fixed',
+          approval_source: 'signed_quote',
+          authorization_number: quote.quote_number,
+          approved_amount: quote.total,
+          approved_at: new Date().toISOString(),
+          verified_by_user_id: user?.id,
+          verified_by_email: user?.email,
+          verified_by_name: user?.full_name,
+          verification_notes: `Auto-generated from Quote ${quote.quote_number}`,
+          linked_quote_id: quote.id,
+          status: 'approved'
         });
+        console.log('✅ WorkAuthorization created:', authorization.id);
         
-        jobId = newJob.id;
-        wasJobCreated = true;
-        console.log('✅ Job created:', jobId, job_number);
+        let jobId = quote.job_id;
+        let wasJobCreated = false;
+        let mciFieldSyncSuccess = false;
         
-        // Update quote with job_id
-        await base44.entities.Quote.update(quote.id, { job_id: jobId });
-        
-        // Sync to MCI Field in background - don't wait
-        base44.functions.invoke('syncJobToMCIField', { jobId })
-          .then(() => { mciFieldSyncSuccess = true; })
-          .catch(err => console.warn('Background MCI Field sync failed:', err));
-      } else {
-        console.log('✅ Using existing job:', jobId);
-        // Load existing job to accumulate contract amounts
-        const existingJobs = await base44.entities.Job.filter({ id: jobId });
-        if (existingJobs.length > 0) {
-          const existingJob = existingJobs[0];
-          const currentContractAmount = existingJob.contract_amount || 0;
-          const newTotal = currentContractAmount + quote.total;
+        // CRITICAL: Create Job in MCI Connect when converting to Invoice
+        if (!jobId) {
+          console.log('📁 Creating new job in MCI Connect...');
           
-          // Update existing job - ACCUMULATE contract amount
-          await base44.entities.Job.update(jobId, {
-            contract_amount: newTotal,
-            status: 'active'
+          // Generate job number
+          const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
+          const job_number = jobNumberData.job_number;
+          
+          const newJob = await base44.entities.Job.create({
+            name: quote.job_name,
+            job_number: job_number,
+            address: quote.job_address,
+            customer_id: quote.customer_id,
+            customer_name: quote.customer_name,
+            contract_amount: quote.total,
+            estimated_cost: quote.estimated_cost || 0,
+            estimated_hours: quote.estimated_hours || 0,
+            status: 'active',
+            team_id: quote.team_id,
+            team_name: quote.team_name,
+            color: 'blue',
+            description: `Created from Quote ${quote.quote_number}`
           });
           
-          console.log(`✅ Job contract updated: $${currentContractAmount} + $${quote.total} = $${newTotal}`);
+          jobId = newJob.id;
+          wasJobCreated = true;
+          console.log('✅ Job created:', jobId, job_number);
+          
+          // Update quote with job_id
+          await base44.entities.Quote.update(quote.id, { job_id: jobId });
+          
+          // Sync to MCI Field in background - don't wait
+          base44.functions.invoke('syncJobToMCIField', { jobId })
+            .then(() => { mciFieldSyncSuccess = true; })
+            .catch(err => console.warn('Background MCI Field sync failed:', err));
+        } else {
+          console.log('✅ Using existing job:', jobId);
+          // Load existing job to accumulate contract amounts
+          const existingJobs = await base44.entities.Job.filter({ id: jobId });
+          if (existingJobs.length > 0) {
+            const existingJob = existingJobs[0];
+            const currentContractAmount = existingJob.contract_amount || 0;
+            const newTotal = currentContractAmount + quote.total;
+            
+            // Update existing job - ACCUMULATE contract amount
+            await base44.entities.Job.update(jobId, {
+              contract_amount: newTotal,
+              status: 'active'
+            });
+            
+            console.log(`✅ Job contract updated: $${currentContractAmount} + $${quote.total} = $${newTotal}`);
+          }
         }
+
+        // Step 3: Create invoice BEFORE marking quote as converted
+        console.log('📄 Creating invoice...');
+        
+        // Generate invoice number using backend function
+        const { data: invoiceNumberData } = await base44.functions.invoke('generateInvoiceNumber', {});
+        const invoice_number = invoiceNumberData.invoice_number;
+
+        const invoiceData = {
+          invoice_number,
+          quote_id: quote.id,
+          authorization_id: authorization.id,
+          customer_id: quote.customer_id,
+          customer_name: quote.customer_name,
+          customer_email: quote.customer_email,
+          customer_phone: quote.customer_phone,
+          job_name: quote.job_name,
+          job_id: jobId,
+          job_address: quote.job_address,
+          team_id: quote.team_id,
+          team_name: quote.team_name,
+          invoice_date: format(new Date(), 'yyyy-MM-dd'),
+          due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
+          items: quote.items,
+          subtotal: quote.subtotal,
+          tax_rate: quote.tax_rate,
+          tax_amount: quote.tax_amount,
+          total: quote.total,
+          amount_paid: 0,
+          balance: quote.total,
+          notes: quote.notes,
+          terms: quote.terms,
+          status: 'draft',
+          approval_status: 'approved'
+        };
+
+        console.log('Creating invoice with data:', invoiceData);
+        const newInvoice = await base44.entities.Invoice.create(invoiceData);
+        console.log('✅ Invoice created successfully:', newInvoice);
+
+        // ONLY NOW mark quote as converted_to_invoice (AFTER invoice exists)
+        await base44.entities.Quote.update(quote.id, {
+          status: 'converted_to_invoice',
+          invoice_id: newInvoice.id
+        });
+        console.log('✅ Quote marked as converted with invoice link');
+
+        // TRIGGER 1: Quote → Invoice Conversion Provisioning (ONLY IF APPROVED) - Run in background
+        const newInvoiceApprovalStatus = newInvoice.approval_status || 'approved';
+        if (newInvoiceApprovalStatus === 'approved') {
+          // Don't await - let it run in background for faster UX
+          base44.functions.invoke('provisionJobFromInvoice', {
+            invoice_id: newInvoice.id,
+            mode: 'convert'
+          }).catch(err => console.warn('Background provisioning failed:', err));
+        }
+
+        return { newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess };
+      } catch (error) {
+        // If anything fails, quote stays in draft — safe to retry
+        console.error('❌ Conversion failed (quote remains in draft):', error);
+        throw error;
       }
-
-      // Step 3: Create invoice
-      console.log('📄 Creating invoice...');
-      
-      // Generate invoice number using backend function
-      const { data: invoiceNumberData } = await base44.functions.invoke('generateInvoiceNumber', {});
-      const invoice_number = invoiceNumberData.invoice_number;
-
-      const invoiceData = {
-        invoice_number,
-        quote_id: quote.id,
-        authorization_id: authorization.id,
-        customer_id: quote.customer_id,
-        customer_name: quote.customer_name,
-        customer_email: quote.customer_email,
-        customer_phone: quote.customer_phone,
-        job_name: quote.job_name,
-        job_id: jobId,
-        job_address: quote.job_address,
-        team_id: quote.team_id,
-        team_name: quote.team_name,
-        invoice_date: format(new Date(), 'yyyy-MM-dd'),
-        due_date: format(new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), 'yyyy-MM-dd'),
-        items: quote.items,
-        subtotal: quote.subtotal,
-        tax_rate: quote.tax_rate,
-        tax_amount: quote.tax_amount,
-        total: quote.total,
-        amount_paid: 0,
-        balance: quote.total,
-        notes: quote.notes,
-        terms: quote.terms,
-        status: 'draft',
-        approval_status: 'approved'
-      };
-
-      console.log('Creating invoice with data:', invoiceData);
-      const newInvoice = await base44.entities.Invoice.create(invoiceData);
-      console.log('✅ Invoice created successfully:', newInvoice);
-
-      // Update quote with invoice link (status already set to prevent double-click)
-      await base44.entities.Quote.update(quote.id, {
-        invoice_id: newInvoice.id
-      });
-
-      // TRIGGER 1: Quote → Invoice Conversion Provisioning (ONLY IF APPROVED) - Run in background
-      const newInvoiceApprovalStatus = newInvoice.approval_status || 'approved';
-      if (newInvoiceApprovalStatus === 'approved') {
-        // Don't await - let it run in background for faster UX
-        base44.functions.invoke('provisionJobFromInvoice', {
-          invoice_id: newInvoice.id,
-          mode: 'convert'
-        }).catch(err => console.warn('Background provisioning failed:', err));
-      }
-
-      return { newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess };
     },
     onSuccess: ({ newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess }) => {
       console.log('✅ Conversion successful, invalidating queries...');
