@@ -4,7 +4,8 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shield, DollarSign, TrendingUp, Users, CheckCircle, Clock, AlertTriangle } from 'lucide-react';
+import { Shield, DollarSign, TrendingUp, Users, CheckCircle, Clock, AlertTriangle, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function ExecutiveDashboard() {
   const [startDate, setStartDate] = useState('');
