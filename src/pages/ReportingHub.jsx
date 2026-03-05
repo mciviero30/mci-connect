@@ -110,7 +110,8 @@ export default function ReportingHub() {
 
   // Calculate KPIs
   const kpis = useMemo(() => {
-    const activeEmployees = employees.filter(e => e.employment_status === 'active');
+    // EmployeeDirectory uses 'status' field (not employment_status)
+    const activeEmployees = employees.filter(e => e.status === 'active');
     
     // Employee Performance
     const totalHours = filteredData.timeEntries.reduce((sum, t) => sum + (t.hours_worked || 0), 0);
@@ -207,7 +208,7 @@ export default function ReportingHub() {
       
       months.push({
         month: format(date, 'MMM'),
-        revenue: monthInvoices.reduce((sum, i) => sum + (i.total_amount || 0), 0),
+        revenue: monthInvoices.reduce((sum, i) => sum + (i.total || 0), 0),
         expenses: monthExpenses.reduce((sum, e) => sum + (e.amount || 0), 0)
       });
     }
