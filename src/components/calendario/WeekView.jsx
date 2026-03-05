@@ -9,8 +9,9 @@ const isTouchDevice = () => typeof window !== 'undefined' && ('ontouchstart' in 
 
 export default function WeekView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, onCopyShift, onPasteShift, copiedShift, isAdmin, currentUser }) {
   const validDate = isValid(new Date(currentDate)) ? new Date(currentDate) : new Date();
-  const [draggedShift, setDraggedShift] = React.useState(null);
-  const [touchOverDay, setTouchOverDay] = React.useState(null);
+  const [draggedShift, setDraggedShift] = useState(null);
+  const [touchOverDay, setTouchOverDay] = useState(null);
+  const dayRefs = useRef([]);
   
   const weekStart = new Date(validDate);
   const day = weekStart.getDay();
