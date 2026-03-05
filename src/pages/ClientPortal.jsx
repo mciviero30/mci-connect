@@ -46,6 +46,13 @@ export default function ClientPortal() {
     queryFn: () => base44.auth.me(),
   });
 
+  // Check if client_access_token is set on the job (used later for expiry warning)
+  const tokenExpiryDays = (() => {
+    if (!selectedJob?.client_token_expires_at) return null;
+    const diff = Math.ceil((new Date(selectedJob.client_token_expires_at) - new Date()) / (1000 * 60 * 60 * 24));
+    return diff;
+  })();
+
   // Get projects where user is a client member
   const { data: memberships = [] } = useQuery({
     queryKey: ['client-memberships', user?.email],

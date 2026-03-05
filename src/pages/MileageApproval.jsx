@@ -31,6 +31,7 @@ export default function MileageApproval() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [showMileageForm, setShowMileageForm] = useState(false);
+  const [dateFilter, setDateFilter] = useState('pending_only'); // 'pending_only' | 'this_week' | 'this_month' | 'all'
 
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
