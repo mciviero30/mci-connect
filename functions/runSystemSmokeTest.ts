@@ -109,12 +109,12 @@ Deno.serve(async (req) => {
       const job = await base44.asServiceRole.entities.Job.create({
         name: 'Test Job Smoke',
         customer_name: 'Test Customer',
-        job_name: 'Test Project',
         address: '456 Test Blvd',
         city: 'Test City',
         state: 'FL',
         status: 'active',
-        contract_amount: 5000
+        contract_amount: 5000,
+        authorization_id: 'smoke-test-auth'
       });
       
       if (job.id) {
