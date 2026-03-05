@@ -120,6 +120,26 @@ export default function ExecutiveControlTower() {
     refetchOnWindowFocus: false
   });
 
+  // Dynamic team locations from active jobs with coordinates
+  const { data: activeJobs = [] } = useQuery({
+    queryKey: ['active-jobs-coords'],
+    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
+    staleTime: 600000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
+  });
+
+  const teamLocations = React.useMemo(() => {
+    const jobsWithCoords = activeJobs.filter(j => j.latitude && j.longitude);
+    if (jobsWithCoords.length === 0) return fallbackTeamLocations;
+    const colors = ['#1E6FE8', '#00C48C', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
+    return jobsWithCoords.map((j, i) => ({
+      name: j.name,
+      coordinates: [j.latitude, j.longitude],
+      color: colors[i % colors.length]
+    }));
+  }, [activeJobs]);
+
   // Needs attention items
   const { data: pendingExpenses = [] } = useQuery({
     queryKey: ['pending-expenses'],

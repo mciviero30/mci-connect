@@ -413,6 +413,20 @@ export default function JobDetails() {
                     </Button>
                   </>
                 )}
+                {user?.role === 'admin' && job?.status === 'completed' && (
+                  <Button
+                    onClick={() => {
+                      if (window.confirm(language === 'es' ? '¿Reabrir este trabajo?' : 'Reopen this job?')) {
+                        reopenJobMutation.mutate();
+                      }
+                    }}
+                    disabled={reopenJobMutation.isPending}
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg"
+                  >
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Reabrir Trabajo' : 'Reopen Job'}
+                  </Button>
+                )}
                 <Link to={createPageUrl(`Calendario?job=${jobId}`)}>
                   <Button className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-lg">
                     <CalendarPlus className="w-4 h-4 mr-2" />
