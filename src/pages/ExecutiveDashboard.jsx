@@ -193,12 +193,19 @@ export default function ExecutiveDashboard() {
         {/* Date Filter */}
         <Card>
           <CardHeader>
-            <CardTitle>Period Filter</CardTitle>
+            <CardTitle className="flex items-center justify-between">
+              <span>Period Filter</span>
+              {(startDate || endDate) && (
+                <Button variant="ghost" size="sm" onClick={() => { setStartDate(''); setEndDate(''); }} className="text-slate-500 hover:text-red-600 h-7 px-2">
+                  <X className="w-3 h-3 mr-1" /> Clear
+                </Button>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Start Date</Label>
+                <Label>Start Date {!startDate && <span className="text-slate-400 text-xs">(all time)</span>}</Label>
                 <Input
                   type="date"
                   value={startDate}
@@ -206,7 +213,7 @@ export default function ExecutiveDashboard() {
                 />
               </div>
               <div>
-                <Label>End Date</Label>
+                <Label>End Date {!endDate && <span className="text-slate-400 text-xs">(today)</span>}</Label>
                 <Input
                   type="date"
                   value={endDate}
