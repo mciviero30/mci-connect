@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import React, { useState, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { format, addDays, isSameDay, isValid } from 'date-fns';
 import { Plus, CheckCircle, XCircle, Copy, ClipboardPaste } from 'lucide-react';
