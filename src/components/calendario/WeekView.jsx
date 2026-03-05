@@ -142,6 +142,7 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                               'bg-slate-100 border-slate-600 text-slate-900'
                             } shadow-sm relative group/shift`}
                             onClick={() => (isAdmin || myShift) && onShiftClick(shift)}
+                            onTouchStart={(e) => handleTouchStart(e, shift)}
                           >
                             {isAdmin && onCopyShift && (
                               <button
