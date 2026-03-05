@@ -46,6 +46,38 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
     return shift.employee_email === currentUser.email;
   };
 
+  // Touch drag handlers for mobile
+  const handleTouchStart = (e, shift) => {
+    if (!isAdmin) return;
+    setDraggedShift(shift);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!draggedShift) return;
+    e.preventDefault();
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const dayCell = el?.closest('[data-day-index]');
+    if (dayCell) {
+      setTouchOverDay(parseInt(dayCell.dataset.dayIndex));
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!draggedShift || touchOverDay === null) {
+      setDraggedShift(null);
+      setTouchOverDay(null);
+      return;
+    }
+    const targetDay = days[touchOverDay];
+    if (targetDay && onPasteShift) {
+      // Reuse paste mechanism: paste draggedShift onto target day
+      onPasteShift(targetDay, draggedShift);
+    }
+    setDraggedShift(null);
+    setTouchOverDay(null);
+  };
+
   return (
     <Card className="bg-white shadow-md overflow-hidden border-slate-200/50">
       <div className="overflow-x-auto">
