@@ -166,14 +166,15 @@ Deno.serve(async (req) => {
     }
 
     // Create in-app notification
+    const formattedDate = new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     await base44.asServiceRole.functions.invoke('createNotification', {
       recipientEmail: employeeEmail,
       recipientName: employeeName,
-      type: action === 'assigned' ? 'calendar_assignment' : 'calendar_update',
+      type: isNewAssignment ? 'calendar_assignment' : 'calendar_update',
       category: 'calendar',
       priority: 'medium',
-      title: action === 'assigned' ? `Nueva asignación: ${jobName}` : `Horario actualizado: ${jobName}`,
-      message: `${formattedDate} • ${startTime} - ${endTime}`,
+      title: isNewAssignment ? `Nueva asignación: ${jobName}` : `Horario actualizado: ${jobName}`,
+      message: `${formattedDate} • ${startTime || ''} - ${endTime || ''}`,
       actionUrl: 'Calendario',
       relatedEntityType: 'job_assignment',
       relatedEntityId: assignmentId
