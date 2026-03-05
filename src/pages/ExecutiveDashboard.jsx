@@ -28,18 +28,20 @@ export default function ExecutiveDashboard() {
     refetchOnWindowFocus: false,
   });
 
-  const { data: commissions = [] } = useQuery({
-    queryKey: ['all-commissions'],
-    queryFn: () => base44.entities.CommissionResult.list('-created_date', 1000),
+  // PayrollBatch = real payroll entity (confirmed, locked batches)
+  const { data: payrollBatches = [] } = useQuery({
+    queryKey: ['payroll-batches-exec'],
+    queryFn: () => base44.entities.PayrollBatch.list('-created_date', 500),
     enabled: isAdmin,
     staleTime: 300000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
   });
 
-  const { data: payrollEntries = [] } = useQuery({
-    queryKey: ['payroll-entries'],
-    queryFn: () => base44.entities.WeeklyPayroll.list('-created_date', 1000),
+  // PayrollAllocation = individual employee allocations per batch
+  const { data: payrollAllocations = [] } = useQuery({
+    queryKey: ['payroll-allocations-exec'],
+    queryFn: () => base44.entities.PayrollAllocation.list('-created_date', 1000),
     enabled: isAdmin,
     staleTime: 300000,
     refetchOnMount: false,

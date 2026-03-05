@@ -30,8 +30,8 @@ export default function ReportingHub() {
 
   // Fetch all data
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryKey: ['employees-reporting'],
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
