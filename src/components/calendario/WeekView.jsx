@@ -130,7 +130,7 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                       return (
                         <div key={shift.id} className="w-full">
                           <div
-                            className={`px-1.5 py-0.5 rounded text-[9px] leading-tight ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} transition-all border-l-4 bg-opacity-20 ${
+                            className={`px-1.5 py-0.5 rounded text-[9px] leading-tight ${isAdmin || myShift ? 'cursor-pointer hover:opacity-90' : 'cursor-default'} transition-all border-l-4 bg-opacity-20 ${draggedShift?.id === shift.id ? 'opacity-50 ring-2 ring-blue-400' : ''} ${
                               color === 'blue' ? 'bg-blue-100 border-blue-600 text-blue-900' :
                               color === 'green' ? 'bg-green-100 border-green-600 text-green-900' :
                               color === 'purple' ? 'bg-purple-100 border-purple-600 text-purple-900' :
