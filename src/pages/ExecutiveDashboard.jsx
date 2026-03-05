@@ -349,7 +349,7 @@ export default function ExecutiveDashboard() {
               ${totalPayrollExposure.toLocaleString(undefined, { minimumFractionDigits: 2 })}
             </p>
             <p className="text-sm text-slate-600 mt-2">
-              From {filteredPayroll.length} payroll entr{filteredPayroll.length !== 1 ? 'ies' : 'y'}
+              From {filteredAllocations.length} payroll allocation{filteredAllocations.length !== 1 ? 's' : ''} ({confirmedBatchIds.size} batches)
             </p>
           </CardContent>
         </Card>
