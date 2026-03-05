@@ -265,8 +265,6 @@ export default function Formularios() {
             </div>
           </DialogContent>
         </Dialog>
-          </TabsContent>
-        </Tabs>
       </div>
     </div>
   );
