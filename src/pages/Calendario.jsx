@@ -357,17 +357,25 @@ export default function Calendario() {
     toast.success(language === 'es' ? '📋 Turno copiado' : '📋 Shift copied');
   };
 
-  const handlePasteShift = async (targetDate) => {
-    if (!copiedShift) return;
+  // Supports both copy-paste (copiedShift) and touch-drag (explicit shiftToDrag param)
+  const handlePasteShift = async (targetDate, shiftToDrag = null) => {
+    const source = shiftToDrag || copiedShift;
+    if (!source) return;
+
+    const sourceCopy = { ...source };
+    delete sourceCopy.id;
+    delete sourceCopy.created_date;
+    delete sourceCopy.updated_date;
+    delete sourceCopy.created_by;
     
     const newShift = {
-      ...copiedShift,
+      ...sourceCopy,
       date: format(targetDate, 'yyyy-MM-dd'),
       status: 'scheduled'
     };
     
     await createMutation.mutateAsync(newShift);
-    toast.success(language === 'es' ? '✅ Turno pegado' : '✅ Shift pasted');
+    toast.success(language === 'es' ? '✅ Turno movido' : '✅ Shift moved');
   };
 
   // Create recurring shifts
