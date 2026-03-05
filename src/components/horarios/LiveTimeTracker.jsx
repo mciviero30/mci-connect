@@ -361,12 +361,32 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       }
       
       if (!job.latitude || !job.longitude) {
-        // Show a detailed error dialog instead of alert
-        setLocationError(language === 'es' 
-          ? '❌ Este proyecto no tiene coordenadas GPS configuradas.\n\n✅ Soluciones:\n1. Pídele a tu supervisor que configure las coordenadas del proyecto\n2. O que habilite "skip_geofence" para permitir check-in sin GPS'
-          : '❌ This project has no GPS coordinates configured.\n\n✅ Solutions:\n1. Ask your supervisor to set up project coordinates\n2. Or enable "skip_geofence" to allow check-in without GPS');
-        setShowWorkTypeDialog(false);
-        return;
+        // Auto-geocode the job address on the fly
+        if (job.address) {
+          setGpsProgress(language === 'es' ? 'Obteniendo coordenadas del proyecto...' : 'Getting project coordinates...');
+          try {
+            const { geocodeAddress } = await import('@/components/utils/geocoding');
+            const geo = await geocodeAddress(job.address);
+            // Persist coordinates to the job entity so it doesn't happen again
+            base44.entities.Job.update(job.id, { latitude: geo.latitude, longitude: geo.longitude });
+            // Update local jobs list reference
+            job = { ...job, latitude: geo.latitude, longitude: geo.longitude };
+          } catch (geoError) {
+            setLocationError(language === 'es' 
+              ? '❌ No se pudieron obtener coordenadas GPS del proyecto. Verifica que la dirección sea correcta.'
+              : '❌ Could not get GPS coordinates for this project. Check that the address is correct.');
+            setShowWorkTypeDialog(false);
+            setGpsProgress(null);
+            return;
+          }
+          setGpsProgress(null);
+        } else {
+          setLocationError(language === 'es' 
+            ? '❌ Este proyecto no tiene dirección configurada. Pídele a tu supervisor que la agregue.'
+            : '❌ This project has no address configured. Ask your supervisor to add it.');
+          setShowWorkTypeDialog(false);
+          return;
+        }
       }
 
       const distanceMeters = calculateDistance(
@@ -1107,19 +1127,19 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
             </div>
           )}
           <div className="relative inline-block">
-            <Button
-              onClick={handleClockIn}
-              size="lg"
+            <ClockInButton
+              onClick={(progressCallback) => {
+                setGpsProgress('starting');
+                return new Promise((resolve, reject) => {
+                  handleClockIn()
+                    .then(resolve)
+                    .catch(reject);
+                });
+              }}
               disabled={isLoading}
-              className="h-32 w-32 rounded-full bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-2xl shadow-blue-500/30 hover:scale-110 transition-all duration-300"
-            >
-              <Play className="w-12 h-12" />
-            </Button>
-            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
-              <Badge className="bg-green-500 text-white font-bold text-xs shadow-lg">
-                {language === 'es' ? 'LISTO' : 'READY'}
-              </Badge>
-            </div>
+              isLoading={isLoading}
+              language={language}
+            />
           </div>
           <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
             {language === 'es' ? 'Iniciar Jornada' : 'Start Work Day'}
