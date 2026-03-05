@@ -3,8 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, CheckCircle } from "lucide-react";
+import { ClipboardList, CheckCircle, BarChart3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import FormsAnalyticsTab from "@/components/forms/FormsAnalyticsTab";
 
 export default function Formularios() {
   const { t } = useLanguage();
