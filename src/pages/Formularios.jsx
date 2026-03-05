@@ -186,6 +186,8 @@ export default function Formularios() {
             </div>
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
 
         <Dialog open={!!selectedForm} onOpenChange={() => setSelectedForm(null)}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
