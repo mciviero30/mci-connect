@@ -19,8 +19,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
-// Team locations
-const teamLocations = [
+// Fallback team locations (used only if no active jobs have coordinates)
+const fallbackTeamLocations = [
   { name: 'Atlanta', coordinates: [33.7490, -84.3880], color: '#1E6FE8' },
   { name: 'Charlotte', coordinates: [35.2271, -80.8431], color: '#00C48C' },
   { name: 'Orlando', coordinates: [28.5383, -81.3792], color: '#F59E0B' }

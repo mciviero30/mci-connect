@@ -232,6 +232,14 @@ export default function JobDetails() {
     initialData: []
   });
 
+  const reopenJobMutation = useMutation({
+    mutationFn: () => base44.entities.Job.update(jobId, { status: 'active', completed_date: null }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job', jobId] });
+      toast.success(language === 'es' ? 'Trabajo reabierto' : 'Job reopened');
+    },
+  });
+
   // Fetch available supervisors/leads from EmployeeDirectory
   const { data: supervisors = [] } = useQuery({
     queryKey: ['availableSupervisors'],
