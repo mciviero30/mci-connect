@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -129,7 +129,7 @@ export default function ExecutiveControlTower() {
     refetchOnWindowFocus: false
   });
 
-  const teamLocations = React.useMemo(() => {
+  const teamLocations = useMemo(() => {
     const jobsWithCoords = activeJobs.filter(j => j.latitude && j.longitude);
     if (jobsWithCoords.length === 0) return fallbackTeamLocations;
     const colors = ['#1E6FE8', '#00C48C', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
