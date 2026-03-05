@@ -114,8 +114,11 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
               return (
                 <div
                   key={i}
-                  className={`border-l border-slate-200 first:border-l-0 p-1 hover:bg-slate-50 transition-colors group relative min-h-[150px] ${isToday ? 'bg-[#1E3A8A]/5' : 'bg-white'}`}
+                  data-day-index={i}
+                  className={`border-l border-slate-200 first:border-l-0 p-1 hover:bg-slate-50 transition-colors group relative min-h-[150px] ${isToday ? 'bg-[#1E3A8A]/5' : 'bg-white'} ${touchOverDay === i ? 'ring-2 ring-inset ring-blue-400 bg-blue-50' : ''}`}
                   onDoubleClick={() => isAdmin && onDateClick(day)}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
                 >
                   {/* Horizontal layout for shifts */}
                   <div className="flex flex-wrap gap-0.5">
