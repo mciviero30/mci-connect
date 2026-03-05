@@ -219,6 +219,20 @@ export default function MileageApproval() {
   const totalPendingAmount = pendingLogs.reduce((sum, d) => sum + (d.total_amount || 0), 0);
   const totalApprovedAmount = approvedLogs.reduce((sum, d) => sum + (d.total_amount || 0), 0);
 
+  const filteredLogs = drivingLogs.filter(d => {
+    if (dateFilter === 'pending_only') return d.status === 'pending';
+    if (dateFilter === 'this_week') {
+      const now = new Date();
+      const weekStart = new Date(now); weekStart.setDate(now.getDate() - now.getDay());
+      return new Date(d.date) >= weekStart;
+    }
+    if (dateFilter === 'this_month') {
+      const now = new Date();
+      return new Date(d.date).getMonth() === now.getMonth() && new Date(d.date).getFullYear() === now.getFullYear();
+    }
+    return true; // 'all'
+  });
+
   const statusConfig = {
     pending: { label: language === 'es' ? 'Pendiente' : 'Pending', color: "badge-soft-amber" },
     approved: { label: language === 'es' ? 'Aprobado' : 'Approved', color: "badge-soft-green" },
