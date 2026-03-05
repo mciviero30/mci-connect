@@ -1,5 +1,31 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+async function sendViaSendGrid(to, subject, body, fromName = 'MCI Connect') {
+  const apiKey = Deno.env.get('SENDGRID_API_KEY');
+  const fromEmail = Deno.env.get('SENDGRID_FROM_EMAIL') || 'noreply@mci-connect.com';
+
+  const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: to }] }],
+      from: { email: fromEmail, name: fromName },
+      subject,
+      content: [{ type: 'text/plain', value: body }]
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`SendGrid error ${response.status}: ${errorText}`);
+  }
+
+  return true;
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -26,14 +52,9 @@ Deno.serve(async (req) => {
       ? `Hola ${fullName},\n\nTe damos la bienvenida al equipo de MCI. Has sido invitado a MCI Connect.\n\nAccede aquí: ${appUrl}\n\nSi no tienes cuenta, revisa el correo de Base44 para la invitación (puede estar en spam).\n\nBienvenido,\nEl Equipo MCI`
       : `Hi ${fullName},\n\nWelcome to the MCI team! You have been invited to MCI Connect.\n\nAccess the platform here: ${appUrl}\n\nIf you don't have an account yet, check your email for a Base44 invitation (may be in spam).\n\nWelcome,\nThe MCI Team`;
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
-      to,
-      subject,
-      body,
-      from_name: 'MCI Connect'
-    });
+    await sendViaSendGrid(to, subject, body, 'MCI Connect');
 
-    console.log(`[sendInvitationEmail] ✅ Email sent to ${to}`);
+    console.log(`[sendInvitationEmail] ✅ Email sent via SendGrid to ${to}`);
 
     return Response.json({ success: true, message: 'Email sent successfully' });
 
