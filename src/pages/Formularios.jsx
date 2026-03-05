@@ -95,6 +95,29 @@ export default function Formularios() {
           icon={ClipboardList}
         />
 
+        <Tabs defaultValue="forms" className="mb-6">
+          <TabsList className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl mb-6">
+            <TabsTrigger value="forms" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white rounded-lg">
+              <ClipboardList className="w-4 h-4 mr-2" />
+              {t('forms')}
+            </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="analytics" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white rounded-lg">
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Analytics
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          <TabsContent value="analytics">
+            <FormsAnalyticsTab
+              templates={templates}
+              submissions={submissions}
+              employees={[]}
+            />
+          </TabsContent>
+
+          <TabsContent value="forms">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 mb-6 md:mb-8">
           {availableTemplates.map(template => {
             const mySubmissionsForThisForm = mySubmissions.filter(s => s.template_id === template.id);
