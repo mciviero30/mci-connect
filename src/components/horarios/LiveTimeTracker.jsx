@@ -309,7 +309,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       });
       setGpsProgress(null);
       
-      const job = jobs.find(j => j.id === selectedJobForStart);
+      let job = jobs.find(j => j.id === selectedJobForStart);
       
       // Find scheduled shift for this job today
       const todayShift = todayAssignments.find(a => a.job_id === selectedJobForStart && a.enforce_scheduled_hours);
