@@ -268,10 +268,32 @@ export default function MileageApproval() {
 
         <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
           <CardHeader className="border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-800">
-            <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
-              <Car className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
-              {language === 'es' ? 'Registros de Millas' : 'Mileage Records'}
-            </CardTitle>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
+                <Car className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
+                {language === 'es' ? 'Registros de Millas' : 'Mileage Records'}
+              </CardTitle>
+              <div className="flex gap-2 flex-wrap">
+                {[
+                  { key: 'pending_only', label: language === 'es' ? 'Pendientes' : 'Pending' },
+                  { key: 'this_week', label: language === 'es' ? 'Esta Semana' : 'This Week' },
+                  { key: 'this_month', label: language === 'es' ? 'Este Mes' : 'This Month' },
+                  { key: 'all', label: language === 'es' ? 'Todos' : 'All' },
+                ].map(opt => (
+                  <button
+                    key={opt.key}
+                    onClick={() => setDateFilter(opt.key)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                      dateFilter === opt.key
+                        ? 'bg-[#507DB4] text-white shadow-sm'
+                        : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
