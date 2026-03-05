@@ -121,8 +121,8 @@ export default function ReportingHub() {
       j.completed_date >= startDate && j.completed_date <= endDate);
     const completionRate = jobs.length > 0 ? (completedJobs.length / jobs.length) * 100 : 0;
     
-    // Financial Summary
-    const totalRevenue = filteredData.invoices.reduce((sum, i) => sum + (i.total_amount || 0), 0);
+    // Financial Summary — use invoice.total (correct field name)
+    const totalRevenue = filteredData.invoices.reduce((sum, i) => sum + (i.total || 0), 0);
     const totalExpenses = filteredData.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
     const profitMargin = totalRevenue > 0 ? ((totalRevenue - totalExpenses) / totalRevenue) * 100 : 0;
     

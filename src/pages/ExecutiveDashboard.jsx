@@ -106,17 +106,34 @@ export default function ExecutiveDashboard() {
   const filteredInvoices = filterByDate(invoices.filter(inv => inv.status === 'paid'), 'payment_date');
   const totalRevenue = filteredInvoices.reduce((sum, inv) => sum + (inv.amount_paid || 0), 0);
 
-  const filteredCommissions = filterByDate(commissions, 'created_date');
-  const commissionsCalculated = filteredCommissions.filter(c => c.status === 'calculated');
-  const commissionsApproved = filteredCommissions.filter(c => c.status === 'approved');
-  const commissionsPaid = filteredCommissions.filter(c => c.status === 'paid');
+  // Payroll: sum allocations from confirmed/paid batches
+  const confirmedBatchIds = new Set(
+    payrollBatches
+      .filter(b => b.status === 'confirmed' || b.status === 'paid')
+      .map(b => b.id)
+  );
+  const filteredAllocations = filterByDate(
+    payrollAllocations.filter(a => confirmedBatchIds.has(a.batch_id)),
+    'created_date'
+  );
+  const totalPayrollExposure = filteredAllocations.reduce((sum, a) => sum + (a.allocated_amount || a.gross_pay || 0), 0);
 
-  const totalCommissionsCalculated = commissionsCalculated.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
-  const totalCommissionsApproved = commissionsApproved.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
-  const totalCommissionsPaid = commissionsPaid.reduce((sum, c) => sum + (c.commission_amount || 0), 0);
+  // Commissions: derive from PayrollAllocations that have commission component
+  // Show pending/paid breakdown from batches
+  const pendingBatches = payrollBatches.filter(b => b.status === 'pending' || b.status === 'draft');
+  const paidBatches = payrollBatches.filter(b => b.status === 'paid');
+  const approvedBatches = payrollBatches.filter(b => b.status === 'confirmed');
 
-  const filteredPayroll = filterByDate(payrollEntries, 'created_date');
-  const totalPayrollExposure = filteredPayroll.reduce((sum, p) => sum + (p.total_pay || 0), 0);
+  const totalCommissionsCalculated = filterByDate(pendingBatches, 'created_date')
+    .reduce((sum, b) => sum + (b.commission_total || 0), 0);
+  const totalCommissionsApproved = filterByDate(approvedBatches, 'created_date')
+    .reduce((sum, b) => sum + (b.commission_total || 0), 0);
+  const totalCommissionsPaid = filterByDate(paidBatches, 'created_date')
+    .reduce((sum, b) => sum + (b.commission_total || 0), 0);
+
+  const commissionsCalculated = pendingBatches;
+  const commissionsApproved = approvedBatches;
+  const commissionsPaid = paidBatches;
 
   const activeEmployees = allEmployees.filter(e => e.employment_status === 'active');
   const taxCompliant = taxProfiles.filter(t => t.completed).length;
