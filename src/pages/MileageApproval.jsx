@@ -207,7 +207,8 @@ export default function MileageApproval() {
     createMileageMutation.mutate(mileageFormData);
   };
 
-  const activeEmployees = employees.filter(e => e.employment_status === 'active');
+  // EmployeeDirectory uses 'status' field (not employment_status)
+  const activeEmployees = employees.filter(e => e.employment_status === 'active' || e.status === 'active');
   const activeJobs = jobs.filter(j => j.status === 'active');
 
   const pendingLogs = drivingLogs.filter(d => d.status === 'pending');

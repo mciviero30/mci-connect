@@ -136,7 +136,8 @@ export default function ExecutiveDashboard() {
   const commissionsApproved = approvedBatches;
   const commissionsPaid = paidBatches;
 
-  const activeEmployees = allEmployees.filter(e => e.employment_status === 'active');
+  // EmployeeDirectory uses 'status' field (not employment_status)
+  const activeEmployees = allEmployees.filter(e => e.status === 'active');
   const taxCompliant = taxProfiles.filter(t => t.completed).length;
   const taxComplianceRate = activeEmployees.length > 0 
     ? ((taxCompliant / activeEmployees.length) * 100).toFixed(1)

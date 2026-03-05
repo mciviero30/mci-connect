@@ -165,12 +165,15 @@ export function filterByCurrentUser(records, currentUser, userIdField, emailFiel
 export function buildUserQuery(currentUser, userIdField, emailField) {
   if (!currentUser) return {};
 
-  // Dual-Key Read: user_id preferred, email fallback (legacy)
-  // For now, use email as primary filter (wider coverage during transition)
-  // After migration is 100%, switch to user_id
-  return {
-    [emailField]: currentUser.email
-  };
+  // Dual-Key Read: user_id preferred (SSOT), email fallback (legacy)
+  // If the user has a user_id, filter by it (new records); also include email for legacy records
+  // Backend `filter` uses AND, so we prefer user_id when available to avoid cross-user leakage
+  if (currentUser.id) {
+    return { [userIdField]: currentUser.id };
+  }
+
+  // Legacy fallback: only email available (old session)
+  return { [emailField]: currentUser.email };
 }
 
 function normalizeEmail(email) {
