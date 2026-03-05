@@ -302,9 +302,9 @@ export default function MileageApproval() {
                   <Skeleton key={i} className="h-16 w-full mb-3 bg-slate-100" />
                 ))}
               </div>
-            ) : drivingLogs.length === 0 ? (
+            ) : filteredLogs.length === 0 ? (
               <div className="p-12 text-center text-slate-500 dark:text-slate-400">
-                {language === 'es' ? 'No hay registros de millas' : 'No mileage records'}
+                {language === 'es' ? 'No hay registros' : 'No records found'}
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -324,7 +324,7 @@ export default function MileageApproval() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {drivingLogs.map((log) => {
+                    {filteredLogs.map((log) => {
                       const config = statusConfig[log.status] || statusConfig.pending;
                       return (
                         <TableRow key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 border-slate-200 dark:border-slate-700">
