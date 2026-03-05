@@ -1107,19 +1107,19 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
             </div>
           )}
           <div className="relative inline-block">
-            <ClockInButton
-              onClick={(progressCallback) => {
-                setGpsProgress('starting');
-                return new Promise((resolve, reject) => {
-                  handleClockIn()
-                    .then(resolve)
-                    .catch(reject);
-                });
-              }}
+            <Button
+              onClick={handleClockIn}
+              size="lg"
               disabled={isLoading}
-              isLoading={isLoading}
-              language={language}
-            />
+              className="h-32 w-32 rounded-full bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-2xl shadow-blue-500/30 hover:scale-110 transition-all duration-300"
+            >
+              <Play className="w-12 h-12" />
+            </Button>
+            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+              <Badge className="bg-green-500 text-white font-bold text-xs shadow-lg">
+                {language === 'es' ? 'LISTO' : 'READY'}
+              </Badge>
+            </div>
           </div>
           <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
             {language === 'es' ? 'Iniciar Jornada' : 'Start Work Day'}
