@@ -206,6 +206,18 @@ export default function ClientPortal() {
       </header>
 
       <main className="max-w-6xl mx-auto px-6 py-8">
+        {/* Token expiry warning banner */}
+        {tokenExpiryDays !== null && tokenExpiryDays <= 7 && tokenExpiryDays >= 0 && (
+          <div className="mb-4 p-4 bg-amber-50 border border-amber-300 rounded-xl flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <p className="text-sm text-amber-800 font-medium">
+              {tokenExpiryDays === 0
+                ? 'Your portal access expires today. Please contact your contractor to renew access.'
+                : `Your portal access expires in ${tokenExpiryDays} day${tokenExpiryDays === 1 ? '' : 's'}. Contact your contractor to renew.`}
+            </p>
+          </div>
+        )}
+
         {/* Project Selector - Enhanced styling */}
         {jobs.length > 1 && (
           <div className="mb-6 flex gap-3 overflow-x-auto pb-3 scrollbar-hide">
