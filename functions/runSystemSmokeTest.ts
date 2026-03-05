@@ -157,7 +157,7 @@ Deno.serve(async (req) => {
       const requiredCounters = ['quote_number', 'invoice_number'];
       const existingCounters = counters.map(c => c.counter_name);
       
-      const missingCounters = requiredCounters.filter(c => !existingCounters.includes(c));
+      const missingCounters = requiredCounters.filter(c => !existingCounters.includes(c) && !counters.some(ct => ct.counter_key === c));
       if (missingCounters.length === 0) {
         testResults.passed.push('✅ Counter System');
       } else {
