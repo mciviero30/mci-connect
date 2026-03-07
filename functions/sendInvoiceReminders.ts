@@ -80,12 +80,22 @@ Thank you for your business!
 
 MCI Team`;
 
-        await base44.asServiceRole.integrations.Core.SendEmail({
-          to: invoice.customer_email,
-          subject: `Payment Reminder - Invoice ${invoice.invoice_number}`,
-          body: emailBody,
-          from_name: 'MCI Connect',
+        const sgApiKey = Deno.env.get('SENDGRID_API_KEY');
+        const sgFromEmail = Deno.env.get('SENDGRID_FROM_EMAIL');
+        const sgRes = await fetch('https://api.sendgrid.com/v3/mail/send', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${sgApiKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            personalizations: [{ to: [{ email: invoice.customer_email }] }],
+            from: { email: sgFromEmail, name: 'MCI Connect' },
+            subject: `Payment Reminder - Invoice ${invoice.invoice_number}`,
+            content: [{ type: 'text/plain', value: emailBody }]
+          })
         });
+        if (!sgRes.ok) {
+          const errText = await sgRes.text();
+          throw new Error(`SendGrid error: ${errText}`);
+        }
 
         // Update reminder count and last sent date
         await base44.asServiceRole.entities.Invoice.update(invoice.id, {

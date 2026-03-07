@@ -105,13 +105,19 @@ Deno.serve(async (req) => {
       </div>
     `;
 
-    // Send email to each member
-    const emailPromises = members.map(member => 
-      base44.asServiceRole.integrations.Core.SendEmail({
-        from_name: 'MCI Field',
-        to: member.user_email,
-        subject: subject,
-        body: htmlBody
+    // Send email to each member via SendGrid
+    const sgApiKey = Deno.env.get('SENDGRID_API_KEY');
+    const sgFromEmail = Deno.env.get('SENDGRID_FROM_EMAIL');
+    const emailPromises = members.map(member =>
+      fetch('https://api.sendgrid.com/v3/mail/send', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${sgApiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: member.user_email }] }],
+          from: { email: sgFromEmail, name: 'MCI Field' },
+          subject: subject,
+          content: [{ type: 'text/html', value: htmlBody }]
+        })
       })
     );
 
