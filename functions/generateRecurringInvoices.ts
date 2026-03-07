@@ -28,9 +28,8 @@ Deno.serve(async (req) => {
 
     for (const template of dueTemplates) {
       try {
-        // Get next invoice number
-        const { getNextCounter } = await import('./getNextCounter.js');
-        const counterRes = await getNextCounter({ counter_key: 'invoice_number' });
+        // Get next invoice number via SDK
+        const counterRes = await base44.functions.invoke('getNextCounter', { counter_key: 'invoice_number' });
         const nextNum = counterRes.next_value;
         const invoiceNumber = `INV-${String(nextNum).padStart(5, '0')}`;
 
