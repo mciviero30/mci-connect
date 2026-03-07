@@ -234,8 +234,9 @@ export default function PerformanceManagement() {
 
   // Enhanced stats with more performance data + Goals
   const employeeStats = employees.map(emp => {
-    const empRecognitions = recognitions.filter(r => r.employee_email === emp.email);
-    const empTimeEntries = timeEntries.filter(e => e.employee_email === emp.email && e.status === 'approved');
+    const empEmail = emp.employee_email || emp.email;
+    const empRecognitions = recognitions.filter(r => r.employee_email === empEmail);
+    const empTimeEntries = timeEntries.filter(e => e.employee_email === empEmail && e.status === 'approved');
     const empJobs = [...new Set(empTimeEntries.map(e => e.job_id))].length;
     const empGoals = goals.filter(g => g.owner_email === emp.email);
     const completedGoals = empGoals.filter(g => g.status === 'completed').length;
