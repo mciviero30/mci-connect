@@ -1,11 +1,13 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import { jsPDF } from 'npm:jspdf@2.5.2';
-import { requireAdmin, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await requireAdmin(base44);
+    const user = await base44.auth.me();
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
 
     const payload = await req.json();
     const {
@@ -160,6 +162,6 @@ Deno.serve(async (req) => {
     if (import.meta.env?.DEV) {
       console.error('Error generating paystub:', error);
     }
-    return safeJsonError('Paystub generation failed', 500, error.message);
+    return Response.json({ error: 'Paystub generation failed', details: error.message }, { status: 500 });
   }
 });
