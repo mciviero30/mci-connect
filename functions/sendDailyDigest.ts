@@ -136,10 +136,7 @@ Deno.serve(async (req) => {
     });
 
   } catch (error) {
-    if (error instanceof Response) throw error;
-    if (import.meta.env?.DEV) {
-      console.error('Error sending daily digest:', error);
-    }
-    return safeJsonError('Digest failed', 500, error.message);
+    console.error('Error sending daily digest:', error);
+    return Response.json({ error: 'Digest failed', details: error.message }, { status: 500 });
   }
 });
