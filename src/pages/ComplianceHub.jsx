@@ -51,7 +51,7 @@ export default function ComplianceHub() {
   });
 
   // Calculate compliance metrics
-  const activeEmployees = employees.filter(e => e.employment_status === 'active');
+  const activeEmployees = employees; // Already filtered to active in query
   const employeesWithOnboarding = [...new Set(onboardingForms.filter(f => f.status === 'completed').map(f => f.employee_email))];
   const onboardingCompliance = activeEmployees.length > 0 ? (employeesWithOnboarding.length / activeEmployees.length * 100).toFixed(0) : 0;
 
