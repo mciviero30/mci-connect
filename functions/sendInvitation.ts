@@ -1,10 +1,12 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-import { requireUser, safeJsonError } from './_auth.js';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await requireUser(base44);
+    const user = await base44.auth.me();
+    if (!user) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { email, fullName, firstName, lastName, position, department, teamId, teamName, language = 'en' } = await req.json();
     
