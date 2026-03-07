@@ -1,10 +1,12 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import { requireAdmin, safeJsonError } from './_auth.js';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await requireAdmin(base44);
+    const user = await base44.auth.me();
+    if (!user || (user.role !== 'admin' && user.role !== 'ceo')) {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
 
     // Get all items without descriptions or with empty descriptions
     const allItems = await base44.asServiceRole.entities.QuoteItem.list();
@@ -81,9 +83,6 @@ Make descriptions:
     if (import.meta.env?.DEV) {
       console.error('Error generating descriptions:', error);
     }
-    return Response.json({ 
-      error: 'Generation failed',
-      success: false 
-    }, { status: 500 });
+    return Response.json({ error: 'Generation failed', success: false }, { status: 500 });
   }
 });
