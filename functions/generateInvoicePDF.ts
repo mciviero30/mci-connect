@@ -24,7 +24,8 @@ Deno.serve(async (req) => {
         }
         
         // Verify access (admin OR owner)
-        if (!verifyOwnership(invoice, user, 'created_by')) {
+        const isAdmin = user.role === 'admin' || user.position === 'CEO';
+        if (!isAdmin && invoice.created_by !== user.email) {
             return Response.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -348,6 +349,6 @@ Deno.serve(async (req) => {
         });
     } catch (error) {
         if (error instanceof Response) throw error;
-        return safeJsonError('Failed to generate PDF', 500, error.message);
+        return Response.json({ error: 'Failed to generate PDF', details: error.message }, { status: 500 });
     }
 });

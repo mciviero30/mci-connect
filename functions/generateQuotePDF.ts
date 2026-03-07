@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
         const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
         const isAssigned = quote.assigned_to === user.email;
         
-        if (!isAdmin && !verifyOwnership(quote, user, 'created_by') && !isAssigned) {
+        if (!isAdmin && quote.created_by !== user.email && !isAssigned) {
             return Response.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -374,6 +374,6 @@ Deno.serve(async (req) => {
         if (import.meta.env?.DEV) {
             console.error('PDF Error:', error);
         }
-        return safeJsonError('Failed to generate PDF', 500, error.message);
+        return Response.json({ error: 'Failed to generate PDF', details: error.message }, { status: 500 });
     }
 });
