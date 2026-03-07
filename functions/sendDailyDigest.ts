@@ -4,7 +4,10 @@ import { format, subDays } from 'npm:date-fns';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await requireAdmin(base44);
+    const user = await base44.auth.me();
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
 
     const { job_id } = await req.json();
     
