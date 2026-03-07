@@ -238,7 +238,7 @@ export default function PerformanceManagement() {
     const empRecognitions = recognitions.filter(r => r.employee_email === empEmail);
     const empTimeEntries = timeEntries.filter(e => e.employee_email === empEmail && e.status === 'approved');
     const empJobs = [...new Set(empTimeEntries.map(e => e.job_id))].length;
-    const empGoals = goals.filter(g => g.owner_email === emp.email);
+    const empGoals = goals.filter(g => g.owner_email === empEmail);
     const completedGoals = empGoals.filter(g => g.status === 'completed').length;
     const activeGoals = empGoals.filter(g => ['on_track', 'at_risk', 'behind', 'not_started'].includes(g.status)).length;
     const goalCompletionRate = empGoals.length > 0 ? (completedGoals / empGoals.length) * 100 : 0;
