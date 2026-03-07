@@ -25,7 +25,7 @@ export default function ComplianceHub() {
   // Get compliance statistics
   const { data: employees = [] } = useQuery({
     queryKey: ['employees-compliance'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name'),
     enabled: isAdmin,
     staleTime: 600000,
     refetchOnMount: false,

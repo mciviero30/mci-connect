@@ -44,7 +44,7 @@ export default function SkillMatrix() {
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.filter({ employment_status: 'active' }),
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name'),
     enabled: isAdmin,
   });
 

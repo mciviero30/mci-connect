@@ -46,7 +46,7 @@ export default function TimeOffRequests() {
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name'),
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name'),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
