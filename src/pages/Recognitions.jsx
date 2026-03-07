@@ -24,7 +24,7 @@ export default function Recognitions() {
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['allEmployees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name'),
     initialData: [],
   });
 
