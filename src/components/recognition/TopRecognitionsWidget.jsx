@@ -40,8 +40,9 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
 
       return topEmployees;
     },
-    staleTime: 60000,
-    initialData: [],
+    staleTime: 0,
+    gcTime: 0,
+    initialData: undefined,
   });
 
   // SSOT: EmployeeDirectory is the only source for employee listings
