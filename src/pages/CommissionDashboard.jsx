@@ -72,7 +72,7 @@ export default function CommissionDashboard() {
       // Batch fetch invoices if needed
       let invoiceMap = {};
       if (invoiceIds.length > 0) {
-        const invoices = await base44.entities.Invoice.list('', 1000);
+        const invoices = await base44.entities.Invoice.list('-created_date', 500);
         invoices.forEach(inv => {
           if (invoiceIds.includes(inv.id)) {
             invoiceMap[inv.id] = inv;

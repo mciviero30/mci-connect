@@ -873,7 +873,6 @@ export default function Inventario() {
                       <SelectItem value="hours" className="text-slate-900">Hours</SelectItem>
                       <SelectItem value="sqft" className="text-slate-900">Square Feet</SelectItem>
                       <SelectItem value="bags" className="text-slate-900">Bags</SelectItem>
-                      <SelectItem value="rolls" className="text-slate-900">Rolls</SelectItem>
                       <SelectItem value="pounds" className="text-slate-900">Pounds</SelectItem>
                     </SelectContent>
                   </Select>
