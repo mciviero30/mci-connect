@@ -47,16 +47,10 @@ export default function TMInvoiceBuilder() {
       const allJobs = await base44.entities.Job.list('-created_date');
       
       // Filter jobs with T&M authorization
-      const tmJobs = [];
-      for (const job of allJobs) {
-        if (job.authorization_id) {
-          const auths = await base44.entities.WorkAuthorization.filter({ id: job.authorization_id });
-          if (auths[0]?.authorization_type === 'tm') {
-            tmJobs.push(job);
-          }
-        }
-      }
-      return tmJobs;
+      // Filter by billing_type instead of making N+1 auth queries
+      return allJobs.filter(job => 
+        job.billing_type === 'time_materials' || job.authorization_type === 'tm'
+      );
     },
   });
 
@@ -172,9 +166,10 @@ export default function TMInvoiceBuilder() {
         }
       );
       
-      queryClient.invalidateQueries(['invoices']);
-      queryClient.invalidateQueries(['time-entries']);
-      queryClient.invalidateQueries(['expenses']);
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['paginated', 'Invoice'] });
+      queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
       
       // Navigate to invoice
       const invoiceId = result?.data?.invoice?.id || result?.invoice?.id;
