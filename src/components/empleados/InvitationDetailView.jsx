@@ -169,7 +169,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
         </div>
         <div className="flex gap-2 justify-end pt-2">
           <Button variant="outline" onClick={() => setEditing(false)} disabled={saving}><X className="w-4 h-4 mr-1" />Cancel</Button>
-          <Button onClick={handleSave} disabled={saving} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
+          <Button onClick={handleSave} disabled={saving} variant="default" className="gap-2">
             <Save className="w-4 h-4" />{saving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
@@ -270,7 +270,8 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
           <Button
             onClick={() => { onInvite(); onClose(); }}
             disabled={isInviting}
-            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+            variant="default"
+            className="gap-2"
           >
             <Send className="w-4 h-4" />
             {isInviting ? 'Sending...' : 'Send Invitation'}
@@ -303,7 +304,8 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
               onClose();
             }}
             disabled={reactivating}
-            className="bg-green-600 hover:bg-green-700 text-white gap-2"
+            variant="success"
+            className="gap-2"
           >
             <RefreshCw className="w-4 h-4" />
             {reactivating ? 'Reactivating...' : 'Reactivate'}
