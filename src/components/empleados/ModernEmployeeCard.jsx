@@ -71,8 +71,9 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
     if (employee.full_name && !employee.full_name.includes('@')) {
       return employee.full_name;
     }
+    // Fallback: extract from email but only capitalize first letter, not all letters
     return employee.email.split('@')[0].split('.').map(p => 
-      p.charAt(0).toUpperCase() + p.slice(1)
+      p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
     ).join(' ');
   })());
 
