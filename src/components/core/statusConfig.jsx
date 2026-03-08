@@ -43,7 +43,7 @@ export const QUOTE_STATUS_META = {
     label_es: 'Convertido',
     badgeClass: 'bg-purple-50 text-purple-700 border-purple-200',
     cardBadgeClass: 'soft-purple-gradient',
-    dotClass: 'bg-[#507DB4]'
+    dotClass: 'bg-blue-500'
   }
 };
 

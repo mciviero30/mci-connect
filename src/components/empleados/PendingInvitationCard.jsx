@@ -89,7 +89,7 @@ export default function PendingInvitationCard({ employee }) {
     : 'No Team Assigned';
 
   return (
-    <Card className="bg-white dark:bg-[#282828] rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all duration-300 h-full flex flex-col">
+    <Card className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-all duration-300 h-full flex flex-col">
       <div className="p-4 flex flex-col flex-1">
         {/* Header Section */}
         <div className="flex items-start justify-between mb-3 gap-2">
@@ -99,10 +99,10 @@ export default function PendingInvitationCard({ employee }) {
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-bold text-[#1A1A1A] dark:text-white leading-tight mb-0.5">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight mb-0.5">
                 {displayName}
               </h3>
-              <p className="text-xs text-[#666666] dark:text-slate-400 leading-tight">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight">
                 {formatPosition(employee.position)}
               </p>
             </div>
@@ -113,7 +113,8 @@ export default function PendingInvitationCard({ employee }) {
             size="sm"
             onClick={() => inviteMutation.mutate()}
             disabled={inviteMutation.isPending}
-            className="bg-blue-500 hover:bg-blue-600 text-white flex items-center gap-1 px-2.5 py-1.5 rounded-lg h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
+            variant="default"
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
           >
             <Send className="w-3.5 h-3.5" />
             <span className="text-[10px] font-medium">
@@ -155,13 +156,13 @@ export default function PendingInvitationCard({ employee }) {
         {/* Contact Info */}
         <div className="space-y-1.5 mt-auto">
           {employee.email && (
-            <div className="flex items-center gap-1.5 text-[#666666]">
+            <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
               <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={1.5} />
               <span className="text-[10px] truncate">{employee.email}</span>
             </div>
           )}
           {employee.phone && (
-            <div className="flex items-center gap-1.5 text-[#666666]">
+            <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
               <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={1.5} />
               <span className="text-[10px]">{employee.phone}</span>
             </div>
