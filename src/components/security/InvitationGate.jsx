@@ -20,6 +20,12 @@ export default function InvitationGate({ children, user }) {
       return;
     }
 
+    // Admins and CEOs bypass invitation validation
+    if (user.role === 'admin' || user.role === 'ceo') {
+      setValidationState({ isValidating: false, isValid: true, error: null });
+      return;
+    }
+
     const validateInvitation = async () => {
       try {
         const response = await base44.functions.invoke('validateInvitationEmail', {});
