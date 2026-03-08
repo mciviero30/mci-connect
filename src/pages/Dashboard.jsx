@@ -269,15 +269,15 @@ export default function Dashboard() {
     queryFn: async () => {
       try {
         // Fetch active users with their profiles
-        const profiles = await base44.entities.EmployeeProfile.filter({ status: 'active' }, '-created_date');
+        const profiles = await base44.entities.EmployeeProfile.filter({ employment_status: 'active' }, '-created_date');
         
         return profiles.map(p => ({
           id: p.user_id,
-          email: null, // Fetched separately if needed
-          full_name: `${p.first_name} ${p.last_name}`.trim(),
-          position: null, // No position field in EmployeeProfile v2
-          department: null,
-          employment_status: p.status,
+          email: null,
+          full_name: `${p.first_name || ''} ${p.last_name || ''}`.trim(),
+          position: p.position || null,
+          department: p.department || null,
+          employment_status: p.employment_status,
           dob: p.date_of_birth || null
         }));
       } catch (err) {
