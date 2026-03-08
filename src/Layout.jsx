@@ -526,6 +526,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       section: 'STRATEGY',
       icon: Target,
       items: [
+        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'Executive Dashboard', url: createPageUrl("ExecutiveDashboard"), icon: TrendingUp },
         { title: 'Control Tower', url: createPageUrl("ExecutiveControlTower"), icon: Shield },
         { title: 'Analytics Hub', url: createPageUrl("ReportingHub"), icon: BarChart3 },
@@ -534,9 +535,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Aging Report', url: createPageUrl("AgingReport"), icon: TrendingUp },
         { title: 'Team Utilization', url: createPageUrl("TeamUtilizationReport"), icon: Users },
         { title: 'Client Profitability', url: createPageUrl("ClientProfitabilityReport"), icon: DollarSign },
-        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
-        { title: 'Bank Sync', url: createPageUrl("BankSync"), icon: Building2 },
-        { title: 'Reconciliation', url: createPageUrl("PaymentReconciliation"), icon: CheckCircle2 },
       ]
     },
     {
@@ -574,8 +572,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'QuickBooks Export', url: createPageUrl("QuickBooksExport"), icon: FileSpreadsheet },
         { title: 'Budget Forecast', url: createPageUrl('BudgetForecasting'), icon: TrendingUp },
         { title: 'T&M Invoice Builder', url: createPageUrl('TMInvoiceBuilder'), icon: Clock },
-        ]
-        },
+        { title: 'Bank Sync', url: createPageUrl("BankSync"), icon: Building2 },
+        { title: 'Reconciliation', url: createPageUrl("PaymentReconciliation"), icon: CheckCircle2 },
+      ]
+    },
     {
       section: 'WORKFORCE',
       icon: Users,
@@ -612,50 +612,51 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       ]
     },
     {
-      section: 'COMPLIANCE',
+      section: 'COMPLIANCE & DOCS',
       icon: Shield,
       items: [
-      { title: 'Integrations Status', url: createPageUrl("IntegrationsStatus"), icon: Link2 },
-      { title: 'System Diagnostics', url: createPageUrl("SystemDiagnostics"), icon: Zap },
-      { title: 'System Readiness', url: createPageUrl("SystemReadiness"), icon: Rocket },
-      { title: 'Go-Live Playbook', url: createPageUrl("GoLivePlaybook"), icon: Rocket },
-      { title: 'Operational Modes Doc', url: createPageUrl("OperationalModesDoc"), icon: BookOpen },
         { title: 'Approvals Hub', url: createPageUrl("ApprovalsHub"), icon: CheckCircle2 },
         { title: 'Compliance Hub', url: createPageUrl("ComplianceHub"), icon: Shield },
-        { title: 'Client Approvals', url: createPageUrl("ClientApprovals"), icon: CheckCircle2 },
+        { title: 'Safety Incidents', url: createPageUrl("SafetyIncidents"), icon: Shield },
         { title: 'E-Signatures', url: createPageUrl("DocumentSignatures"), icon: FileText },
+        { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
+        { title: 'Work Authorizations', url: createPageUrl("WorkAuthorizations"), icon: Shield },
         { title: 'Change Orders', url: createPageUrl("ChangeOrders"), icon: FileText },
         { title: 'RFIs', url: createPageUrl("RFIs"), icon: FileText },
         { title: 'Submittals', url: createPageUrl("Submittals"), icon: FileCheck },
-        { title: 'Safety Incidents', url: createPageUrl("SafetyIncidents"), icon: Shield },
         { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
-        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
-        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
-        { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
-        { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
+        { title: 'Audit Trail', url: createPageUrl("AuditTrail"), icon: Shield },
         { title: 'Role Management', url: createPageUrl("RoleManagement"), icon: Shield },
-        { title: 'Work Authorizations', url: createPageUrl("WorkAuthorizations"), icon: Shield },
         { title: '2FA Security', url: createPageUrl("TwoFactorSettings"), icon: Shield },
-        { title: 'Agreement Signatures', url: createPageUrl("AgreementSignatures"), icon: FileText },
+      ]
+    },
+    {
+      section: 'COMMISSIONS',
+      icon: DollarSign,
+      items: [
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Review', url: createPageUrl("CommissionReview"), icon: TrendingUp },
         { title: 'Commission Reports', url: createPageUrl("CommissionReports"), icon: BarChart3 },
         { title: 'Margin vs Commission', url: createPageUrl("MarginCommissionAnalyzer"), icon: TrendingUp },
         { title: 'What-If Simulator', url: createPageUrl("CommissionSimulator"), icon: Target },
         { title: 'Commission Totals (Gusto)', url: createPageUrl("CommissionTotalsGusto"), icon: Banknote },
-        { title: 'Job Quote Cleanup', url: createPageUrl("JobQuoteCleanup"), icon: Link2 },
-        { title: 'Audit Trail', url: createPageUrl("AuditTrail"), icon: Shield },
+      ]
+    },
+    {
+      section: 'SYSTEM',
+      icon: Zap,
+      items: [
+        { title: 'Integrations Status', url: createPageUrl("IntegrationsStatus"), icon: Link2 },
         { title: 'System Health', url: createPageUrl("SystemHealthCheck"), icon: Zap },
-        ]
-        },
-        {
-        section: 'CLIENT ACCESS',
-        icon: User,
-        items: [
+        { title: 'System Diagnostics', url: createPageUrl("SystemDiagnostics"), icon: Zap },
+        { title: 'Notifications', url: createPageUrl("NotificationCenter"), icon: Bell },
+        { title: 'Company Info', url: createPageUrl("CompanyInfo"), icon: Globe },
+        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+        { title: 'Client Approvals', url: createPageUrl("ClientApprovals"), icon: CheckCircle2 },
         { title: 'Client Portal Manager', url: createPageUrl("ClientManagement"), icon: Users },
-        { title: 'Client App Demo', url: createPageUrl("ClientAppDemo"), icon: User },
-        ]
-        }
+      ]
+    }
   ];
 
   const managerNavigation = [
