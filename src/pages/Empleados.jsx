@@ -545,7 +545,7 @@ export default function Empleados() {
                            <p className="text-xs text-slate-500 dark:text-slate-400">{inv.email}</p>
                            {inv.position && <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">{inv.position}</p>}
                            {inv.team_name && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Team: {inv.team_name}</p>}
-                           <p className="text-xs text-slate-400 mt-2">Status: <span className="font-medium capitalize">{inv.status}</span></p>
+                           <p className="text-xs mt-2">Status: <span className={`font-medium capitalize ${inv.status === 'terminated' ? 'text-red-500' : 'text-slate-400'}`}>{inv.status}</span></p>
                          </div>
                        </div>
                      );
