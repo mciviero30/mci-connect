@@ -852,7 +852,7 @@ export default function JobDetails() {
               <Card className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 mb-6">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-2">
-                    <FileCheck className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-semibold text-blue-900 dark:text-blue-300 mb-1">
                         {language === 'es' ? 'Trabajo de Precio Fijo' : 'Fixed Price Job'}

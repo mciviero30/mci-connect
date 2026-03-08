@@ -29,37 +29,37 @@ export default function Reportes() {
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list('-invoice_date'),
+    queryFn: () => base44.entities.Invoice.list('-invoice_date', 500),
     initialData: []
   });
 
   const { data: quotes = [] } = useQuery({
     queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list('-quote_date'),
+    queryFn: () => base44.entities.Quote.list('-quote_date', 500),
     initialData: []
   });
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list('-date'),
+    queryFn: () => base44.entities.Expense.list('-date', 500),
     initialData: []
   });
 
   const { data: timeEntries = [] } = useQuery({
     queryKey: ['timeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date', 1000),
+    queryFn: () => base44.entities.TimeEntry.list('-date', 500),
     initialData: []
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list('-created_date'),
+    queryFn: () => base44.entities.Job.list('-created_date', 200),
     initialData: []
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name'),
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name', 200),
     initialData: []
   });
 
@@ -195,7 +195,7 @@ export default function Reportes() {
     
     const jobTimeEntries = filteredTimeEntries.filter(e => e.job_id === job.id);
     const hours = jobTimeEntries.reduce((sum, e) => sum + (e.hours_worked || 0), 0);
-    const laborCost = hours * 25; // Assuming a flat labor cost
+    const laborCost = hours * 25; // Flat rate approximation (actual rate per employee not available here)
     
     const jobExpenses = filteredExpenses.filter(e => e.job_id === job.id);
     const expenseCost = jobExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);

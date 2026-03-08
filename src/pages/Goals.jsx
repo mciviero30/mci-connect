@@ -47,15 +47,15 @@ export default function Goals() {
       }
     },
     enabled: !!user,
-    staleTime: 600000, // 10 minutes
-    cacheTime: 900000,
+    staleTime: 600000,
+    gcTime: 900000,
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }),
-    staleTime: 900000, // 15 minutes
-    cacheTime: 1800000,
+    staleTime: 900000,
+    gcTime: 1800000,
   });
 
   const createMutation = useMutation({
@@ -66,7 +66,7 @@ export default function Goals() {
       owner_name: user.full_name,
     }),
     onSuccess: () => {
-      queryClient.invalidateQueries(['goals']);
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
       setShowForm(false);
       toast.success('Goal created successfully');
     },
@@ -75,7 +75,7 @@ export default function Goals() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }) => base44.entities.Goal.update(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['goals']);
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
       setEditingGoal(null);
       setShowForm(false);
       toast.success('Goal updated successfully');
@@ -85,7 +85,7 @@ export default function Goals() {
   const deleteMutation = useMutation({
     mutationFn: (id) => base44.entities.Goal.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(['goals']);
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
       toast.success('Goal deleted successfully');
     },
   });
