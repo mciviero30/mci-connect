@@ -35,6 +35,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [terminating, setTerminating] = useState(false);
+  const [reactivating, setReactivating] = useState(false);
 
   const { data: currentUser } = useQuery({
     queryKey: ['currentUser'],
