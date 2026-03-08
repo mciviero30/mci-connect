@@ -240,16 +240,41 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
       )}
 
       {/* Actions */}
-      <div className="flex gap-2 justify-end pt-2">
+      <div className="flex gap-2 justify-end pt-2 flex-wrap">
         <Button variant="outline" onClick={onClose}>Close</Button>
-        <Button
-          onClick={() => { onInvite(); onClose(); }}
-          disabled={isInviting}
-          className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
-        >
-          <Send className="w-4 h-4" />
-          {isInviting ? 'Sending...' : 'Send Invitation'}
-        </Button>
+        {saved.status !== 'terminated' && (
+          <Button
+            variant="outline"
+            onClick={async () => {
+              if (!confirm(`Mark ${fullName} as Terminated? Their data will be preserved for records.`)) return;
+              setTerminating(true);
+              await base44.entities.EmployeeInvitation.update(invitation.id, {
+                status: 'terminated',
+                terminated_date: new Date().toISOString()
+              });
+              setSaved(prev => ({ ...prev, status: 'terminated', terminated_date: new Date().toISOString() }));
+              await queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
+              toast.success(`${fullName} marked as terminated.`);
+              setTerminating(false);
+              onClose();
+            }}
+            disabled={terminating}
+            className="border-red-300 text-red-600 hover:bg-red-50 gap-2"
+          >
+            <UserX className="w-4 h-4" />
+            {terminating ? 'Processing...' : 'Terminate'}
+          </Button>
+        )}
+        {saved.status !== 'terminated' && (
+          <Button
+            onClick={() => { onInvite(); onClose(); }}
+            disabled={isInviting}
+            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+          >
+            <Send className="w-4 h-4" />
+            {isInviting ? 'Sending...' : 'Send Invitation'}
+          </Button>
+        )}
       </div>
     </div>
   );
