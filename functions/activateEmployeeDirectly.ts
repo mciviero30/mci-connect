@@ -57,9 +57,9 @@ Deno.serve(async (req) => {
     console.log(`✅ Invitation marked as accepted`);
 
     // Step 4: Update User employment_status
-    await base44.auth.updateMe({
+    await base44.asServiceRole.entities.User.update(targetUser.id, {
       employment_status: 'active'
-    }, targetUser.id);
+    });
 
     console.log(`✅ User employment_status set to active`);
 
