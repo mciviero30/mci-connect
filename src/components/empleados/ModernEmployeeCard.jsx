@@ -119,7 +119,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
               />
             ) : (
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 shadow-md">
-                {displayName[0]?.toUpperCase()}
+                {displayName[0]}
               </div>
             )}
 
