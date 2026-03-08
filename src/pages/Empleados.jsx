@@ -577,6 +577,34 @@ export default function Empleados() {
           {/* TERMINATED TAB */}
           <TabsContent value="terminated">
             <EmployeeGrid employees={terminatedEmployees} />
+            {terminatedInvitations.length > 0 && (
+              <>
+                {terminatedEmployees.length > 0 && (
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-6 mb-3">Former Pre-Registration Records</p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                  {terminatedInvitations.map(inv => (
+                    <div
+                      key={inv.id}
+                      className="relative rounded-xl border-2 p-4 bg-white dark:bg-[#282828] border-red-200 dark:border-red-800 cursor-pointer hover:bg-red-50/30 transition-colors"
+                      onClick={() => { setEditingInvitation(inv); setShowInvitationDialog(true); }}
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-base mb-2">
+                        {(inv.first_name?.[0] || inv.email?.[0] || '?').toUpperCase()}
+                      </div>
+                      <p className="font-semibold text-slate-900 dark:text-white">{inv.first_name} {inv.last_name}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{inv.email}</p>
+                      {inv.position && <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">{inv.position}</p>}
+                      {inv.team_name && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Team: {inv.team_name}</p>}
+                      <p className="text-xs mt-2 text-red-500 font-medium">Terminated</p>
+                      {inv.terminated_date && (
+                        <p className="text-xs text-slate-400">{new Date(inv.terminated_date).toLocaleDateString()}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </TabsContent>
         </Tabs>
 
