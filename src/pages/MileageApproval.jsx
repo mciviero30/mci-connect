@@ -98,7 +98,7 @@ export default function MileageApproval() {
 
       const miles = parseFloat(data.miles) || 0;
       const hours = parseFloat(data.hours) || 0;
-      const ratePerMile = 0.70;
+      const ratePerMile = 0.60;
       const hourlyRate = parseFloat(selectedEmployee.hourly_rate || 25);
       const totalAmount = (miles * ratePerMile) + (hours * hourlyRate);
       const selectedJob = jobs.find(j => j.id === data.job_id);

@@ -28,7 +28,7 @@ const MileageForm = ({ log, onSubmit, onCancel, isProcessing }) => {
     date: format(new Date(), 'yyyy-MM-dd'),
     miles: '',
     hours: '',
-    rate_per_mile: 0.70,
+    rate_per_mile: 0.60,
     start_location: '',
     end_location: '',
     job_id: null,
@@ -132,7 +132,7 @@ export default function Manejo() {
     mutationFn: async (data) => {
       const miles = parseFloat(data.miles) || 0;
       const hours = parseFloat(data.hours) || 0;
-      const ratePerMile = 0.70;
+      const ratePerMile = 0.60;
       const hourlyRate = user?.hourly_rate || 25;
       const totalAmount = (miles * ratePerMile) + (hours * hourlyRate);
 
@@ -225,7 +225,7 @@ export default function Manejo() {
           </div>
           <div>
             <p className="text-sm text-slate-600 dark:text-slate-400">{language === 'es' ? 'Tarifa por milla:' : 'Rate per mile:'}</p>
-            <p className="text-xl font-bold text-blue-600">$0.70</p>
+            <p className="text-xl font-bold text-blue-600">$0.60</p>
           </div>
         </CardContent>
       </Card>

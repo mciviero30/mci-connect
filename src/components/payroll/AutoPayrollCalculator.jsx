@@ -250,7 +250,7 @@ export default function AutoPayrollCalculator({ employeeEmail, employeeId, weekS
             <CardContent>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">{payrollData.mileageCount} trips</p>
               <p className="text-sm text-green-600 dark:text-green-400 font-semibold mt-1">${payrollData.mileageTotal}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">$0.70/mile</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">$0.60/mile</p>
             </CardContent>
           </Card>
         )}
