@@ -1,17 +1,26 @@
 import React, { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Phone, MapPin, Calendar, Building2, Award, Clock, AlertCircle, Edit2 } from "lucide-react";
+import { User, Mail, Phone, MapPin, Calendar, Building2, Award, Clock, AlertCircle, Edit2, ArrowLeft } from "lucide-react";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { useNavigate } from "react-router-dom";
 
 export default function EmployeeProfile() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const employeeIdParam = searchParams.get("id");
+
   const { data: user } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
   });
+
+  // Use param ID if provided, otherwise use current user ID
+  const targetUserId = employeeIdParam || user?.id;
 
   const { data: employeeProfile, isLoading: isLoadingProfile } = useQuery({
     queryKey: ["employeeProfile", user?.id],
