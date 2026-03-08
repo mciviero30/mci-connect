@@ -29,8 +29,11 @@ export default function PayrollAutoFlow() {
   const weekEnd = format(endOfWeek(selectedWeek, { weekStartsOn: 1 }), 'yyyy-MM-dd');
 
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees'],
-    queryFn: () => base44.entities.User.filter({ employment_status: 'active' })
+    queryKey: ['payrollAutoFlowEmployees'],
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name', 200),
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false
   });
 
   const handleGeneratePaystub = (employee, data) => {

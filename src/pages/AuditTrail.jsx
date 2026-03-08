@@ -212,7 +212,7 @@ export default function AuditTrail() {
                           </span>
                         </div>
                         <div className="text-xs text-slate-600">
-                          ID: {log.entity_id.substring(0, 8)}...
+                          ID: {log.entity_id?.substring(0, 8) ?? 'N/A'}...
                         </div>
                       </div>
                       <p className="text-sm text-slate-900 mb-2">
