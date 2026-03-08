@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       first_name: invitation.first_name || full_name?.split(' ')[0] || '',
       last_name: invitation.last_name || full_name?.split(' ')[1] || '',
       position: invitation.position || null,
-      hire_date: invitation.hire_date,
+      hire_date: hireDate,
       employment_status: 'active',
       is_active: true,
       employment_type: 'full_time',
