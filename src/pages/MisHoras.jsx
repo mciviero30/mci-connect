@@ -50,6 +50,7 @@ export default function MisHoras() {
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.TimeEntry.create({
       ...data,
+      user_id: user.id,
       employee_email: user.email,
       employee_name: user.full_name,
       status: 'pending',

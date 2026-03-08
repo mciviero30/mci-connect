@@ -83,6 +83,7 @@ export default function TimeTracking() {
       
       // CRITICAL: Ensure all required fields are present
       const completeData = {
+        user_id: user.id,
         employee_email: user.email,
         employee_name: user.full_name,
         ...timeEntryData,

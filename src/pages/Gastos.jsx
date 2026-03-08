@@ -72,8 +72,9 @@ export default function Gastos() {
   const createExpenseMutation = useMutation({
     mutationFn: (data) => base44.entities.Expense.create({
       ...data,
-      employee_email: 'company@mci-us.com',
-      employee_name: 'Company Expense',
+      user_id: user?.id,
+      employee_email: user?.email || 'company@mci-us.com',
+      employee_name: user?.full_name || 'Company Expense',
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
@@ -155,7 +156,7 @@ export default function Gastos() {
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-slate-900 pb-20 md:pb-0">
       <div className="max-w-7xl mx-auto p-4 md:p-8">
         <PageHeader
-          title="Expenses"
+          title={language === 'es' ? 'Gastos' : 'Expenses'}
           description={t('reviewAndApproveExpenses')}
           icon={Receipt}
           actions={
@@ -164,7 +165,7 @@ export default function Gastos() {
               className="h-10 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
             >
               <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-              New Expense
+              {t('new_expense')}
             </Button>
           }
         />
