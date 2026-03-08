@@ -193,7 +193,8 @@ export default function VerFactura() {
   const cloneMutation = useMutation({
     mutationFn: async () => {
       // Use atomic number generator to prevent duplicates
-      const { invoice_number: newInvoiceNumber } = await base44.functions.invoke('generateInvoiceNumber');
+      const res = await base44.functions.invoke('generateInvoiceNumber');
+      const newInvoiceNumber = res?.invoice_number || res?.data?.invoice_number;
       
       const clonedInvoice = {
         ...invoice,

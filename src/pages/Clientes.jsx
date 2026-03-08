@@ -71,8 +71,8 @@ export default function Clientes() {
     queryFn: async () => {
       if (customers.length === 0) return {};
       
-      const quotes = await base44.entities.Quote.list('', 1000);
-      const invoices = await base44.entities.Invoice.list('', 1000);
+      const quotes = await base44.entities.Quote.list('-created_date', 500);
+      const invoices = await base44.entities.Invoice.list('-created_date', 500);
       
       const stats = {};
       customers.forEach(customer => {
