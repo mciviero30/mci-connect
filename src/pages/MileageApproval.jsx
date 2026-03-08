@@ -98,13 +98,14 @@ export default function MileageApproval() {
 
       const miles = parseFloat(data.miles) || 0;
       const hours = parseFloat(data.hours) || 0;
-      const ratePerMile = 0.60;
+      const ratePerMile = 0.70;
       const hourlyRate = parseFloat(selectedEmployee.hourly_rate || 25);
       const totalAmount = (miles * ratePerMile) + (hours * hourlyRate);
       const selectedJob = jobs.find(j => j.id === data.job_id);
 
       return base44.entities.DrivingLog.create({
         ...data,
+        user_id: selectedEmployee.id,
         employee_email: selectedEmployee.email,
         employee_name: selectedEmployee.full_name || `${selectedEmployee.first_name} ${selectedEmployee.last_name}`,
         rate_per_mile: ratePerMile,

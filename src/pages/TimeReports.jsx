@@ -24,8 +24,10 @@ export default function TimeReports() {
 
   const { data: timeEntries = [] } = useQuery({
     queryKey: ['allTimeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date'),
+    queryFn: () => base44.entities.TimeEntry.list('-date', 500),
     staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 
   const { data: jobs = [] } = useQuery({
