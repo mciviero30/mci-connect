@@ -460,7 +460,7 @@ export default function Empleados() {
                  On Leave ({onLeaveEmployees.length})
                </TabsTrigger>
                <TabsTrigger value="terminated" className="text-xs sm:text-sm px-3 sm:px-4 min-h-[44px]">
-                 Terminated ({terminatedEmployees.length})
+                 Terminated ({terminatedEmployees.length + terminatedInvitations.length})
                </TabsTrigger>
              </TabsList>
             </div>
