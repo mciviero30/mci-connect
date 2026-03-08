@@ -41,12 +41,8 @@ Deno.serve(async (req) => {
     const invitation = invitations[0];
 
     // 2. Create EmployeeProfile linked to user
-    // STRICT: hire_date must exist in invitation — no silent defaults
-    if (!invitation.hire_date) {
-      return Response.json({
-        error: 'Invitation missing hire_date. Cannot create EmployeeProfile.'
-      }, { status: 400 });
-    }
+    // Use invitation hire_date or default to today
+    const hireDate = invitation.hire_date || new Date().toISOString().split('T')[0];
 
     const profileData = {
       user_id: user_id,
