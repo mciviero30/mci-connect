@@ -6,18 +6,16 @@ import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { startOfWeek, endOfWeek, startOfYear } from 'date-fns';
 
-export const useMyTimeEntries = (userEmail, enabled = true) => {
+export const useMyTimeEntries = (userId, userEmail, enabled = true) => {
   return useQuery({
-    queryKey: ['myTimeEntries', userEmail],
+    queryKey: ['myTimeEntries', userId, userEmail],
     queryFn: async () => {
-      if (!userEmail) return [];
-      return base44.entities.TimeEntry.filter(
-        { employee_email: userEmail, status: 'approved' },
-        '-date',
-        100
-      );
+      if (!userId && !userEmail) return [];
+      // SSOT: user_id preferred, email fallback
+      const query = userId ? { user_id: userId, status: 'approved' } : { employee_email: userEmail, status: 'approved' };
+      return base44.entities.TimeEntry.filter(query, '-date', 100);
     },
-    enabled: !!userEmail && enabled,
+    enabled: !!(userId || userEmail) && enabled,
     staleTime: 600000,
     gcTime: 900000,
     refetchOnMount: false,
@@ -27,21 +25,19 @@ export const useMyTimeEntries = (userEmail, enabled = true) => {
   });
 };
 
-export const useMyExpenses = (userEmail, isAdmin, enabled = true) => {
+export const useMyExpenses = (userId, userEmail, isAdmin, enabled = true) => {
   return useQuery({
-    queryKey: ['myExpenses', userEmail],
+    queryKey: ['myExpenses', userId, userEmail],
     queryFn: async () => {
-      if (!userEmail) return [];
+      if (!userId && !userEmail) return [];
       if (isAdmin) {
         return base44.entities.Expense.list('-date', 200);
       }
-      return base44.entities.Expense.filter(
-        { employee_email: userEmail },
-        '-date',
-        50
-      );
+      // SSOT: user_id preferred, email fallback
+      const query = userId ? { user_id: userId } : { employee_email: userEmail };
+      return base44.entities.Expense.filter(query, '-date', 50);
     },
-    enabled: !!userEmail && enabled,
+    enabled: !!(userId || userEmail) && enabled,
     staleTime: 600000,
     gcTime: 900000,
     refetchOnMount: false,
@@ -51,18 +47,16 @@ export const useMyExpenses = (userEmail, isAdmin, enabled = true) => {
   });
 };
 
-export const useMyDrivingLogs = (userEmail, enabled = true) => {
+export const useMyDrivingLogs = (userId, userEmail, enabled = true) => {
   return useQuery({
-    queryKey: ['myDrivingLogs', userEmail],
+    queryKey: ['myDrivingLogs', userId, userEmail],
     queryFn: async () => {
-      if (!userEmail) return [];
-      return base44.entities.DrivingLog.filter(
-        { employee_email: userEmail, status: 'approved' },
-        '-date',
-        50
-      );
+      if (!userId && !userEmail) return [];
+      // SSOT: user_id preferred, email fallback
+      const query = userId ? { user_id: userId, status: 'approved' } : { employee_email: userEmail, status: 'approved' };
+      return base44.entities.DrivingLog.filter(query, '-date', 50);
     },
-    enabled: !!userEmail && enabled,
+    enabled: !!(userId || userEmail) && enabled,
     staleTime: 600000,
     gcTime: 900000,
     refetchOnMount: false,
