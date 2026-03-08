@@ -276,6 +276,39 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
             {isInviting ? 'Sending...' : 'Send Invitation'}
           </Button>
         )}
+        {saved.status === 'terminated' && (
+          <Button
+            onClick={async () => {
+              if (!confirm(`Reactivate ${fullName}? This will restore their status to Active.`)) return;
+              setReactivating(true);
+              // Update the invitation status back to accepted
+              await base44.entities.EmployeeInvitation.update(invitation.id, {
+                status: 'accepted',
+                terminated_date: null,
+              });
+              setSaved(prev => ({ ...prev, status: 'accepted', terminated_date: null }));
+              // Also update EmployeeDirectory if record exists
+              try {
+                const dirRecords = await base44.entities.EmployeeDirectory.filter({ employee_email: saved.email });
+                if (dirRecords.length > 0) {
+                  await base44.entities.EmployeeDirectory.update(dirRecords[0].id, { status: 'active' });
+                }
+              } catch (e) {
+                // Directory update is best-effort
+              }
+              await queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
+              await queryClient.invalidateQueries({ queryKey: ['employees'] });
+              toast.success(`${fullName} has been reactivated!`);
+              setReactivating(false);
+              onClose();
+            }}
+            disabled={reactivating}
+            className="bg-green-600 hover:bg-green-700 text-white gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            {reactivating ? 'Reactivating...' : 'Reactivate'}
+          </Button>
+        )}
       </div>
     </div>
   );
