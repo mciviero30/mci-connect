@@ -62,6 +62,16 @@ export default function EmployeeProfile() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
+          {employeeIdParam && (
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate(-1)}
+              className="mb-2 text-slate-600 hover:text-slate-900"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+          )}
           <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{displayName}</h1>
           <p className="text-slate-600 dark:text-slate-400 mt-1">Employee Profile</p>
         </div>
