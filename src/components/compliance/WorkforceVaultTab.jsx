@@ -90,7 +90,7 @@ export default function WorkforceVaultTab({ isAdmin, user }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const employee = employees.find(e => e.email === formData.employee_email);
+    const employee = employees.find(emp => emp.employee_email === formData.employee_email || emp.email === formData.employee_email);
     createCertMutation.mutate({
       ...formData,
       employee_name: employee?.full_name || ''
@@ -232,7 +232,7 @@ export default function WorkforceVaultTab({ isAdmin, user }) {
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-900">
                   {employees.map(emp => (
-                    <SelectItem key={emp.email} value={emp.email}>{emp.full_name}</SelectItem>
+                    <SelectItem key={emp.employee_email || emp.id} value={emp.employee_email || emp.email}>{emp.full_name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
