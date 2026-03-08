@@ -53,8 +53,9 @@ export default function EmployeeProfile() {
     );
   }
 
-  const displayName = user?.full_name || "Employee";
-  const displayEmail = user?.email || "N/A";
+  const effectiveUser = employeeIdParam ? targetUser : user;
+  const displayName = effectiveUser?.full_name || "Employee";
+  const displayEmail = effectiveUser?.email || "N/A";
 
   return (
     <div className="p-6 space-y-6">
