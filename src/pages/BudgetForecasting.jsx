@@ -18,7 +18,7 @@ export default function BudgetForecasting() {
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list('-date', 1000),
+    queryFn: () => base44.entities.Expense.list('-date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
@@ -35,17 +35,15 @@ export default function BudgetForecasting() {
   });
 
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list('full_name'),
+    queryKey: ['budgetEmployees'],
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name', 200),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
 
-  const activeEmployees = employees.filter(e => 
-    e.employment_status !== 'deleted' && e.employment_status !== 'archived'
-  );
+  const activeEmployees = employees;
 
   return (
     <div className="p-4 md:p-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-purple-50 dark:from-[#181818] dark:via-[#1a1a1a] dark:to-[#1e1e1e]">
