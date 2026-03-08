@@ -66,18 +66,16 @@ export default function AutoPayrollCalculator({ employeeEmail, employeeId, weekS
   });
 
   const { data: employee } = useQuery({
-    queryKey: ['employee', employeeId, employeeEmail],
+    queryKey: ['employee-profile', employeeId, employeeEmail],
     queryFn: async () => {
-      // Try user_id first
+      // SSOT: EmployeeProfile for hourly_rate
       if (employeeId) {
-        const users = await base44.entities.User.filter({ id: employeeId });
-        if (users[0]) return users[0];
+        const profiles = await base44.entities.EmployeeProfile.filter({ user_id: employeeId });
+        if (profiles[0]) return { ...profiles[0], full_name: `${profiles[0].first_name || ''} ${profiles[0].last_name || ''}`.trim() };
       }
-      // Fallback to email
-      const users = await base44.entities.User.filter({ email: employeeEmail });
-      return users[0];
+      return null;
     },
-    enabled: !!(employeeEmail || employeeId)
+    enabled: !!employeeId
   });
 
   // Calculate payroll breakdown
