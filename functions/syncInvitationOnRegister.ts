@@ -64,6 +64,13 @@ Deno.serve(async (req) => {
       accepted_date: new Date().toISOString()
     });
 
+    // 4. Sync additional invitation data to profile (department, phone, address, dob, ssn, team, etc)
+    try {
+      await base44.asServiceRole.functions.invoke('syncInvitationDataToProfile', { userId: user_id });
+    } catch (syncErr) {
+      console.log('Note: Data sync partially completed - some fields may not have been copied', syncErr.message);
+    }
+
     return Response.json({
       success: true,
       message: 'Invitation accepted - EmployeeProfile created',
