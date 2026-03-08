@@ -45,7 +45,7 @@ export default function NewsFeed() {
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name'),
     initialData: []
   });
 
