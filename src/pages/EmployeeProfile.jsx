@@ -22,14 +22,26 @@ export default function EmployeeProfile() {
   // Use param ID if provided, otherwise use current user ID
   const targetUserId = employeeIdParam || user?.id;
 
-  const { data: employeeProfile, isLoading: isLoadingProfile } = useQuery({
-    queryKey: ["employeeProfile", user?.id],
+  // Fetch target user data if viewing another employee
+  const { data: targetUser } = useQuery({
+    queryKey: ["user", employeeIdParam],
     queryFn: () => {
-      if (!user?.id) return null;
-      return base44.entities.EmployeeProfile.filter({ user_id: user.id }, "", 1)
+      if (!employeeIdParam) return null;
+      return base44.entities.User.filter({ id: employeeIdParam }, "", 1)
         .then(results => results[0] || null);
     },
-    enabled: !!user?.id,
+    enabled: !!employeeIdParam,
+    staleTime: Infinity,
+  });
+
+  const { data: employeeProfile, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["employeeProfile", targetUserId],
+    queryFn: () => {
+      if (!targetUserId) return null;
+      return base44.entities.EmployeeProfile.filter({ user_id: targetUserId }, "", 1)
+        .then(results => results[0] || null);
+    },
+    enabled: !!targetUserId,
     staleTime: Infinity,
   });
 
