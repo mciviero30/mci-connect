@@ -199,7 +199,7 @@ export default function Empleados() {
   });
 
   // EmployeeInvitation bridge query (pre-registration)
-  const { data: invitations = [] } = useQuery({
+  const { data: allInvitations = [] } = useQuery({
     queryKey: ['employeeInvitations'],
     queryFn: async () => {
       try {
@@ -211,6 +211,10 @@ export default function Empleados() {
     },
     staleTime: 30000
   });
+
+  // Split invitations: active ones vs terminated ones
+  const invitations = allInvitations.filter(i => i.status !== 'terminated');
+  const terminatedInvitations = allInvitations.filter(i => i.status === 'terminated');
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['onboardingForms'],
