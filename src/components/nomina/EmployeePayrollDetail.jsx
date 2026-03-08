@@ -232,9 +232,9 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
     const overtimePay = overtimeHours * hourlyRate * 1.5;
     const workPay = regularPay + overtimePay;
 
-    // DRIVING: hours at normal rate, miles at $0.60/mi
+    // DRIVING: hours at normal rate, miles at $0.70/mi
     const drivingHoursPay = weekTotals.drivingHours * hourlyRate;
-    const mileagePay = weekTotals.drivingMiles * 0.60;
+    const mileagePay = weekTotals.drivingMiles * 0.70;
     const totalDrivingPay = drivingHoursPay + mileagePay;
 
     // COMMISSION: sum approved commissions for the week
