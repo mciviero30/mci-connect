@@ -18,19 +18,33 @@ Deno.serve(async (req) => {
     const existingUsers = await base44.asServiceRole.entities.User.filter({ email });
     
     if (existingUsers.length > 0) {
-      // User exists - send welcome email directly
-      const appUrl = req.headers.get('origin') || 'https://your-app.base44.com';
+      // User exists - send welcome email via SendGrid (no integration credits)
+      const appUrl = req.headers.get('origin') || Deno.env.get('APP_URL') || 'https://mci-connect.base44.app';
+      const apiKey = Deno.env.get('SENDGRID_API_KEY');
+      const fromEmail = Deno.env.get('SENDGRID_FROM_EMAIL') || 'noreply@mci-connect.com';
 
       const emailBody = language === 'es'
         ? `Hola ${firstName || fullName},\n\n¡Bienvenido a MCI Connect!\n\nYa tienes acceso a nuestra plataforma de gestión.\n\nAccede aquí: ${appUrl}\n\nUsa tu email: ${email}\n\n¡Bienvenido al equipo!\nMCI Team`
         : `Hello ${firstName || fullName},\n\nWelcome to MCI Connect!\n\nYou now have access to our management platform.\n\nAccess here: ${appUrl}\n\nUse your email: ${email}\n\nWelcome to the team!\nMCI Team`;
 
-      await base44.asServiceRole.integrations.Core.SendEmail({
-        to: email,
-        subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
-        body: emailBody,
-        from_name: 'MCI Connect'
+      const sgRes = await fetch('https://api.sendgrid.com/v3/mail/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email }] }],
+          from: { email: fromEmail, name: 'MCI Connect' },
+          subject: language === 'es' ? '¡Bienvenido a MCI Connect!' : 'Welcome to MCI Connect!',
+          content: [{ type: 'text/plain', value: emailBody }]
+        })
       });
+
+      if (!sgRes.ok) {
+        const err = await sgRes.text();
+        console.error(`[sendInvitation] SendGrid error: ${err}`);
+      }
 
       return Response.json({ 
         success: true,

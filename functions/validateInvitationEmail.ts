@@ -61,14 +61,16 @@ Deno.serve(async (req) => {
       // Continue validation - they need invitation or directory record
     }
 
-    // Check PendingEmployee invitations
-    const allPending = await base44.asServiceRole.entities.PendingEmployee.list();
-    const pendingMatch = allPending.find(p => 
-      p.email?.toLowerCase().trim() === userEmail || p.user_id === user.id
+    // Check EmployeeInvitation records
+    const invitations = await base44.asServiceRole.entities.EmployeeInvitation.filter({
+      email: userEmail
+    });
+    const pendingMatch = invitations.find(p =>
+      ['pending', 'accepted'].includes(p.status)
     );
 
     if (pendingMatch) {
-      console.log(`✅ Valid employee invitation found for ${userEmail}`);
+      console.log(`✅ Valid employee invitation found for ${userEmail} (status: ${pendingMatch.status})`);
       return Response.json({ 
         valid: true,
         type: 'employee',
