@@ -22,7 +22,7 @@ export default function ExecutiveDashboard() {
   // STRATEGY FIX: add staleTime to prevent refetch on every mount
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices-revenue'],
-    queryFn: () => base44.entities.Invoice.list('-created_date', 1000),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 500),
     enabled: isAdmin,
     staleTime: 300000,
     refetchOnMount: false,
