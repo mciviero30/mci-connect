@@ -818,7 +818,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       icon: Heart,
       items: [
         { title: 'Benefits Hub', url: createPageUrl("EmployeeBenefits"), icon: Building2 },
-        { title: 'My Payroll', url: createPageUrl("MyPayroll"), icon: Banknote },
         { title: 'Time Off', url: createPageUrl("TimeOffRequests"), icon: CalendarClock },
       ]
     },
@@ -847,17 +846,18 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   // Migration happens asynchronously via ProfileSyncManager after login
 
   const { data: pendingExpenses } = useQuery({
-    queryKey: ['pendingExpensesCount', user?.email],
+    queryKey: ['pendingExpensesCount', user?.id],
     queryFn: async () => {
       if (!user) return 0;
       if (user.role === 'admin') {
         const expenses = await base44.entities.Expense.filter({ status: 'pending' }, '', 100);
         return expenses.length;
       } else {
-        const expenses = await base44.entities.Expense.filter({
-          employee_email: user.email,
-          status: 'pending'
-        }, '', 20);
+        // SSOT: user_id preferred, email fallback
+        const query = user.id
+          ? { user_id: user.id, status: 'pending' }
+          : { employee_email: user.email, status: 'pending' };
+        const expenses = await base44.entities.Expense.filter(query, '', 20);
         return expenses.length;
       }
     },
@@ -1440,14 +1440,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             });
 
           // CRITICAL: ALL HOOKS BEFORE EARLY RETURNS
-          // Unregister all service workers for testing
+          // Only unregister service workers in development
           React.useEffect(() => {
-            if ('serviceWorker' in navigator) {
+            if (import.meta.env?.DEV && 'serviceWorker' in navigator) {
               navigator.serviceWorker.getRegistrations().then(regs => {
-                regs.forEach(r => {
-                  console.log('🔴 Unregistering service worker:', r.scope);
-                  r.unregister();
-                });
+                regs.forEach(r => r.unregister());
               });
             }
           }, []);
