@@ -58,7 +58,7 @@ export default function Reportes() {
   });
 
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees'],
+    queryKey: ['reportEmployees'],
     queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name', 200),
     initialData: []
   });

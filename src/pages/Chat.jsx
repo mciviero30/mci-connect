@@ -187,14 +187,8 @@ export default function Chat() {
   });
 
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees'],
-    queryFn: async () => {
-      const users = await base44.entities.EmployeeDirectory.filter({ 
-        status: 'active' 
-      });
-      console.log('Active employees fetched:', users);
-      return users;
-    },
+    queryKey: ['chatEmployees'],
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name', 200),
     initialData: [],
     staleTime: 300000,
   });

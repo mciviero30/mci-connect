@@ -200,7 +200,7 @@ export default function RecurringInvoices() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-2xl font-bold text-green-600">${template.total.toFixed(2)}</p>
+                        <p className="text-2xl font-bold text-green-600">${(template.total || 0).toFixed(2)}</p>
                         <p className="text-xs text-slate-500">{frequencyLabels[template.frequency]}</p>
                       </div>
                     </div>
@@ -237,7 +237,7 @@ export default function RecurringInvoices() {
                         {template.items?.slice(0, 3).map((item, idx) => (
                           <div key={idx} className="flex items-center justify-between text-xs">
                             <span className="text-slate-600 dark:text-slate-400">{item.item_name}</span>
-                            <span className="text-slate-900 dark:text-white font-medium">${item.total.toFixed(2)}</span>
+                            <span className="text-slate-900 dark:text-white font-medium">${(item.total || 0).toFixed(2)}</span>
                           </div>
                         ))}
                         {template.items?.length > 3 && (
