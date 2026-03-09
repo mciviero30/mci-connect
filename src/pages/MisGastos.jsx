@@ -166,10 +166,6 @@ export default function MisGastos() {
         </ModernCard>
       )}
 
-      <div className="mb-6">
-        <AIExpenseAnalyzer expenses={expenses} showFullAnalysis={false} />
-      </div>
-
       <ModernCard 
         title={t('my_expenses')} 
         icon={Receipt}
