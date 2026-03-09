@@ -86,9 +86,9 @@ export default function RecognitionFeed({ limit = 10, showTitle = true }) {
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div className="flex-1">
                           <p className="text-slate-900 dark:text-white font-semibold text-sm">
-                            {recognition.given_by_name}
+                            {toTitleCase(recognition.given_by_name)}
                             <span className="text-slate-500 dark:text-slate-400 font-normal"> recognized </span>
-                            {recognition.employee_name}
+                            {toTitleCase(recognition.employee_name)}
                           </p>
                         </div>
                         <Badge className={`bg-gradient-to-br ${style.color} text-white border-none shadow-md flex-shrink-0`}>

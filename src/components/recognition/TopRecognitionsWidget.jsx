@@ -130,7 +130,7 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
                   {/* Employee Info */}
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-slate-900 dark:text-white text-sm truncate">
-                      {employee.name}
+                      {toTitleCase(employee.name)}
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       <Badge className="bg-gradient-to-r from-[#3B9FF3] to-blue-600 text-white text-xs">
@@ -152,7 +152,7 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
                   ) : (
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center border-2 border-slate-300 dark:border-slate-600 group-hover:border-blue-500 dark:group-hover:border-[#3B9FF3] transition-all">
                       <span className="text-white font-bold text-sm">
-                        {employee.name?.[0]?.toUpperCase()}
+                        {toTitleCase(employee.name)?.[0]?.toUpperCase()}
                       </span>
                     </div>
                   )}
