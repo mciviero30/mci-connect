@@ -155,17 +155,78 @@ export default function EmployeeProfile() {
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-start gap-3">
-        {employeeIdParam && (
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="mt-1 flex-shrink-0">
-            <ArrowLeft className="w-4 h-4" />
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          {employeeIdParam && (
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="mt-1 flex-shrink-0">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          )}
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">{displayName}</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">Employee Profile</p>
+          </div>
+        </div>
+        {isAdmin && profile && (
+          <Button onClick={openEdit} className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white flex-shrink-0">
+            <Pencil className="w-4 h-4 mr-2" />
+            Edit
           </Button>
         )}
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">{displayName}</h1>
-          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">Employee Profile</p>
-        </div>
       </div>
+
+      {/* Edit Modal */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="w-4 h-4" />
+              Edit Employee — {displayName}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {[
+              { key: 'first_name', label: 'First Name' },
+              { key: 'last_name', label: 'Last Name' },
+              { key: 'department', label: 'Department' },
+              { key: 'position', label: 'Position' },
+              { key: 'phone', label: 'Phone' },
+              { key: 'personal_email', label: 'Personal Email' },
+              { key: 'address_line_1', label: 'Address' },
+              { key: 'team_name', label: 'Team Name' },
+              { key: 'date_of_birth', label: 'Date of Birth', type: 'date' },
+              { key: 'hire_date', label: 'Hire Date', type: 'date' },
+              { key: 'hourly_rate', label: 'Hourly Rate ($)', type: 'number' },
+              { key: 'emergency_contact_name', label: 'Emergency Contact Name' },
+              { key: 'emergency_contact_phone', label: 'Emergency Contact Phone' },
+            ].map(({ key, label, type = 'text' }) => (
+              <div key={key}>
+                <Label className="text-slate-700 dark:text-slate-300 font-medium text-sm">{label}</Label>
+                <Input
+                  type={type}
+                  value={editForm[key] || ''}
+                  onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
+                  className="mt-1"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              <X className="w-4 h-4 mr-2" />
+              Cancel
+            </Button>
+            <Button
+              onClick={() => updateMutation.mutate(editForm)}
+              disabled={updateMutation.isPending}
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Warning: no profile record */}
       {!profile && (
