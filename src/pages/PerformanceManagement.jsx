@@ -474,9 +474,9 @@ export default function PerformanceManagement() {
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{rec.message || rec.description}</p>
                         <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                          <span>👤 {rec.employee_name}</span>
+                          <span>👤 {toTitleCase(rec.employee_name)}</span>
                           <span>•</span>
-                          <span>🎁 By: {rec.given_by_name}</span>
+                          <span>🎁 By: {toTitleCase(rec.given_by_name)}</span>
                           <span>•</span>
                           <span>📅 {format(new Date(rec.date), 'MMM dd, yyyy')}</span>
                         </div>
