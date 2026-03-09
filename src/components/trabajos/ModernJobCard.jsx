@@ -231,8 +231,8 @@ export default function ModernJobCard({ job, onEdit }) {
           </div>
         )}
 
-        {/* Financial Info - Enhanced visual hierarchy */}
-        <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
+        {/* Financial Info - Admin Only */}
+        {isAdmin && <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-700">
           <div className="bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 rounded-xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-[#666666] dark:text-slate-400 font-semibold uppercase tracking-wide">
