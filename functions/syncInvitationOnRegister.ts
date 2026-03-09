@@ -75,7 +75,25 @@ Deno.serve(async (req) => {
       accepted_date: new Date().toISOString()
     });
 
-    // 4. Sync additional invitation data to profile (department, phone, address, dob, ssn, team, etc)
+    // 4. Update EmployeeDirectory to active (so admin sees them as active)
+    try {
+      const dirEntries = await base44.asServiceRole.entities.EmployeeDirectory.filter(
+        { employee_email: email.toLowerCase() },
+        '',
+        1
+      );
+      if (dirEntries && dirEntries.length > 0) {
+        await base44.asServiceRole.entities.EmployeeDirectory.update(dirEntries[0].id, {
+          status: 'active',
+          user_id: user_id,
+          last_synced_at: new Date().toISOString()
+        });
+      }
+    } catch (dirErr) {
+      console.log('Note: EmployeeDirectory status update failed:', dirErr.message);
+    }
+
+    // 5. Sync additional invitation data to profile (department, phone, address, dob, ssn, team, etc)
     try {
       await base44.asServiceRole.functions.invoke('syncInvitationDataToProfile', { userId: user_id });
     } catch (syncErr) {
