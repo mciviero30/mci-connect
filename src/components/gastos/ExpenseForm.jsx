@@ -83,7 +83,10 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     },
     onError: (error) => {
       console.error("Error uploading file:", error);
-      alert(language === 'es' ? 'Error al subir el archivo.' : 'Error uploading file.');
+      const msg = error?.message || String(error);
+      alert(language === 'es' 
+        ? `Error al subir el archivo: ${msg}` 
+        : `Error uploading file: ${msg}`);
     },
   });
 
