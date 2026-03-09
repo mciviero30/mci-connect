@@ -61,6 +61,10 @@ const StatWidget = ({ icon: Icon, title, value, subtext, color = "blue", trend =
 
 export default function QuickStatsWidgets({ user }) {
   const { t } = useLanguage();
+  const isAdmin = hasFullAccess(user);
+
+  // Only admins/CEO should see these financial stats
+  if (!isAdmin) return null;
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers', user?.id],

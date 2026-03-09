@@ -27,6 +27,7 @@ export default function ModernJobCard({ job, onEdit }) {
   const toast = useToast();
 
   const { data: user } = useCurrentUser();
+  const isAdmin = hasFullAccess(user);
 
   // Fetch all invoices for this job
   const { data: jobInvoices = [] } = useQuery({
