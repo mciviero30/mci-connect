@@ -16,7 +16,23 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const { user_id, email, full_name } = await req.json();
+    const body = await req.json();
+
+    // Support both direct call format AND entity automation format
+    let user_id, email, full_name;
+    if (body.event && body.data) {
+      // Entity automation payload: triggered on User create
+      const userData = body.data;
+      user_id = userData.id;
+      email = userData.email;
+      full_name = userData.full_name;
+      console.log(`[AutoSync] Triggered by entity automation for user: ${email}`);
+    } else {
+      // Direct call format
+      user_id = body.user_id;
+      email = body.email;
+      full_name = body.full_name;
+    }
 
     if (!user_id || !email) {
       return Response.json({ error: 'user_id and email required' }, { status: 400 });
