@@ -88,6 +88,45 @@ export default function EmployeeProfile() {
     staleTime: Infinity,
   });
 
+  const queryClient = useQueryClient();
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({});
+
+  const openEdit = () => {
+    setEditForm({
+      first_name: profile?.first_name || '',
+      last_name: profile?.last_name || '',
+      department: profile?.department || invitation?.department || '',
+      position: profile?.position || invitation?.position || '',
+      phone: profile?.phone || invitation?.phone || '',
+      address_line_1: profile?.address_line_1 || invitation?.address || '',
+      date_of_birth: profile?.date_of_birth || invitation?.dob || '',
+      hourly_rate: profile?.hourly_rate || invitation?.hourly_rate || '',
+      team_name: profile?.team_name || invitation?.team_name || '',
+      hire_date: profile?.hire_date || '',
+      employment_type: profile?.employment_type || 'full_time',
+      personal_email: profile?.personal_email || '',
+      emergency_contact_name: profile?.emergency_contact_name || '',
+      emergency_contact_phone: profile?.emergency_contact_phone || '',
+    });
+    setEditOpen(true);
+  };
+
+  const updateMutation = useMutation({
+    mutationFn: async (data) => {
+      const updateData = {
+        ...data,
+        full_name: `${data.first_name} ${data.last_name}`.trim(),
+        hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
+      };
+      return base44.entities.EmployeeProfile.update(profile.id, updateData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["employeeProfile", targetUserId] });
+      setEditOpen(false);
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
