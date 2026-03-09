@@ -73,11 +73,31 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
   // const handleAICategorySelect = (category, aiMetadata) => { /* ... */ };
   // const handleManualCategoryChange = (category) => { /* ... */ };
 
-  // New useMutation for file upload
+  // File upload via Google Drive (no integration credits needed)
   const uploadMutation = useMutation({
     mutationFn: async (file) => {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      return file_url;
+      const base64 = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          // Strip the data URL prefix (e.g. "data:image/jpeg;base64,")
+          const result = e.target.result;
+          const base64Data = result.split(',')[1];
+          resolve(base64Data);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const response = await uploadReceiptToDrive({
+        file_base64: base64,
+        filename: file.name,
+        mime_type: file.type || 'image/jpeg'
+      });
+
+      if (!response?.data?.file_url) {
+        throw new Error(response?.data?.error || 'Upload failed');
+      }
+      return response.data.file_url;
     },
     onSuccess: (file_url) => {
       setFormData(prev => ({ ...prev, receipt_url: file_url }));
