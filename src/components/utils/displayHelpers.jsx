@@ -7,18 +7,23 @@
  * Get proper display name from employee object
  * Priority: first_name + last_name > full_name > email extraction
  */
+export const toTitleCase = (str) => {
+  if (!str) return str;
+  return str.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+};
+
 export const getDisplayName = (employee) => {
   if (!employee) return 'Unknown Employee';
   
   // FIRST: Try first_name + last_name (the correct way)
   if (employee.first_name || employee.last_name) {
     const fullName = `${employee.first_name || ''} ${employee.last_name || ''}`.trim();
-    if (fullName) return fullName;
+    if (fullName) return toTitleCase(fullName);
   }
   
   // SECOND: If full_name exists and doesn't look like an email
   if (employee.full_name && !employee.full_name.includes('@') && !employee.full_name.includes('.')) {
-    return employee.full_name;
+    return toTitleCase(employee.full_name);
   }
   
   // LAST RESORT: Extract from email and capitalize
