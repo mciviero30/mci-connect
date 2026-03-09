@@ -186,17 +186,24 @@ export function getUserRole(user) {
     return user.role;
   }
 
-  // 2. Map from legacy position field
+  // 2. 'user' is Base44's default platform role → always treated as employee
+  // DO NOT fall back to position/department for 'user' role — prevents
+  // regular employees from accidentally getting admin navigation
+  if (user.role === 'user') {
+    return ROLES.EMPLOYEE;
+  }
+
+  // 3. Map from legacy position field (only for users without an explicit role)
   if (user.position && LEGACY_POSITION_TO_ROLE[user.position]) {
     return LEGACY_POSITION_TO_ROLE[user.position];
   }
 
-  // 3. Check admin departments (legacy)
+  // 4. Check admin departments (legacy)
   if (user.department && ADMIN_DEPARTMENTS.includes(user.department)) {
     return ROLES.ADMIN;
   }
 
-  // 4. Default to employee
+  // 5. Default to employee
   return ROLES.EMPLOYEE;
 }
 
