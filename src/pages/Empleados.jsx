@@ -582,35 +582,37 @@ export default function Empleados() {
                 ))}
               </div>
             )}
-            {!isLoading && <>
-              <div className="flex justify-end mb-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50 gap-1.5"
-                  onClick={async () => {
-                    toast.success('Running sync...');
-                    try {
-                      const res = await base44.functions.invoke('reconcileEmployeeProfiles', {});
-                      const { fixed, errors } = res?.data?.summary || res?.summary || {};
-                      if (fixed > 0) {
-                        toast.success(`Sync complete: ${fixed} profile(s) created.`);
-                        queryClient.invalidateQueries({ queryKey: ['employees'] });
-                        queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
-                      } else {
-                        toast.success('Sync complete: everything is up to date.');
+            {!isLoading && (
+              <div>
+                <div className="flex justify-end mb-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50 gap-1.5"
+                    onClick={async () => {
+                      toast.success('Running sync...');
+                      try {
+                        const res = await base44.functions.invoke('reconcileEmployeeProfiles', {});
+                        const { fixed } = res?.data?.summary || res?.summary || {};
+                        if (fixed > 0) {
+                          toast.success(`Sync complete: ${fixed} profile(s) created.`);
+                          queryClient.invalidateQueries({ queryKey: ['employees'] });
+                          queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
+                        } else {
+                          toast.success('Sync complete: everything is up to date.');
+                        }
+                      } catch (err) {
+                        toast.error('Sync failed: ' + err.message);
                       }
-                    } catch (err) {
-                      toast.error('Sync failed: ' + err.message);
-                    }
-                  }}
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  Sync Profiles Now
-                </Button>
+                    }}
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Sync Profiles Now
+                  </Button>
+                </div>
+                <EmployeeGrid employees={activeEmployees} />
               </div>
-              <EmployeeGrid employees={activeEmployees} />
-            </>}
+            )}
           </TabsContent>
 
           {/* INACTIVE TAB */}
