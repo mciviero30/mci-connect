@@ -331,7 +331,8 @@ export default function Configuracion() {
     updateNotificationPrefsMutation.mutate(notificationPrefs);
   };
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'ceo';
+  const canEditProfile = user?.role === 'admin' || user?.role === 'ceo';
   const browserSupportsNotifications = 'Notification' in window;
   const notificationPermission = browserSupportsNotifications ? Notification.permission : 'default';
 
@@ -749,32 +750,45 @@ export default function Configuracion() {
                   </div>
                 </div>
 
+                {!canEditProfile && (
+                  <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg mb-4">
+                    <Shield className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-amber-800 dark:text-amber-200">
+                      {language === 'es' 
+                        ? 'Tu información personal es administrada por RRHH. Contacta a tu administrador para realizar cambios.' 
+                        : 'Your personal information is managed by HR. Contact your administrator to make changes.'}
+                    </p>
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   <div>
-                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Nombre Completo' : 'Full Name'}</Label>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Nombre Completo' : 'Full Name'}</Label>
                     <Input
                       value={profileForm.full_name}
-                      onChange={(e) => setProfileForm({...profileForm, full_name: e.target.value})}
-                      className="bg-slate-50 border-slate-200"
+                      onChange={(e) => canEditProfile && setProfileForm({...profileForm, full_name: e.target.value})}
+                      disabled={!canEditProfile}
+                      className={!canEditProfile ? "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "bg-slate-50 border-slate-200"}
                       autoCapitalizeInput={true}
                     />
                   </div>
 
                   <div>
-                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Email' : 'Email'}</Label>
                     <Input
                       value={user?.email || ''}
                       disabled
-                      className="bg-slate-100 border-slate-200 text-slate-500"
+                      className="bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"
                     />
                   </div>
 
                   <div>
-                    <Label className="text-slate-700 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
+                    <Label className="text-slate-700 dark:text-slate-300 font-semibold">{language === 'es' ? 'Teléfono' : 'Phone'}</Label>
                     <Input
                       value={profileForm.phone}
-                      onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
-                      className="bg-slate-50 border-slate-200"
+                      onChange={(e) => canEditProfile && setProfileForm({...profileForm, phone: e.target.value})}
+                      disabled={!canEditProfile}
+                      className={!canEditProfile ? "bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 cursor-not-allowed text-slate-600 dark:text-slate-400" : "bg-slate-50 border-slate-200"}
                     />
                   </div>
 
@@ -815,14 +829,16 @@ export default function Configuracion() {
                     </div>
                   </div>
 
-                  <Button
-                    onClick={() => updateProfileMutation.mutate(profileForm)}
-                    disabled={updateProfileMutation.isPending}
-                    className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full mt-6"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {updateProfileMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}
-                  </Button>
+                  {canEditProfile && (
+                    <Button
+                      onClick={() => updateProfileMutation.mutate(profileForm)}
+                      disabled={updateProfileMutation.isPending}
+                      className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full mt-6"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {updateProfileMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
