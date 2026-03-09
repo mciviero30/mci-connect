@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getDisplayName, getProfileImage, getImageKey } from "@/components/utils/displayHelpers";
+import { getDisplayName, getProfileImage, getImageKey, toTitleCase } from "@/components/utils/displayHelpers";
 
 const recognitionTypes = [
   { value: 'employee_of_month', label: 'Employee of the Month', points: 100, icon: '🏆' },
