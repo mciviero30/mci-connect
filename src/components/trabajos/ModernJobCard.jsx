@@ -286,7 +286,7 @@ export default function ModernJobCard({ job, onEdit }) {
               </div>
             )}
           </div>
-        </div>
+        </div>}
       </div>
 
         {/* Gradient Line at Bottom - More prominent */}
