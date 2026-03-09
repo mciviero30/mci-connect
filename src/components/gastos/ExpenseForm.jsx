@@ -95,28 +95,38 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
         return;
       }
       const reader = new FileReader();
+      reader.onerror = () => resolve(file); // fallback to original on error
       reader.onload = (e) => {
         const img = new Image();
+        img.onerror = () => resolve(file); // fallback to original on error
         img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_SIZE = 1200;
-          let { width, height } = img;
-          if (width > MAX_SIZE || height > MAX_SIZE) {
-            if (width > height) {
-              height = Math.round((height * MAX_SIZE) / width);
-              width = MAX_SIZE;
-            } else {
-              width = Math.round((width * MAX_SIZE) / height);
-              height = MAX_SIZE;
+          try {
+            const canvas = document.createElement('canvas');
+            const MAX_SIZE = 1200;
+            let { width, height } = img;
+            if (width > MAX_SIZE || height > MAX_SIZE) {
+              if (width > height) {
+                height = Math.round((height * MAX_SIZE) / width);
+                width = MAX_SIZE;
+              } else {
+                width = Math.round((width * MAX_SIZE) / height);
+                height = MAX_SIZE;
+              }
             }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                resolve(file); // fallback to original if blob is null
+                return;
+              }
+              resolve(new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' }));
+            }, 'image/jpeg', 0.8);
+          } catch {
+            resolve(file); // fallback to original on any error
           }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          canvas.toBlob((blob) => {
-            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, '.jpg'), { type: 'image/jpeg' }));
-          }, 'image/jpeg', 0.8);
         };
         img.src = e.target.result;
       };
@@ -127,8 +137,14 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const compressed = await compressImage(file);
-    uploadMutation.mutate(compressed);
+    try {
+      const compressed = await compressImage(file);
+      uploadMutation.mutate(compressed);
+    } catch (err) {
+      console.error('File prepare error:', err);
+      // Try uploading original file as fallback
+      uploadMutation.mutate(file);
+    }
   };
 
   // Remove calculatePerDiemTotal function
