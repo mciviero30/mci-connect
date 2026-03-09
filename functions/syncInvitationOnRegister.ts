@@ -48,7 +48,18 @@ Deno.serve(async (req) => {
       user_id: user_id,
       first_name: invitation.first_name || full_name?.split(' ')[0] || '',
       last_name: invitation.last_name || full_name?.split(' ')[1] || '',
+      full_name: invitation.first_name && invitation.last_name
+        ? `${invitation.first_name} ${invitation.last_name}`.trim()
+        : full_name || '',
       position: invitation.position || null,
+      department: invitation.department || null,
+      phone: invitation.phone || null,
+      address_line_1: invitation.address || null,
+      date_of_birth: invitation.dob || null,
+      ssn_encrypted: invitation.ssn_tax_id || null,
+      team_id: invitation.team_id || null,
+      team_name: invitation.team_name || null,
+      hourly_rate: invitation.hourly_rate || null,
       hire_date: hireDate,
       employment_status: 'active',
       is_active: true,
