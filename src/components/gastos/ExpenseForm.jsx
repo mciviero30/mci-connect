@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { X, Save, Upload, Receipt, ExternalLink } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import { uploadReceiptToDrive } from "@/functions/uploadReceiptToDrive";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { differenceInDays, format } from "date-fns";
