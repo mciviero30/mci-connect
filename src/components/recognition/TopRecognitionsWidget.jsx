@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Award, TrendingUp, Crown } from 'lucide-react';
 import { getDisplayName } from '@/components/utils/nameHelpers';
+import { toTitleCase } from '@/components/utils/displayHelpers';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 

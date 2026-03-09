@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Award, Heart, Sparkles } from 'lucide-react';
 import { format } from 'date-fns';
 import { getDisplayName } from '@/components/utils/nameHelpers';
+import { toTitleCase } from '@/components/utils/displayHelpers';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const RECOGNITION_STYLES = {
