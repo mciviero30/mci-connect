@@ -18,6 +18,7 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/toast";
 import FavoriteButton from "@/components/shared/FavoriteButton";
 import { useCurrentUser } from "@/components/hooks/useCurrentUser";
+import { hasFullAccess } from "@/components/core/roleRules";
 
 export default function ModernJobCard({ job, onEdit }) {
   const navigate = useNavigate();

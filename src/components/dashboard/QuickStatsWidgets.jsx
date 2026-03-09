@@ -14,6 +14,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { hasFullAccess } from "@/components/core/roleRules";
 
 const StatWidget = ({ icon: Icon, title, value, subtext, color = "blue", trend = null }) => (
   <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 rounded-xl hover:shadow-lg transition-shadow">
