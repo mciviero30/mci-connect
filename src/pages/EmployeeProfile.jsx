@@ -1,377 +1,366 @@
-import React, { useState, useMemo } from "react";
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Mail, Phone, MapPin, Calendar, Building2, Award, Clock, AlertCircle, Edit2, ArrowLeft } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  User, Mail, Phone, MapPin, Calendar, Building2,
+  Award, Clock, AlertCircle, ArrowLeft, DollarSign, Shield
+} from "lucide-react";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
-import { useNavigate } from "react-router-dom";
+
+// Convert ALL CAPS or any case to proper Title Case
+function toTitleCase(str) {
+  if (!str) return str;
+  return str
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function InfoRow({ label, value, fallback = "Not specified" }) {
+  return (
+    <div>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="font-medium text-slate-900 dark:text-slate-100">{value || fallback}</p>
+    </div>
+  );
+}
+
+function StatusBadge({ value, trueLabel = "✓ Yes", falseLabel = "Pending" }) {
+  return (
+    <span className={`text-xs font-medium px-2 py-1 rounded ${
+      value
+        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-100"
+        : "bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400"
+    }`}>
+      {value ? trueLabel : falseLabel}
+    </span>
+  );
+}
 
 export default function EmployeeProfile() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const employeeIdParam = searchParams.get("id");
 
-  const { data: user } = useQuery({
+  const { data: currentUser } = useQuery({
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
   });
 
-  // Use param ID if provided, otherwise use current user ID
-  const targetUserId = employeeIdParam || user?.id;
+  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
 
-  // Fetch target user data if viewing another employee
+  // Fetch the target user if viewing another employee
   const { data: targetUser } = useQuery({
-    queryKey: ["user", employeeIdParam],
-    queryFn: () => {
-      if (!employeeIdParam) return null;
-      return base44.entities.User.filter({ id: employeeIdParam }, "", 1)
-        .then(results => results[0] || null);
-    },
+    queryKey: ["user-profile", employeeIdParam],
+    queryFn: () =>
+      base44.entities.User.filter({ id: employeeIdParam }, "", 1).then(r => r[0] || null),
     enabled: !!employeeIdParam,
     staleTime: Infinity,
   });
 
-  const { data: employeeProfile, isLoading: isLoadingProfile } = useQuery({
+  const effectiveUser = employeeIdParam ? targetUser : currentUser;
+  const targetUserId = effectiveUser?.id;
+
+  // Fetch EmployeeProfile by user_id
+  const { data: profile, isLoading } = useQuery({
     queryKey: ["employeeProfile", targetUserId],
-    queryFn: () => {
-      if (!targetUserId) return null;
-      return base44.entities.EmployeeProfile.filter({ user_id: targetUserId }, "", 1)
-        .then(results => results[0] || null);
-    },
+    queryFn: () =>
+      base44.entities.EmployeeProfile.filter({ user_id: targetUserId }, "", 1).then(r => r[0] || null),
     enabled: !!targetUserId,
     staleTime: Infinity,
   });
 
-  if (isLoadingProfile) {
+  // Fetch EmployeeInvitation by email as data fallback (for employees who registered before the sync fix)
+  const { data: invitation } = useQuery({
+    queryKey: ["employeeInvitation-profile", effectiveUser?.email],
+    queryFn: () =>
+      base44.entities.EmployeeInvitation.filter({ email: effectiveUser.email }, "", 1).then(r => r[0] || null),
+    enabled: !!effectiveUser?.email && isAdmin,
+    staleTime: Infinity,
+  });
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="w-12 h-12 border-3 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  const effectiveUser = employeeIdParam ? targetUser : user;
-  const displayName = effectiveUser?.full_name || "Employee";
+  // Merge profile + invitation as fallback for missing fields
+  const dept       = profile?.department    || invitation?.department;
+  const position   = profile?.position      || invitation?.position;
+  const phone      = profile?.phone         || invitation?.phone;
+  const address    = profile?.address_line_1 || invitation?.address;
+  const dob        = profile?.date_of_birth  || invitation?.dob;
+  const hourlyRate = profile?.hourly_rate    || invitation?.hourly_rate;
+  const teamName   = profile?.team_name      || invitation?.team_name;
+
+  // Normalize name to Title Case
+  const rawName = profile?.full_name
+    || (profile?.first_name && profile?.last_name ? `${profile.first_name} ${profile.last_name}` : null)
+    || effectiveUser?.full_name
+    || "Employee";
+  const displayName = toTitleCase(rawName);
   const displayEmail = effectiveUser?.email || "N/A";
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-start gap-3">
+        {employeeIdParam && (
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="mt-1 flex-shrink-0">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+        )}
         <div>
-          {employeeIdParam && (
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate(-1)}
-              className="mb-2 text-slate-600 hover:text-slate-900"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-          )}
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">{displayName}</h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-1">Employee Profile</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">{displayName}</h1>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">Employee Profile</p>
         </div>
       </div>
 
-      {/* Warning if no profile */}
-      {!employeeProfile && (
+      {/* Warning: no profile record */}
+      {!profile && (
         <Card className="border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-900/20">
-          <CardContent className="pt-6 flex items-start gap-3">
+          <CardContent className="pt-4 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
-                Employee Profile Not Found
-              </p>
-              <p className="text-sm text-amber-800 dark:text-amber-200 mt-1">
-                Your employee profile is being set up. Contact HR to complete your profile setup.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {employeeProfile ? (
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="contact">Contact</TabsTrigger>
-            <TabsTrigger value="employment">Employment</TabsTrigger>
-            <TabsTrigger value="compensation">Compensation</TabsTrigger>
-          </TabsList>
-
-          {/* Overview Tab */}
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <User className="w-4 h-4" />
-                    Personal Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Full Name</p>
-                    <p className="font-medium">{employeeProfile.full_name || displayName}</p>
-                  </div>
-                  {employeeProfile.date_of_birth && (
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Date of Birth</p>
-                      <p className="font-medium">
-                        {new Date(employeeProfile.date_of_birth).toLocaleDateString()}
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Building2 className="w-4 h-4" />
-                    Department
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Department</p>
-                    <p className="font-medium">{employeeProfile.department || "Not assigned"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Position</p>
-                    <p className="font-medium">{employeeProfile.position || "Not specified"}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Calendar className="w-4 h-4" />
-                  Employment Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Status</p>
-                  <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-100">
-                    {employeeProfile.employment_status || "Active"}
-                  </span>
-                </div>
-                {employeeProfile.hire_date && (
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Hire Date</p>
-                    <p className="font-medium">
-                      {new Date(employeeProfile.hire_date).toLocaleDateString()}
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Contact Tab */}
-          <TabsContent value="contact" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Mail className="w-4 h-4" />
-                  Contact Information
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Work Email</p>
-                  <p className="font-medium">{displayEmail}</p>
-                </div>
-                {employeeProfile.personal_email && (
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Personal Email</p>
-                    <p className="font-medium">{employeeProfile.personal_email}</p>
-                  </div>
-                )}
-                {employeeProfile.phone && (
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Phone</p>
-                    <p className="font-medium">{employeeProfile.phone}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {employeeProfile.address_line_1 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Address
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p className="font-medium">{employeeProfile.address_line_1}</p>
-                  {employeeProfile.address_line_2 && <p>{employeeProfile.address_line_2}</p>}
-                  <p>
-                    {employeeProfile.city && `${employeeProfile.city}, `}
-                    {employeeProfile.state} {employeeProfile.zip}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {employeeProfile.emergency_contact_name && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Emergency Contact</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Name</p>
-                    <p className="font-medium">{employeeProfile.emergency_contact_name}</p>
-                  </div>
-                  {employeeProfile.emergency_contact_phone && (
-                    <div>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Phone</p>
-                      <p className="font-medium">{employeeProfile.emergency_contact_phone}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          {/* Employment Tab */}
-          <TabsContent value="employment" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  Employment Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Employment Type</p>
-                  <p className="font-medium capitalize">
-                    {employeeProfile.employment_type?.replace(/_/g, " ") || "Not specified"}
-                  </p>
-                </div>
-                {employeeProfile.employee_code && (
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Employee Code</p>
-                    <p className="font-medium">{employeeProfile.employee_code}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="w-4 h-4" />
-                  Certifications & Compliance
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">I-9 Completed</span>
-                  <span className={`text-xs font-medium px-2 py-1 rounded ${
-                    employeeProfile.i9_completed
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-100"
-                      : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-100"
-                  }`}>
-                    {employeeProfile.i9_completed ? "✓ Yes" : "Pending"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Background Check</span>
-                  <span className={`text-xs font-medium px-2 py-1 rounded ${
-                    employeeProfile.background_check_completed
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-100"
-                      : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-100"
-                  }`}>
-                    {employeeProfile.background_check_completed ? "✓ Yes" : "Pending"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Drug Test</span>
-                  <span className={`text-xs font-medium px-2 py-1 rounded ${
-                    employeeProfile.drug_test_completed
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-100"
-                      : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-100"
-                  }`}>
-                    {employeeProfile.drug_test_completed ? "✓ Yes" : "Pending"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">OSHA Certified</span>
-                  <span className={`text-xs font-medium px-2 py-1 rounded ${
-                    employeeProfile.osha_certified
-                      ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-100"
-                      : "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-100"
-                  }`}>
-                    {employeeProfile.osha_certified ? "✓ Yes" : "No"}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Compensation Tab */}
-          <TabsContent value="compensation" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Compensation Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Pay Type</p>
-                  <p className="font-medium capitalize">
-                    {employeeProfile.pay_type?.replace(/_/g, " ") || "Not specified"}
-                  </p>
-                </div>
-                {employeeProfile.hourly_rate && (
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Hourly Rate</p>
-                    <p className="font-medium text-lg">
-                      ${employeeProfile.hourly_rate.toFixed(2)}/hr
-                    </p>
-                  </div>
-                )}
-                {employeeProfile.salary_annual && (
-                  <div>
-                    <p className="text-sm text-slate-600 dark:text-slate-400">Annual Salary</p>
-                    <p className="font-medium text-lg">
-                      ${employeeProfile.salary_annual.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                    </p>
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Overtime Eligible</p>
-                  <p className="font-medium">
-                    {employeeProfile.overtime_eligible ? "Yes" : "No"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-slate-600 dark:text-slate-400 text-center">
-              No employee profile data available. Contact your administrator.
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              Employee profile is being set up. Contact HR to complete the profile.
             </p>
           </CardContent>
         </Card>
       )}
+
+      {/* Invitation data notice for admin */}
+      {profile && invitation && (
+        !profile.department || !profile.phone || !profile.hourly_rate
+      ) && isAdmin && (
+        <Card className="border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20">
+          <CardContent className="pt-4 flex items-start gap-3">
+            <Shield className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-blue-700 dark:text-blue-300">
+              Some fields are being pulled from the original invitation. To make them permanent, edit this employee's profile from the Employees page.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid grid-cols-4 w-full">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="contact">Contact</TabsTrigger>
+          <TabsTrigger value="employment">Employment</TabsTrigger>
+          <TabsTrigger value="compensation">Compensation</TabsTrigger>
+        </TabsList>
+
+        {/* OVERVIEW */}
+        <TabsContent value="overview" className="space-y-4 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <User className="w-4 h-4 text-blue-500" />
+                  Personal Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <InfoRow label="Full Name" value={displayName} />
+                {dob && (
+                  <InfoRow
+                    label="Date of Birth"
+                    value={new Date(dob).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  />
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Building2 className="w-4 h-4 text-blue-500" />
+                  Department & Role
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <InfoRow label="Department" value={toTitleCase(dept)} fallback="Not assigned" />
+                <InfoRow label="Position" value={toTitleCase(position)} />
+                {teamName && <InfoRow label="Team" value={toTitleCase(teamName)} />}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Calendar className="w-4 h-4 text-blue-500" />
+                Employment Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Status</p>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${
+                  profile?.employment_status === 'active'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-100'
+                    : 'bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-300'
+                }`}>
+                  {profile?.employment_status || "Active"}
+                </span>
+              </div>
+              {profile?.hire_date && (
+                <InfoRow
+                  label="Hire Date"
+                  value={new Date(profile.hire_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                />
+              )}
+              {profile?.employee_code && (
+                <InfoRow label="Employee Code" value={profile.employee_code} />
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* CONTACT */}
+        <TabsContent value="contact" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-blue-500" />
+                Contact Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InfoRow label="Work Email" value={displayEmail} />
+              {profile?.personal_email && (
+                <InfoRow label="Personal Email" value={profile.personal_email} />
+              )}
+              {phone && <InfoRow label="Phone" value={phone} />}
+            </CardContent>
+          </Card>
+
+          {address && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-blue-500" />
+                  Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <p className="font-medium text-slate-900 dark:text-slate-100">{address}</p>
+                {profile?.address_line_2 && <p className="text-slate-700 dark:text-slate-300">{profile.address_line_2}</p>}
+                {(profile?.city || profile?.state || profile?.zip) && (
+                  <p className="text-slate-700 dark:text-slate-300">
+                    {profile?.city && `${profile.city}, `}
+                    {profile?.state} {profile?.zip}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {profile?.emergency_contact_name && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Emergency Contact</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <InfoRow label="Name" value={profile.emergency_contact_name} />
+                {profile.emergency_contact_phone && (
+                  <InfoRow label="Phone" value={profile.emergency_contact_phone} />
+                )}
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* EMPLOYMENT */}
+        <TabsContent value="employment" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-blue-500" />
+                Employment Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InfoRow
+                label="Employment Type"
+                value={profile?.employment_type?.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+              />
+              {profile?.employee_code && (
+                <InfoRow label="Employee Code" value={profile.employee_code} />
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-blue-500" />
+                Certifications & Compliance
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {[
+                { label: "I-9 Completed", value: profile?.i9_completed },
+                { label: "Background Check", value: profile?.background_check_completed },
+                { label: "Drug Test", value: profile?.drug_test_completed },
+                { label: "OSHA Certified", value: profile?.osha_certified, falseLabel: "No" },
+              ].map(({ label, value, falseLabel }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{label}</span>
+                  <StatusBadge value={value} falseLabel={falseLabel || "Pending"} />
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* COMPENSATION */}
+        <TabsContent value="compensation" className="space-y-4 mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4 text-blue-500" />
+                Compensation Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <InfoRow
+                label="Pay Type"
+                value={profile?.pay_type?.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+              />
+              {hourlyRate && (
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Hourly Rate</p>
+                  <p className="font-semibold text-lg text-slate-900 dark:text-slate-100">
+                    ${Number(hourlyRate).toFixed(2)}/hr
+                  </p>
+                </div>
+              )}
+              {profile?.salary_annual && (
+                <div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Annual Salary</p>
+                  <p className="font-semibold text-lg text-slate-900 dark:text-slate-100">
+                    ${Number(profile.salary_annual).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+              )}
+              <InfoRow
+                label="Overtime Eligible"
+                value={profile?.overtime_eligible ? "Yes" : "No"}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
