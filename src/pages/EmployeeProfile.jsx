@@ -1,13 +1,16 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   User, Mail, Phone, MapPin, Calendar, Building2,
-  Award, Clock, AlertCircle, ArrowLeft, DollarSign, Shield
+  Award, Clock, AlertCircle, ArrowLeft, DollarSign, Shield, Pencil, Save, X
 } from "lucide-react";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
