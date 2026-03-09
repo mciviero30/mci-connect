@@ -8,7 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import AIExpenseAnalyzer from '../components/gastos/AIExpenseAnalyzer';
 import EmployeePageLayout, { ModernCard } from "@/components/shared/EmployeePageLayout";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import { buildUserQuery } from "@/components/utils/userResolution";
