@@ -15,7 +15,6 @@ import WeeklyTimeView from "@/components/time-tracking/WeeklyTimeView";
 import TimeReportsView from "@/components/time-tracking/TimeReportsView";
 import ManagerApprovalView from "@/components/time-tracking/ManagerApprovalView";
 import LiveTimeTracker from "@/components/horarios/LiveTimeTracker";
-import MobileTimeTracker from "@/components/horarios/MobileTimeTracker";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 import { exportToExcel } from "@/components/shared/UniversalExcelExport";
 import { FileSpreadsheet } from "lucide-react";
