@@ -23,7 +23,7 @@ import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import { updateExpenseSafely } from "@/functions/updateExpenseSafely";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import { hasFullAccess } from "@/components/core/roleRules";
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 export default function Gastos() {
   const { t, language } = useLanguage();
