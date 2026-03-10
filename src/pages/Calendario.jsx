@@ -931,6 +931,7 @@ export default function Calendario() {
                 copiedShift={copiedShift}
                 isAdmin={isAdmin}
                 currentUser={user}
+                timeEntries={timeEntries}
               />
             </TabsContent>
             <TabsContent value="week">
@@ -946,6 +947,7 @@ export default function Calendario() {
                 copiedShift={copiedShift}
                 isAdmin={isAdmin}
                 currentUser={user}
+                timeEntries={timeEntries}
               />
             </TabsContent>
             <TabsContent value="month">
@@ -961,6 +963,7 @@ export default function Calendario() {
                 copiedShift={copiedShift}
                 isAdmin={isAdmin}
                 currentUser={user}
+                timeEntries={timeEntries}
               />
             </TabsContent>
             <TabsContent value="agenda">
