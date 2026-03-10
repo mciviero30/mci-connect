@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSyncQueue } from '@/components/pwa/SyncQueueManager';
+import { hasFullAccess } from '@/components/core/roleRules';
 
 const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigation }) {
   const location = useLocation();
