@@ -311,37 +311,14 @@ export default function TimeTracking() {
           </CardContent>
         </Card>
 
-        {/* I4 - Mobile vs Desktop Time Tracker */}
-        {isMobile ? (
-          <MobileTimeTracker
-            jobs={[]} 
-            activeSession={todayEntry ? {
-              startTime: new Date(`${todayEntry.date}T${todayEntry.check_in}`).getTime(),
-              selectedJob: { id: todayEntry.job_id, name: todayEntry.job_name },
-              breaks: todayEntry.breaks || []
-            } : null}
-            onCheckIn={(job) => {
-              clockInMutation.mutate({
-                job_id: job?.id,
-                job_name: job?.name,
-                date: format(new Date(), 'yyyy-MM-dd'),
-                check_in: format(new Date(), 'HH:mm:ss')
-              });
-            }}
-            onCheckOut={() => clockOutMutation.mutate()}
-            onBreakStart={() => startBreakMutation.mutate('lunch')}
-            onBreakEnd={() => endBreakMutation.mutate()}
-            isLoading={clockInMutation.isPending || clockOutMutation.isPending}
-          />
-        ) : (
-          <LiveTimeTracker 
-            trackingType="work"
-            onSave={(timeEntryData) => {
-              clockInMutation.mutate(timeEntryData);
-            }}
-            isLoading={clockInMutation.isPending}
-          />
-        )}
+        {/* Full-featured Time Tracker with job selection and geofencing */}
+        <LiveTimeTracker 
+          trackingType="work"
+          onSave={(timeEntryData) => {
+            clockInMutation.mutate(timeEntryData);
+          }}
+          isLoading={clockInMutation.isPending}
+        />
 
         {/* Week Summary - Mobile Optimized */}
         <Card className="bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border-slate-200/60 dark:border-slate-700/60 shadow-xl">
