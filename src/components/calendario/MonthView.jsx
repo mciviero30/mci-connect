@@ -128,12 +128,12 @@ export default function MonthView({ currentDate, shifts, onDateClick, onShiftCli
                         >
                           {shift.start_time} {getEventLabel(shift).split(' ')[0]}
                           
-                          {shift.status === 'confirmed' && (
-                            <CheckCircle className="inline w-2 h-2 ml-1" />
-                          )}
-                          {shift.status === 'rejected' && (
-                            <XCircle className="inline w-2 h-2 ml-1" />
-                          )}
+                          {(() => {
+                            const att = getAttendanceStatus(shift, day);
+                            if (att === 'attended') return <CheckCircle className="inline w-2 h-2 ml-1 text-green-600" />;
+                            if (att === 'absent') return <XCircle className="inline w-2 h-2 ml-1 text-red-500" />;
+                            return null;
+                          })()}
                         </div>
                         
                         {isPending && (
