@@ -130,9 +130,11 @@ export default function PerDiem() {
       employee_email: user.email,
       employee_name: user.full_name,
       category: 'per_diem',
+      account_category: 'expense_travel_per_diem',  // For accounting purposes
       description: 'Per Diem / Viáticos',
       payment_method: 'personal',
-      status: 'pending'
+      status: 'pending',
+      receipt_url: data.receipt_url || ''  // Per-diem doesn't require receipt but entity requires it
     }),
     onSuccess: () => {
       queryClient.invalidateQueries(['myPerDiem']);
