@@ -1251,11 +1251,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-white">
-                  <SelectItem value="normal">{language === 'es' ? 'Normal' : 'Normal'}</SelectItem>
-                  <SelectItem value="driving">{language === 'es' ? 'Manejo' : 'Driving'}</SelectItem>
-                  <SelectItem value="setup">{language === 'es' ? 'Preparación' : 'Setup'}</SelectItem>
-                  <SelectItem value="cleanup">{language === 'es' ? 'Limpieza' : 'Cleanup'}</SelectItem>
-                </SelectContent>
+                   <SelectItem value="normal">{language === 'es' ? 'Normal' : 'Normal'}</SelectItem>
+                   <SelectItem value="driving">{language === 'es' ? 'Manejo' : 'Driving'}</SelectItem>
+                 </SelectContent>
               </Select>
             </div>
 
