@@ -52,7 +52,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
     },
     { 
       title: 'Expenses', 
-      url: createPageUrl("Gastos"), 
+      url: createPageUrl(hasFullAccess(user) ? "Gastos" : "MisGastos"), 
       icon: Receipt,
       badge: pendingExpenses > 0 ? pendingExpenses : null,
       color: 'from-amber-500 to-amber-600'
