@@ -177,16 +177,12 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
                               <p className="text-[8px] opacity-90">{shift.start_time}-{shift.end_time}</p>
                             )}
                             
-                            {shift.status === 'confirmed' && (
-                              <Badge className="absolute top-0.5 right-0.5 badge-soft-green text-[7px] px-0.5 py-0">
-                                <CheckCircle className="w-2 h-2" />
-                              </Badge>
-                            )}
-                            {shift.status === 'rejected' && (
-                              <Badge className="absolute top-0.5 right-0.5 badge-soft-red text-[7px] px-0.5 py-0">
-                                <XCircle className="w-2 h-2" />
-                              </Badge>
-                            )}
+                            {(() => {
+                              const att = getAttendanceStatus(shift, day);
+                              if (att === 'attended') return <Badge className="absolute top-0.5 right-0.5 bg-green-100 text-green-700 text-[7px] px-0.5 py-0"><CheckCircle className="w-2 h-2" /></Badge>;
+                              if (att === 'absent') return <Badge className="absolute top-0.5 right-0.5 bg-red-100 text-red-600 text-[7px] px-0.5 py-0"><XCircle className="w-2 h-2" /></Badge>;
+                              return null;
+                            })()}
                           </div>
                           
                           {isPending && (
