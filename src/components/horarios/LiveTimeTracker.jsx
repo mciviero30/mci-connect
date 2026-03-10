@@ -47,6 +47,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     // Fallback if useLanguage fails
   }
   
+  const queryClient = useQueryClient();
+  
+  // Force invalidate jobs cache on mount to ensure fresh data
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['activeJobs'] });
+  }, [queryClient]);
+  
   // FASE 10: Performance monitoring (only in field mode)
   usePerformanceMonitor('LiveTimeTracker', true);
   
