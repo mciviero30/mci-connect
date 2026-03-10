@@ -23,7 +23,6 @@ import { updateExpenseSafely } from "@/functions/updateExpenseSafely";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import { hasFullAccess } from "@/components/core/roleRules";
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 export default function Gastos() {
   const { t, language } = useLanguage();

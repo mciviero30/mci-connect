@@ -58,6 +58,13 @@ export default function Trabajos() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
+
+  // SECURITY: Redirect non-admins to their own jobs page
+  React.useEffect(() => {
+    if (user && !hasFullAccess(user)) {
+      navigate(createPageUrl('MisProyectos'), { replace: true });
+    }
+  }, [user]);
   
   // Smart pagination - Only fetch 20 jobs at a time
   const paginationFilters = { deleted_at: null };
