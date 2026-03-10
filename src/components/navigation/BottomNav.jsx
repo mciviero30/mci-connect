@@ -9,7 +9,8 @@ import {
   Users,
   Menu,
   Cloud,
-  MapPin
+  MapPin,
+  Banknote
 } from 'lucide-react';
 import {
   Sheet,
