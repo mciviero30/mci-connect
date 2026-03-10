@@ -139,53 +139,6 @@ export default function GanttChartView({
     return ganttData;
   }, [tasks, milestones, job, dependencies, showCriticalPath]);
 
-  // Calculate job progress
-  const calculateJobProgress = (tasks) => {
-    if (!tasks || tasks.length === 0) return 0;
-    const completedTasks = tasks.filter(t => t.status === 'completed').length;
-    return Math.round((completedTasks / tasks.length) * 100);
-  };
-
-  // Get task color based on status, priority, and critical path
-  const getTaskColor = (status, priority, isCritical) => {
-    if (isCritical && showCriticalPath) return '#EF4444'; // Red for critical path
-    if (status === 'completed') return '#10B981'; // Green
-    if (status === 'blocked') return '#6B7280'; // Gray
-    if (priority === 'urgent' || priority === 'high') return '#F59E0B'; // Amber
-    if (status === 'in_progress') return '#3B82F6'; // Blue
-    return '#507DB4'; // Default corporate blue
-  };
-
-  const getTaskBackground = (status, priority, isCritical) => {
-    if (isCritical && showCriticalPath) return '#FEE2E2'; // Red background
-    if (status === 'completed') return '#D1FAE5'; // Green background
-    if (status === 'blocked') return '#F3F4F6'; // Gray background
-    if (priority === 'urgent' || priority === 'high') return '#FEF3C7'; // Amber background
-    if (status === 'in_progress') return '#DBEAFE'; // Blue background
-    return '#EBF2FF'; // Default background
-  };
-
-  // Get dependencies for a task
-  const getDependenciesForTask = (taskId, dependencies) => {
-    if (!dependencies) return [];
-    return dependencies
-      .filter(dep => dep.task_id === taskId)
-      .map(dep => `task-${dep.depends_on_task_id}`);
-  };
-
-  // Simple critical path detection (tasks with dependencies and no slack time)
-  const isTaskCritical = (task, allTasks, dependencies) => {
-    if (!showCriticalPath || !dependencies) return false;
-    
-    // A task is on critical path if:
-    // 1. It has dependencies (blocks other tasks)
-    // 2. It has no slack time (delay would delay project)
-    const hasDependents = dependencies.some(dep => dep.depends_on_task_id === task.id);
-    const isDependency = dependencies.some(dep => dep.task_id === task.id);
-    
-    return hasDependents || isDependency;
-  };
-
   // Handle task date change
   const handleTaskChange = (task) => {
     if (readOnly || !onTaskUpdate) return;
