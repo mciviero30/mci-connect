@@ -35,7 +35,7 @@ import ConflictResolver from "../components/calendario/ConflictResolver";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { usePermissions } from "@/components/permissions/usePermissions";
 import { createPageUrl } from "@/utils";
-import { useToast } from "@/components/ui/toast";
+import { toast } from "sonner";
 import { DragDropContext } from '@hello-pangea/dnd';
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import { useMemo, useCallback } from 'react';
