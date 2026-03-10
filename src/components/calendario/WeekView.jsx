@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 
 const isTouchDevice = () => typeof window !== 'undefined' && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
 
-export default function WeekView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, onCopyShift, onPasteShift, copiedShift, isAdmin, currentUser }) {
+export default function WeekView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, onCopyShift, onPasteShift, copiedShift, isAdmin, currentUser, timeEntries = [] }) {
   const validDate = isValid(new Date(currentDate)) ? new Date(currentDate) : new Date();
   const [draggedShift, setDraggedShift] = useState(null);
   const [touchOverDay, setTouchOverDay] = useState(null);
