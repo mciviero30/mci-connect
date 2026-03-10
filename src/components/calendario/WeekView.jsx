@@ -49,7 +49,7 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
   const getAttendanceStatus = (shift, day) => {
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const shiftDay = new Date(day); shiftDay.setHours(0, 0, 0, 0);
-    if (shiftDay > today) return 'future';
+    if (shiftDay >= today) return 'future';
     const shiftDate = format(day, 'yyyy-MM-dd');
     const hasEntry = timeEntries.some(te =>
       te.date === shiftDate &&
