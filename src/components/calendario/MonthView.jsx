@@ -32,6 +32,30 @@ export default function MonthView({ currentDate, shifts, onDateClick, onShiftCli
 
   const isMyShift = (shift) => checkIsMyShift(shift, currentUser);
 
+  // PASO 2: Attendance indicator
+  const getAttendanceStatus = (shift, day) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const shiftDay = new Date(day);
+    shiftDay.setHours(0, 0, 0, 0);
+    
+    // Future shift: neutral
+    if (shiftDay > today) return 'future';
+    
+    // Check if there's a TimeEntry for this user+job+date
+    const shiftDate = format(day, 'yyyy-MM-dd');
+    const userId = shift.user_id;
+    const userEmail = shift.employee_email;
+    
+    const hasEntry = timeEntries.some(te => 
+      te.date === shiftDate &&
+      (te.job_id === shift.job_id) &&
+      (userId ? te.user_id === userId : te.employee_email === userEmail)
+    );
+    
+    return hasEntry ? 'attended' : 'absent';
+  };
+
   const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   return (
