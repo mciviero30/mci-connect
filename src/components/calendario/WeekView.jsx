@@ -46,6 +46,19 @@ export default function WeekView({ currentDate, shifts, onDateClick, onShiftClic
     return shift.employee_email === currentUser.email;
   };
 
+  const getAttendanceStatus = (shift, day) => {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const shiftDay = new Date(day); shiftDay.setHours(0, 0, 0, 0);
+    if (shiftDay > today) return 'future';
+    const shiftDate = format(day, 'yyyy-MM-dd');
+    const hasEntry = timeEntries.some(te =>
+      te.date === shiftDate &&
+      te.job_id === shift.job_id &&
+      (shift.user_id ? te.user_id === shift.user_id : te.employee_email === shift.employee_email)
+    );
+    return hasEntry ? 'attended' : 'absent';
+  };
+
   // Touch drag handlers for mobile
   const handleTouchStart = (e, shift) => {
     if (!isAdmin) return;
