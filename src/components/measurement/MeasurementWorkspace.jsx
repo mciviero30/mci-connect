@@ -79,7 +79,7 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
     queryKey: ['measurement-plans', jobId],
     queryFn: () => base44.entities.Plan.filter({ 
       job_id: jobId, 
-      purpose: 'job_final'
+      purpose: 'measurement'
     }, '-created_date'),
     enabled: !!jobId,
     ...FIELD_STABLE_QUERY_CONFIG,
@@ -118,7 +118,7 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
       console.log('[createPlanMutation] Saving plan:', data);
       const result = await base44.entities.Plan.create({
         ...data,
-        purpose: 'job_final'
+        purpose: 'measurement'
       });
       console.log('[createPlanMutation] Success:', result);
       return result;
