@@ -18,6 +18,43 @@ export default function GanttChartView({
   const [viewMode, setViewMode] = useState(ViewMode.Week);
   const [showCriticalPath, setShowCriticalPath] = useState(true);
 
+  // Helper functions defined before useMemo to avoid uninitialized variable errors
+  const calculateJobProgress = (taskList) => {
+    if (!taskList || taskList.length === 0) return 0;
+    const completedTasks = taskList.filter(t => t.status === 'completed').length;
+    return Math.round((completedTasks / taskList.length) * 100);
+  };
+
+  const getTaskColor = (status, priority, isCritical) => {
+    if (isCritical && showCriticalPath) return '#EF4444';
+    if (status === 'completed') return '#10B981';
+    if (status === 'blocked') return '#6B7280';
+    if (priority === 'urgent' || priority === 'high') return '#F59E0B';
+    if (status === 'in_progress') return '#3B82F6';
+    return '#507DB4';
+  };
+
+  const getTaskBackground = (status, priority, isCritical) => {
+    if (isCritical && showCriticalPath) return '#FEE2E2';
+    if (status === 'completed') return '#D1FAE5';
+    if (status === 'blocked') return '#F3F4F6';
+    if (priority === 'urgent' || priority === 'high') return '#FEF3C7';
+    if (status === 'in_progress') return '#DBEAFE';
+    return '#EBF2FF';
+  };
+
+  const getDependenciesForTask = (taskId, deps) => {
+    if (!deps) return [];
+    return deps.filter(dep => dep.task_id === taskId).map(dep => `task-${dep.depends_on_task_id}`);
+  };
+
+  const isTaskCritical = (task, allTasks, deps) => {
+    if (!showCriticalPath || !deps) return false;
+    const hasDependents = deps.some(dep => dep.depends_on_task_id === task.id);
+    const isDependency = deps.some(dep => dep.task_id === task.id);
+    return hasDependents || isDependency;
+  };
+
   // Transform tasks and milestones into Gantt format
   const ganttTasks = useMemo(() => {
     const ganttData = [];
