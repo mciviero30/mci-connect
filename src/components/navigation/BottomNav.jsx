@@ -8,7 +8,8 @@ import {
   Receipt,
   Users,
   Menu,
-  Cloud
+  Cloud,
+  MapPin
 } from 'lucide-react';
 import {
   Sheet,
