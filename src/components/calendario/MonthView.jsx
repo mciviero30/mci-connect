@@ -39,8 +39,8 @@ export default function MonthView({ currentDate, shifts, onDateClick, onShiftCli
     const shiftDay = new Date(day);
     shiftDay.setHours(0, 0, 0, 0);
     
-    // Future shift: neutral
-    if (shiftDay > today) return 'future';
+    // Today or future: neutral (day not done yet)
+    if (shiftDay >= today) return 'future';
     
     // Check if there's a TimeEntry for this user+job+date
     const shiftDate = format(day, 'yyyy-MM-dd');
