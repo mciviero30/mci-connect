@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { isMyShift as checkIsMyShift } from '@/components/calendario/calendarHelpers';
 
-export default function MonthView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, isAdmin, currentUser }) {
+export default function MonthView({ currentDate, shifts, onDateClick, onShiftClick, onConfirmShift, onRejectShift, isAdmin, currentUser, timeEntries = [] }) {
   const validDate = isValid(new Date(currentDate)) ? new Date(currentDate) : new Date();
   
   const monthStart = startOfMonth(validDate);
