@@ -27,7 +27,8 @@ const PerDiemForm = ({ request, onSubmit, onCancel, isProcessing }) => {
     start_date: request?.date || format(new Date(), 'yyyy-MM-dd'),
     end_date: request?.end_date || format(new Date(), 'yyyy-MM-dd'),
     job_id: request?.job_id || null,
-    notes: request?.notes || ''
+    notes: request?.notes || '',
+    receipt_url: request?.receipt_url || 'per-diem-auto-generated'  // Auto-generated receipt URL
   });
 
   const calculateTotal = () => {
