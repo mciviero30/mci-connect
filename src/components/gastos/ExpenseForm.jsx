@@ -423,38 +423,75 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
             </Select>
           </div>
 
-          {/* Modified: Receipt upload with required indicator */}
+          {/* Receipt upload - camera + file options */}
           <div>
             <Label className="text-slate-700">
               {t('receipt')} <span className="text-red-500">*</span>
             </Label>
             <div className="space-y-2">
-              <Input
+              {/* Hidden file inputs */}
+              <input
+                id="camera-input"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileUpload}
+                disabled={uploadMutation.isPending}
+                className="hidden"
+              />
+              <input
+                id="file-input"
                 type="file"
                 accept="image/*,.pdf"
                 onChange={handleFileUpload}
                 disabled={uploadMutation.isPending}
-                className="bg-white border-slate-300 text-slate-900"
+                className="hidden"
               />
+              {/* Two buttons: Camera + Gallery/File */}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-12 border-2 border-dashed border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                  disabled={uploadMutation.isPending}
+                  onClick={() => document.getElementById('camera-input').click()}
+                >
+                  <Camera className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Tomar Foto' : 'Take Photo'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-12 border-2 border-dashed border-slate-300 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                  disabled={uploadMutation.isPending}
+                  onClick={() => document.getElementById('file-input').click()}
+                >
+                  <FileImage className="w-5 h-5 mr-2" />
+                  {language === 'es' ? 'Galería / Archivo' : 'Gallery / File'}
+                </Button>
+              </div>
+
               {uploadMutation.isPending && (
-                <p className="text-sm text-blue-600">
-                  <Upload className="w-4 h-4 inline-block mr-1" />
+                <p className="text-sm text-blue-600 flex items-center gap-1">
+                  <Upload className="w-4 h-4 animate-bounce" />
                   {language === 'es' ? 'Subiendo recibo...' : 'Uploading receipt...'}
                 </p>
               )}
               {formData.receipt_url && (
-                <div className="flex items-center gap-2 text-sm text-green-600">
+                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg border border-green-200">
                   <ExternalLink className="w-4 h-4" />
-                  <a href={formData.receipt_url} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    {t('view')} {t('receipt')}
+                  <a href={formData.receipt_url} target="_blank" rel="noopener noreferrer" className="hover:underline font-medium">
+                    ✅ {language === 'es' ? 'Recibo adjunto — Ver' : 'Receipt attached — View'}
                   </a>
                 </div>
               )}
-              <p className="text-xs text-amber-600">
-                {language === 'es' 
-                  ? '⚠️ Obligatorio: El recibo debe ser adjuntado antes de enviar' 
-                  : '⚠️ Required: Receipt must be attached before submitting'}
-              </p>
+              {!formData.receipt_url && (
+                <p className="text-xs text-amber-600">
+                  {language === 'es' 
+                    ? '⚠️ Obligatorio: El recibo debe ser adjuntado antes de enviar' 
+                    : '⚠️ Required: Receipt must be attached before submitting'}
+                </p>
+              )}
             </div>
           </div>
         </CardContent>
