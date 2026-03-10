@@ -146,14 +146,13 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
             )}
             {showInviteButton && onInvite && (
               <Button
-                variant="ghost"
+                variant="default"
                 size="sm"
                 onClick={(e) => {
                   e.stopPropagation();
                   onInvite();
                 }}
                 disabled={isInviting}
-                variant="default"
                 className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
               >
                 <Send className="w-3.5 h-3.5" />
