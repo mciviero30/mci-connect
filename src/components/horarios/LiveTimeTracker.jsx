@@ -964,6 +964,16 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
             </div>
           </div>
 
+          {/* Driving: show captured clock-in location */}
+          {activeSession.workType === 'driving' && activeSession.location && (
+            <div className="mb-4 p-3 bg-blue-500/20 border border-blue-300 rounded-2xl flex items-center justify-center gap-2">
+              <MapPin className="w-4 h-4 flex-shrink-0" />
+              <span className="font-semibold text-xs">
+                {language === 'es' ? '📍 Inicio:' : '📍 Start:'} {activeSession.location.lat?.toFixed(5)}, {activeSession.location.lng?.toFixed(5)}
+              </span>
+            </div>
+          )}
+
           {activeSession.onBreak && (
             <div className="mb-4 p-3 bg-amber-500/30 border border-amber-300 rounded-2xl flex items-center justify-center gap-2">
               <Coffee className="w-5 h-5" />
