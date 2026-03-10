@@ -501,6 +501,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
       setActiveSession(session);
       setLocationError(null);
       setShowWorkTypeDialog(false);
+      autoCreateCalendarShift(selectedJobForStart, job.name, workType, adjustedCheckIn.getTime());
       
       // Reset form
       setWorkType('normal');
