@@ -11,6 +11,7 @@ import ExpenseForm from "../components/gastos/ExpenseForm";
 import { useToast } from "@/components/ui/toast";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { createPageUrl } from "@/utils";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
