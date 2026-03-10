@@ -98,15 +98,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     staleTime: Infinity
   });
 
-  const { data: jobs } = useQuery({
+  const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }),
-    staleTime: 300000, // 5 min - jobs don't change frequently during session
-    gcTime: 600000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    initialData: [],
+    staleTime: 300000,
   });
 
   // Fetch today's scheduled shift for validation — from JobAssignment (calendar source of truth)
