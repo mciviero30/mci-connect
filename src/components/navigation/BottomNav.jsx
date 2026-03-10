@@ -53,13 +53,13 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
       color: 'from-green-500 to-green-600'
     },
     { 
-      title: 'Expenses', 
-      url: createPageUrl(hasFullAccess(user) ? "Gastos" : "MisGastos"), 
-      icon: Receipt,
-      badge: pendingExpenses > 0 ? pendingExpenses : null,
-      color: 'from-amber-500 to-amber-600'
+      title: hasFullAccess(user) ? 'Expenses' : 'Per Diem', 
+      url: createPageUrl(hasFullAccess(user) ? "Gastos" : "PerDiem"), 
+      icon: hasFullAccess(user) ? Receipt : Banknote,
+      badge: hasFullAccess(user) && pendingExpenses > 0 ? pendingExpenses : null,
+      color: hasFullAccess(user) ? 'from-amber-500 to-amber-600' : 'from-emerald-500 to-emerald-600'
     },
-  ], [pendingExpenses]);
+  ], [pendingExpenses, user]);
 
   // Memoize isActive to prevent recreation
   const isActive = React.useCallback((url) => location.pathname === url, [location.pathname]);
