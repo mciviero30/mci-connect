@@ -194,9 +194,6 @@ export default function Gastos() {
           showActions={true}
           onApprove={handleApprove}
           onReject={handleReject}
-          renderSmartApproval={(expense) => (
-            <SmartExpenseApproval expense={expense} onAction={() => {}} />
-          )}
         />
 
         <PaginationControls
