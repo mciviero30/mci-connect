@@ -123,14 +123,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   // NEW: Notification service
   const { sendNotification } = useNotificationService(user);
 
-  // FIXED: Only show jobs that have assignments for this employee today
-  const jobOptions = todayAssignments
-    .map(assignment => {
-      const job = jobs.find(j => j.id === assignment.job_id);
-      return job ? { value: job.id, label: job.name } : null;
-    })
-    .filter(Boolean)
-    .filter((item, index, arr) => arr.findIndex(x => x.value === item.value) === index); // Remove duplicates
+  const jobOptions = jobs.map(j => ({ value: j.id, label: j.name }));
 
   // Find nearest job for GPS health monitor
   useEffect(() => {
