@@ -246,6 +246,36 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
     }
   }, [activeSession?.startTime, user?.email]); // STABLE DEPS - only primitives
 
+  // PASO 1: Auto-create calendar shift after successful clock-in (fire-and-forget)
+  const autoCreateCalendarShift = async (jobId, jobName, wType, startTimestamp) => {
+    if (!user?.id) return;
+    const today = format(new Date(startTimestamp), 'yyyy-MM-dd');
+    try {
+      const existing = await base44.entities.ScheduleShift.filter({
+        user_id: user.id,
+        job_id: jobId,
+        date: today,
+      });
+      if (existing.length > 0) return; // Already has a shift for this employee+job+day
+      const checkInHour = new Date(startTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      await base44.entities.ScheduleShift.create({
+        user_id: user.id,
+        employee_email: user.email,
+        employee_name: user.full_name,
+        job_id: jobId,
+        job_name: jobName,
+        date: today,
+        start_time: checkInHour,
+        shift_type: wType === 'driving' ? 'appointment' : 'job_work',
+        shift_title: wType === 'driving' ? `Driving – ${jobName}` : jobName,
+        status: 'confirmed',
+        notes: 'auto_generated',
+      });
+    } catch (e) {
+      console.warn('[AutoCalendar] Could not create shift:', e);
+    }
+  };
+
   const getLocation = useCallback(async (progressCallback = null) => {
     return getLocationWithFallback(language, {
       onProgress: progressCallback,
