@@ -1207,13 +1207,29 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         <DialogContent className="bg-white sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{language === 'es' ? 'Selecciona un Trabajo' : 'Select a Job'}</DialogTitle>
+            {jobOptions.length === 0 && (
+              <p className="text-xs text-red-600 mt-2">⚠️ No jobs found ({jobs.length} active jobs in DB)</p>
+            )}
           </DialogHeader>
           <div className="py-4">
-            <Combobox
-                options={jobOptions}
-                onValueChange={handleJobSelected}
-                placeholder={t('search') + '...'}
-            />
+            {jobOptions.length > 0 ? (
+              <Select onValueChange={handleJobSelected}>
+                <SelectTrigger className="bg-white border-slate-300">
+                  <SelectValue placeholder={t('search') + '...'} />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  {jobOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
+                {language === 'es' 
+                  ? '⚠️ No hay trabajos disponibles. Verifica que existan trabajos activos.'
+                  : '⚠️ No jobs available. Check that there are active jobs.'}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowJobSelector(false)}>{t('cancel')}</Button>
