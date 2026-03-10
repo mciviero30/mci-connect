@@ -160,46 +160,43 @@ export default function Empleados() {
   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      try {
-        const [profiles, users, teams] = await Promise.all([
-          base44.entities.EmployeeProfile.list('-created_date'),
-          base44.entities.User.list(),
-          base44.entities.Team.list()
-        ]);
+      const [profiles, users, teams] = await Promise.all([
+        base44.entities.EmployeeProfile.list('-created_date', 200),
+        base44.entities.User.list('-created_date', 200),
+        base44.entities.Team.list()
+      ]);
 
-        return profiles
-          .filter(p => p.user_id)
-          .map(p => {
-            const user = users.find(u => u.id === p.user_id);
-            if (user?.email === 'mciviero30@gmail.com') return null;
-            // Resolve team_name from team_id if team_name is missing
-            const resolvedTeamName = p.team_name || 
-              (p.team_id ? teams.find(t => t.id === p.team_id)?.team_name : '') || '';
-            return {
-              id: p.user_id,
-              profile_id: p.id,
-              email: user?.email || '',
-              full_name: user?.full_name || `${p.first_name} ${p.last_name}`.trim(),
-              first_name: p.first_name,
-              last_name: p.last_name,
-              position: p.position,
-              department: p.department || '',
-              phone: p.phone || '',
-              team_id: p.team_id || '',
-              team_name: resolvedTeamName,
-              employment_status: p.employment_status,
-              role: user?.role || 'user',
-              hourly_rate: p.hourly_rate || null
-            };
-          })
-          .filter(Boolean)
-          .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase()));
-      } catch (err) {
-        console.error('employees query failed:', err);
-        return [];
-      }
+      return profiles
+        .filter(p => p.user_id)
+        .map(p => {
+          const user = users.find(u => u.id === p.user_id);
+          if (user?.email === 'mciviero30@gmail.com') return null;
+          const resolvedTeamName = p.team_name || 
+            (p.team_id ? teams.find(t => t.id === p.team_id)?.team_name : '') || '';
+          return {
+            id: p.user_id,
+            profile_id: p.id,
+            email: user?.email || '',
+            full_name: user?.full_name || `${p.first_name} ${p.last_name}`.trim(),
+            first_name: p.first_name,
+            last_name: p.last_name,
+            position: p.position,
+            department: p.department || '',
+            phone: p.phone || '',
+            team_id: p.team_id || '',
+            team_name: resolvedTeamName,
+            employment_status: p.employment_status,
+            role: user?.role || 'user',
+            hourly_rate: p.hourly_rate || null
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase()));
     },
-    staleTime: 30000
+    staleTime: 0,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    retry: 3,
   });
 
   // EmployeeInvitation bridge query (pre-registration)
