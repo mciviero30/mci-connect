@@ -20,11 +20,15 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import { updateExpenseSafely } from "@/functions/updateExpenseSafely";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { hasFullAccess } from "@/components/core/roleRules";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Gastos() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const toast = useToast();
+  const navigate = useNavigate();
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   const { data: user } = useQuery({ 
@@ -36,9 +40,16 @@ export default function Gastos() {
     gcTime: Infinity
   });
 
+  // SECURITY: Non-admin users should only see their own expenses via MisGastos
+  useEffect(() => {
+    if (user && !hasFullAccess(user)) {
+      navigate(createPageUrl('MisGastos'), { replace: true });
+    }
+  }, [user]);
+
   const { handleError } = useErrorHandler();
 
-  // Smart pagination for expenses
+  // Smart pagination for expenses - admin only
   const {
     items: expenses,
     isLoading,
@@ -52,7 +63,7 @@ export default function Gastos() {
     entityName: 'Expense',
     sortBy: '-date',
     pageSize: 20,
-    enabled: !!user
+    enabled: !!user && hasFullAccess(user)
   });
 
   // Memoize expensive filters
