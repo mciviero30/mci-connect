@@ -202,15 +202,9 @@ export default function Empleados() {
   // EmployeeInvitation bridge query (pre-registration)
   const { data: allInvitations = [] } = useQuery({
     queryKey: ['employeeInvitations'],
-    queryFn: async () => {
-      try {
-        return await base44.entities.EmployeeInvitation.list('-invited_date');
-      } catch (err) {
-        console.error('invitations query failed:', err);
-        return [];
-      }
-    },
-    staleTime: 30000
+    queryFn: () => base44.entities.EmployeeInvitation.list('-invited_date', 200),
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
   // Split invitations: active ones vs terminated ones
