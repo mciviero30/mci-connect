@@ -65,7 +65,7 @@ export default function MobileTimeTracker({
               <p className="text-center text-sm opacity-90">Ready to start your day?</p>
               <Button
                 onClick={onCheckIn}
-                disabled={isLoading || jobs.length === 0}
+                disabled={isLoading}
                 className="w-full h-16 text-lg font-bold bg-white text-blue-600 hover:bg-blue-50 shadow-lg"
               >
                 <Play className="w-6 h-6 mr-2" />
