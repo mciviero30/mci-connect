@@ -182,6 +182,18 @@ export default function Calendario() {
     refetchOnWindowFocus: false
   });
 
+  // PASO 2: Load TimeEntries for attendance indicator in calendar views
+  const { data: timeEntries = [] } = useQuery({
+    queryKey: ['calendarTimeEntries', format(currentDate, 'yyyy-MM')],
+    queryFn: async () => {
+      const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).toISOString().split('T')[0];
+      const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().split('T')[0];
+      return base44.entities.TimeEntry.filter({ date: { $gte: monthStart, $lte: monthEnd } });
+    },
+    initialData: [],
+    staleTime: 60000,
+  });
+
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const response = await base44.functions.invoke('createScheduleShift', data);
