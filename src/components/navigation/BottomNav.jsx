@@ -40,9 +40,9 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
       color: 'from-[#507DB4] to-[#6B9DD8]'
     },
     { 
-      title: 'Jobs', 
-      url: createPageUrl("Trabajos"), 
-      icon: Briefcase,
+      title: hasFullAccess(user) ? 'Jobs' : 'Field', 
+      url: createPageUrl(hasFullAccess(user) ? "Trabajos" : "Field"), 
+      icon: hasFullAccess(user) ? Briefcase : MapPin,
       color: 'from-indigo-500 to-indigo-600'
     },
     { 
