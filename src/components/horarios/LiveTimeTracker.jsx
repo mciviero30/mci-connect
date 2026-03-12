@@ -402,22 +402,23 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
             const { geocodeAddress } = await import('@/components/utils/geocoding');
             const geo = await geocodeAddress(job.address);
             // Persist coordinates to the job entity so it doesn't happen again
-            base44.entities.Job.update(job.id, { latitude: geo.latitude, longitude: geo.longitude });
+            await base44.entities.Job.update(job.id, { latitude: geo.latitude, longitude: geo.longitude });
             // Update local jobs list reference
             job = { ...job, latitude: geo.latitude, longitude: geo.longitude };
+            setGpsProgress(null);
           } catch (geoError) {
+            console.error('Geocoding failed for job:', job.name, job.address, geoError);
             setLocationError(language === 'es' 
-              ? '❌ No se pudieron obtener coordenadas GPS del proyecto. Verifica que la dirección sea correcta.'
-              : '❌ Could not get GPS coordinates for this project. Check that the address is correct.');
+              ? `❌ No se pudieron obtener coordenadas GPS para este proyecto.\n\nProyecto: ${job.name}\nDirección: ${job.address}\n\nContacta a tu supervisor para actualizar la dirección.`
+              : `❌ Could not get GPS coordinates for this project.\n\nProject: ${job.name}\nAddress: ${job.address}\n\nContact your supervisor to update the address.`);
             setShowWorkTypeDialog(false);
             setGpsProgress(null);
             return;
           }
-          setGpsProgress(null);
         } else {
           setLocationError(language === 'es' 
-            ? '❌ Este proyecto no tiene dirección configurada. Pídele a tu supervisor que la agregue.'
-            : '❌ This project has no address configured. Ask your supervisor to add it.');
+            ? `❌ Este proyecto no tiene dirección configurada.\n\nProyecto: ${job.name}\n\nPídele a tu supervisor que agregue la dirección en la sección de Jobs.`
+            : `❌ This project has no address configured.\n\nProject: ${job.name}\n\nAsk your supervisor to add the address in the Jobs section.`);
           setShowWorkTypeDialog(false);
           return;
         }
