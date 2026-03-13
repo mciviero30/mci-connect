@@ -64,14 +64,16 @@ export default function CreateTimeEntryDialog({ open, onOpenChange }) {
       const hours_worked = (outMinutes - inMinutes) / 60;
 
       const job = jobs.find(j => j.id === data.job_id);
+      const dateStr = format(data.date, 'yyyy-MM-dd');
 
-      return await base44.entities.TimeEntry.create({
+      // Create the time entry
+      const timeEntry = await base44.entities.TimeEntry.create({
         user_id: data.user_id,
         employee_email: employee.employee_email,
         employee_name: employee.full_name,
         job_id: data.job_id,
         job_name: job?.name || '',
-        date: format(data.date, 'yyyy-MM-dd'),
+        date: dateStr,
         check_in: data.check_in,
         check_out: data.check_out,
         hours_worked,
@@ -81,6 +83,36 @@ export default function CreateTimeEntryDialog({ open, onOpenChange }) {
         geofence_validated: false,
         billable: true
       });
+
+      // Auto-create calendar shift (fire-and-forget)
+      try {
+        const existing = await base44.entities.ScheduleShift.filter({
+          user_id: data.user_id,
+          job_id: data.job_id,
+          date: dateStr
+        });
+        
+        if (existing.length === 0) {
+          await base44.entities.ScheduleShift.create({
+            user_id: data.user_id,
+            employee_email: employee.employee_email,
+            employee_name: employee.full_name,
+            job_id: data.job_id,
+            job_name: job?.name || '',
+            date: dateStr,
+            start_time: data.check_in,
+            end_time: data.check_out,
+            shift_type: data.work_type === 'driving' ? 'appointment' : 'job_work',
+            shift_title: data.work_type === 'driving' ? `Driving – ${job?.name}` : job?.name,
+            status: 'confirmed',
+            notes: 'auto_created_from_manual_entry'
+          });
+        }
+      } catch (e) {
+        console.warn('[AutoCalendar] Could not create shift from manual entry:', e);
+      }
+
+      return timeEntry;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
