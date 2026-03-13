@@ -1199,12 +1199,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
             <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/30 border-2 border-red-200 dark:border-red-700 rounded-2xl">
               <AlertCircle className="mx-auto h-8 w-8 text-red-600 dark:text-red-400 mb-2" />
               <p className="text-sm font-bold text-red-600 dark:text-red-400 whitespace-pre-line">
-                {typeof locationError === 'string' ? locationError : 'Location error'}
-              </p>
-              <p className="text-xs text-red-500 dark:text-red-300 mt-2">
-                {language === 'es' 
-                  ? 'Verifica que el GPS esté activado y que no estés usando ubicaciones falsas.' 
-                  : 'Verify GPS is enabled and you are not using mock locations.'}
+                {typeof locationError === 'string' ? locationError : (locationError?.message || 'Location error')}
               </p>
             </div>
           )}
