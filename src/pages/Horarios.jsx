@@ -25,21 +25,16 @@ export default function Horarios() {
     ['CEO', 'administrator', 'manager'].includes(user?.position) ||
     user?.department === 'HR';
 
-  const { 
-    items: timeEntries = [], 
-    isLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    loadMore,
-    totalLoaded
-  } = usePaginatedEntityList({
-    queryKey: 'timeEntries',
-    fetchFn: async ({ skip, limit }) => {
-      const entries = await base44.entities.TimeEntry.list('-date', limit + skip);
-      return entries.slice(skip, skip + limit);
+  // FIXED: Direct query instead of paginated hook
+  const { data: timeEntries = [], isLoading } = useQuery({
+    queryKey: ['timeEntries'],
+    queryFn: async () => {
+      return await base44.entities.TimeEntry.list('-date', 200);
     },
-    pageSize: 50,
     staleTime: 3 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    initialData: []
   });
 
   // Memoize expensive calculations
@@ -85,16 +80,6 @@ export default function Horarios() {
             isAdmin={isAdmin} 
             loading={isLoading}
           />
-
-          {hasNextPage && (
-            <LoadMoreButton 
-              onLoadMore={loadMore}
-              hasMore={hasNextPage}
-              isLoading={isFetchingNextPage}
-              totalLoaded={totalLoaded}
-              language={language}
-            />
-          )}
         </div>
       </div>
     </SectionErrorBoundary>
