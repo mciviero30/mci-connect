@@ -25,15 +25,17 @@ export default function Horarios() {
     ['CEO', 'administrator', 'manager'].includes(user?.position) ||
     user?.department === 'HR';
 
-  // FIXED: Direct query instead of paginated hook
+  // FIXED: Direct query with auto-refresh
   const { data: timeEntries = [], isLoading } = useQuery({
     queryKey: ['timeEntries'],
     queryFn: async () => {
-      return await base44.entities.TimeEntry.list('-date', 200);
+      const entries = await base44.entities.TimeEntry.list('-date', 200);
+      console.log('📊 Loaded time entries:', entries.length);
+      return entries;
     },
-    staleTime: 3 * 60 * 1000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    staleTime: 30000, // 30 seconds
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
     initialData: []
   });
 
