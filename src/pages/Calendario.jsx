@@ -99,12 +99,13 @@ export default function Calendario() {
       const data = await base44.entities.ScheduleShift.filter({ 
         date: { $gte: monthStart, $lte: monthEnd }
       });
+      console.log(`📅 [Calendar] Loaded ${data?.length || 0} shifts for ${format(currentDate, 'yyyy-MM')}`, data);
       return data || [];
     },
     initialData: [],
-    staleTime: 60000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
+    staleTime: 0, // FORCE FRESH DATA - No caching
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
@@ -793,6 +794,18 @@ export default function Calendario() {
 
               {/* Quick Actions */}
               <div className="flex gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => {
+                    refetchShifts();
+                    toast.success(language === 'es' ? '🔄 Recargando...' : '🔄 Refreshing...');
+                  }} 
+                  className="text-green-600 hover:bg-green-50"
+                  title={language === 'es' ? 'Recargar Datos' : 'Refresh Data'}
+                >
+                  <Repeat className="w-4 h-4" />
+                </Button>
                 <Button 
                   variant="ghost" 
                   size="sm" 
