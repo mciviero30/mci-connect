@@ -2,18 +2,21 @@ import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
-import { Clock } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import StatsSummaryGrid from "../components/shared/StatsSummaryGrid";
 import TimeEntryList from "../components/horarios/TimeEntryList";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import CreateTimeEntryDialog from "../components/horarios/CreateTimeEntryDialog";
 
 export default function Horarios() {
   const { t, language } = useLanguage();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
@@ -64,7 +67,17 @@ export default function Horarios() {
               ? 'Auditoría y Aprobación de Horas Trabajadas para Nómina' 
               : 'Audit and Approval of Worked Hours for Payroll'}
             icon={Clock}
-            actions={null}
+            actions={
+              isAdmin && (
+                <Button 
+                  onClick={() => setCreateDialogOpen(true)}
+                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md rounded-xl"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  {language === 'es' ? 'Agregar Entrada' : 'Add Entry'}
+                </Button>
+              )
+            }
           />
 
           <StatsSummaryGrid 
@@ -81,6 +94,11 @@ export default function Horarios() {
             timeEntries={timeEntries} 
             isAdmin={isAdmin} 
             loading={isLoading}
+          />
+
+          <CreateTimeEntryDialog 
+            open={createDialogOpen}
+            onOpenChange={setCreateDialogOpen}
           />
         </div>
       </div>
