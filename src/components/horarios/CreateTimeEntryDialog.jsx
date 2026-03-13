@@ -29,18 +29,25 @@ export default function CreateTimeEntryDialog({ open, onOpenChange }) {
 
   // Fetch employees
   const { data: employees = [] } = useQuery({
-    queryKey: ['employees'],
+    queryKey: ['employees-for-timeentry'],
     queryFn: async () => {
-      const directory = await base44.entities.EmployeeDirectory.filter({ status: 'active' }, 'full_name');
+      const directory = await base44.entities.EmployeeDirectory.list('full_name', 100);
+      console.log('👥 Loaded employees:', directory.length);
       return directory;
     },
+    enabled: open,
     staleTime: 300000
   });
 
   // Fetch jobs
   const { data: jobs = [] } = useQuery({
-    queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.filter({ status: 'active' }),
+    queryKey: ['jobs-for-timeentry'],
+    queryFn: async () => {
+      const allJobs = await base44.entities.Job.list('name', 100);
+      console.log('💼 Loaded jobs:', allJobs.length);
+      return allJobs;
+    },
+    enabled: open,
     staleTime: 300000
   });
 
