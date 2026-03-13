@@ -474,20 +474,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         return;
       }
 
-      // SUCCESS: Within geofence
-      sendNotification({
-        recipientEmail: user.email,
-        recipientName: user.full_name,
-        type: 'geofence_entry',
-        priority: 'low',
-        title: language === 'es' ? '✅ Entrada Registrada' : '✅ Clock In Successful',
-        message: language === 'es'
-          ? `Entrada registrada en ${job.name} (${Math.round(distanceMeters)}m del centro)`
-          : `Clocked in at ${job.name} (${Math.round(distanceMeters)}m from center)`,
-        actionUrl: '/MisHoras',
-        relatedEntityType: 'job',
-        relatedEntityId: job.id
-      });
+      // SUCCESS: Within geofence (silent - no notification spam)
+      // Removed notification to avoid errors
 
       const session = {
         startTime: adjustedCheckIn.getTime(),
@@ -724,20 +712,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
             return;
           }
 
-          // SUCCESS: Within geofence
-          sendNotification({
-            recipientEmail: user.email,
-            recipientName: user.full_name,
-            type: 'clock_out',
-            priority: 'low',
-            title: language === 'es' ? '✅ Salida Registrada' : '✅ Clock Out Successful',
-            message: language === 'es'
-              ? `Salida registrada en ${job.name}. Tiempo trabajado: ${totalHours.toFixed(1)}h`
-              : `Clocked out at ${job.name}. Time worked: ${totalHours.toFixed(1)}h`,
-            actionUrl: '/MisHoras',
-            relatedEntityType: 'job',
-            relatedEntityId: job.id
-          });
+          // SUCCESS: Within geofence (silent - no notification spam)
+          // Removed notification to avoid errors
         }
       }
 
