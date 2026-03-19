@@ -25,13 +25,20 @@ Deno.serve(async (req) => {
     // DECISION A: Assign number always (removed field_accepted_at requirement)
     console.log(`[AutoJobNumber] Generating number for job ${job.id} - ${job.name}`);
 
-    // Call getNextCounter function via SDK
-    const counterResult = await base44.asServiceRole.functions.invoke('getNextCounter', {
-      counter_key: 'job_number_sequence'
-    });
-    
-    const sequenceNumber = counterResult.next_value;
-    const formattedNumber = `JOB-${String(sequenceNumber).padStart(5, '0')}`;
+    // Get existing job numbers to determine next sequence
+    const existingJobs = await base44.asServiceRole.entities.Job.filter(
+      { job_number: { $exists: true, $ne: null } },
+      '-job_number',
+      1
+    );
+
+    let nextNumber = 1;
+    if (existingJobs.length > 0 && existingJobs[0].job_number) {
+      const lastNumber = existingJobs[0].job_number.replace('JOB-', '');
+      nextNumber = parseInt(lastNumber, 10) + 1;
+    }
+
+    const formattedNumber = `JOB-${String(nextNumber).padStart(5, '0')}`;
 
     // Update job with generated number
     await base44.asServiceRole.entities.Job.update(job.id, { 
