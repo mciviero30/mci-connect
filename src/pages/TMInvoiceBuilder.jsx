@@ -46,11 +46,8 @@ export default function TMInvoiceBuilder() {
     queryFn: async () => {
       const allJobs = await base44.entities.Job.list('-created_date');
       
-      // Filter jobs with T&M authorization
-      // Filter by billing_type instead of making N+1 auth queries
-      return allJobs.filter(job => 
-        job.billing_type === 'time_materials' || job.authorization_type === 'tm'
-      );
+      // Filter jobs with T&M billing type
+      return allJobs.filter(job => job.billing_type === 'time_materials');
     },
   });
 
