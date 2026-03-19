@@ -159,32 +159,32 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto w-full">
-          <Table>
+        <div className="w-full overflow-x-auto">
+          <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow className="bg-slate-50 border-slate-200">
-                <TableHead className="text-slate-700 font-semibold w-[100px]">{t('date')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[180px]">{t('description')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[120px]">{t('category')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[160px]">{t('job')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[120px]">{t('payment_method')}</TableHead>
-                <TableHead className="text-right text-slate-700 font-semibold w-[100px]">{t('amount')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[100px]">{t('status')}</TableHead>
-                {showActions && <TableHead className="text-right text-slate-700 font-semibold w-[200px]">{t('actions')}</TableHead>}
+                <TableHead className="text-slate-700 font-semibold" style={{width: '110px'}}>{t('date')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold" style={{width: '200px'}}>{t('description')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold" style={{width: '130px'}}>{t('category')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold" style={{width: '180px'}}>{t('job')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold" style={{width: '140px'}}>{t('payment_method')}</TableHead>
+                <TableHead className="text-right text-slate-700 font-semibold" style={{width: '110px'}}>{t('amount')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold" style={{width: '110px'}}>{t('status')}</TableHead>
+                {showActions && <TableHead className="text-right text-slate-700 font-semibold" style={{width: '220px'}}>{t('actions')}</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell className="w-[100px]"><div className="h-4 w-20 bg-slate-200 rounded animate-pulse" /></TableCell>
-                    <TableCell className="w-[180px]"><div className="h-4 w-32 bg-slate-200 rounded animate-pulse" /></TableCell>
-                    <TableCell className="w-[120px]"><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
-                    <TableCell className="w-[160px]"><div className="h-4 w-24 bg-slate-200 rounded animate-pulse" /></TableCell>
-                    <TableCell className="w-[120px]"><div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse" /></TableCell>
-                    <TableCell className="text-right w-[100px]"><div className="h-4 w-16 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>
-                    <TableCell className="w-[100px]"><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
-                    {showActions && <TableCell className="text-right w-[200px]"><div className="h-8 w-32 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>}
+                    <TableCell style={{width: '110px'}}><div className="h-4 w-20 bg-slate-200 rounded animate-pulse" /></TableCell>
+                    <TableCell style={{width: '200px'}}><div className="h-4 w-32 bg-slate-200 rounded animate-pulse" /></TableCell>
+                    <TableCell style={{width: '130px'}}><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
+                    <TableCell style={{width: '180px'}}><div className="h-4 w-24 bg-slate-200 rounded animate-pulse" /></TableCell>
+                    <TableCell style={{width: '140px'}}><div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse" /></TableCell>
+                    <TableCell className="text-right" style={{width: '110px'}}><div className="h-4 w-16 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>
+                    <TableCell style={{width: '110px'}}><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
+                    {showActions && <TableCell className="text-right" style={{width: '220px'}}><div className="h-8 w-32 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>}
                   </TableRow>
                 ))
               ) : expenses?.length === 0 ? (
@@ -208,11 +208,11 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       <TableRow 
                         className={`hover:bg-slate-50 border-slate-200 ${needsReview ? 'bg-amber-50' : ''}`}
                       >
-                      <TableCell className="text-slate-700 whitespace-nowrap">
+                      <TableCell className="text-slate-700 whitespace-nowrap" style={{width: '110px'}}>
                         {format(new Date(expense.date), 'MMM dd, yyyy')}
                       </TableCell>
-                      <TableCell className="text-slate-900">
-                        <div className="max-w-[180px] truncate" title={expense.description}>
+                      <TableCell className="text-slate-900" style={{width: '200px'}}>
+                        <div className="truncate" title={expense.description}>
                           {expense.description}
                         </div>
                         {getConfidenceBadge(expense) && (
@@ -221,12 +221,12 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                           </div>
                         )}
                       </TableCell>
-                      <TableCell>
-                        <Badge className="bg-blue-100 text-blue-800 border-blue-300 whitespace-nowrap">
+                      <TableCell style={{width: '130px'}}>
+                        <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-xs">
                           {categoryLabels[expense.category] || expense.category}
                         </Badge>
                       </TableCell>
-                      <TableCell className="max-w-[160px]">
+                      <TableCell style={{width: '180px'}}>
                         {expense.job_name ? (
                           <span className="text-sm text-slate-700 truncate block" title={expense.job_name}>
                             {expense.job_name}
@@ -235,34 +235,34 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                           <span className="text-sm text-slate-400">-</span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{width: '140px'}}>
                         <Badge className={
                           expense.payment_method === 'personal' 
-                            ? "bg-emerald-100 text-emerald-800 border-emerald-300 whitespace-nowrap"
-                            : "bg-indigo-100 text-indigo-800 border-indigo-300 whitespace-nowrap"
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-300 text-xs"
+                            : "bg-indigo-100 text-indigo-800 border-indigo-300 text-xs"
                         }>
                           {paymentMethodLabels[expense.payment_method] || expense.payment_method}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right font-bold text-[#3B9FF3] whitespace-nowrap">
+                      <TableCell className="text-right font-bold text-[#3B9FF3] whitespace-nowrap" style={{width: '110px'}}>
                         ${expense.amount?.toFixed(2)}
                       </TableCell>
-                      <TableCell>
-                        <Badge className={`${config.color} whitespace-nowrap`}>{config.label}</Badge>
+                      <TableCell style={{width: '110px'}}>
+                        <Badge className={`${config.color} text-xs`}>{config.label}</Badge>
                       </TableCell>
                       {showActions && (
-                        <TableCell className="text-right">
+                        <TableCell className="text-right" style={{width: '220px'}}>
                           {expense.status === 'pending' && (
                             renderSmartApproval ? renderSmartApproval(expense) : (
-                              <div className="flex justify-end gap-2 whitespace-nowrap">
+                              <div className="flex justify-end gap-2">
                                 <Button
                                  size="sm"
                                  onClick={() => handleApprove(expense)}
                                  disabled={processingExpenses.has(expense.id)}
-                                 className="bg-green-600 hover:bg-green-700 text-white active:scale-95 transition-transform disabled:opacity-70 flex-shrink-0"
+                                 className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-70"
                                 >
                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                 {processingExpenses.has(expense.id) ? 'Approving...' : t('approve')}
+                                 {processingExpenses.has(expense.id) ? '...' : t('approve')}
                                 </Button>
                                 <Button
                                  size="sm"
@@ -271,7 +271,7 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                                    setRejectDialog({ open: true, expense });
                                  }}
                                  variant="outline"
-                                 className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-95 transition-transform flex-shrink-0"
+                                 className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50"
                                 >
                                  <XCircle className="w-4 h-4 mr-1" />
                                  {t('reject')}
