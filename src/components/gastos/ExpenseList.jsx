@@ -159,33 +159,32 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto w-full">
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50 border-slate-200">
-                <TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('description')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('category')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('payment_method')}</TableHead>
-                <TableHead className="text-right text-slate-700 font-semibold">{t('amount')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead>
-                {showActions && <TableHead className="text-right text-slate-700 font-semibold">{t('actions')}</TableHead>}
+                <TableHead className="text-slate-700 font-semibold w-[100px]">{t('date')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold w-[180px]">{t('description')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold w-[120px]">{t('category')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold w-[160px]">{t('job')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold w-[120px]">{t('payment_method')}</TableHead>
+                <TableHead className="text-right text-slate-700 font-semibold w-[100px]">{t('amount')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold w-[100px]">{t('status')}</TableHead>
+                {showActions && <TableHead className="text-right text-slate-700 font-semibold w-[200px]">{t('actions')}</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                // NO GENERIC LOADER - Show skeleton rows
                 [...Array(5)].map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
-                    <TableCell><div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
-                    <TableCell><div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
-                    <TableCell><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
-                    <TableCell><div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
-                    <TableCell className="text-right"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded ml-auto animate-pulse" /></TableCell>
-                    <TableCell><div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
-                    {showActions && <TableCell><div className="h-8 w-32 bg-slate-200 dark:bg-slate-700 rounded ml-auto animate-pulse" /></TableCell>}
+                    <TableCell className="w-[100px]"><div className="h-4 w-20 bg-slate-200 rounded animate-pulse" /></TableCell>
+                    <TableCell className="w-[180px]"><div className="h-4 w-32 bg-slate-200 rounded animate-pulse" /></TableCell>
+                    <TableCell className="w-[120px]"><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
+                    <TableCell className="w-[160px]"><div className="h-4 w-24 bg-slate-200 rounded animate-pulse" /></TableCell>
+                    <TableCell className="w-[120px]"><div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse" /></TableCell>
+                    <TableCell className="text-right w-[100px]"><div className="h-4 w-16 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>
+                    <TableCell className="w-[100px]"><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
+                    {showActions && <TableCell className="text-right w-[200px]"><div className="h-8 w-32 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>}
                   </TableRow>
                 ))
               ) : expenses?.length === 0 ? (
@@ -209,28 +208,29 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       <TableRow 
                         className={`hover:bg-slate-50 border-slate-200 ${needsReview ? 'bg-amber-50' : ''}`}
                       >
-                      <TableCell className="text-slate-700">{format(new Date(expense.date), 'MMM dd, yyyy')}</TableCell>
+                      <TableCell className="text-slate-700 whitespace-nowrap">
+                        {format(new Date(expense.date), 'MMM dd, yyyy')}
+                      </TableCell>
                       <TableCell className="text-slate-900">
-                        <div className="max-w-[200px]">
+                        <div className="max-w-[180px] truncate" title={expense.description}>
                           {expense.description}
-                          <div className="flex gap-1 mt-1">
+                        </div>
+                        {getConfidenceBadge(expense) && (
+                          <div className="mt-1">
                             {getConfidenceBadge(expense)}
                           </div>
-                        </div>
+                        )}
                       </TableCell>
                       <TableCell>
                         <Badge className="bg-blue-100 text-blue-800 border-blue-300 whitespace-nowrap">
                           {categoryLabels[expense.category] || expense.category}
                         </Badge>
-                        {expense.ai_suggested_category && expense.ai_suggested_category !== expense.category && (
-                          <div className="text-xs text-slate-600 mt-1">
-                            AI: {categoryLabels[expense.ai_suggested_category] || expense.ai_suggested_category}
-                          </div>
-                        )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="max-w-[160px]">
                         {expense.job_name ? (
-                          <span className="text-sm text-slate-700">{expense.job_name}</span>
+                          <span className="text-sm text-slate-700 truncate block" title={expense.job_name}>
+                            {expense.job_name}
+                          </span>
                         ) : (
                           <span className="text-sm text-slate-400">-</span>
                         )}
@@ -238,28 +238,28 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       <TableCell>
                         <Badge className={
                           expense.payment_method === 'personal' 
-                            ? "bg-emerald-100 text-emerald-800 border-emerald-300"
-                            : "bg-indigo-100 text-indigo-800 border-indigo-300"
+                            ? "bg-emerald-100 text-emerald-800 border-emerald-300 whitespace-nowrap"
+                            : "bg-indigo-100 text-indigo-800 border-indigo-300 whitespace-nowrap"
                         }>
                           {paymentMethodLabels[expense.payment_method] || expense.payment_method}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right font-bold text-[#3B9FF3]">
+                      <TableCell className="text-right font-bold text-[#3B9FF3] whitespace-nowrap">
                         ${expense.amount?.toFixed(2)}
                       </TableCell>
                       <TableCell>
-                        <Badge className={config.color}>{config.label}</Badge>
+                        <Badge className={`${config.color} whitespace-nowrap`}>{config.label}</Badge>
                       </TableCell>
                       {showActions && (
                         <TableCell className="text-right">
                           {expense.status === 'pending' && (
                             renderSmartApproval ? renderSmartApproval(expense) : (
-                              <div className="flex justify-end gap-2">
+                              <div className="flex justify-end gap-2 whitespace-nowrap">
                                 <Button
                                  size="sm"
                                  onClick={() => handleApprove(expense)}
                                  disabled={processingExpenses.has(expense.id)}
-                                 className="bg-green-600 hover:bg-green-700 text-white active:scale-95 transition-transform disabled:opacity-70"
+                                 className="bg-green-600 hover:bg-green-700 text-white active:scale-95 transition-transform disabled:opacity-70 flex-shrink-0"
                                 >
                                  <CheckCircle className="w-4 h-4 mr-1" />
                                  {processingExpenses.has(expense.id) ? 'Approving...' : t('approve')}
@@ -271,7 +271,7 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                                    setRejectDialog({ open: true, expense });
                                  }}
                                  variant="outline"
-                                 className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-95 transition-transform"
+                                 className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 active:scale-95 transition-transform flex-shrink-0"
                                 >
                                  <XCircle className="w-4 h-4 mr-1" />
                                  {t('reject')}
