@@ -506,8 +506,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   
   // DEFINITIVE ONBOARDING GATE: Use ONLY the completion flag
   // NEVER count forms or use stale queries (prevents loop)
-  // CRITICAL: Exempt both admin AND CEO from onboarding requirement
-  const isAdminOrCEO = user?.role === 'admin' || user?.role === 'ceo' || user?.position === 'CEO';
+  // CRITICAL: Exempt admin, CEO, and demo from onboarding requirement
+  const isAdminOrCEO = user?.role === 'admin' || user?.role === 'ceo' || user?.role === 'demo' || user?.position === 'CEO';
   const shouldBlockForOnboarding = user && 
     !isClientOnly && 
     !isAdminOrCEO &&
