@@ -159,39 +159,40 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-          <Table className="w-full" style={{ tableLayout: 'fixed' }}>
-            <TableHeader>
-              <TableRow className="bg-slate-50 border-slate-200">
-                <TableHead className="text-slate-700 font-semibold sticky left-0 bg-slate-50 z-10 w-[110px]">{t('date')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[180px]">{t('description')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[120px]">{t('category')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[150px]">{t('job')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[130px]">{t('payment_method')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold text-right w-[100px]">{t('amount')}</TableHead>
-                <TableHead className="text-slate-700 font-semibold w-[100px]">{t('status')}</TableHead>
-                {showActions && <TableHead className="text-slate-700 font-semibold text-right sticky right-0 bg-slate-50 z-10 w-[200px]">{t('actions')}</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="text-left px-4 py-3 text-slate-700 font-semibold text-sm">{t('date')}</th>
+                <th className="text-left px-4 py-3 text-slate-700 font-semibold text-sm">{t('description')}</th>
+                <th className="text-left px-4 py-3 text-slate-700 font-semibold text-sm">{t('category')}</th>
+                <th className="text-left px-4 py-3 text-slate-700 font-semibold text-sm">{t('job')}</th>
+                <th className="text-left px-4 py-3 text-slate-700 font-semibold text-sm">{t('payment_method')}</th>
+                <th className="text-right px-4 py-3 text-slate-700 font-semibold text-sm">{t('amount')}</th>
+                <th className="text-left px-4 py-3 text-slate-700 font-semibold text-sm">{t('status')}</th>
+                {showActions && <th className="text-right px-4 py-3 text-slate-700 font-semibold text-sm">{t('actions')}</th>}
+              </tr>
+            </thead>
+            <tbody>
               {loading ? (
                 [...Array(5)].map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell className="sticky left-0 bg-white z-10 w-[110px]"><div className="h-4 w-20 bg-slate-200 rounded animate-pulse" /></TableCell>
-                    <TableCell className="w-[180px]"><div className="h-4 w-32 bg-slate-200 rounded animate-pulse" /></TableCell>
-                    <TableCell className="w-[120px]"><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
-                    <TableCell className="w-[150px]"><div className="h-4 w-24 bg-slate-200 rounded animate-pulse" /></TableCell>
-                    <TableCell className="w-[130px]"><div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse" /></TableCell>
-                    <TableCell className="text-right w-[100px]"><div className="h-4 w-16 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>
-                    <TableCell className="w-[100px]"><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
-                    {showActions && <TableCell className="text-right sticky right-0 bg-white z-10 w-[200px]"><div className="h-8 w-32 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>}
-                  </TableRow>
+                  <tr key={i} className="border-b border-slate-200">
+                    <td className="px-4 py-3"><div className="h-4 w-20 bg-slate-200 rounded animate-pulse" /></td>
+                    <td className="px-4 py-3"><div className="h-4 w-32 bg-slate-200 rounded animate-pulse" /></td>
+                    <td className="px-4 py-3"><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></td>
+                    <td className="px-4 py-3"><div className="h-4 w-24 bg-slate-200 rounded animate-pulse" /></td>
+                    <td className="px-4 py-3"><div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse" /></td>
+                    <td className="px-4 py-3 text-right"><div className="h-4 w-16 bg-slate-200 rounded ml-auto animate-pulse" /></td>
+                    <td className="px-4 py-3"><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></td>
+                    {showActions && <td className="px-4 py-3 text-right"><div className="h-8 w-32 bg-slate-200 rounded ml-auto animate-pulse" /></td>}
+                  </tr>
                 ))
               ) : expenses?.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={showActions ? 8 : 7} className="text-center h-24 text-slate-500">
+                <tr>
+                  <td colSpan={showActions ? 8 : 7} className="text-center py-12 text-slate-500">
                     {t('no_expenses_found')}
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               ) : (
                 expenses?.map(expense => {
                   const config = statusConfig[expense.status] || statusConfig.pending;
@@ -204,14 +205,12 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       onEdit={() => {}}
                       onDelete={() => {}}
                     >
-                      <TableRow 
-                        className={`hover:bg-slate-50 border-slate-200 ${needsReview ? 'bg-amber-50' : ''}`}
-                      >
-                      <TableCell className="text-slate-700 whitespace-nowrap sticky left-0 bg-white z-10 w-[110px]">
+                      <tr className={`border-b border-slate-200 hover:bg-slate-50 ${needsReview ? 'bg-amber-50' : ''}`}>
+                      <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
                         {format(new Date(expense.date), 'MMM dd, yyyy')}
-                      </TableCell>
-                      <TableCell className="text-slate-900 w-[180px]">
-                        <div title={expense.description} className="truncate">
+                      </td>
+                      <td className="px-4 py-3 text-slate-900">
+                        <div title={expense.description}>
                           {expense.description}
                         </div>
                         {getConfidenceBadge(expense) && (
@@ -219,22 +218,22 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                             {getConfidenceBadge(expense)}
                           </div>
                         )}
-                      </TableCell>
-                      <TableCell className="w-[120px]">
+                      </td>
+                      <td className="px-4 py-3">
                         <Badge className="bg-blue-100 text-blue-800 border-blue-300 text-xs">
                           {categoryLabels[expense.category] || expense.category}
                         </Badge>
-                      </TableCell>
-                      <TableCell className="w-[150px]">
+                      </td>
+                      <td className="px-4 py-3">
                         {expense.job_name ? (
-                          <span className="text-sm text-slate-700 block truncate" title={expense.job_name}>
+                          <span className="text-sm text-slate-700 block" title={expense.job_name}>
                             {expense.job_name}
                           </span>
                         ) : (
                           <span className="text-sm text-slate-400">-</span>
                         )}
-                      </TableCell>
-                      <TableCell className="w-[130px]">
+                      </td>
+                      <td className="px-4 py-3">
                         <Badge className={
                           expense.payment_method === 'personal' 
                             ? "bg-emerald-100 text-emerald-800 border-emerald-300 text-xs"
@@ -242,15 +241,15 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                         }>
                           {paymentMethodLabels[expense.payment_method] || expense.payment_method}
                         </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-bold text-[#3B9FF3] whitespace-nowrap w-[100px]">
+                      </td>
+                      <td className="px-4 py-3 text-right font-bold text-[#3B9FF3] whitespace-nowrap">
                         ${expense.amount?.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="w-[100px]">
+                      </td>
+                      <td className="px-4 py-3">
                         <Badge className={`${config.color} text-xs`}>{config.label}</Badge>
-                      </TableCell>
+                      </td>
                       {showActions && (
-                        <TableCell className="text-right sticky right-0 bg-white z-10 w-[200px]">
+                        <td className="px-4 py-3 text-right">
                           {expense.status === 'pending' && (
                             renderSmartApproval ? renderSmartApproval(expense) : (
                               <div className="flex justify-end gap-2">
@@ -278,16 +277,17 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                               </div>
                             )
                           )}
-                        </TableCell>
-                      )}
-                      </TableRow>
-                      </SwipeableListItem>
-                      );
-                      })
-                      )}
-                      </TableBody>
-                      </Table>
-                      </CardContent>
+                          </td>
+                          )}
+                          </tr>
+                          </SwipeableListItem>
+                          );
+                          })
+                          )}
+                          </tbody>
+                          </table>
+                          </div>
+                          </CardContent>
 
       <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ ...rejectDialog, open })}>
         <DialogContent className="bg-white border-slate-200 text-slate-900">
