@@ -163,28 +163,28 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
           <Table className="w-full">
             <TableHeader>
               <TableRow className="bg-slate-50 border-slate-200">
-                <TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold sticky left-0 bg-slate-50 z-10">{t('date')}</TableHead>
                 <TableHead className="text-slate-700 font-semibold">{t('description')}</TableHead>
                 <TableHead className="text-slate-700 font-semibold">{t('category')}</TableHead>
                 <TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead>
                 <TableHead className="text-slate-700 font-semibold">{t('payment_method')}</TableHead>
-                <TableHead className="text-right text-slate-700 font-semibold">{t('amount')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold text-right">{t('amount')}</TableHead>
                 <TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead>
-                {showActions && <TableHead className="text-right text-slate-700 font-semibold">{t('actions')}</TableHead>}
+                {showActions && <TableHead className="text-slate-700 font-semibold text-right sticky right-0 bg-slate-50 z-10">{t('actions')}</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 [...Array(5)].map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><div className="h-4 w-20 bg-slate-200 rounded animate-pulse" /></TableCell>
+                    <TableCell className="sticky left-0 bg-white z-10"><div className="h-4 w-20 bg-slate-200 rounded animate-pulse" /></TableCell>
                     <TableCell><div className="h-4 w-32 bg-slate-200 rounded animate-pulse" /></TableCell>
                     <TableCell><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
                     <TableCell><div className="h-4 w-24 bg-slate-200 rounded animate-pulse" /></TableCell>
                     <TableCell><div className="h-6 w-16 bg-slate-200 rounded-full animate-pulse" /></TableCell>
                     <TableCell className="text-right"><div className="h-4 w-16 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>
                     <TableCell><div className="h-6 w-20 bg-slate-200 rounded-full animate-pulse" /></TableCell>
-                    {showActions && <TableCell className="text-right"><div className="h-8 w-32 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>}
+                    {showActions && <TableCell className="text-right sticky right-0 bg-white z-10"><div className="h-8 w-32 bg-slate-200 rounded ml-auto animate-pulse" /></TableCell>}
                   </TableRow>
                 ))
               ) : expenses?.length === 0 ? (
@@ -208,7 +208,7 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       <TableRow 
                         className={`hover:bg-slate-50 border-slate-200 ${needsReview ? 'bg-amber-50' : ''}`}
                       >
-                      <TableCell className="text-slate-700 whitespace-nowrap">
+                      <TableCell className="text-slate-700 whitespace-nowrap sticky left-0 bg-white z-10">
                         {format(new Date(expense.date), 'MMM dd, yyyy')}
                       </TableCell>
                       <TableCell className="text-slate-900">
@@ -251,7 +251,7 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                         <Badge className={`${config.color} text-xs`}>{config.label}</Badge>
                       </TableCell>
                       {showActions && (
-                        <TableCell className="text-right">
+                        <TableCell className="text-right sticky right-0 bg-white z-10">
                           {expense.status === 'pending' && (
                             renderSmartApproval ? renderSmartApproval(expense) : (
                               <div className="flex justify-end gap-2">
