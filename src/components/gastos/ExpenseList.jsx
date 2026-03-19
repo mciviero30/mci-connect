@@ -32,11 +32,11 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
 
     setProcessingExpenses(prev => new Set(prev).add(expense.id));
     haptic.success();
+    microToast.success('Expense approved', 1500);
     
     try {
       await onApprove(expense);
       await notifyExpenseStatus(expense, 'approved', null);
-      microToast.success('Expense approved', 1500);
     } catch (error) {
       console.error('Failed to approve:', error);
       haptic.error();
@@ -162,14 +162,22 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-slate-50 border-slate-200">{showEmployeeName && <TableHead className="text-slate-700 font-semibold">{t('employee')}</TableHead>}<TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('description')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('category')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('payment_method')}</TableHead><TableHead className="text-right text-slate-700 font-semibold">{t('amount')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead><TableHead className="text-slate-700 font-semibold">{t('receipt')}</TableHead>{showActions && <TableHead className="text-right text-slate-700 font-semibold">{t('actions')}</TableHead>}</TableRow>
+              <TableRow className="bg-slate-50 border-slate-200">
+                <TableHead className="text-slate-700 font-semibold">{t('date')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold">{t('description')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold">{t('category')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold">{t('job')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold">{t('payment_method')}</TableHead>
+                <TableHead className="text-right text-slate-700 font-semibold">{t('amount')}</TableHead>
+                <TableHead className="text-slate-700 font-semibold">{t('status')}</TableHead>
+                {showActions && <TableHead className="text-right text-slate-700 font-semibold">{t('actions')}</TableHead>}
+              </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 // NO GENERIC LOADER - Show skeleton rows
                 [...Array(5)].map((_, i) => (
                   <TableRow key={i}>
-                    {showEmployeeName && <TableCell><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>}
                     <TableCell><div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
                     <TableCell><div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
                     <TableCell><div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
@@ -177,13 +185,12 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                     <TableCell><div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
                     <TableCell className="text-right"><div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded ml-auto animate-pulse" /></TableCell>
                     <TableCell><div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full animate-pulse" /></TableCell>
-                    <TableCell><div className="h-4 w-12 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" /></TableCell>
                     {showActions && <TableCell><div className="h-8 w-32 bg-slate-200 dark:bg-slate-700 rounded ml-auto animate-pulse" /></TableCell>}
                   </TableRow>
                 ))
               ) : expenses?.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={showEmployeeName ? 10 : 9} className="text-center h-24 text-slate-500"> {/* MODIFIED: uses showEmployeeName */}
+                  <TableCell colSpan={showActions ? 8 : 7} className="text-center h-24 text-slate-500">
                     {t('no_expenses_found')}
                   </TableCell>
                 </TableRow>
@@ -202,26 +209,17 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       <TableRow 
                         className={`hover:bg-slate-50 border-slate-200 ${needsReview ? 'bg-amber-50' : ''}`}
                       >
-                      {showEmployeeName && ( // MODIFIED: uses showEmployeeName
-                        <TableCell className="text-slate-900">
-                          {expense.employee_name}
-                          {needsReview && (
-                            <div className="flex items-center gap-1 text-amber-700 text-xs mt-1">
-                              <AlertTriangle className="w-3 h-3" />
-                              {t('lowConfidence')}
-                            </div>
-                          )}
-                        </TableCell>
-                      )}
                       <TableCell className="text-slate-700">{format(new Date(expense.date), 'MMM dd, yyyy')}</TableCell>
                       <TableCell className="text-slate-900">
-                        {expense.description}
-                        <div className="flex gap-1 mt-1">
-                          {getConfidenceBadge(expense)}
+                        <div className="max-w-[200px]">
+                          {expense.description}
+                          <div className="flex gap-1 mt-1">
+                            {getConfidenceBadge(expense)}
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+                        <Badge className="bg-blue-100 text-blue-800 border-blue-300 whitespace-nowrap">
                           {categoryLabels[expense.category] || expense.category}
                         </Badge>
                         {expense.ai_suggested_category && expense.ai_suggested_category !== expense.category && (
@@ -251,16 +249,6 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       </TableCell>
                       <TableCell>
                         <Badge className={config.color}>{config.label}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        {expense.receipt_url ? (
-                          <a href={expense.receipt_url} target="_blank" rel="noopener noreferrer" className="text-[#3B9FF3] hover:text-[#2A8FE3] flex items-center gap-1">
-                            <ExternalLink className="w-4 h-4" />
-                            {t('view')}
-                          </a>
-                        ) : (
-                          <span className="text-sm text-slate-400">{t('no_receipt')}</span>
-                        )}
                       </TableCell>
                       {showActions && (
                         <TableCell className="text-right">
