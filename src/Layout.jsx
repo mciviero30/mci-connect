@@ -982,28 +982,28 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   }
 
   // DECLARATIVE GATE 1: Block for onboarding (no navigation)
-  if (shouldBlockForOnboarding && !isOnboardingRoute) {
-
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4">
-        <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-blue-200 dark:border-slate-700 shadow-2xl">
-          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-500/30">
-            <ClipboardList className="w-12 h-12 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Onboarding Required</h1>
-          <p className="text-slate-600 dark:text-slate-400 mb-6">
-            Please complete your onboarding before accessing the app.
-          </p>
-          <Button 
-            onClick={() => navigate(createPageUrl('OnboardingWizard'))}
-            className="soft-blue-gradient text-white shadow-lg"
-          >
-            Complete Onboarding
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // DISABLED TEMPORARILY FOR DEBUGGING
+  // if (shouldBlockForOnboarding && !isOnboardingRoute) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4">
+  //       <div className="text-center max-w-md p-8 rounded-3xl bg-white dark:bg-slate-800 border-2 border-blue-200 dark:border-slate-700 shadow-2xl">
+  //         <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-blue-500/30">
+  //           <ClipboardList className="w-12 h-12 text-white" />
+  //         </div>
+  //         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Onboarding Required</h1>
+  //         <p className="text-slate-600 dark:text-slate-400 mb-6">
+  //           Please complete your onboarding before accessing the app.
+  //         </p>
+  //         <Button 
+  //           onClick={() => navigate(createPageUrl('OnboardingWizard'))}
+  //           className="soft-blue-gradient text-white shadow-lg"
+  //         >
+  //           Complete Onboarding
+  //         </Button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // DECLARATIVE GATE 2: Deleted users
   if (user && user.employment_status === 'deleted') {
