@@ -159,7 +159,6 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="w-full overflow-x-auto">
           <Table className="w-full">
             <TableHeader>
               <TableRow className="bg-slate-50 border-slate-200">
@@ -286,10 +285,9 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                       );
                       })
                       )}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
+                      </TableBody>
+                      </Table>
+                      </CardContent>
 
       <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ ...rejectDialog, open })}>
         <DialogContent className="bg-white border-slate-200 text-slate-900">
