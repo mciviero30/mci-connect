@@ -25,18 +25,13 @@ Deno.serve(async (req) => {
     // DECISION A: Assign number always (removed field_accepted_at requirement)
     console.log(`[AutoJobNumber] Generating number for job ${job.id} - ${job.name}`);
 
-    // Generate job number using atomic counter
-    const claim = await base44.asServiceRole.entities.Counter.create({
-      counter_key: `job-claim-${Date.now()}-${Math.random()}`,
-      current_value: 1,
-      last_increment_date: new Date().toISOString()
+    // Use getNextCounter for atomic number generation
+    const { getNextCounter } = await import('./getNextCounter.js');
+    const counterResult = await getNextCounter({ 
+      counter_key: 'job_number_sequence' 
     });
     
-    const allClaims = await base44.asServiceRole.entities.Counter.filter({
-      counter_key: { $regex: '^job-claim-' }
-    });
-    
-    const sequenceNumber = allClaims.length;
+    const sequenceNumber = counterResult.next_value;
     const formattedNumber = `JOB-${String(sequenceNumber).padStart(5, '0')}`;
 
     // Update job with generated number
