@@ -199,13 +199,7 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                   const needsReview = shouldFlagForReview(expense);
 
                   return (
-                    <SwipeableListItem
-                      key={expense.id}
-                      id={expense.id}
-                      onEdit={() => {}}
-                      onDelete={() => {}}
-                    >
-                      <tr className={`border-b border-slate-200 hover:bg-slate-50 ${needsReview ? 'bg-amber-50' : ''}`}>
+                      <tr key={expense.id} className={`border-b border-slate-200 hover:bg-slate-50 ${needsReview ? 'bg-amber-50' : ''}`}>
                       <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
                         {format(new Date(expense.date), 'MMM dd, yyyy')}
                       </td>
@@ -280,7 +274,6 @@ export default function ExpenseList({ expenses, onApprove, onReject, showEmploye
                           </td>
                           )}
                           </tr>
-                          </SwipeableListItem>
                           );
                           })
                           )}
