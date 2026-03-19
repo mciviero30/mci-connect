@@ -11,17 +11,23 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
+    const payload = await req.json();
+    const { job_id } = payload;
 
-    // STEP 1 — AUTH
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    // STEP 1 — AUTH (allow automations to bypass)
+    const isAutomation = payload.event?.type; // Entity automation passes event object
+    
+    if (!isAutomation) {
+      const user = await base44.auth.me();
+      if (!user) {
+        return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      if (user.role !== 'admin' && user.role !== 'ceo') {
+        return Response.json({ error: 'Forbidden: Admin or CEO only' }, { status: 403 });
+      }
+    } else {
+      console.log('[recalculateJobFinancials_v2] Running from automation - bypassing auth');
     }
-    if (user.role !== 'admin' && user.role !== 'ceo') {
-      return Response.json({ error: 'Forbidden: Admin or CEO only' }, { status: 403 });
-    }
-
-    const { job_id } = await req.json();
     if (!job_id) {
       return Response.json({ error: 'job_id is required' }, { status: 400 });
     }

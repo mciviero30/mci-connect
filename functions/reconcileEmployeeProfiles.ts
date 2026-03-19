@@ -126,6 +126,8 @@ Deno.serve(async (req) => {
 
       } catch (err) {
         console.error(`[Reconcile] Error processing invitation ${invitation.email}:`, err.message);
+        console.error(`[Reconcile] Full error stack:`, err);
+        console.error(`[Reconcile] Invitation data:`, JSON.stringify(invitation, null, 2));
         errors++;
       }
     }

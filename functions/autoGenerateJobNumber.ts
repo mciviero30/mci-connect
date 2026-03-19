@@ -22,13 +22,8 @@ Deno.serve(async (req) => {
       return Response.json({ skipped: true, reason: 'Job already has job_number' });
     }
 
-    // CRITICAL: Only assign number if job is accepted in Field (client approval proof)
-    if (!job.field_accepted_at) {
-      return Response.json({ 
-        skipped: true, 
-        reason: 'Job not accepted yet - no number until field_accepted_at is set' 
-      });
-    }
+    // DECISION A: Assign number always (removed field_accepted_at requirement)
+    console.log(`[AutoJobNumber] Generating number for job ${job.id} - ${job.name}`);
 
     // Generate job number using atomic counter
     const claim = await base44.asServiceRole.entities.Counter.create({

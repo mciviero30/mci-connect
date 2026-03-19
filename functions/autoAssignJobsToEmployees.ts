@@ -27,18 +27,33 @@ Deno.serve(async (req) => {
 
     console.log(`Assigning job ${job.name} (${jobId}) to ${activeEmployees.length} employees`);
 
+    // Get User emails for each EmployeeProfile
+    const userIds = activeEmployees.map(e => e.user_id).filter(Boolean);
+    const users = await base44.asServiceRole.entities.User.filter(
+      { id: { $in: userIds } },
+      '',
+      1000
+    );
+    
+    const userEmailMap = Object.fromEntries(users.map(u => [u.id, u.email]));
+
     // Create assignments for each active employee
-    const assignments = activeEmployees.map(emp => ({
-      user_id: emp.user_id,
-      employee_email: emp.full_name ? emp.full_name.toLowerCase().replace(' ', '.') + '@internal' : '',
-      employee_name: emp.full_name,
-      job_id: jobId,
-      job_name: job.name,
-      date: new Date().toISOString().split('T')[0],
-      start_time: '08:00',
-      end_time: '17:00',
-      event_type: 'job_milestone'
-    })).filter(a => a.user_id); // Only include if user_id exists
+    const assignments = activeEmployees.map(emp => {
+      const userEmail = userEmailMap[emp.user_id];
+      if (!userEmail || !emp.user_id) return null;
+
+      return {
+        user_id: emp.user_id,
+        employee_email: userEmail, // Use REAL email from User entity
+        employee_name: emp.full_name,
+        job_id: jobId,
+        job_name: job.name,
+        date: new Date().toISOString().split('T')[0],
+        start_time: '08:00',
+        end_time: '17:00',
+        event_type: 'job_milestone'
+      };
+    }).filter(Boolean); // Remove nulls
 
     if (assignments.length > 0) {
       await base44.asServiceRole.entities.JobAssignment.bulkCreate(assignments);
