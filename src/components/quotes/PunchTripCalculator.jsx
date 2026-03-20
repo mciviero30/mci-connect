@@ -14,6 +14,7 @@ export default function PunchTripCalculator({
   onAddItems, 
   itemType = 'punch', // 'punch' or 'field_verification'
   jobAddress,
+  originAddress = '', // Departure address from quote
   travelTimeHours: initialTravelHours = 0,
   travelMiles: initialTravelMiles = 0,
   language = 'en'
@@ -53,10 +54,11 @@ export default function PunchTripCalculator({
     console.log('🔍 [PunchTripCalculator] Fetching distance for:', jobAddress);
     
     try {
-      // Call backend function via SDK
-      const response = await base44.functions.invoke('calculateTravelDistance', { 
-        destination: jobAddress 
-      });
+       // Call backend function via SDK
+       const response = await base44.functions.invoke('calculateTravelDistance', { 
+         origin: originAddress || jobAddress,
+         destination: jobAddress 
+       });
       
       console.log('📊 [PunchTripCalculator] Backend response:', response);
       
