@@ -33,6 +33,14 @@ export default function PunchTripCalculator({
     }
   }, [isOpen]);
   
+  // Recalculate when "Out of Town" is enabled and we don't have travel data
+  useEffect(() => {
+    if (isOutOfTown && jobAddress && travelTimeHours === 0 && travelMiles === 0) {
+      console.log('🚗 [PunchTripCalculator] Out of Town enabled - calculating distance');
+      calculateDistance();
+    }
+  }, [isOutOfTown]);
+  
   const calculateDistance = async () => {
     if (!jobAddress) {
       console.log('⚠️ [PunchTripCalculator] No job address - skipping calculation');
