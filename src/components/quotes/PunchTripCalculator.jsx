@@ -23,6 +23,7 @@ export default function PunchTripCalculator({
   const [travelTimeHours, setTravelTimeHours] = useState(initialTravelHours);
   const [travelMiles, setTravelMiles] = useState(initialTravelMiles);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [isOutOfTown, setIsOutOfTown] = useState(false);
   
   // Auto-calculate distance when dialog opens if job address exists
   useEffect(() => {
@@ -80,6 +81,9 @@ export default function PunchTripCalculator({
   const needsHotel = totalDayHours > 10;
   const nightsNeeded = needsHotel ? 1 : 0;
   
+  // Determinar si se cobran viaje/millas: si es out of town O si necesitan hotel
+  const shouldChargeTravel = isOutOfTown || needsHotel;
+  
   // Costos
   const DRIVING_RATE = 55; // $55/hr
   const MILEAGE_RATE = 0.70; // $0.70/milla
@@ -88,8 +92,8 @@ export default function PunchTripCalculator({
   const WORK_RATE = 60; // $60/hr para trabajo
   
   // Cálculos
-  const drivingCost = travelTimeHours * 2 * techCount * DRIVING_RATE; // Round trip
-  const mileageCost = travelMiles * 2 * MILEAGE_RATE; // Round trip para todo el equipo
+  const drivingCost = shouldChargeTravel ? (travelTimeHours * 2 * techCount * DRIVING_RATE) : 0; // Round trip
+  const mileageCost = shouldChargeTravel ? (travelMiles * 2 * MILEAGE_RATE) : 0; // Round trip para todo el equipo
   const workCost = workHours * techCount * WORK_RATE;
   const hotelCost = needsHotel ? (Math.ceil(techCount / 2) * HOTEL_RATE * nightsNeeded) : 0;
   const perDiemCost = needsHotel ? (techCount * PER_DIEM_RATE * (nightsNeeded + 1)) : 0; // +1 porque comen el día de salida también
@@ -116,8 +120,8 @@ export default function PunchTripCalculator({
       auto_calculated: true
     });
     
-    // 2. Driving Time (solo si hay travel)
-    if (travelTimeHours > 0) {
+    // 2. Driving Time (si es out of town o necesitan hotel)
+    if (shouldChargeTravel && travelTimeHours > 0) {
       items.push({
         item_name: 'Driving Time',
         description: `Travel time - ${techCount} tech(s) × ${travelTimeHours}hrs × 2 (round trip)`,
@@ -135,8 +139,8 @@ export default function PunchTripCalculator({
       });
     }
     
-    // 3. Mileage (solo si hay millas)
-    if (travelMiles > 0) {
+    // 3. Mileage (si es out of town o necesitan hotel)
+    if (shouldChargeTravel && travelMiles > 0) {
       items.push({
         item_name: 'Mileage',
         description: `${travelMiles} miles × 2 (round trip) @ $${MILEAGE_RATE}/mile`,
@@ -239,6 +243,35 @@ export default function PunchTripCalculator({
             </div>
           </div>
           
+          {/* Out of Town Toggle - Only show if less than 10 hours */}
+          {!needsHotel && travelTimeHours > 0 && (
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm text-blue-900">
+                      {language === 'es' ? '🚗 Trabajo Fuera de la Ciudad' : '🚗 Out of Town Work'}
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      {language === 'es' 
+                        ? 'Activar para cobrar tiempo de manejo y millas aunque regresen el mismo día'
+                        : 'Enable to charge driving time and mileage even if returning same day'}
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer ml-4">
+                    <input
+                      type="checkbox"
+                      checked={isOutOfTown}
+                      onChange={(e) => setIsOutOfTown(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           {/* Job Info */}
           {jobAddress && (
             <Card className="bg-blue-50 border-blue-200">
@@ -316,7 +349,7 @@ export default function PunchTripCalculator({
             </div>
             
             {/* Driving Time */}
-            {travelTimeHours > 0 && (
+            {shouldChargeTravel && travelTimeHours > 0 && (
               <div className="flex justify-between items-center p-3 bg-white rounded-lg border">
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-orange-600" />
@@ -330,7 +363,7 @@ export default function PunchTripCalculator({
             )}
             
             {/* Mileage */}
-            {travelMiles > 0 && (
+            {shouldChargeTravel && travelMiles > 0 && (
               <div className="flex justify-between items-center p-3 bg-white rounded-lg border">
                 <div className="flex items-center gap-2">
                   <Car className="w-4 h-4 text-green-600" />
