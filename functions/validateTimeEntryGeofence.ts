@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.21';
 
 /**
  * BACKEND GEOFENCE RE-VALIDATION - Autoridad Final
@@ -33,6 +33,12 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     const { event, data } = await req.json();
+
+    console.log('[🎯 Geofence Validation] Automation triggered', {
+      event_type: event.type,
+      time_entry_id: data?.id,
+      work_type: data?.work_type
+    });
 
     // Only process create events
     if (event.type !== 'create') {
