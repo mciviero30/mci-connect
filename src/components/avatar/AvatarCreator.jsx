@@ -4,7 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Shuffle, Save, User, Sparkles, Loader2 } from 'lucide-react';
+import { Shuffle, Save, User, Sparkles, Loader2, AlertTriangle } from 'lucide-react';
 import CustomAvatar from './CustomAvatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
