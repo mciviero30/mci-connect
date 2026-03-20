@@ -1152,6 +1152,10 @@ export default function CrearEstimado() {
                 derivedValues={derivedValues}
                 onAddItem={addItem}
                 pricesLocked={pricesLocked}
+                jobAddress={formData.job_address}
+                travelTimeHours={travelTimeHours}
+                travelMiles={derivedValues?.travelMiles || 0}
+                language={language}
               />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto px-3 pb-4">
