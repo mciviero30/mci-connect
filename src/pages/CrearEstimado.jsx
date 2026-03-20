@@ -643,22 +643,26 @@ export default function CrearEstimado() {
     }
     
     if (field === 'item_name') {
-      const selectedItem = quoteItems.find(qi => qi.name === value);
-      if (selectedItem) {
-        const itemName = selectedItem.name || selectedItem.item_name;
-        
-        // SPECIAL HANDLING: Open calculator for Punch Trip or Field Verification
-        if (itemName === 'Punch Trip') {
-          setPunchCalculatorType('punch');
-          setShowPunchCalculator(true);
-          return; // Don't add the item yet - calculator will do it
-        }
-        
-        if (itemName === 'Field Verification') {
-          setPunchCalculatorType('field_verification');
-          setShowPunchCalculator(true);
-          return; // Don't add the item yet - calculator will do it
-        }
+    const selectedItem = quoteItems.find(qi => qi.name === value);
+    if (selectedItem) {
+      const itemName = selectedItem.name || selectedItem.item_name;
+
+      // SPECIAL HANDLING: Open calculator for Punch Trip or Field Verification
+      if (itemName === 'Punch Trip') {
+        setPunchCalculatorType('punch');
+        // Pass current formData.items so calculator can extract travel data
+        console.log('[CrearEstimado] Opening Punch Trip with items:', formData.items);
+        setShowPunchCalculator(true);
+        return; // Don't add the item yet - calculator will do it
+      }
+
+      if (itemName === 'Field Verification') {
+        setPunchCalculatorType('field_verification');
+        // Pass current formData.items so calculator can extract travel data
+        console.log('[CrearEstimado] Opening Field Verification with items:', formData.items);
+        setShowPunchCalculator(true);
+        return; // Don't add the item yet - calculator will do it
+      }
         
         // CRITICAL: Keep item_name in addition to description
         newItems[index].item_name = itemName;
