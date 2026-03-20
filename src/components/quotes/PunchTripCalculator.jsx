@@ -26,7 +26,7 @@ export default function PunchTripCalculator({
   const nightsNeeded = needsHotel ? 1 : 0;
   
   // Costos
-  const DRIVING_RATE = 55; // $55/hr
+  const DRIVING_RATE = 60; // $60/hr
   const MILEAGE_RATE = 0.70; // $0.70/milla
   const HOTEL_RATE = 120; // $120/noche por habitación
   const PER_DIEM_RATE = 75; // $75/día por persona

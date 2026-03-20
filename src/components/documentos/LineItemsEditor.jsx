@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,6 +9,7 @@ import { calculateLineItemQuantity } from "@/components/domain/calculations/quan
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDerived";
+import PunchTripCalculator from "@/components/quotes/PunchTripCalculator";
 
 /**
  * ============================================================================
@@ -36,6 +37,10 @@ import { getDerivedQuantity } from "@/components/domain/quotes/computeQuoteDeriv
  * @param {Object} derivedValues - Derived values from computeQuoteDerived (CAPA 3)
  * @param {Function} onAddItem - Callback to add new item (optional)
  * @param {boolean} pricesLocked - Lock prices (read-only for unit_price)
+ * @param {string} jobAddress - Job address for travel calculations
+ * @param {number} travelTimeHours - Travel time in hours
+ * @param {number} travelMiles - Travel distance in miles
+ * @param {string} language - Language for UI
  */
 export default function LineItemsEditor({
   items = [],
@@ -46,8 +51,14 @@ export default function LineItemsEditor({
   onToast,
   derivedValues,
   onAddItem,
-  pricesLocked = false
+  pricesLocked = false,
+  jobAddress = '',
+  travelTimeHours = 0,
+  travelMiles = 0,
+  language = 'en'
 }) {
+  const [showPunchCalculator, setShowPunchCalculator] = useState(false);
+  const [punchItemType, setPunchItemType] = useState('punch');
   
   const getCatalogName = (ci) => String(ci?.name || ci?.item_name || '').trim();
 
@@ -116,6 +127,14 @@ export default function LineItemsEditor({
       const selectedItem = catalogItems.find(ci => getCatalogName(ci) === v);
       if (selectedItem) {
         const itemName = getCatalogName(selectedItem);
+        
+        // Check if this is Punch Trip or Field Verification
+        if (itemName === 'Punch Trip' || itemName === 'Field Verification') {
+          setPunchItemType(itemName === 'Punch Trip' ? 'punch' : 'field_verification');
+          setShowPunchCalculator(true);
+          return; // Don't add item yet - wait for calculator
+        }
+        
         newItems[index].item_name = itemName;
         newItems[index].description = selectedItem.description || '';
         newItems[index].unit = selectedItem.unit || selectedItem.uom || 'pcs';
@@ -160,8 +179,30 @@ export default function LineItemsEditor({
     onItemsChange(newItems);
   };
 
+  const handlePunchCalculatorAdd = (calculatedItems) => {
+    // Remove the empty placeholder item if it exists
+    const filteredItems = items.filter(item => item.item_name && item.item_name.trim() !== '');
+    
+    // Add all calculated items
+    const newItems = [...filteredItems, ...calculatedItems];
+    onItemsChange(newItems);
+    setShowPunchCalculator(false);
+  };
+
   return (
     <>
+      {/* Punch Trip Calculator Modal */}
+      <PunchTripCalculator
+        isOpen={showPunchCalculator}
+        onClose={() => setShowPunchCalculator(false)}
+        onAddItems={handlePunchCalculatorAdd}
+        itemType={punchItemType}
+        jobAddress={jobAddress}
+        travelTimeHours={travelTimeHours}
+        travelMiles={travelMiles}
+        language={language}
+      />
+      
       {/* Table Header - Dynamic based on travel items */}
       {items.some(i => i.is_travel_item) ? (
         <div className="hidden md:grid md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
