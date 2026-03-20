@@ -105,6 +105,7 @@ export default function CrearEstimado() {
     job_name: '',
     job_id: '',
     job_address: '',
+    origin_address: '', // NEW: Departure address for travel calculations
     work_details: '', // NEW: Details like floor, room, etc.
     team_ids: [], // Changed to array for multiple teams
     team_names: [], // Changed to array for multiple team names
@@ -275,6 +276,7 @@ export default function CrearEstimado() {
         job_name: existingQuote.job_name || '',
         job_id: existingQuote.job_id || '',
         job_address: existingQuote.job_address || '',
+        origin_address: existingQuote.origin_address || '',
         work_details: existingQuote.work_details || '',
         team_ids: existingQuote.team_ids || (existingQuote.team_id ? [existingQuote.team_id] : []),
         team_names: existingQuote.team_names || (existingQuote.team_name ? [existingQuote.team_name] : []),
@@ -971,6 +973,29 @@ export default function CrearEstimado() {
 
                 <div className="md:col-span-2">
                   <Label className="text-slate-700">
+                    {language === 'es' ? 'Dirección de Salida (para viajes)' : 'Departure Address (for travel calculations)'} ({t('optional')})
+                  </Label>
+                  <AddressAutocomplete
+                    value={formData.origin_address}
+                    onChange={(value) => setFormData({...formData, origin_address: value})}
+                    onPlaceSelected={(placeData) => {
+                      setFormData({
+                        ...formData,
+                        origin_address: placeData.full_address || placeData.address
+                      });
+                    }}
+                    placeholder={language === 'es' ? 'Ej: Orlando, FL' : 'e.g., Orlando, FL'}
+                    className="bg-white border-slate-300 text-slate-900"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">
+                    {language === 'es' 
+                      ? 'Si dejas vacío, usará la dirección del trabajo como origen' 
+                      : 'If left empty, will use job address as origin'}
+                  </p>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Label className="text-slate-700">
                     {language === 'es' ? 'Detalles del Trabajo' : 'Work Details'} ({t('optional')})
                   </Label>
                   <Textarea
@@ -1321,7 +1346,7 @@ export default function CrearEstimado() {
           }}
           itemType={punchCalculatorType}
           jobAddress={formData.job_address}
-          originAddress={formData.job_address}
+          originAddress={formData.origin_address || formData.job_address}
           travelTimeHours={travelTimeHours}
           travelMiles={derivedValues?.travelMiles || 0}
           language={language}
