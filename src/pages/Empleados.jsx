@@ -207,9 +207,19 @@ export default function Empleados() {
     refetchOnMount: true,
   });
 
+  // Deduplicate by ID (safety measure against duplicate rendering)
+  const deduplicatedInvitations = useMemo(() => {
+    const seen = new Set();
+    return allInvitations.filter(inv => {
+      if (seen.has(inv.id)) return false;
+      seen.add(inv.id);
+      return true;
+    });
+  }, [allInvitations]);
+
   // Split invitations: active ones vs terminated ones
-  const invitations = allInvitations.filter(i => i.status !== 'terminated');
-  const terminatedInvitations = allInvitations.filter(i => i.status === 'terminated');
+  const invitations = deduplicatedInvitations.filter(i => i.status !== 'terminated');
+  const terminatedInvitations = deduplicatedInvitations.filter(i => i.status === 'terminated');
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['onboardingForms'],
