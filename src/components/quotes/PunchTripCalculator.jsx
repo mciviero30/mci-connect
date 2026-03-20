@@ -17,12 +17,39 @@ export default function PunchTripCalculator({
   originAddress = '', // Departure address from quote
   travelTimeHours: initialTravelHours = 0,
   travelMiles: initialTravelMiles = 0,
+  existingItems = [], // Items from the quote for extracting travel data
+  originalTechCount = 8, // Original tech count to calculate proportions
   language = 'en'
 }) {
+  // Extract travel data from existing items (from the quote)
+  const extractedTravelData = useMemo(() => {
+    const drivingItem = existingItems.find(i => i.item_name?.toLowerCase() === 'driving time' || i.travel_item_type === 'driving_time');
+    const mileageItem = existingItems.find(i => i.item_name?.toLowerCase() === 'mileage' || i.travel_item_type === 'mileage');
+    
+    return {
+      drivingHours: drivingItem?.duration_value || initialTravelHours,
+      miles: mileageItem?.quantity || initialTravelMiles,
+      originalTechs: drivingItem?.tech_count || originalTechCount
+    };
+  }, [existingItems, initialTravelHours, initialTravelMiles, originalTechCount]);
+  
   const [techCount, setTechCount] = useState(itemType === 'field_verification' ? 1 : 2);
   const [workHours, setWorkHours] = useState(itemType === 'field_verification' ? 4 : 4);
-  const [travelTimeHours, setTravelTimeHours] = useState(initialTravelHours);
-  const [travelMiles, setTravelMiles] = useState(initialTravelMiles);
+  
+  // Calculate proportional travel values based on tech count
+  const proportionalTravelHours = useMemo(() => {
+    if (extractedTravelData.originalTechs === 0) return extractedTravelData.drivingHours;
+    return (extractedTravelData.drivingHours * techCount) / extractedTravelData.originalTechs;
+  }, [extractedTravelData, techCount]);
+  
+  const proportionalTravelMiles = useMemo(() => {
+    if (extractedTravelData.originalTechs === 0) return extractedTravelData.miles;
+    // For mileage, consider it might be per vehicle (2 vehicles) not per tech
+    return (extractedTravelData.miles * techCount) / extractedTravelData.originalTechs;
+  }, [extractedTravelData, techCount]);
+  
+  const [travelTimeHours, setTravelTimeHours] = useState(proportionalTravelHours);
+  const [travelMiles, setTravelMiles] = useState(proportionalTravelMiles);
   // Field Verification should auto-enable out of town to charge travel
   const [isOutOfTown, setIsOutOfTown] = useState(itemType === 'field_verification');
   const [hotelRate, setHotelRate] = useState(200);
