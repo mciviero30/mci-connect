@@ -37,6 +37,7 @@ import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculatio
 import { computeQuoteDerived, createComputeInput } from "@/components/domain/quotes/computeQuoteDerived";
 import ItemsMatchImporter from "@/components/quotes/ItemsMatchImporter";
 import { useDraftPersistence } from "@/components/hooks/useDraftPersistence";
+import PunchTripCalculator from "@/components/quotes/PunchTripCalculator";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
