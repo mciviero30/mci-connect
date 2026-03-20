@@ -76,16 +76,6 @@ export default function CrearEstimado() {
     initialData: [],
   });
 
-  // Auto-set origin_address from selected team's base_address
-  useEffect(() => {
-    if (formData.team_ids.length > 0 && !formData.origin_address) {
-      const selectedTeam = teams.find(t => t.id === formData.team_ids[0]);
-      if (selectedTeam?.base_address) {
-        setFormData(prev => ({ ...prev, origin_address: selectedTeam.base_address }));
-      }
-    }
-  }, [formData.team_ids, teams]);
-
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
     queryFn: () => base44.entities.QuoteItem.list(),
