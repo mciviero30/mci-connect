@@ -30,20 +30,18 @@ export default function PunchTripCalculator({
   const [perDiemRate, setPerDiemRate] = useState(55);
   
   // Auto-calculate distance when dialog opens if job address exists
+  // This useEffect runs when the modal opens to immediately calculate travel
   useEffect(() => {
-    if (isOpen && jobAddress && (travelMiles === 0 || travelTimeHours === 0) && !isCalculating) {
-      console.log('🚗 [PunchTripCalculator] Auto-calculating distance for:', jobAddress);
-      calculateDistance();
+    if (isOpen && jobAddress) {
+      const timer = setTimeout(() => {
+        if (travelMiles === 0 || travelTimeHours === 0) {
+          console.log('🚗 [PunchTripCalculator] Modal opened - auto-calculating distance');
+          calculateDistance();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen, jobAddress]);
-  
-  // Recalculate when "Out of Town" is enabled and we don't have travel data
-  useEffect(() => {
-    if (isOutOfTown && jobAddress && (travelTimeHours === 0 || travelMiles === 0) && !isCalculating) {
-      console.log('🚗 [PunchTripCalculator] Out of Town enabled - calculating distance');
-      calculateDistance();
-    }
-  }, [isOutOfTown]);
+  }, [isOpen]);
   
   const calculateDistance = async () => {
     if (!jobAddress) {
