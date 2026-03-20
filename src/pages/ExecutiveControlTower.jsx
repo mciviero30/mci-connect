@@ -214,7 +214,7 @@ export default function ExecutiveControlTower() {
 
         {/* Top Row - Key Metrics */}
         <div className="grid md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
+          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
@@ -227,7 +227,7 @@ export default function ExecutiveControlTower() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
+          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
@@ -240,7 +240,7 @@ export default function ExecutiveControlTower() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
+          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
@@ -253,7 +253,7 @@ export default function ExecutiveControlTower() {
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-blue-50/40 to-blue-100/30 dark:from-blue-900/10 dark:to-blue-800/10 border border-blue-200/40 dark:border-blue-700/30 shadow-sm">
+          <Card className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-md hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
                 <div className="p-3 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-md">
