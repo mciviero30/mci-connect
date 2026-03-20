@@ -56,6 +56,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
   const [saved, setSaved] = useState(invitation);
 
   const buildForm = (src) => ({
+    email: src.email || '',
     first_name: src.first_name || '',
     last_name: src.last_name || '',
     phone: src.phone || '',
@@ -101,6 +102,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
     return (
       <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
         <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2"><Label className="text-xs">Email</Label><Input type="email" value={form.email} onChange={f('email')} /></div>
           <div><Label className="text-xs">First Name</Label><Input value={form.first_name} onChange={f('first_name')} /></div>
           <div><Label className="text-xs">Last Name</Label><Input value={form.last_name} onChange={f('last_name')} /></div>
           <div><Label className="text-xs">Phone</Label><Input value={form.phone} onChange={f('phone')} /></div>
