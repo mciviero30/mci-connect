@@ -35,15 +35,15 @@ export default function PunchTripCalculator({
       console.log('🚗 [PunchTripCalculator] Auto-calculating distance for:', jobAddress);
       calculateDistance();
     }
-  }, [isOpen, jobAddress]);
+  }, [isOpen]);
   
   // Recalculate when "Out of Town" is enabled and we don't have travel data
   useEffect(() => {
-    if (isOutOfTown && jobAddress && travelTimeHours === 0 && travelMiles === 0) {
+    if (isOutOfTown && jobAddress && travelTimeHours === 0 && travelMiles === 0 && !isCalculating) {
       console.log('🚗 [PunchTripCalculator] Out of Town enabled - calculating distance');
       calculateDistance();
     }
-  }, [isOutOfTown]);
+  }, [isOutOfTown, jobAddress]);
   
   const calculateDistance = async () => {
     if (!jobAddress) {
