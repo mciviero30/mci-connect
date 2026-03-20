@@ -145,6 +145,16 @@ export default function CrearEstimado() {
 
 
   
+  // Auto-set origin_address from selected team's base_address
+  useEffect(() => {
+    if (formData.team_ids.length > 0 && !formData.origin_address) {
+      const selectedTeam = teams.find(t => t.id === formData.team_ids[0]);
+      if (selectedTeam?.base_address) {
+        setFormData(prev => ({ ...prev, origin_address: selectedTeam.base_address }));
+      }
+    }
+  }, [formData.team_ids, teams]);
+
   // Draft persistence - auto-save to localStorage
   const { clearDraft } = useDraftPersistence({
     draftKey: editId ? `quote-draft-${editId}` : 'quote-draft-new',
