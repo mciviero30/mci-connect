@@ -132,12 +132,25 @@ Deno.serve(async (req) => {
     const hasDiscrepancy = frontendValidated !== backendValidated;
 
     // UPDATE FLAGS (backend authority)
-    await base44.asServiceRole.entities.TimeEntry.update(timeEntry.id, {
+    const updateData = {
       geofence_validated_backend: backendValidated,
       geofence_distance_backend_meters_checkin: Math.round(checkInDistance),
       geofence_distance_backend_meters_checkout: checkOutDistance ? Math.round(checkOutDistance) : null,
       geofence_discrepancy: hasDiscrepancy,
       requires_location_review: !backendValidated || hasDiscrepancy,
+    };
+
+    console.log('[🎯 Geofence] Updating TimeEntry', {
+      id: timeEntry.id,
+      updateData
+    });
+
+    const updated = await base44.asServiceRole.entities.TimeEntry.update(timeEntry.id, updateData);
+
+    console.log('[🎯 Geofence] Update result', {
+      success: !!updated,
+      validated_backend: updated?.geofence_validated_backend,
+      distance_checkin: updated?.geofence_distance_backend_meters_checkin
     });
 
     // PASO 4: Log backend discrepancy (deduplicated via telemetry)
