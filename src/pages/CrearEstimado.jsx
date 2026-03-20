@@ -285,7 +285,6 @@ export default function CrearEstimado() {
         job_name: existingQuote.job_name || '',
         job_id: existingQuote.job_id || '',
         job_address: existingQuote.job_address || '',
-        origin_address: existingQuote.origin_address || '',
         work_details: existingQuote.work_details || '',
         team_ids: existingQuote.team_ids || (existingQuote.team_id ? [existingQuote.team_id] : []),
         team_names: existingQuote.team_names || (existingQuote.team_name ? [existingQuote.team_name] : []),
