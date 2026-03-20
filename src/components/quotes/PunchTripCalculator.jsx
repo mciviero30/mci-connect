@@ -58,12 +58,14 @@ export default function PunchTripCalculator({
       
       console.log('📊 [PunchTripCalculator] Backend response:', response);
       
-      if (response.success) {
-        console.log('✅ [PunchTripCalculator] Calculated:', { miles: response.miles, hours: response.hours });
-        setTravelMiles(response.miles);
-        setTravelTimeHours(response.hours);
+      const result = response.data || response;
+      
+      if (result.success) {
+        console.log('✅ [PunchTripCalculator] Calculated:', { miles: result.miles, hours: result.hours });
+        setTravelMiles(result.miles);
+        setTravelTimeHours(result.hours);
       } else {
-        console.error('❌ [PunchTripCalculator] Calculation failed:', response.error);
+        console.error('❌ [PunchTripCalculator] Calculation failed:', result.error);
       }
     } catch (error) {
       console.error('❌ [PunchTripCalculator] Fetch error:', error);
