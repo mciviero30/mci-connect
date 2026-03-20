@@ -5,6 +5,11 @@
 
 /**
  * Calculate distance between two GPS coordinates using Haversine formula
+ * 
+ * ⚠️ SSOT (Single Source of Truth) - DO NOT duplicate this function
+ * Used by: LiveTimeTracker, GeofenceMonitor, EnhancedGeolocation
+ * Backend has its own copy (Deno isolated environment)
+ * 
  * @param {number} lat1 - Latitude of point 1
  * @param {number} lon1 - Longitude of point 1
  * @param {number} lat2 - Latitude of point 2

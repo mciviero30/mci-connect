@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useNotificationService } from '../notifications/NotificationService';
 import GeofenceMonitor from '../time-tracking/GeofenceMonitor';
-import { calculateDistance, getCurrentLocation } from '@/components/utils/geolocation';
+import { calculateDistance, getCurrentLocation } from '@/components/utils/geolocation'; // SSOT
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { checkGeolocationPermission, markDeniedPromptSeen, hasSeenDeniedPrompt } from '@/components/utils/geolocationPermissions';
 import LocationPermissionPrompt from '@/components/shared/LocationPermissionPrompt';
@@ -446,13 +446,32 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
           metadata: { 
             job_name: job.name,
             max_distance: MAX_DISTANCE,
-            work_type: workType
+            work_type: workType,
+            job_address: job.address,
+            job_latitude: job.latitude,
+            job_longitude: job.longitude
           }
         });
         
-        setLocationError(language === 'es' 
-          ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(distanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar.`
-          : `❌ OUT OF RANGE: You are ${Math.round(distanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock in.`);
+        // Import improved alert component
+        const ImprovedGeofenceAlert = (await import('@/components/time-tracking/ImprovedGeofenceAlert')).default;
+        
+        setLocationError(
+          <ImprovedGeofenceAlert
+            distance={distanceMeters}
+            threshold={MAX_DISTANCE}
+            jobName={job.name}
+            jobAddress={job.address}
+            jobLat={job.latitude}
+            jobLng={job.longitude}
+            accuracy={location.accuracy}
+            onRetry={() => {
+              setLocationError(null);
+              setShowWorkTypeDialog(true);
+            }}
+            language={language}
+          />
+        );
         
         // Notify admins of attempted fraud (parallel)
         const admins = await base44.entities.EmployeeDirectory.filter({ role: 'admin', employment_status: 'active' });
@@ -686,13 +705,32 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
               source: 'frontend',
               metadata: { 
                 job_name: job.name,
-                max_distance: MAX_DISTANCE
+                max_distance: MAX_DISTANCE,
+                job_address: job.address,
+                job_latitude: job.latitude,
+                job_longitude: job.longitude
               }
             });
             
-            setLocationError(language === 'es' 
-              ? `❌ FUERA DEL ÁREA: Estás a ${Math.round(checkOutDistanceMeters)}m del proyecto. Debes estar a menos de ${MAX_DISTANCE}m para fichar salida.`
-              : `❌ OUT OF RANGE: You are ${Math.round(checkOutDistanceMeters)}m from project. You must be within ${MAX_DISTANCE}m to clock out.`);
+            // Import improved alert component
+            const ImprovedGeofenceAlert = (await import('@/components/time-tracking/ImprovedGeofenceAlert')).default;
+            
+            setLocationError(
+              <ImprovedGeofenceAlert
+                distance={checkOutDistanceMeters}
+                threshold={MAX_DISTANCE}
+                jobName={job.name}
+                jobAddress={job.address}
+                jobLat={job.latitude}
+                jobLng={job.longitude}
+                accuracy={location.accuracy}
+                onRetry={() => {
+                  setLocationError(null);
+                  handleClockOut();
+                }}
+                language={language}
+              />
+            );
             
             // Notify admins (parallel)
             const admins = await base44.entities.EmployeeDirectory.filter({ role: 'admin', employment_status: 'active' });

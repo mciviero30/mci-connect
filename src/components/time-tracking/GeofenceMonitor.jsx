@@ -6,7 +6,7 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { AlertTriangle, MapPinOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion, AnimatePresence } from 'framer-motion';
-import { calculateDistance } from '@/components/utils/geolocation';
+import { calculateDistance } from '@/components/utils/geolocation'; // SSOT for distance calculation
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 const GRACE_PERIOD_MS = 15 * 60 * 1000; // 15 minutes
