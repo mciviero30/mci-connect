@@ -29,44 +29,7 @@ export default function PunchTripCalculator({
   const [hotelRate, setHotelRate] = useState(200);
   const [perDiemRate, setPerDiemRate] = useState(55);
   
-  // When modal opens, use the travel values passed from parent
-  // No async calculation needed - values already computed
-  useEffect(() => {
-    if (isOpen) {
-      console.log('📍 [PunchTripCalculator] Modal opened with travel data:', { travelMiles: initialTravelMiles, travelTimeHours: initialTravelHours });
-    }
-  }, [isOpen]);
-  
-  const calculateDistance = async () => {
-    if (!jobAddress) {
-      console.log('⚠️ No job address');
-      return;
-    }
-    
-    setIsCalculating(true);
-    try {
-      const response = await base44.functions.invoke('calculateTravelDistance', { 
-        origin: originAddress || jobAddress,
-        destination: jobAddress 
-      });
-      
-      const result = response?.data || response;
-      
-      if (result?.success) {
-        console.log('✅ Distance calculated:', { miles: result.miles, hours: result.hours });
-        setTravelMiles(result.miles || 0);
-        setTravelTimeHours(result.hours || 0);
-      } else {
-        console.error('❌ Maps error:', result?.error);
-        alert(`${language === 'es' ? 'No se pudo calcular la distancia' : 'Could not calculate distance'}`);
-      }
-    } catch (error) {
-      console.error('❌ Error:', error);
-      alert(`${language === 'es' ? 'Error al conectar con Maps' : 'Error connecting to Maps'}`);
-    } finally {
-      setIsCalculating(false);
-    }
-  };
+
   
   // Calcular total de horas del día
   // travelTimeHours ya es one-way desde la API, así que multiplicamos x2 para round trip
