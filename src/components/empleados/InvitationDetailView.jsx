@@ -192,9 +192,6 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
             </Badge>
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={() => setEditing(true)} className="gap-1.5">
-          <Pencil className="w-3.5 h-3.5" /> Edit
-        </Button>
       </div>
 
       {/* Contact */}
