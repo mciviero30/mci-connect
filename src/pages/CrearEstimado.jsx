@@ -1311,23 +1311,25 @@ export default function CrearEstimado() {
         />
         
         <PunchTripCalculator
-          isOpen={showPunchCalculator}
-          onClose={() => setShowPunchCalculator(false)}
-          onAddItems={(calculatedItems) => {
-            // Remove the empty item that triggered the modal
-            const filteredItems = formData.items.filter(item => item.item_name);
-            setFormData({
-              ...formData,
-              items: [...filteredItems, ...calculatedItems]
-            });
-            setShowPunchCalculator(false);
-          }}
-          itemType={punchCalculatorType}
-          jobAddress={formData.job_address}
-          originAddress={formData.team_ids.length > 0 ? (teams.find(t => t.id === formData.team_ids[0])?.base_address || formData.job_address) : formData.job_address}
-          travelTimeHours={travelTimeHours || 0}
-          travelMiles={derivedValues?.travelMiles || 0}
-          language={language}
+           isOpen={showPunchCalculator}
+           onClose={() => setShowPunchCalculator(false)}
+           onAddItems={(calculatedItems) => {
+             // Remove the empty item that triggered the modal
+             const filteredItems = formData.items.filter(item => item.item_name);
+             setFormData({
+               ...formData,
+               items: [...filteredItems, ...calculatedItems]
+             });
+             setShowPunchCalculator(false);
+           }}
+           itemType={punchCalculatorType}
+           jobAddress={formData.job_address}
+           originAddress={formData.team_ids.length > 0 ? (teams.find(t => t.id === formData.team_ids[0])?.base_address || formData.job_address) : formData.job_address}
+           travelTimeHours={travelTimeHours || 0}
+           travelMiles={derivedValues?.travelMiles || 0}
+           existingItems={formData.items}
+           originalTechCount={projectTechCount}
+           language={language}
         />
       </div>
     </div>
