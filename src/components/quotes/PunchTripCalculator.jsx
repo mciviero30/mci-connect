@@ -51,31 +51,17 @@ export default function PunchTripCalculator({
     console.log('🔍 [PunchTripCalculator] Fetching distance for:', jobAddress);
     
     try {
-      // Call Google Maps Distance Matrix API
-      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-      const origin = '4870+Golden+Parkway,+Suite+B-124,+Buford,+GA+30518';
-      const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${encodeURIComponent(jobAddress)}&key=${apiKey}`;
+      const { calculateTravelDistance } = await import('@/functions/calculateTravelDistance');
+      const result = await calculateTravelDistance({ destination: jobAddress });
       
-      console.log('📡 [PunchTripCalculator] API URL:', url);
+      console.log('📊 [PunchTripCalculator] Backend response:', result);
       
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      console.log('📊 [PunchTripCalculator] API Response:', data);
-      
-      if (data.rows?.[0]?.elements?.[0]?.status === 'OK') {
-        const distanceMeters = data.rows[0].elements[0].distance.value;
-        const durationSeconds = data.rows[0].elements[0].duration.value;
-        
-        const miles = Math.round(distanceMeters / 1609.34); // meters to miles
-        const hours = parseFloat((durationSeconds / 3600).toFixed(1)); // seconds to hours
-        
-        console.log('✅ [PunchTripCalculator] Calculated:', { miles, hours });
-        
-        setTravelMiles(miles);
-        setTravelTimeHours(hours);
+      if (result.success) {
+        console.log('✅ [PunchTripCalculator] Calculated:', { miles: result.miles, hours: result.hours });
+        setTravelMiles(result.miles);
+        setTravelTimeHours(result.hours);
       } else {
-        console.error('❌ [PunchTripCalculator] API Error:', data.rows?.[0]?.elements?.[0]?.status);
+        console.error('❌ [PunchTripCalculator] Calculation failed:', result.error);
       }
     } catch (error) {
       console.error('❌ [PunchTripCalculator] Fetch error:', error);
