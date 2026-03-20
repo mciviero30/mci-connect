@@ -29,17 +29,11 @@ export default function PunchTripCalculator({
   const [hotelRate, setHotelRate] = useState(200);
   const [perDiemRate, setPerDiemRate] = useState(55);
   
-  // Auto-calculate distance when dialog opens if job address exists
-  // This useEffect runs when the modal opens to immediately calculate travel
+  // When modal opens, use the travel values passed from parent
+  // No async calculation needed - values already computed
   useEffect(() => {
-    if (isOpen && jobAddress) {
-      const timer = setTimeout(() => {
-        if (travelMiles === 0 || travelTimeHours === 0) {
-          console.log('🚗 [PunchTripCalculator] Modal opened - auto-calculating distance');
-          calculateDistance();
-        }
-      }, 100);
-      return () => clearTimeout(timer);
+    if (isOpen) {
+      console.log('📍 [PunchTripCalculator] Modal opened with travel data:', { travelMiles: initialTravelMiles, travelTimeHours: initialTravelHours });
     }
   }, [isOpen]);
   
