@@ -27,20 +27,32 @@ export default function PunchTripCalculator({
   // Auto-calculate distance when dialog opens if job address exists
   useEffect(() => {
     if (isOpen && jobAddress) {
+      console.log('🚗 [PunchTripCalculator] Auto-calculating distance for:', jobAddress);
       calculateDistance();
     }
   }, [isOpen]);
   
   const calculateDistance = async () => {
-    if (!jobAddress) return;
+    if (!jobAddress) {
+      console.log('⚠️ [PunchTripCalculator] No job address - skipping calculation');
+      return;
+    }
     
     setIsCalculating(true);
+    console.log('🔍 [PunchTripCalculator] Fetching distance for:', jobAddress);
+    
     try {
-      // Call Google Maps Distance Matrix API via backend
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/distancematrix/json?origins=4870+Golden+Parkway,+Suite+B-124,+Buford,+GA+30518&destinations=${encodeURIComponent(jobAddress)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
-      );
+      // Call Google Maps Distance Matrix API
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      const origin = '4870+Golden+Parkway,+Suite+B-124,+Buford,+GA+30518';
+      const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin}&destinations=${encodeURIComponent(jobAddress)}&key=${apiKey}`;
+      
+      console.log('📡 [PunchTripCalculator] API URL:', url);
+      
+      const response = await fetch(url);
       const data = await response.json();
+      
+      console.log('📊 [PunchTripCalculator] API Response:', data);
       
       if (data.rows?.[0]?.elements?.[0]?.status === 'OK') {
         const distanceMeters = data.rows[0].elements[0].distance.value;
@@ -49,11 +61,15 @@ export default function PunchTripCalculator({
         const miles = Math.round(distanceMeters / 1609.34); // meters to miles
         const hours = parseFloat((durationSeconds / 3600).toFixed(1)); // seconds to hours
         
+        console.log('✅ [PunchTripCalculator] Calculated:', { miles, hours });
+        
         setTravelMiles(miles);
         setTravelTimeHours(hours);
+      } else {
+        console.error('❌ [PunchTripCalculator] API Error:', data.rows?.[0]?.elements?.[0]?.status);
       }
     } catch (error) {
-      console.error('Error calculating distance:', error);
+      console.error('❌ [PunchTripCalculator] Fetch error:', error);
     } finally {
       setIsCalculating(false);
     }
