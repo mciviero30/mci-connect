@@ -59,7 +59,6 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
               type="email" 
               value={formData.email} 
               onChange={(e) => handleFieldChange('email', e.target.value)}
-              disabled={!!employee}
               required
             />
           </div>
