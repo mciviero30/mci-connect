@@ -293,8 +293,8 @@ export default function PunchTripCalculator({
                 <p className="text-blue-700">{jobAddress}</p>
                 {travelMiles > 0 && travelTimeHours > 0 && (
                   <div className="flex gap-4 mt-2 text-xs text-blue-600">
-                    <span>🚗 {travelTimeHours.toFixed(1)}h one-way ({(travelTimeHours * 2).toFixed(1)}h round trip)</span>
-                    <span>📏 {travelMiles} miles one-way</span>
+                    <span>🚗 {travelTimeHours.toFixed(1)}h one-way ({(travelTimeHours * 2).toFixed(1)}h round trip + 10% buffer)</span>
+                    <span>📏 {travelMiles} miles one-way (+ 10% buffer)</span>
                   </div>
                 )}
               </CardContent>

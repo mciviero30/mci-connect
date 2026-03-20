@@ -30,16 +30,31 @@ Deno.serve(async (req) => {
       const distanceMeters = element.distance.value;
       const durationSeconds = element.duration.value;
       
-      // API returns one-way
-      const miles = Math.round(distanceMeters / 1609.34);
-      const hours = parseFloat((durationSeconds / 3600).toFixed(2));
+      // Calculate with 10% buffer (same as main quote calculator)
+      const oneWayMiles = distanceMeters * 0.000621371;
+      const roundTripMiles = oneWayMiles * 2;
+      const totalMilesWithBuffer = roundTripMiles * 1.1;
       
-      console.log('✅ Distance calculated (ONE-WAY):', { miles, hours, raw_hours: durationSeconds / 3600 });
+      const oneWayHours = durationSeconds / 3600;
+      const roundTripHours = oneWayHours * 2;
+      const hoursWithBuffer = roundTripHours * 1.1;
+      const roundedHours = Math.ceil(hoursWithBuffer * 2) / 2; // Round to nearest 0.5
+      
+      console.log('✅ Distance calculated:', { 
+        oneWayMiles: oneWayMiles.toFixed(1),
+        roundTripMiles: roundTripMiles.toFixed(1),
+        totalMilesWithBuffer: totalMilesWithBuffer.toFixed(1),
+        oneWayHours: oneWayHours.toFixed(2),
+        roundTripHours: roundTripHours.toFixed(2),
+        finalRoundedHours: roundedHours
+      });
       
       return Response.json({ 
         success: true,
-        miles, // one-way
-        hours, // one-way
+        miles: Math.round(totalMilesWithBuffer / 2), // one-way with buffer
+        hours: parseFloat((roundedHours / 2).toFixed(2)), // one-way with buffer
+        roundTripMiles: Math.round(totalMilesWithBuffer),
+        roundTripHours: roundedHours,
         distanceText: element.distance.text,
         durationText: element.duration.text
       });
