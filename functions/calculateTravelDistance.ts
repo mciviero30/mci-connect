@@ -9,14 +9,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { destination } = await req.json();
+    const { destination, origin } = await req.json();
 
-    if (!destination) {
-      return Response.json({ error: 'Destination address required' }, { status: 400 });
+    if (!destination || !origin) {
+      return Response.json({ error: 'Both origin and destination addresses required' }, { status: 400 });
     }
 
     const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
-    const origin = '4870 Golden Parkway, Suite B-124, Buford, GA 30518';
     
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${apiKey}`;
     
