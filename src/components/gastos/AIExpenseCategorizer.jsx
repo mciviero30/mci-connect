@@ -12,7 +12,7 @@ export default function AIExpenseCategorizer({
   amount, 
   currentCategory,
   onCategorySelect,
-  disabled = false 
+  disabled = true  // AI Feature disabled to save integration credits
 }) {
   const { t, language } = useLanguage();
   const [isAnalyzing, setIsAnalyzing] = useState(false);

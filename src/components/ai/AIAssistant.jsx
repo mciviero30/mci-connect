@@ -197,6 +197,7 @@ User question: ${userMessage}`;
     setTimeout(() => handleSendMessage(), 100);
   };
 
-  // No floating AI button - AI Assistant accessible via sidebar menu for employees
+  // AI Assistant disabled temporarily to save integration credits
+  // Users can still get help through documentation and support
   return null;
 }
