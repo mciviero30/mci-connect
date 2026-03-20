@@ -270,41 +270,59 @@ export default function PunchTripCalculator({
             </Card>
           )}
           
-          {/* Job Info */}
+          {/* Job Info & Manual Travel Entry */}
           {jobAddress && (
             <Card className="bg-blue-50 border-blue-200">
-              <CardContent className="p-3 text-sm">
-                <div className="flex items-center justify-between mb-1">
-                  <p className="font-medium text-blue-900">
-                    {language === 'es' ? '📍 Ubicación del Trabajo' : '📍 Job Location'}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {isCalculating && (
-                      <div className="flex items-center gap-1 text-xs text-blue-600">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        {language === 'es' ? 'Calculando...' : 'Calculating...'}
-                      </div>
-                    )}
-                    {!isCalculating && (travelMiles === 0 || travelTimeHours === 0) && (
-                      <Button 
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={calculateDistance}
-                        className="h-6 px-2 text-xs text-blue-600 hover:bg-blue-200"
-                      >
-                        {language === 'es' ? 'Calcular' : 'Calculate'}
-                      </Button>
-                    )}
-                  </div>
+              <CardContent className="p-4 text-sm space-y-3">
+                <div>
+                  <p className="font-medium text-blue-900 mb-1">📍 {language === 'es' ? 'Ubicación del Trabajo' : 'Job Location'}</p>
+                  <p className="text-blue-700">{jobAddress}</p>
                 </div>
-                <p className="text-blue-700">{jobAddress}</p>
-                {travelMiles > 0 && travelTimeHours > 0 && (
-                  <div className="flex gap-4 mt-2 text-xs text-blue-600">
-                    <span>🚗 {travelTimeHours.toFixed(1)}h one-way ({(travelTimeHours * 2).toFixed(1)}h round trip + 10% buffer)</span>
-                    <span>📏 {travelMiles} miles one-way (+ 10% buffer)</span>
+
+                {/* Manual Travel Input - Allow user to enter if not auto-calculated */}
+                <div className="space-y-2 pt-2 border-t border-blue-200">
+                  <p className="font-medium text-blue-900 text-xs">✏️ {language === 'es' ? 'Datos de Viaje' : 'Travel Data'}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-blue-700 block mb-1">{language === 'es' ? 'Millas (ida)' : 'Miles (one-way)'}</label>
+                      <Input 
+                        type="number" 
+                        min="0"
+                        value={travelMiles}
+                        onChange={(e) => setTravelMiles(parseFloat(e.target.value) || 0)}
+                        className="h-8 text-sm bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-blue-700 block mb-1">{language === 'es' ? 'Horas (ida)' : 'Hours (one-way)'}</label>
+                      <Input 
+                        type="number" 
+                        min="0"
+                        step="0.5"
+                        value={travelTimeHours}
+                        onChange={(e) => setTravelTimeHours(parseFloat(e.target.value) || 0)}
+                        className="h-8 text-sm bg-white"
+                      />
+                    </div>
                   </div>
-                )}
+                  <Button 
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={calculateDistance}
+                    disabled={isCalculating}
+                    className="w-full h-7 text-xs text-blue-600 hover:bg-blue-200"
+                  >
+                    {isCalculating ? (
+                      <>
+                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        {language === 'es' ? 'Calculando...' : 'Calculating...'}
+                      </>
+                    ) : (
+                      `${language === 'es' ? 'Auto-calcular con Maps' : 'Auto-calculate with Maps'}`
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
