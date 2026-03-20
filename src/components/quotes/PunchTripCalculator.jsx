@@ -39,33 +39,30 @@ export default function PunchTripCalculator({
   
   const calculateDistance = async () => {
     if (!jobAddress) {
-      console.log('⚠️ [PunchTripCalculator] No job address - skipping calculation');
+      console.log('⚠️ No job address');
       return;
     }
     
     setIsCalculating(true);
-    console.log('🔍 [PunchTripCalculator] Fetching distance for:', jobAddress);
-    
     try {
-       // Call backend function via SDK
-       const response = await base44.functions.invoke('calculateTravelDistance', { 
-         origin: originAddress || jobAddress,
-         destination: jobAddress 
-       });
+      const response = await base44.functions.invoke('calculateTravelDistance', { 
+        origin: originAddress || jobAddress,
+        destination: jobAddress 
+      });
       
-      console.log('📊 [PunchTripCalculator] Backend response:', response);
+      const result = response?.data || response;
       
-      const result = response.data || response;
-      
-      if (result.success) {
-        console.log('✅ [PunchTripCalculator] Calculated:', { miles: result.miles, hours: result.hours });
-        setTravelMiles(result.miles);
-        setTravelTimeHours(result.hours);
+      if (result?.success) {
+        console.log('✅ Distance calculated:', { miles: result.miles, hours: result.hours });
+        setTravelMiles(result.miles || 0);
+        setTravelTimeHours(result.hours || 0);
       } else {
-        console.error('❌ [PunchTripCalculator] Calculation failed:', result.error);
+        console.error('❌ Maps error:', result?.error);
+        alert(`${language === 'es' ? 'No se pudo calcular la distancia' : 'Could not calculate distance'}`);
       }
     } catch (error) {
-      console.error('❌ [PunchTripCalculator] Fetch error:', error);
+      console.error('❌ Error:', error);
+      alert(`${language === 'es' ? 'Error al conectar con Maps' : 'Error connecting to Maps'}`);
     } finally {
       setIsCalculating(false);
     }
