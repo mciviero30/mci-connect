@@ -285,12 +285,25 @@ export default function PunchTripCalculator({
                   <p className="font-medium text-blue-900">
                     {language === 'es' ? '📍 Ubicación del Trabajo' : '📍 Job Location'}
                   </p>
-                  {isCalculating && (
-                    <div className="flex items-center gap-1 text-xs text-blue-600">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      {language === 'es' ? 'Calculando...' : 'Calculating...'}
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {isCalculating && (
+                      <div className="flex items-center gap-1 text-xs text-blue-600">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        {language === 'es' ? 'Calculando...' : 'Calculating...'}
+                      </div>
+                    )}
+                    {!isCalculating && (travelMiles === 0 || travelTimeHours === 0) && (
+                      <Button 
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={calculateDistance}
+                        className="h-6 px-2 text-xs text-blue-600 hover:bg-blue-200"
+                      >
+                        {language === 'es' ? 'Calcular' : 'Calculate'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-blue-700">{jobAddress}</p>
                 {travelMiles > 0 && travelTimeHours > 0 && (
