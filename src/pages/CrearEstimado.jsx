@@ -136,6 +136,8 @@ export default function CrearEstimado() {
   }, [projectTechCount]);
   const [showItemsMatcher, setShowItemsMatcher] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
+  const [showPunchCalculator, setShowPunchCalculator] = useState(false);
+  const [punchCalculatorType, setPunchCalculatorType] = useState('punch');
 
   const [stayConfig, setStayConfig] = useState({ roundTrips: 1, daysPerTrip: 2, nightsPerTrip: 2, total_nights: null, total_calendar_days: null });
 
@@ -641,8 +643,23 @@ export default function CrearEstimado() {
     if (field === 'item_name') {
       const selectedItem = quoteItems.find(qi => qi.name === value);
       if (selectedItem) {
+        const itemName = selectedItem.name || selectedItem.item_name;
+        
+        // SPECIAL HANDLING: Open calculator for Punch Trip or Field Verification
+        if (itemName === 'Punch Trip') {
+          setPunchCalculatorType('punch');
+          setShowPunchCalculator(true);
+          return; // Don't add the item yet - calculator will do it
+        }
+        
+        if (itemName === 'Field Verification') {
+          setPunchCalculatorType('field_verification');
+          setShowPunchCalculator(true);
+          return; // Don't add the item yet - calculator will do it
+        }
+        
         // CRITICAL: Keep item_name in addition to description
-        newItems[index].item_name = selectedItem.name || selectedItem.item_name;
+        newItems[index].item_name = itemName;
         newItems[index].description = selectedItem.description || '';
         newItems[index].unit = selectedItem.unit || 'pcs';
         newItems[index].unit_price = selectedItem.unit_price || 0;
@@ -660,8 +677,8 @@ export default function CrearEstimado() {
         
         toast({
           title: language === 'es' 
-            ? `Ítem "${selectedItem.name || selectedItem.item_name}" cargado` 
-            : `Item "${selectedItem.name || selectedItem.item_name}" loaded`,
+            ? `Ítem "${itemName}" cargado` 
+            : `Item "${itemName}" loaded`,
           description: language === 'es'
             ? `Precio unitario: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Tiempo: ${selectedItem.installation_time}h` : ''}`
             : `Unit price: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Time: ${selectedItem.installation_time}h` : ''}`,
@@ -1134,10 +1151,6 @@ export default function CrearEstimado() {
                 derivedValues={derivedValues}
                 onAddItem={addItem}
                 pricesLocked={pricesLocked}
-                jobAddress={formData.job_address}
-                travelTimeHours={travelTimeHours}
-                travelMiles={derivedValues?.travelMiles || 0}
-                language={language}
               />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto px-3 pb-4">
@@ -1287,6 +1300,24 @@ export default function CrearEstimado() {
           isOpen={showItemsMatcher}
           onClose={() => setShowItemsMatcher(false)}
           onAddItems={handleAddMatchedItems}
+        />
+        
+        <PunchTripCalculator
+          isOpen={showPunchCalculator}
+          onClose={() => setShowPunchCalculator(false)}
+          onAddItems={(calculatedItems) => {
+            // Remove the empty item that triggered the modal
+            const filteredItems = formData.items.filter(item => item.item_name);
+            setFormData({
+              ...formData,
+              items: [...filteredItems, ...calculatedItems]
+            });
+          }}
+          itemType={punchCalculatorType}
+          jobAddress={formData.job_address}
+          travelTimeHours={travelTimeHours}
+          travelMiles={0} // Will be auto-calculated by Google Maps
+          language={language}
         />
       </div>
     </div>
