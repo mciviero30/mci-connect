@@ -1333,14 +1333,7 @@ export default function CrearEstimado() {
           }}
           itemType={punchCalculatorType}
           jobAddress={formData.job_address}
-          originAddress={formData.origin_address || (() => {
-            // Fallback: get team's base_address if origin_address not set
-            if (formData.team_ids.length > 0) {
-              const team = teams.find(t => t.id === formData.team_ids[0]);
-              return team?.base_address || formData.job_address;
-            }
-            return formData.job_address;
-          })()}
+          originAddress={formData.team_ids.length > 0 ? (teams.find(t => t.id === formData.team_ids[0])?.base_address || formData.job_address) : formData.job_address}
           travelTimeHours={travelTimeHours}
           travelMiles={derivedValues?.travelMiles || 0}
           language={language}
