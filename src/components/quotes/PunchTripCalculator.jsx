@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, Clock, Car, Hotel, UtensilsCrossed, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calculator, Clock, Car, Hotel, UtensilsCrossed, AlertCircle, CheckCircle2, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { base44 } from '@/api/base44Client';
 
 export default function PunchTripCalculator({ 
   isOpen, 
@@ -13,12 +14,50 @@ export default function PunchTripCalculator({
   onAddItems, 
   itemType = 'punch', // 'punch' or 'field_verification'
   jobAddress,
-  travelTimeHours = 0,
-  travelMiles = 0,
+  travelTimeHours: initialTravelHours = 0,
+  travelMiles: initialTravelMiles = 0,
   language = 'en'
 }) {
   const [techCount, setTechCount] = useState(itemType === 'field_verification' ? 1 : 2);
   const [workHours, setWorkHours] = useState(itemType === 'field_verification' ? 4 : 4);
+  const [travelTimeHours, setTravelTimeHours] = useState(initialTravelHours);
+  const [travelMiles, setTravelMiles] = useState(initialTravelMiles);
+  const [isCalculating, setIsCalculating] = useState(false);
+  
+  // Auto-calculate distance when dialog opens if job address exists
+  useEffect(() => {
+    if (isOpen && jobAddress && travelMiles === 0) {
+      calculateDistance();
+    }
+  }, [isOpen, jobAddress]);
+  
+  const calculateDistance = async () => {
+    if (!jobAddress) return;
+    
+    setIsCalculating(true);
+    try {
+      // Call Google Maps Distance Matrix API via backend
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/distancematrix/json?origins=4870+Golden+Parkway,+Suite+B-124,+Buford,+GA+30518&destinations=${encodeURIComponent(jobAddress)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+      );
+      const data = await response.json();
+      
+      if (data.rows?.[0]?.elements?.[0]?.status === 'OK') {
+        const distanceMeters = data.rows[0].elements[0].distance.value;
+        const durationSeconds = data.rows[0].elements[0].duration.value;
+        
+        const miles = Math.round(distanceMeters / 1609.34); // meters to miles
+        const hours = parseFloat((durationSeconds / 3600).toFixed(1)); // seconds to hours
+        
+        setTravelMiles(miles);
+        setTravelTimeHours(hours);
+      }
+    } catch (error) {
+      console.error('Error calculating distance:', error);
+    } finally {
+      setIsCalculating(false);
+    }
+  };
   
   // Calcular total de horas del día
   const totalDayHours = (travelTimeHours * 2) + workHours; // Round trip + trabajo
@@ -26,7 +65,7 @@ export default function PunchTripCalculator({
   const nightsNeeded = needsHotel ? 1 : 0;
   
   // Costos
-  const DRIVING_RATE = 60; // $60/hr
+  const DRIVING_RATE = 55; // $55/hr
   const MILEAGE_RATE = 0.70; // $0.70/milla
   const HOTEL_RATE = 120; // $120/noche por habitación
   const PER_DIEM_RATE = 75; // $75/día por persona
@@ -188,14 +227,24 @@ export default function PunchTripCalculator({
           {jobAddress && (
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-3 text-sm">
-                <p className="font-medium text-blue-900 mb-1">
-                  {language === 'es' ? '📍 Ubicación del Trabajo' : '📍 Job Location'}
-                </p>
-                <p className="text-blue-700">{jobAddress}</p>
-                <div className="flex gap-4 mt-2 text-xs text-blue-600">
-                  <span>🚗 {travelTimeHours.toFixed(1)}hrs one-way</span>
-                  <span>📏 {travelMiles} miles one-way</span>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="font-medium text-blue-900">
+                    {language === 'es' ? '📍 Ubicación del Trabajo' : '📍 Job Location'}
+                  </p>
+                  {isCalculating && (
+                    <div className="flex items-center gap-1 text-xs text-blue-600">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      {language === 'es' ? 'Calculando...' : 'Calculating...'}
+                    </div>
+                  )}
                 </div>
+                <p className="text-blue-700">{jobAddress}</p>
+                {travelMiles > 0 && travelTimeHours > 0 && (
+                  <div className="flex gap-4 mt-2 text-xs text-blue-600">
+                    <span>🚗 {travelTimeHours.toFixed(1)}hrs one-way</span>
+                    <span>📏 {travelMiles} miles one-way</span>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
