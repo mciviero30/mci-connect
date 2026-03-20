@@ -31,19 +31,19 @@ export default function PunchTripCalculator({
   
   // Auto-calculate distance when dialog opens if job address exists
   useEffect(() => {
-    if (isOpen && jobAddress && travelMiles === 0 && travelTimeHours === 0) {
+    if (isOpen && jobAddress && (travelMiles === 0 || travelTimeHours === 0) && !isCalculating) {
       console.log('🚗 [PunchTripCalculator] Auto-calculating distance for:', jobAddress);
       calculateDistance();
     }
-  }, [isOpen]);
+  }, [isOpen, jobAddress]);
   
   // Recalculate when "Out of Town" is enabled and we don't have travel data
   useEffect(() => {
-    if (isOutOfTown && jobAddress && travelTimeHours === 0 && travelMiles === 0 && !isCalculating) {
+    if (isOutOfTown && jobAddress && (travelTimeHours === 0 || travelMiles === 0) && !isCalculating) {
       console.log('🚗 [PunchTripCalculator] Out of Town enabled - calculating distance');
       calculateDistance();
     }
-  }, [isOutOfTown, jobAddress]);
+  }, [isOutOfTown]);
   
   const calculateDistance = async () => {
     if (!jobAddress) {
