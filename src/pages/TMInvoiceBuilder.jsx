@@ -40,14 +40,17 @@ export default function TMInvoiceBuilder() {
     queryFn: () => base44.auth.me(),
   });
 
-  // Fetch T&M eligible jobs
+  // Fetch T&M eligible jobs (both T&M and Fixed Price jobs can have T&M billing)
   const { data: jobs = [], isLoading: loadingJobs } = useQuery({
     queryKey: ['tm-jobs'],
     queryFn: async () => {
       const allJobs = await base44.entities.Job.list('-created_date');
       
-      // Filter jobs with T&M billing type
-      return allJobs.filter(job => job.billing_type === 'time_materials');
+      // Allow both billing types - Fixed Price jobs can have T&M additional work
+      return allJobs.filter(job => 
+        job.billing_type === 'time_materials' || 
+        job.billing_type === 'fixed_price'
+      );
     },
   });
 
@@ -536,12 +539,12 @@ export default function TMInvoiceBuilder() {
             <CardContent className="p-12 text-center">
               <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                {language === 'es' ? 'No hay Trabajos T&M' : 'No Time & Materials Jobs'}
+                {language === 'es' ? 'No hay Trabajos Disponibles' : 'No Jobs Available'}
               </h3>
               <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-4">
                 {language === 'es'
-                  ? 'El Constructor de Facturas T&M solo funciona con trabajos que tienen autorización Time & Materials.'
-                  : 'T&M Invoice Builder works only with jobs that have Time & Materials authorization.'}
+                  ? 'No tienes trabajos creados aún. Crea un trabajo primero para facturar horas adicionales.'
+                  : 'No jobs created yet. Create a job first to bill additional hours.'}
               </p>
               
               <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-600 p-4 rounded-lg max-w-md mx-auto">
