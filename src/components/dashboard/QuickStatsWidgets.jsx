@@ -74,19 +74,19 @@ export default function QuickStatsWidgets({ user }) {
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices', user?.id],
-    queryFn: () => base44.entities.Invoice.filter({ created_by_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 200),
     enabled: !!user?.id,
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs', user?.id],
-    queryFn: () => base44.entities.Job.filter({ created_by_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Job.list('-created_date', 200),
     enabled: !!user?.id,
   });
 
   const { data: quotes = [] } = useQuery({
     queryKey: ['quotes', user?.id],
-    queryFn: () => base44.entities.Quote.filter({ assigned_to_user_id: user?.id }, '-created_date', 100),
+    queryFn: () => base44.entities.Quote.list('-created_date', 200),
     enabled: !!user?.id,
   });
 
