@@ -23,6 +23,14 @@ export default function PunchTripCalculator({
 }) {
   // Extract travel data from existing items (from the quote)
   const extractedTravelData = useMemo(() => {
+    if (!existingItems || existingItems.length === 0) {
+      return {
+        drivingHours: initialTravelHours,
+        miles: initialTravelMiles,
+        originalTechs: originalTechCount
+      };
+    }
+    
     // Search for driving/travel time item - more flexible matching
     const drivingItem = existingItems.find(i => {
       const name = i.item_name?.toLowerCase() || '';
@@ -35,18 +43,23 @@ export default function PunchTripCalculator({
       return name.includes('mileage') || i.travel_item_type === 'mileage' || name.includes('miles');
     });
     
+    // Get mileage quantity - try multiple fields
+    const mileageQuantity = mileageItem?.quantity || mileageItem?.miles || initialTravelMiles;
+    
     // Debug log
     console.log('[PunchTripCalculator] Extracted travel data:', {
       drivingItem,
       mileageItem,
       drivingHours: drivingItem?.duration_value || initialTravelHours,
-      miles: mileageItem?.quantity || initialTravelMiles,
-      existingItemsCount: existingItems?.length
+      miles: mileageQuantity,
+      originalTechs: drivingItem?.tech_count || originalTechCount,
+      existingItemsCount: existingItems?.length,
+      allItems: existingItems.map(i => ({ name: i.item_name, qty: i.quantity, duration: i.duration_value }))
     });
     
     return {
       drivingHours: drivingItem?.duration_value || initialTravelHours,
-      miles: mileageItem?.quantity || initialTravelMiles,
+      miles: mileageQuantity,
       originalTechs: drivingItem?.tech_count || originalTechCount
     };
   }, [existingItems, initialTravelHours, initialTravelMiles, originalTechCount]);
