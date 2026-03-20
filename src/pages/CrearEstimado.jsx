@@ -981,28 +981,7 @@ export default function CrearEstimado() {
                   />
                 </div>
 
-                <div className="md:col-span-2">
-                  <Label className="text-slate-700">
-                    {language === 'es' ? 'Dirección de Salida (para viajes)' : 'Departure Address (for travel calculations)'} ({t('optional')})
-                  </Label>
-                  <AddressAutocomplete
-                    value={formData.origin_address}
-                    onChange={(value) => setFormData({...formData, origin_address: value})}
-                    onPlaceSelected={(placeData) => {
-                      setFormData({
-                        ...formData,
-                        origin_address: placeData.full_address || placeData.address
-                      });
-                    }}
-                    placeholder={language === 'es' ? 'Ej: Orlando, FL' : 'e.g., Orlando, FL'}
-                    className="bg-white border-slate-300 text-slate-900"
-                  />
-                  <p className="text-xs text-slate-500 mt-1">
-                    {language === 'es' 
-                      ? 'Si dejas vacío, usará la dirección del trabajo como origen' 
-                      : 'If left empty, will use job address as origin'}
-                  </p>
-                </div>
+
 
                 <div className="md:col-span-2">
                   <Label className="text-slate-700">
