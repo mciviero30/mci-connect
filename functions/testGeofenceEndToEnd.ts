@@ -137,9 +137,9 @@ Deno.serve(async (req) => {
       `Created TimeEntry ID: ${insideTimeEntry.id}`
     );
 
-    // Wait 3 seconds for automation to trigger
-    console.log('⏳ Waiting 3s for backend validation automation...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Wait 2 seconds for automation to trigger
+    console.log('⏳ Waiting 2s for backend validation automation...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Verify backend validation ran
     const validatedInside = await base44.asServiceRole.entities.TimeEntry.get(insideTimeEntry.id);
