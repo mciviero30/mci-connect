@@ -51,17 +51,19 @@ export default function PunchTripCalculator({
     console.log('🔍 [PunchTripCalculator] Fetching distance for:', jobAddress);
     
     try {
-      const { calculateTravelDistance } = await import('@/functions/calculateTravelDistance');
-      const result = await calculateTravelDistance({ destination: jobAddress });
+      // Call backend function via SDK
+      const response = await base44.functions.invoke('calculateTravelDistance', { 
+        destination: jobAddress 
+      });
       
-      console.log('📊 [PunchTripCalculator] Backend response:', result);
+      console.log('📊 [PunchTripCalculator] Backend response:', response);
       
-      if (result.success) {
-        console.log('✅ [PunchTripCalculator] Calculated:', { miles: result.miles, hours: result.hours });
-        setTravelMiles(result.miles);
-        setTravelTimeHours(result.hours);
+      if (response.success) {
+        console.log('✅ [PunchTripCalculator] Calculated:', { miles: response.miles, hours: response.hours });
+        setTravelMiles(response.miles);
+        setTravelTimeHours(response.hours);
       } else {
-        console.error('❌ [PunchTripCalculator] Calculation failed:', result.error);
+        console.error('❌ [PunchTripCalculator] Calculation failed:', response.error);
       }
     } catch (error) {
       console.error('❌ [PunchTripCalculator] Fetch error:', error);
