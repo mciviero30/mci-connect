@@ -243,8 +243,8 @@ export default function PunchTripCalculator({
             </div>
           </div>
           
-          {/* Out of Town Toggle - Only show if less than 10 hours */}
-          {!needsHotel && travelTimeHours > 0 && (
+          {/* Out of Town Toggle - Show if job has address and doesn't need hotel */}
+          {!needsHotel && jobAddress && (
             <Card className="bg-blue-50 border-blue-200">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
