@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -59,51 +58,7 @@ export default function AvatarCreator({ open, onOpenChange, currentConfig }) {
   };
 
   const generateWithAI = async () => {
-    if (!aiPrompt.trim()) {
-      alert('Por favor describe cómo quieres tu avatar');
-      return;
-    }
-
-    setGeneratingAI(true);
-    try {
-      const prompt = `Based on this description: "${aiPrompt}", and considering the person's name is ${user?.full_name || 'User'}, create an avatar configuration.
-      
-      Return a JSON object with these exact properties:
-      - skin: one of ["light", "tan", "medium", "dark", "pale"]
-      - hair: one of ["short", "medium", "long", "curly", "bald", "buzz"]
-      - hair_color: one of ["black", "brown", "blonde", "red", "gray", "blue", "purple"]
-      - eyes: one of ["normal", "happy", "wide", "tired", "wink"]
-      - mouth: one of ["smile", "happy", "neutral", "laugh", "surprised"]
-      - glasses: boolean
-      - facial_hair: one of ["none", "beard", "mustache", "goatee"]
-      - accessory: one of ["none", "hat", "cap", "headphones"]
-      
-      Be creative and match the description as closely as possible.`;
-
-      const result = await base44.integrations.Core.InvokeLLM({
-        prompt,
-        response_json_schema: {
-          type: "object",
-          properties: {
-            skin: { type: "string", enum: ["light", "tan", "medium", "dark", "pale"] },
-            hair: { type: "string", enum: ["short", "medium", "long", "curly", "bald", "buzz"] },
-            hair_color: { type: "string", enum: ["black", "brown", "blonde", "red", "gray", "blue", "purple"] },
-            eyes: { type: "string", enum: ["normal", "happy", "wide", "tired", "wink"] },
-            mouth: { type: "string", enum: ["smile", "happy", "neutral", "laugh", "surprised"] },
-            glasses: { type: "boolean" },
-            facial_hair: { type: "string", enum: ["none", "beard", "mustache", "goatee"] },
-            accessory: { type: "string", enum: ["none", "hat", "cap", "headphones"] }
-          }
-        }
-      });
-
-      setConfig(result);
-      setAiPrompt('');
-      alert('✅ Avatar creado con AI!');
-    } catch (error) {
-      alert('Error generando avatar con AI: ' + error.message);
-    }
-    setGeneratingAI(false);
+    alert('⚠️ Función de AI desactivada temporalmente para conservar integration credits. Por favor utiliza el botón "Cambiar Foto" para randomizar tu avatar.');
   };
 
   return (
@@ -136,42 +91,21 @@ export default function AvatarCreator({ open, onOpenChange, currentConfig }) {
             <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
               <CardContent className="p-6">
                 <div className="text-center space-y-4">
-                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                    <Sparkles className="w-10 h-10 text-white" />
+                  <div className="w-20 h-20 mx-auto bg-gradient-to-br from-amber-500 to-amber-600 rounded-full flex items-center justify-center shadow-lg">
+                    <AlertTriangle className="w-10 h-10 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 mb-2">Genera Avatar con AI (o Mejóralo)</h3>
+                    <h3 className="font-bold text-slate-900 mb-2">Generador AI Desactivado</h3>
                     <p className="text-sm text-slate-600 mb-4">
-                      Describe tus características y el AI creará tu avatar
+                      La función de AI está temporalmente desactivada para conservar integration credits.
                     </p>
                   </div>
-                  <Input
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    placeholder="Ej: Hombre latino con barba, pelo corto negro, lentes..."
-                    className="bg-white border-slate-300 text-slate-900"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && aiPrompt.trim() && !generatingAI) {
-                        generateWithAI();
-                      }
-                    }}
-                  />
                   <Button 
-                    onClick={generateWithAI} 
-                    disabled={generatingAI || !aiPrompt.trim()}
-                    className="w-full bg-gradient-to-r from-[#3B9FF3] to-blue-500 text-white"
+                    disabled
+                    className="w-full bg-gradient-to-r from-slate-400 to-slate-500 text-white"
                   >
-                    {generatingAI ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Generando avatar...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Generar Avatar
-                      </>
-                    )}
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Disponible pronto
                   </Button>
                 </div>
               </CardContent>
