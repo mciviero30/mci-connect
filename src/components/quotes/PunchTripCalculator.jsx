@@ -24,7 +24,8 @@ export default function PunchTripCalculator({
   const [travelTimeHours, setTravelTimeHours] = useState(initialTravelHours);
   const [travelMiles, setTravelMiles] = useState(initialTravelMiles);
   const [isCalculating, setIsCalculating] = useState(false);
-  const [isOutOfTown, setIsOutOfTown] = useState(false);
+  // Field Verification should auto-enable out of town to charge travel
+  const [isOutOfTown, setIsOutOfTown] = useState(itemType === 'field_verification');
   const [hotelRate, setHotelRate] = useState(200);
   const [perDiemRate, setPerDiemRate] = useState(55);
   
