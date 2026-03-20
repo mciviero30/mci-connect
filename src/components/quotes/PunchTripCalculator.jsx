@@ -26,10 +26,10 @@ export default function PunchTripCalculator({
   
   // Auto-calculate distance when dialog opens if job address exists
   useEffect(() => {
-    if (isOpen && jobAddress && travelMiles === 0) {
+    if (isOpen && jobAddress) {
       calculateDistance();
     }
-  }, [isOpen, jobAddress]);
+  }, [isOpen]);
   
   const calculateDistance = async () => {
     if (!jobAddress) return;
