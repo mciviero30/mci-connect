@@ -23,8 +23,26 @@ export default function PunchTripCalculator({
 }) {
   // Extract travel data from existing items (from the quote)
   const extractedTravelData = useMemo(() => {
-    const drivingItem = existingItems.find(i => i.item_name?.toLowerCase() === 'driving time' || i.travel_item_type === 'driving_time');
-    const mileageItem = existingItems.find(i => i.item_name?.toLowerCase() === 'mileage' || i.travel_item_type === 'mileage');
+    // Search for driving/travel time item - more flexible matching
+    const drivingItem = existingItems.find(i => {
+      const name = i.item_name?.toLowerCase() || '';
+      return name.includes('driving') || i.travel_item_type === 'driving_time' || name.includes('travel time');
+    });
+    
+    // Search for mileage item
+    const mileageItem = existingItems.find(i => {
+      const name = i.item_name?.toLowerCase() || '';
+      return name.includes('mileage') || i.travel_item_type === 'mileage' || name.includes('miles');
+    });
+    
+    // Debug log
+    console.log('[PunchTripCalculator] Extracted travel data:', {
+      drivingItem,
+      mileageItem,
+      drivingHours: drivingItem?.duration_value || initialTravelHours,
+      miles: mileageItem?.quantity || initialTravelMiles,
+      existingItemsCount: existingItems?.length
+    });
     
     return {
       drivingHours: drivingItem?.duration_value || initialTravelHours,
