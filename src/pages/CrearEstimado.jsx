@@ -1325,7 +1325,7 @@ export default function CrearEstimado() {
           itemType={punchCalculatorType}
           jobAddress={formData.job_address}
           originAddress={formData.team_ids.length > 0 ? (teams.find(t => t.id === formData.team_ids[0])?.base_address || formData.job_address) : formData.job_address}
-          travelTimeHours={travelTimeHours}
+          travelTimeHours={travelTimeHours || 0}
           travelMiles={derivedValues?.travelMiles || 0}
           language={language}
         />
