@@ -105,7 +105,6 @@ export default function CrearEstimado() {
     job_name: '',
     job_id: '',
     job_address: '',
-    origin_address: '', // NEW: Departure address for travel calculations
     work_details: '', // NEW: Details like floor, room, etc.
     team_ids: [], // Changed to array for multiple teams
     team_names: [], // Changed to array for multiple team names
