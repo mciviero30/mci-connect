@@ -24,6 +24,8 @@ export default function PunchTripCalculator({
   const [travelMiles, setTravelMiles] = useState(initialTravelMiles);
   const [isCalculating, setIsCalculating] = useState(false);
   const [isOutOfTown, setIsOutOfTown] = useState(false);
+  const [hotelRate, setHotelRate] = useState(200);
+  const [perDiemRate, setPerDiemRate] = useState(55);
   
   // Auto-calculate distance when dialog opens if job address exists
   useEffect(() => {
@@ -85,16 +87,14 @@ export default function PunchTripCalculator({
   // Costos
   const DRIVING_RATE = 55; // $55/hr
   const MILEAGE_RATE = 0.70; // $0.70/milla
-  const HOTEL_RATE = 120; // $120/noche por habitación
-  const PER_DIEM_RATE = 75; // $75/día por persona
   const WORK_RATE = 60; // $60/hr para trabajo
   
   // Cálculos
   const drivingCost = shouldChargeTravel ? (travelTimeHours * 2 * techCount * DRIVING_RATE) : 0; // Round trip
   const mileageCost = shouldChargeTravel ? (travelMiles * 2 * MILEAGE_RATE) : 0; // Round trip para todo el equipo
   const workCost = workHours * techCount * WORK_RATE;
-  const hotelCost = needsHotel ? (Math.ceil(techCount / 2) * HOTEL_RATE * nightsNeeded) : 0;
-  const perDiemCost = needsHotel ? (techCount * PER_DIEM_RATE * (nightsNeeded + 1)) : 0; // +1 porque comen el día de salida también
+  const hotelCost = needsHotel ? (Math.ceil(techCount / 2) * hotelRate * nightsNeeded) : 0;
+  const perDiemCost = needsHotel ? (techCount * perDiemRate * (nightsNeeded + 1)) : 0; // +1 porque comen el día de salida también
   
   const totalCost = drivingCost + mileageCost + workCost + hotelCost + perDiemCost;
   
@@ -162,7 +162,7 @@ export default function PunchTripCalculator({
         description: `${rooms} room(s) × ${nightsNeeded} night(s) - ${techCount} techs`,
         quantity: rooms * nightsNeeded,
         unit: 'nights',
-        unit_price: HOTEL_RATE,
+        unit_price: hotelRate,
         total: hotelCost,
         installation_time: 0,
         calculation_type: 'hotel',
@@ -179,10 +179,10 @@ export default function PunchTripCalculator({
       const days = nightsNeeded + 1; // Si duermen 1 noche = comen 2 días
       items.push({
         item_name: 'Per Diem',
-        description: `Meals - ${techCount} tech(s) × ${days} day(s) @ $${PER_DIEM_RATE}/day`,
+        description: `Meals - ${techCount} tech(s) × ${days} day(s) @ $${perDiemRate}/day`,
         quantity: techCount * days,
         unit: 'days',
-        unit_price: PER_DIEM_RATE,
+        unit_price: perDiemRate,
         total: perDiemCost,
         installation_time: 0,
         calculation_type: 'per_diem',
@@ -204,7 +204,10 @@ export default function PunchTripCalculator({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Calculator className="w-5 h-5 text-blue-600" />
-            {language === 'es' ? 'Calculadora de Punch Trip' : 'Punch Trip Calculator'}
+            {itemType === 'punch' 
+              ? (language === 'es' ? 'Calculadora de Punch Trip' : 'Punch Trip Calculator')
+              : (language === 'es' ? 'Calculadora de Field Verification' : 'Field Verification Calculator')
+            }
           </DialogTitle>
         </DialogHeader>
         
@@ -376,28 +379,62 @@ export default function PunchTripCalculator({
             
             {/* Hotel (solo si necesitan) */}
             {needsHotel && (
-              <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg border border-amber-200">
+              <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Hotel className="w-4 h-4 text-amber-600" />
-                  <span className="text-sm font-medium">Hotel</span>
+                  <Label className="text-sm">Hotel Rate (per room/night)</Label>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-slate-500">{Math.ceil(techCount / 2)} room × {nightsNeeded} night × ${HOTEL_RATE}</p>
-                  <p className="font-bold text-amber-700">${hotelCost.toFixed(2)}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-600">$</span>
+                  <Input 
+                    type="number" 
+                    min="50" 
+                    max="500" 
+                    value={hotelRate}
+                    onChange={(e) => setHotelRate(parseFloat(e.target.value) || 200)}
+                    className="w-32"
+                  />
+                </div>
+                <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <div className="flex items-center gap-2">
+                    <Hotel className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-medium">Hotel</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500">{Math.ceil(techCount / 2)} room × {nightsNeeded} night × ${hotelRate}</p>
+                    <p className="font-bold text-amber-700">${hotelCost.toFixed(2)}</p>
+                  </div>
                 </div>
               </div>
             )}
             
             {/* Per Diem (solo si necesitan) */}
             {needsHotel && (
-              <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg border border-amber-200">
+              <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <UtensilsCrossed className="w-4 h-4 text-amber-600" />
-                  <span className="text-sm font-medium">Per Diem</span>
+                  <Label className="text-sm">Per Diem Rate (per person/day)</Label>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-slate-500">{techCount} tech × {nightsNeeded + 1} days × ${PER_DIEM_RATE}</p>
-                  <p className="font-bold text-amber-700">${perDiemCost.toFixed(2)}</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-600">$</span>
+                  <Input 
+                    type="number" 
+                    min="30" 
+                    max="200" 
+                    value={perDiemRate}
+                    onChange={(e) => setPerDiemRate(parseFloat(e.target.value) || 55)}
+                    className="w-32"
+                  />
+                </div>
+                <div className="flex justify-between items-center p-3 bg-amber-50 rounded-lg border border-amber-200">
+                  <div className="flex items-center gap-2">
+                    <UtensilsCrossed className="w-4 h-4 text-amber-600" />
+                    <span className="text-sm font-medium">Per Diem</span>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-slate-500">{techCount} tech × {nightsNeeded + 1} days × ${perDiemRate}</p>
+                    <p className="font-bold text-amber-700">${perDiemCost.toFixed(2)}</p>
+                  </div>
                 </div>
               </div>
             )}
