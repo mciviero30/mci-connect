@@ -30,15 +30,16 @@ Deno.serve(async (req) => {
       const distanceMeters = element.distance.value;
       const durationSeconds = element.duration.value;
       
+      // ONE-WAY distance and time (API returns one-way by default)
       const miles = Math.round(distanceMeters / 1609.34);
       const hours = parseFloat((durationSeconds / 3600).toFixed(1));
       
-      console.log('✅ Distance calculated:', { miles, hours });
+      console.log('✅ Distance calculated (ONE-WAY):', { miles, hours });
       
       return Response.json({ 
         success: true,
-        miles,
-        hours,
+        miles, // one-way
+        hours, // one-way
         distanceText: element.distance.text,
         durationText: element.duration.text
       });

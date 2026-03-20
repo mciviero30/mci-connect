@@ -77,6 +77,7 @@ export default function PunchTripCalculator({
   };
   
   // Calcular total de horas del día
+  // travelTimeHours ya es one-way desde la API, así que multiplicamos x2 para round trip
   const totalDayHours = (travelTimeHours * 2) + workHours; // Round trip + trabajo
   const needsHotel = totalDayHours > 10;
   const nightsNeeded = needsHotel ? 1 : 0;
@@ -90,8 +91,9 @@ export default function PunchTripCalculator({
   const WORK_RATE = 60; // $60/hr para trabajo
   
   // Cálculos
+  // travelTimeHours y travelMiles ya son one-way, multiplicamos x2 para round trip
   const drivingCost = shouldChargeTravel ? (travelTimeHours * 2 * techCount * DRIVING_RATE) : 0; // Round trip
-  const mileageCost = shouldChargeTravel ? (travelMiles * 2 * MILEAGE_RATE) : 0; // Round trip para todo el equipo
+  const mileageCost = shouldChargeTravel ? (travelMiles * 2 * MILEAGE_RATE) : 0; // Round trip
   const workCost = workHours * techCount * WORK_RATE;
   const hotelCost = needsHotel ? (Math.ceil(techCount / 2) * hotelRate * nightsNeeded) : 0;
   const perDiemCost = needsHotel ? (techCount * perDiemRate * (nightsNeeded + 1)) : 0; // +1 porque comen el día de salida también
@@ -291,7 +293,7 @@ export default function PunchTripCalculator({
                 <p className="text-blue-700">{jobAddress}</p>
                 {travelMiles > 0 && travelTimeHours > 0 && (
                   <div className="flex gap-4 mt-2 text-xs text-blue-600">
-                    <span>🚗 {travelTimeHours.toFixed(1)}hrs one-way</span>
+                    <span>🚗 {travelTimeHours.toFixed(1)}h one-way ({(travelTimeHours * 2).toFixed(1)}h round trip)</span>
                     <span>📏 {travelMiles} miles one-way</span>
                   </div>
                 )}
