@@ -1312,11 +1312,12 @@ export default function CrearEstimado() {
               ...formData,
               items: [...filteredItems, ...calculatedItems]
             });
+            setShowPunchCalculator(false);
           }}
           itemType={punchCalculatorType}
           jobAddress={formData.job_address}
           travelTimeHours={travelTimeHours}
-          travelMiles={0} // Will be auto-calculated by Google Maps
+          travelMiles={derivedValues?.travelMiles || 0}
           language={language}
         />
       </div>
