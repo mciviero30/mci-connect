@@ -1326,12 +1326,12 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               transition={{ duration: 0.3 }}
               className="p-0 md:hidden flex-shrink-0 h-14 relative"
               style={{
-                background: 'linear-gradient(135deg, #D4E4F7 0%, #E8F1FA 100%)',
+                background: 'linear-gradient(135deg, #E8F1FA 0%, #F0F6FD 100%)',
                 backgroundImage: `
-                  radial-gradient(circle at 20% 50%, rgba(100, 150, 200, 0.15) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 20%, rgba(100, 150, 200, 0.1) 0%, transparent 50%),
-                  radial-gradient(circle at 40% 80%, rgba(100, 150, 200, 0.08) 0%, transparent 50%),
-                  linear-gradient(135deg, #D4E4F7 0%, #E8F1FA 100%)
+                  radial-gradient(circle at 20% 50%, rgba(150, 180, 220, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(150, 180, 220, 0.06) 0%, transparent 50%),
+                  radial-gradient(circle at 40% 80%, rgba(150, 180, 220, 0.05) 0%, transparent 50%),
+                  linear-gradient(135deg, #E8F1FA 0%, #F0F6FD 100%)
                 `
               }}
               >
