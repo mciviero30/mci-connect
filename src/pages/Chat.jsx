@@ -952,111 +952,179 @@ export default function Chat() {
               </div>
 
               {/* Message Input */}
-              <form onSubmit={handleSend} className="px-8 py-5 border-t border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl">
-                  <div className="flex gap-3 items-end">
-                    <div className="flex gap-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        id="image-upload"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => document.getElementById('image-upload').click()}
-                        disabled={uploadingImage}
-                        className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
-                        title="Upload image"
-                      >
-                        <Image className="w-5 h-5" />
-                      </Button>
+              <form onSubmit={handleSend} className="px-4 md:px-8 py-4 md:py-5 border-t border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl">
+                 <div className="flex gap-2 md:gap-3 items-end">
+                   <div className="hidden md:flex gap-2">
+                     <input
+                       type="file"
+                       accept="image/*"
+                       onChange={handleImageUpload}
+                       className="hidden"
+                       id="image-upload"
+                     />
+                     <Button
+                       type="button"
+                       variant="ghost"
+                       size="icon"
+                       onClick={() => document.getElementById('image-upload').click()}
+                       disabled={uploadingImage}
+                       className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
+                       title="Upload image"
+                     >
+                       <Image className="w-5 h-5" />
+                     </Button>
 
-                      <input
-                        type="file"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        id="file-upload"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => document.getElementById('file-upload').click()}
-                        disabled={uploadingFile}
-                        className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
-                        title="Upload file"
-                      >
-                        <Paperclip className="w-5 h-5" />
-                      </Button>
+                     <input
+                       type="file"
+                       onChange={handleFileUpload}
+                       className="hidden"
+                       id="file-upload"
+                     />
+                     <Button
+                       type="button"
+                       variant="ghost"
+                       size="icon"
+                       onClick={() => document.getElementById('file-upload').click()}
+                       disabled={uploadingFile}
+                       className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
+                       title="Upload file"
+                     >
+                       <Paperclip className="w-5 h-5" />
+                     </Button>
 
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
-                            title="Emojis & GIFs"
-                          >
-                            <Smile className="w-5 h-5" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-80 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 p-0">
-                          <Tabs defaultValue="emojis">
-                            <TabsList className="w-full bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                              <TabsTrigger value="emojis" className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">Emojis</TabsTrigger>
-                              <TabsTrigger value="gifs" className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">GIFs</TabsTrigger>
-                            </TabsList>
-                            <TabsContent value="emojis" className="m-0">
-                              <EmojiPicker onSelect={handleEmojiSelect} />
-                            </TabsContent>
-                            <TabsContent value="gifs" className="m-0">
-                              <GifSearch onSelect={handleGifSelect} />
-                            </TabsContent>
-                          </Tabs>
-                        </PopoverContent>
-                      </Popover>
+                     <Popover>
+                       <PopoverTrigger asChild>
+                         <Button
+                           type="button"
+                           variant="ghost"
+                           size="icon"
+                           className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
+                           title="Emojis & GIFs"
+                         >
+                           <Smile className="w-5 h-5" />
+                         </Button>
+                       </PopoverTrigger>
+                       <PopoverContent className="w-80 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 p-0">
+                         <Tabs defaultValue="emojis">
+                           <TabsList className="w-full bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                             <TabsTrigger value="emojis" className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">Emojis</TabsTrigger>
+                             <TabsTrigger value="gifs" className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">GIFs</TabsTrigger>
+                           </TabsList>
+                           <TabsContent value="emojis" className="m-0">
+                             <EmojiPicker onSelect={handleEmojiSelect} />
+                           </TabsContent>
+                           <TabsContent value="gifs" className="m-0">
+                             <GifSearch onSelect={handleGifSelect} />
+                           </TabsContent>
+                         </Tabs>
+                       </PopoverContent>
+                     </Popover>
 
-                      {chatMode === 'groups' && selectedCustomGroup && canManageGroups && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={handleDeleteSelectedGroup}
-                          className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all shadow-sm"
-                          title="Delete group"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </Button>
-                      )}
-                    </div>
+                     {chatMode === 'groups' && selectedCustomGroup && canManageGroups && (
+                       <Button
+                         type="button"
+                         variant="ghost"
+                         size="icon"
+                         onClick={handleDeleteSelectedGroup}
+                         className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all shadow-sm"
+                         title="Delete group"
+                       >
+                         <Trash2 className="w-5 h-5" />
+                       </Button>
+                     )}
+                   </div>
 
-                    <MentionInput
-                      value={message}
-                      onChange={handleTyping}
-                      onSubmit={handleSend}
-                      employees={employees}
-                      placeholder={
-                        editingMessage 
-                          ? (language === 'es' ? 'Editar mensaje...' : 'Edit message...') 
-                          : replyingTo 
-                          ? `${language === 'es' ? 'Responder a' : 'Reply to'} ${replyingTo.sender_name}...` 
-                          : (language === 'es' ? 'Escribe un mensaje...' : 'Write a message...')
-                      }
-                      className="h-12 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium shadow-sm"
-                      />
-                    <Button 
-                      type="submit" 
-                      disabled={!message.trim() || sendMutation.isPending} 
-                      className="h-12 px-8 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg shadow-blue-500/20 rounded-2xl font-bold hover:scale-105 transition-all"
-                    >
-                      <Send className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </form>
+                   {/* Mobile attachment buttons in compact form */}
+                   <div className="md:hidden flex gap-1">
+                     <input
+                       type="file"
+                       accept="image/*"
+                       onChange={handleImageUpload}
+                       className="hidden"
+                       id="image-upload-mobile"
+                     />
+                     <Button
+                       type="button"
+                       variant="ghost"
+                       size="icon"
+                       onClick={() => document.getElementById('image-upload-mobile').click()}
+                       disabled={uploadingImage}
+                       className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all text-xs"
+                       title="Image"
+                     >
+                       <Image className="w-4 h-4" />
+                     </Button>
+
+                     <input
+                       type="file"
+                       onChange={handleFileUpload}
+                       className="hidden"
+                       id="file-upload-mobile"
+                     />
+                     <Button
+                       type="button"
+                       variant="ghost"
+                       size="icon"
+                       onClick={() => document.getElementById('file-upload-mobile').click()}
+                       disabled={uploadingFile}
+                       className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all text-xs"
+                       title="File"
+                     >
+                       <Paperclip className="w-4 h-4" />
+                     </Button>
+
+                     <Popover>
+                       <PopoverTrigger asChild>
+                         <Button
+                           type="button"
+                           variant="ghost"
+                           size="icon"
+                           className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all text-xs"
+                           title="Emoji"
+                         >
+                           <Smile className="w-4 h-4" />
+                         </Button>
+                       </PopoverTrigger>
+                       <PopoverContent className="w-64 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 p-0">
+                         <Tabs defaultValue="emojis">
+                           <TabsList className="w-full bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                             <TabsTrigger value="emojis" className="flex-1 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">Emojis</TabsTrigger>
+                             <TabsTrigger value="gifs" className="flex-1 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">GIFs</TabsTrigger>
+                           </TabsList>
+                           <TabsContent value="emojis" className="m-0">
+                             <EmojiPicker onSelect={handleEmojiSelect} />
+                           </TabsContent>
+                           <TabsContent value="gifs" className="m-0">
+                             <GifSearch onSelect={handleGifSelect} />
+                           </TabsContent>
+                         </Tabs>
+                       </PopoverContent>
+                     </Popover>
+                   </div>
+
+                   <MentionInput
+                     value={message}
+                     onChange={handleTyping}
+                     onSubmit={handleSend}
+                     employees={employees}
+                     placeholder={
+                       editingMessage 
+                         ? (language === 'es' ? 'Editar...' : 'Edit...') 
+                         : replyingTo 
+                         ? (language === 'es' ? 'Responder...' : 'Reply...') 
+                         : (language === 'es' ? 'Mensaje...' : 'Message...')
+                     }
+                     className="h-10 md:h-12 text-sm md:text-base bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium shadow-sm"
+                     />
+                   <Button 
+                     type="submit" 
+                     disabled={!message.trim() || sendMutation.isPending} 
+                     className="h-10 md:h-12 px-3 md:px-8 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg shadow-blue-500/20 rounded-2xl font-bold hover:scale-105 transition-all flex-shrink-0"
+                   >
+                     <Send className="w-4 md:w-5 h-4 md:h-5" />
+                   </Button>
+                 </div>
+               </form>
               </div>
             </div>
           </div>
