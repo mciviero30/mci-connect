@@ -41,8 +41,8 @@ export default function WelcomeScreen({ user, onComplete }) {
         transition={{ duration: 0.5 }}
         className="max-w-2xl w-full"
       >
-        <Card className="bg-white dark:bg-slate-800 shadow-2xl border-0 rounded-3xl overflow-hidden">
-          <CardContent className="p-0">
+        <Card className="bg-white dark:bg-slate-800 shadow-2xl border-0 rounded-3xl overflow-hidden max-h-[90vh] flex flex-col">
+          <CardContent className="p-0 flex-1 flex flex-col overflow-y-auto">
             {/* Header */}
             <div className="bg-gradient-to-r from-blue-500 to-indigo-600 p-8 text-center relative overflow-hidden">
               <div className="absolute inset-0 opacity-10">
