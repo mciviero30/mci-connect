@@ -874,7 +874,7 @@ export default function Chat() {
 
               {/* Editing indicator */}
               {editingMessage && (
-                <div className="px-6 py-3 bg-yellow-50 dark:bg-yellow-950/30 border-b border-yellow-100 dark:border-yellow-900/30 flex items-center justify-between">
+                <div className="px-4 md:px-6 py-3 bg-yellow-50 dark:bg-yellow-950/30 border-b border-yellow-100 dark:border-yellow-900/30 flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
                       {language === 'es' ? 'Editando mensaje' : 'Editing message'}
