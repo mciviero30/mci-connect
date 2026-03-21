@@ -26,6 +26,7 @@ import GPSHealthMonitor from '@/components/time-tracking/GPSHealthMonitor';
 import { useGPSPreWarmer } from '@/components/time-tracking/GPSPreWarmer';
 import { getLocationWithFallback } from '@/components/time-tracking/EnhancedGeolocation';
 import ClockInButton from '@/components/time-tracking/ClockInButton';
+import CleanTimeTrackerUI from '@/components/time-tracking/CleanTimeTrackerUI';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
