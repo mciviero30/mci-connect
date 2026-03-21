@@ -125,6 +125,7 @@ export default function MisGastos() {
       icon: Receipt,
       value: `$${pendingAmount.toFixed(0)}`,
       label: t('pending'),
+      subtitle: `${expenses.filter(e => e.status === 'pending').length} items`,
       iconBg: "bg-amber-100 dark:bg-amber-900/50",
       iconColor: "text-amber-600 dark:text-amber-400"
     },
@@ -132,6 +133,7 @@ export default function MisGastos() {
       icon: Receipt,
       value: `$${approvedAmount.toFixed(0)}`,
       label: t('approved'),
+      subtitle: `${expenses.filter(e => e.status === 'approved').length} items`,
       iconBg: "bg-green-100 dark:bg-green-900/50",
       iconColor: "text-green-600 dark:text-green-400"
     }
