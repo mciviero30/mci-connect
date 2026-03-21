@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
   LayoutDashboard,
@@ -10,7 +10,9 @@ import {
   Menu,
   Cloud,
   MapPin,
-  Banknote
+  Banknote,
+  ChevronUp,
+  Zap
 } from 'lucide-react';
 import {
   Sheet,
