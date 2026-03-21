@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Briefcase,
