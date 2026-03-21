@@ -156,16 +156,16 @@ export default function NotificationBell({ user }) {
     <div className="relative z-50">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2.5 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 hover:scale-105"
+        className="relative p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[28px] min-h-[28px]"
       >
-        <Bell className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+        <Bell className="w-3.5 h-3.5 text-[#1E3A8A] dark:text-white" />
         {unreadCount > 0 && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg"
+            className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 bg-red-500 rounded-full flex items-center justify-center shadow-lg"
           >
-            <span className="text-[10px] font-bold text-white">
+            <span className="text-[8px] font-bold text-white leading-none">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
           </motion.div>
