@@ -139,6 +139,31 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
               );
             }
 
+            // Travel menu handler (Per Diem + Mileage)
+            if (item.isTravelMenu) {
+              return (
+                <button
+                  key={item.title}
+                  onClick={handleTravelClick}
+                  className={`flex flex-col items-center justify-center gap-0.5 relative transition-all duration-300 rounded-lg active:scale-95 ${
+                    travelExpanded
+                      ? 'text-[#507DB4] dark:text-[#6B9DD8] scale-125' 
+                      : 'text-slate-600 dark:text-slate-400 scale-100'
+                  }`}
+                >
+                  <div className="relative">
+                    <item.icon className={`w-5 h-5 transition-all duration-300`} strokeWidth={travelExpanded ? 2.5 : 2} />
+                    {travelExpanded && (
+                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#507DB4] dark:bg-[#6B9DD8]" />
+                    )}
+                  </div>
+                  <span className={`text-[10px] ${travelExpanded ? 'font-bold' : 'font-medium'} truncate max-w-full text-center leading-tight transition-all duration-300`}>
+                    {item.title}
+                  </span>
+                </button>
+              );
+            }
+
             // Regular link items
             return (
               <Link
