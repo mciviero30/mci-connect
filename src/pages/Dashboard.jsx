@@ -542,38 +542,89 @@ export default function Dashboard() {
       
       case 'work-hours':
         return (
-          <div>
-            <StatsWidget value={`${currentWeekHours.toFixed(1)}h`} label={t('workHours')} icon={Clock} badge="This Week" color="blue" />
-            <Progress value={Math.min(weekProgress, 100)} className="h-2 mt-3" />
-            <p className="text-xs text-slate-600 dark:text-slate-400 mt-2">{yearHours.toFixed(1)}h {t('yearToDate')}</p>
-          </div>
+          <motion.div className="group h-full flex flex-col gap-3 p-3 bg-gradient-to-br from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl border border-blue-200/50 dark:border-blue-800/30 shadow-sm hover:shadow-md transition-all hover:border-blue-300/80 dark:hover:border-blue-700/50"
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wide">Work Hours</p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">{currentWeekHours.toFixed(1)}h</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
+                <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+            </div>
+            <Progress value={Math.min(weekProgress, 100)} className="h-1.5" />
+            <p className="text-[9px] text-blue-600 dark:text-blue-300 font-medium">{yearHours.toFixed(1)}h year-to-date</p>
+          </motion.div>
         );
       
       case 'driving-hours':
         return (
-          <div>
-            <StatsWidget value={`${drivingHoursThisWeek.toFixed(1)}h`} label={t('drivingHours')} icon={MapPin} badge="This Week" color="green" />
-            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
-              <DollarSign className="w-3 h-3" />
+          <motion.div className="group h-full flex flex-col gap-3 p-3 bg-gradient-to-br from-green-50 to-green-50/50 dark:from-green-950/30 dark:to-green-900/20 rounded-xl border border-green-200/50 dark:border-green-800/30 shadow-sm hover:shadow-md transition-all hover:border-green-300/80 dark:hover:border-green-700/50"
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] font-semibold text-green-700 dark:text-green-300 uppercase tracking-wide">Driving Hours</p>
+                <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">{drivingHoursThisWeek.toFixed(1)}h</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
+                <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-[9px] text-green-600 dark:text-green-300 font-semibold">
+              <DollarSign className="w-3.5 h-3.5" />
               <span>${drivingPayThisWeek.toFixed(2)} earned</span>
             </div>
-          </div>
+          </motion.div>
         );
       
       case 'weekly-pay':
         return (
-          <div>
-            <StatsWidget value={`$${(currentWeekPay + drivingPayThisWeek).toFixed(2)}`} label={t('weeklyPay')} icon={DollarSign} badge="This Week" color="amber" />
-            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-2">
+          <motion.div className="group h-full flex flex-col gap-3 p-3 bg-gradient-to-br from-amber-50 to-amber-50/50 dark:from-amber-950/30 dark:to-amber-900/20 rounded-xl border border-amber-200/50 dark:border-amber-800/30 shadow-sm hover:shadow-md transition-all hover:border-amber-300/80 dark:hover:border-amber-700/50"
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wide">Weekly Pay</p>
+                <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 mt-1">${(currentWeekPay + drivingPayThisWeek).toFixed(2)}</p>
+              </div>
+              <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center group-hover:bg-amber-500/30 transition-colors">
+                <DollarSign className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-[9px] text-amber-600 dark:text-amber-300 font-medium">
               <span>Work: ${currentWeekPay.toFixed(2)}</span>
-              <span>•</span>
+              <span className="text-amber-400">•</span>
               <span>Driving: ${drivingPayThisWeek.toFixed(2)}</span>
             </div>
-          </div>
+          </motion.div>
         );
       
       case 'my-expenses':
-        return <StatsWidget value={pendingExpenseCount} label={t('pendingExpenses')} icon={Receipt} color="slate" badge={pendingExpenseCount > 0 ? pendingExpenseCount : null} />;
+        return (
+          <motion.div className="group h-full flex flex-col gap-3 p-3 bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-950/30 dark:to-slate-900/20 rounded-xl border border-slate-200/50 dark:border-slate-800/30 shadow-sm hover:shadow-md transition-all hover:border-slate-300/80 dark:hover:border-slate-700/50"
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-[10px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wide">Pending Expenses</p>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{pendingExpenseCount}</p>
+              </div>
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center group-hover:bg-opacity-30 transition-colors ${pendingExpenseCount > 0 ? 'bg-red-500/20' : 'bg-green-500/20'}`}>
+                <Receipt className={`w-5 h-5 ${pendingExpenseCount > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`} />
+              </div>
+            </div>
+            <p className={`text-[9px] font-semibold ${pendingExpenseCount > 0 ? 'text-red-600 dark:text-red-300' : 'text-green-600 dark:text-green-300'}`}>
+              {pendingExpenseCount > 0 ? `${pendingExpenseCount} awaiting approval` : 'All caught up!'}
+            </p>
+          </motion.div>
+        );
       
       case 'pending-timesheets':
         return (
