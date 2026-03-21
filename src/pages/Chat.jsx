@@ -584,20 +584,24 @@ export default function Chat() {
     }))
   ];
 
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0 p-0 md:p-6">
       <OnlineStatusManager userEmail={user?.email} />
       <div className="max-w-[1800px] mx-auto h-screen md:h-[calc(100vh-3rem)] flex flex-col">
         {/* Header - mobile/tablet */}
-        <div className="md:hidden px-4 py-4 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20">
-              <MessageSquare className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">{t('chat')}</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{t('realTimeCommunication')}</p>
-            </div>
+        <div className="md:hidden px-3 py-3 bg-white/90 dark:bg-[#1a1a1a]/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
+          <button 
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="Toggle sidebar"
+          >
+            <MessageSquare className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
+          </button>
+          <div className="flex-1 min-w-0 mx-2">
+            <h1 className="text-sm font-bold text-slate-900 dark:text-white truncate">{chatMode === 'direct' && selectedDMConv ? selectedDMConv.other_user_name : chatMode === 'groups' && selectedCustomGroup ? selectedCustomGroup.group_name : groups.find(g => g.id === selectedGroup)?.name || t('chat')}</h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">{t('realTimeCommunication')}</p>
           </div>
           <ChatNotificationCenter 
               userEmail={user?.email}
@@ -619,9 +623,17 @@ export default function Chat() {
         </div>
 
         {/* Main Chat Container */}
-        <div className="flex-1 flex overflow-hidden bg-white/90 dark:bg-[#0a0a0a]/90 md:rounded-3xl md:shadow-2xl md:border md:border-slate-200/60 dark:md:border-slate-800/60 backdrop-blur-xl">
+        <div className="flex-1 flex overflow-hidden bg-white/90 dark:bg-[#0a0a0a]/90 md:rounded-3xl md:shadow-2xl md:border md:border-slate-200/60 dark:md:border-slate-800/60 backdrop-blur-xl relative">
+          {/* Mobile Sidebar Overlay */}
+          {showMobileSidebar && (
+            <div 
+              className="fixed inset-0 bg-black/50 md:hidden z-40"
+              onClick={() => setShowMobileSidebar(false)}
+            />
+          )}
+          
           {/* Sidebar */}
-          <div className="hidden md:flex md:w-80 lg:w-[400px] flex-col bg-gradient-to-b from-white to-slate-50/50 dark:from-[#1a1a1a] dark:to-[#141414] border-r border-slate-200/60 dark:border-slate-800/60">
+          <div className={`absolute md:relative md:flex w-80 md:w-80 lg:w-[400px] h-full flex-col bg-gradient-to-b from-white to-slate-50/50 dark:from-[#1a1a1a] dark:to-[#141414] border-r border-slate-200/60 dark:border-slate-800/60 transform md:transform-none transition-transform ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-50 md:z-auto`}>
             {/* Sidebar Header */}
             <div className="px-6 py-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm">
               <div className="flex items-center justify-between mb-5">
