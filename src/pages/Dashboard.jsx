@@ -888,15 +888,17 @@ export default function Dashboard() {
                   <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
                   <span className="hidden sm:inline">Add Widget</span>
                 </Button>
-                <Button
-                  onClick={() => setIsEditMode(true)}
-                  size="sm"
-                  variant="outline"
-                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 h-6 px-1.5 sm:px-2 text-[10px]"
-                >
-                  <SettingsIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
-                  <span className="hidden sm:inline">Customize</span>
-                </Button>
+                {isAdmin && (
+                  <Button
+                    onClick={() => setIsEditMode(true)}
+                    size="sm"
+                    variant="outline"
+                    className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 h-6 px-1.5 sm:px-2 text-[10px]"
+                  >
+                    <SettingsIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
+                    <span className="hidden sm:inline">Customize</span>
+                  </Button>
+                )}
               </>
             )}
           </div>
