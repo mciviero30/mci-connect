@@ -34,6 +34,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   const navigate = useNavigate();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [timeExpanded, setTimeExpanded] = useState(false);
+  const [travelExpanded, setTravelExpanded] = useState(false);
 
   // STEP 2: Track pending sync operations count
   const { pendingCount } = useSyncQueue();
