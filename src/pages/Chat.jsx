@@ -731,7 +731,7 @@ export default function Chat() {
                 </TabsContent>
 
                 <TabsContent value="groups" className="mt-0">
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     {customGroups
                       .filter(g => g.is_active && g.members.includes(user?.email))
                       .map(group => {
@@ -740,19 +740,22 @@ export default function Chat() {
                         return (
                           <button
                             key={group.id}
-                            onClick={() => selectCustomGroup(group)}
-                            className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all duration-200 group ${
+                            onClick={() => {
+                              selectCustomGroup(group);
+                              setShowMobileSidebar(false);
+                            }}
+                            className={`w-full px-3 md:px-4 py-2 md:py-3.5 rounded-lg md:rounded-2xl text-left flex items-center gap-2 md:gap-4 transition-all duration-200 group ${
                               isActive
                                 ? 'bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 shadow-sm border-l-4 border-[#507DB4] dark:border-[#6B9DD8]'
                                 : 'hover:bg-slate-100/80 dark:hover:bg-slate-900/50 border-l-4 border-transparent'
                             }`}
                           >
-                            <div className={`w-12 h-12 bg-gradient-to-br ${colorClass} rounded-2xl flex items-center justify-center shadow-md ${isActive ? 'scale-105' : 'group-hover:scale-105'} transition-transform`}>
-                              <Users className="w-6 h-6 text-white" />
+                            <div className={`w-10 h-10 md:w-12 md:h-12 flex-shrink-0 bg-gradient-to-br ${colorClass} rounded-lg md:rounded-2xl flex items-center justify-center shadow-md ${isActive ? 'scale-105' : 'group-hover:scale-105'} transition-transform`}>
+                              <Users className="w-5 h-5 md:w-6 md:h-6 text-white" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className={`font-bold text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.group_name}</p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5 truncate">
+                              <p className={`font-bold text-xs md:text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.group_name}</p>
+                              <p className="hidden md:block text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5 truncate">
                                 {group.members.length} members
                               </p>
                             </div>
@@ -761,16 +764,16 @@ export default function Chat() {
                         );
                       })}
                     {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).length === 0 && (
-                      <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                        <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                          <Users className="w-10 h-10 opacity-40" />
+                      <div className="text-center py-8 md:py-12 text-slate-500 dark:text-slate-400">
+                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 rounded-2xl md:rounded-3xl flex items-center justify-center mx-auto mb-3 shadow-lg">
+                          <Users className="w-8 h-8 md:w-10 md:h-10 opacity-40" />
                         </div>
-                        <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">No groups yet</p>
-                        <p className="text-sm mb-4">Create a group to start collaborating</p>
+                        <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white mb-2">No groups yet</p>
+                        <p className="text-xs md:text-sm mb-4">Create a group to collaborate</p>
                         <Button
                           size="sm"
                           onClick={() => setShowCreateGroup(true)}
-                          className="h-10 px-6 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg rounded-xl font-bold"
+                          className="h-8 md:h-10 px-4 md:px-6 text-xs md:text-sm bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg rounded-lg md:rounded-xl font-bold"
                         >
                           Create Group
                         </Button>
