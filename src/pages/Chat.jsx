@@ -587,11 +587,11 @@ export default function Chat() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0 p-0 md:p-6">
-      <OnlineStatusManager userEmail={user?.email} />
-      <div className="max-w-[1800px] mx-auto h-screen md:h-[calc(100vh-3rem)] flex flex-col">
-        {/* Header - mobile/tablet */}
-        <div className="md:hidden px-3 py-3 bg-white/90 dark:bg-[#1a1a1a]/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-[#F1F5F9] to-[#E8EEFA] dark:from-[#181818] dark:to-[#0f1419] pb-20 md:pb-0 p-0 md:p-6">
+     <OnlineStatusManager userEmail={user?.email} />
+     <div className="max-w-[1800px] mx-auto h-screen md:h-[calc(100vh-3rem)] flex flex-col">
+       {/* Header - mobile/tablet */}
+       <div className="md:hidden px-3 py-3 bg-gradient-to-r from-white/95 to-white/90 dark:from-[#1a1a1a]/95 dark:to-[#151515]/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
           <button 
             onClick={() => setShowMobileSidebar(!showMobileSidebar)}
             className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
