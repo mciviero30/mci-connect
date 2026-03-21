@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
+import React, { useState } from 'react';
 import {
   LayoutDashboard,
   Briefcase,
@@ -12,7 +13,9 @@ import {
   MapPin,
   Banknote,
   ChevronUp,
-  Zap
+  Zap,
+  MessageSquare,
+  BookOpen
 } from 'lucide-react';
 import {
   Sheet,
