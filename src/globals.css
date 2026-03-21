@@ -563,29 +563,29 @@
   .btn-primary {
     @apply bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90;
     @apply text-white font-semibold shadow-enterprise-md;
-    @apply radius-sm min-h-[24px] px-3;
+    @apply radius-sm min-h-[28px] px-3;
     @apply active:scale-95 transition-all text-[10px];
   }
 
   .btn-secondary {
     @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600;
     @apply text-slate-900 dark:text-white font-semibold shadow-enterprise-sm;
-    @apply radius-sm min-h-[24px] px-3;
+    @apply radius-sm min-h-[28px] px-3;
     @apply hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all text-[10px];
   }
 
   .btn-tertiary {
     @apply bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800;
     @apply text-slate-700 dark:text-slate-300 font-medium;
-    @apply radius-sm min-h-[22px] px-2;
+    @apply radius-sm min-h-[26px] px-2;
     @apply hover:bg-slate-200 dark:hover:bg-slate-800 transition-all text-[9px];
   }
 
   .btn-field {
     @apply bg-gradient-to-r from-[#FF8C00] to-[#FFB347] hover:from-[#FF8C00]/90 hover:to-[#FFB347]/90;
     @apply text-white font-bold shadow-enterprise-lg;
-    @apply radius-sm min-h-[28px] px-3;
-    @apply active:scale-95 transition-all text-[10px];
+    @apply radius-sm min-h-[32px] px-3;
+    @apply active:scale-95 transition-all text-[11px];
   }
 
   /* ============================================ */
@@ -660,7 +660,23 @@
     @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600;
     @apply text-slate-900 dark:text-white radius-sm px-2 py-1;
     @apply focus:ring-1 focus:ring-[#507DB4] focus:border-transparent;
-    @apply transition-all min-h-[24px] text-[10px];
+    @apply transition-all min-h-[32px] text-[10px];
+  }
+
+  /* Mobile-first spacing */
+  @media (max-width: 768px) {
+    .page-container {
+      @apply px-2 py-2;
+    }
+    
+    .card-enterprise {
+      @apply p-3;
+    }
+    
+    .spacing-xs { @apply gap-1 p-1; }
+    .spacing-sm { @apply gap-1.5 p-1.5; }
+    .spacing-md { @apply gap-2 p-2; }
+    .spacing-lg { @apply gap-2 p-2; }
   }
 }
 
