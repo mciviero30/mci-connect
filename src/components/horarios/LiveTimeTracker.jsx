@@ -16,6 +16,7 @@ import { useNotificationService } from '../notifications/NotificationService';
 import GeofenceMonitor from '../time-tracking/GeofenceMonitor';
 import { calculateDistance, getCurrentLocation } from '@/components/utils/geolocation'; // SSOT
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
+import GPSSignalBadge from '@/components/time-tracking/GPSSignalBadge';
 import { checkGeolocationPermission, markDeniedPromptSeen, hasSeenDeniedPrompt } from '@/components/utils/geolocationPermissions';
 import LocationPermissionPrompt from '@/components/shared/LocationPermissionPrompt';
 import telemetry from '@/components/telemetry/GeofenceTelemetry';
