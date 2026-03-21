@@ -230,7 +230,7 @@ export default function LineItemsEditor({
             )}
 
             {/* Row 1: Select Item and aligned fields */}
-            <div className={`grid ${item.is_travel_item ? 'md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr]' : 'md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.5fr,0.9fr,0.4fr]'} gap-2 px-3 pt-6 pb-1 hover:bg-slate-50/50 transition-colors`}>
+            <div className={`grid ${item.is_travel_item ? 'md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr]' : 'md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.5fr,0.9fr,0.4fr]'} gap-1.5 px-2 pt-4 pb-0.5 hover:bg-slate-50/50 transition-colors`}>
               {/* Select Item / Item Name */}
               <div>
                 {allowCatalogSelect && catalogItems.length > 0 ? (
@@ -239,7 +239,7 @@ export default function LineItemsEditor({
                       <Button
                         variant="outline"
                         role="combobox"
-                        className="w-full justify-between h-8 font-semibold text-[11px] bg-white border-slate-300 text-slate-900 hover:bg-slate-50"
+                        className="w-full justify-between h-7 font-semibold text-[10px] bg-white border-slate-300 text-slate-900 hover:bg-slate-50 px-2"
                       >
                         <span className="truncate">{item.item_name || "Select item"}</span>
                         <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-70" />
@@ -285,7 +285,7 @@ export default function LineItemsEditor({
                     value={item.item_name || ''}
                     onChange={(e) => updateItem(index, 'item_name', e.target.value)}
                     placeholder="Item name"
-                    className="h-8 font-semibold text-[11px] bg-white border-slate-300 text-slate-900"
+                    className="h-7 font-semibold text-[10px] bg-white border-slate-300 text-slate-900"
                   />
                 )}
               </div>
@@ -299,14 +299,14 @@ export default function LineItemsEditor({
                     onChange={(e) => updateItem(index, 'round_trips', parseFloat(e.target.value) || 1)}
                     min="1"
                     step="1"
-                    className="h-7 text-xs text-center font-semibold bg-white border-slate-200 text-slate-900"
+                    className="h-6 text-[11px] text-center font-semibold bg-white border-slate-200 text-slate-900"
                   />
                 </div>
               )}
 
               {/* Quantity */}
               <div className="relative flex items-center justify-center">
-                 <Grid3x3 className="absolute left-2 w-3 h-3 text-slate-400 pointer-events-none" />
+                 <Grid3x3 className="absolute left-1 w-2.5 h-2.5 text-slate-400 pointer-events-none" />
                  <Input
                    type="number"
                    value={item.quantity || 0}
@@ -314,7 +314,7 @@ export default function LineItemsEditor({
                    min="0"
                    step="0.01"
                    required
-                   className={`h-7 text-xs text-center font-semibold pl-6 ${
+                   className={`h-6 text-[11px] text-center font-semibold pl-5 ${
                      isAutoCalc && !item.manual_override
                        ? 'bg-amber-50 border-amber-200 text-amber-900'
                        : 'bg-white border-slate-200 text-slate-900'
@@ -327,13 +327,13 @@ export default function LineItemsEditor({
                 <Input
                   value={item.unit}
                   onChange={(e) => updateItem(index, 'unit', e.target.value)}
-                  className="h-7 text-[10px] text-center bg-white border-slate-200 text-slate-900"
+                  className="h-6 text-[10px] text-center bg-white border-slate-200 text-slate-900"
                 />
               </div>
 
               {/* Rate */}
               <div className="relative flex items-center justify-center">
-                <DollarSign className="absolute left-2 w-3 h-3 text-slate-400 pointer-events-none" />
+                <DollarSign className="absolute left-1 w-2.5 h-2.5 text-slate-400 pointer-events-none" />
                 <Input
                   type="number"
                   value={item.unit_price}
@@ -342,7 +342,7 @@ export default function LineItemsEditor({
                   step="0.01"
                   required
                   disabled={pricesLocked}
-                  className={`h-7 text-xs text-center font-semibold pl-6 ${
+                  className={`h-6 text-[11px] text-center font-semibold pl-5 ${
                     pricesLocked
                       ? 'bg-amber-50 border-amber-200 text-amber-900 cursor-not-allowed'
                       : 'bg-white border-slate-200 text-slate-900'
@@ -352,14 +352,14 @@ export default function LineItemsEditor({
 
               {/* Hours */}
               <div className="relative flex items-center justify-center">
-                <Clock className="absolute left-2 w-3 h-3 text-slate-400 pointer-events-none" />
+                <Clock className="absolute left-1 w-2.5 h-2.5 text-slate-400 pointer-events-none" />
                 <Input
                   type="number"
                   value={item.installation_time || 0}
                   onChange={(e) => updateItem(index, 'installation_time', parseFloat(e.target.value) || 0)}
                   min="0"
                   step="0.1"
-                  className="h-7 text-xs text-center bg-slate-50 border-slate-200 text-slate-700 pl-6"
+                  className="h-6 text-[11px] text-center bg-slate-50 border-slate-200 text-slate-700 pl-5"
                   placeholder="0"
                 />
               </div>
@@ -434,13 +434,13 @@ export default function LineItemsEditor({
             </div>
 
             {/* Row 2: Description spanning full width */}
-            <div className="px-3 pb-3">
+            <div className="px-2 pb-1.5">
               <Textarea
                 value={item.description}
                 onChange={(e) => updateItem(index, 'description', e.target.value)}
                 required
                 placeholder="Description"
-                className="min-h-[50px] text-[11px] leading-tight text-slate-600 resize-none bg-white border-slate-200"
+                className="min-h-[35px] text-[10px] leading-tight text-slate-600 resize-none bg-white border-slate-200 py-1"
               />
             </div>
           </div>

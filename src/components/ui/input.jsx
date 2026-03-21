@@ -18,11 +18,11 @@ const Input = React.forwardRef(({ className, type, autoCapitalizeInput = false, 
     <input
         type={type}
         className={cn(
-          "flex h-8 w-full rounded-md border border-input bg-background px-2 py-1 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-[10px] file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-7 w-full rounded-md border border-input bg-background px-1.5 py-0.5 text-xs ring-offset-background file:border-0 file:bg-transparent file:text-[10px] file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
           "touch-action-manipulation",
           className
         )}
-        style={{ fontSize: 'max(13px, 0.8125rem)' }}
+        style={{ fontSize: 'max(12px, 0.75rem)' }}
         ref={ref}
         onChange={handleChange}
         {...props}
