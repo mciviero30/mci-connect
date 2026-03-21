@@ -84,6 +84,16 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
     setTimeExpanded(false);
   };
 
+  const handleTravelClick = (e) => {
+    e.preventDefault();
+    setTravelExpanded(!travelExpanded);
+  };
+
+  const handleTravelSubSelect = (page) => {
+    navigate(createPageUrl(page));
+    setTravelExpanded(false);
+  };
+
   // More menu with 6 quick access items
   const quickAccessItems = [
     { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
