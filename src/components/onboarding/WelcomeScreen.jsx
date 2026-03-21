@@ -68,7 +68,7 @@ export default function WelcomeScreen({ user, onComplete }) {
             </div>
 
             {/* Content */}
-            <div className="p-8">
+            <div className="p-8 flex-1 flex flex-col">
               {/* Profile Quick View */}
               <div className="flex items-center gap-4 p-5 rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-800 dark:to-slate-900 mb-6">
                 {profileImage ? (
