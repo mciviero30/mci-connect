@@ -693,7 +693,7 @@ export default function Chat() {
                 </TabsList>
 
                 <TabsContent value="channels" className="mt-0">
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     {groups.map(group => {
                       const Icon = group.icon;
                       const isActive = chatMode === 'channels' && selectedGroup === group.id;
@@ -704,23 +704,24 @@ export default function Chat() {
                             setSelectedGroup(group.id);
                             setSelectedDMConv(null);
                             setSelectedCustomGroup(null);
+                            setShowMobileSidebar(false);
                           }}
-                          className={`w-full px-4 py-3.5 rounded-2xl text-left flex items-center gap-4 transition-all duration-200 group ${
+                          className={`w-full px-3 md:px-4 py-2 md:py-3.5 rounded-lg md:rounded-2xl text-left flex items-center gap-2 md:gap-4 transition-all duration-200 group ${
                             isActive
                               ? 'bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 shadow-sm border-l-4 border-[#507DB4] dark:border-[#6B9DD8]'
                               : 'hover:bg-slate-100/80 dark:hover:bg-slate-900/50 border-l-4 border-transparent'
                           }`}
                         >
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all shadow-md ${
+                          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex-shrink-0 flex items-center justify-center transition-all shadow-md ${
                             isActive 
                               ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] shadow-blue-500/30 scale-105' 
                               : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 group-hover:scale-105'
                           }`}>
-                            <Icon className={`w-6 h-6 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`} />
+                            <Icon className={`w-5 h-5 md:w-6 md:h-6 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className={`font-bold text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.name}</p>
-                            {isActive && <p className="text-xs text-[#507DB4]/70 dark:text-[#6B9DD8]/70 font-semibold mt-0.5">Active channel</p>}
+                            <p className={`font-bold text-xs md:text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.name}</p>
+                            {isActive && <p className="hidden md:block text-xs text-[#507DB4]/70 dark:text-[#6B9DD8]/70 font-semibold mt-0.5">Active channel</p>}
                           </div>
                           <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={group.id} />
                         </button>
