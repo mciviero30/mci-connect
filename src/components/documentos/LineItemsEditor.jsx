@@ -164,7 +164,7 @@ export default function LineItemsEditor({
     <>
       {/* Table Header - Dynamic based on travel items */}
       {items.some(i => i.is_travel_item) ? (
-        <div className="hidden md:grid md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+        <div className="hidden md:grid md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr] gap-1.5 px-2 py-0.5 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 text-[8px] font-bold text-slate-600 uppercase tracking-wide">
           <div>ITEM DETAILS</div>
           <div className="text-center">TRIPS</div>
           <div className="text-center">QTY</div>
@@ -175,7 +175,7 @@ export default function LineItemsEditor({
           <div></div>
         </div>
       ) : (
-        <div className="hidden md:grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.5fr,0.9fr,0.4fr] gap-2 px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 border-b-2 border-slate-200 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+        <div className="hidden md:grid md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.5fr,0.9fr,0.4fr] gap-1.5 px-2 py-0.5 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200 text-[8px] font-bold text-slate-600 uppercase tracking-wide">
           <div>ITEM DETAILS</div>
           <div className="text-center">QUANTITY</div>
           <div className="text-center">UNIT</div>
@@ -204,25 +204,25 @@ export default function LineItemsEditor({
           >
             {/* Auto-calculated badge */}
             {isAutoCalc && (
-              <div className="absolute top-2 left-2 z-10 flex gap-1">
+              <div className="absolute top-1 left-1 z-10 flex gap-0.5">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-[9px] px-2 py-0.5 cursor-help">
+                      <Badge className="bg-blue-100 text-blue-700 border border-blue-300 text-[7px] px-1 py-0 cursor-help">
                         {item.calculation_type === 'hotel' && '🏨 Auto'}
                         {item.calculation_type === 'per_diem' && '🍽️ Auto'}
                         {item.calculation_type === 'hours' && '⏱️ Auto'}
                       </Badge>
                     </TooltipTrigger>
-                    <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
+                    <TooltipContent className="bg-slate-900 text-white text-[9px] max-w-xs">
                       <p>🔒 <strong>Auto-calculated value.</strong></p>
-                      <p className="mt-1">This quantity is automatically synchronized with project changes to prevent estimation errors.</p>
-                      <p className="mt-1 text-amber-400">Click the quantity field to enable manual override (not recommended).</p>
+                      <p className="mt-0.5">This quantity is automatically synchronized with project changes to prevent estimation errors.</p>
+                      <p className="mt-0.5 text-amber-400">Click the quantity field to enable manual override (not recommended).</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
                 {item.manual_override && (
-                  <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-[9px] px-2 py-0.5">
+                  <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-[7px] px-1 py-0">
                     ⚠️ Manual Override
                   </Badge>
                 )}
@@ -230,7 +230,7 @@ export default function LineItemsEditor({
             )}
 
             {/* Row 1: Select Item and aligned fields */}
-            <div className={`grid ${item.is_travel_item ? 'md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr]' : 'md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.5fr,0.9fr,0.4fr]'} gap-1.5 px-2 pt-4 pb-0.5 hover:bg-slate-50/50 transition-colors`}>
+            <div className={`grid ${item.is_travel_item ? 'md:grid-cols-[1fr,0.6fr,0.6fr,0.4fr,0.6fr,0.5fr,0.8fr,0.4fr]' : 'md:grid-cols-[1fr,0.8fr,0.5fr,0.7fr,0.5fr,0.9fr,0.4fr]'} gap-1 px-1.5 pt-2 pb-0 hover:bg-slate-50/50 transition-colors`}>
               {/* Select Item / Item Name */}
               <div>
                 {allowCatalogSelect && catalogItems.length > 0 ? (
@@ -365,30 +365,30 @@ export default function LineItemsEditor({
               </div>
 
               {/* Amount */}
-              <div className="text-right space-y-0.5">
-                <div className="text-slate-900 font-bold text-base flex items-center justify-end gap-1">
-                  <DollarSign className="w-4 h-4 text-slate-600" />
+              <div className="text-right space-y-0">
+                <div className="text-slate-900 font-bold text-sm flex items-center justify-end gap-0.5">
+                  <DollarSign className="w-3 h-3 text-slate-600" />
                   {displayTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
                 {isAutoCalc && (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div className="text-[9px] text-blue-600 font-medium flex items-center gap-1 justify-end cursor-help">
-                          <Info className="w-2.5 h-2.5" />
+                        <div className="text-[7px] text-blue-600 font-medium flex items-center gap-0.5 justify-end cursor-help">
+                          <Info className="w-2 h-2" />
                           = {displayQuantity} {item.unit}
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent className="bg-slate-900 text-white text-xs max-w-xs">
-                        <p>🔒 <strong>Derived Value</strong></p>
+                      <TooltipContent className="bg-slate-900 text-white text-[9px] max-w-xs">
+                        <p>🔒 <strong>Auto-calculated value.</strong></p>
                         {item.calculation_type === 'hotel' && (
-                          <p className="mt-1">Hotel rooms = roomsPerNight × nights</p>
+                          <p className="mt-0.5">Hotel rooms = roomsPerNight × nights</p>
                         )}
                         {item.calculation_type === 'per_diem' && (
-                          <p className="mt-1">Per diem = techs × totalCalendarDays</p>
+                          <p className="mt-0.5">Per diem = techs × totalCalendarDays</p>
                         )}
                         {item.manual_override && (
-                          <p className="text-amber-400 mt-1">⚠️ Manual override active - auto-sync disabled</p>
+                          <p className="text-amber-400 mt-0.5">⚠️ Manual override active - auto-sync disabled</p>
                         )}
                       </TooltipContent>
                     </Tooltip>
@@ -397,16 +397,16 @@ export default function LineItemsEditor({
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end gap-0.5 items-center">
+              <div className="flex justify-end gap-0 items-center">
                 {allowReorder && index > 0 && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
                     onClick={() => moveItem(index, 'up')}
-                    className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-7 w-7"
+                    className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-5 w-5"
                   >
-                    <ChevronUp className="w-3 h-3" />
+                    <ChevronUp className="w-2.5 h-2.5" />
                   </Button>
                 )}
                 {allowReorder && index < items.length - 1 && (
@@ -415,9 +415,9 @@ export default function LineItemsEditor({
                     variant="ghost"
                     size="icon"
                     onClick={() => moveItem(index, 'down')}
-                    className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-7 w-7"
+                    className="text-slate-400 hover:text-slate-700 hover:bg-slate-100 h-5 w-5"
                   >
-                    <ChevronDown className="w-3 h-3" />
+                    <ChevronDown className="w-2.5 h-2.5" />
                   </Button>
                 )}
                 <Button
@@ -426,21 +426,21 @@ export default function LineItemsEditor({
                   size="icon"
                   onClick={() => removeItem(index)}
                   disabled={items.length === 1}
-                  className="text-red-400 hover:text-red-700 hover:bg-red-50 h-7 w-7"
+                  className="text-red-400 hover:text-red-700 hover:bg-red-50 h-5 w-5"
                 >
-                  <Trash2 className="w-3 h-3" />
+                  <Trash2 className="w-2.5 h-2.5" />
                 </Button>
               </div>
             </div>
 
             {/* Row 2: Description spanning full width */}
-            <div className="px-2 pb-1.5">
+            <div className="px-1.5 pb-1">
               <Textarea
                 value={item.description}
                 onChange={(e) => updateItem(index, 'description', e.target.value)}
                 required
                 placeholder="Description"
-                className="min-h-[25px] text-[9px] leading-tight text-slate-600 resize-none bg-white border-slate-200 py-0.5 px-1"
+                className="min-h-[20px] text-[8px] leading-tight text-slate-600 resize-none bg-white border-slate-200 py-0 px-1"
               />
             </div>
           </div>
@@ -449,15 +449,15 @@ export default function LineItemsEditor({
 
       {/* Add Item Button */}
       {onAddItem && (
-        <div className="border-t border-slate-200 bg-slate-50/30 p-4">
+        <div className="border-t border-slate-200 bg-slate-50/30 p-2">
           <Button
             type="button"
             onClick={onAddItem}
             variant="outline"
-            className="w-full border-2 border-dashed border-slate-300 text-slate-600 hover:border-[#507DB4] hover:text-[#507DB4] hover:bg-blue-50/30 transition-all"
+            className="w-full border border-dashed border-slate-300 text-slate-600 hover:border-[#507DB4] hover:text-[#507DB4] hover:bg-blue-50/30 transition-all h-6"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Another Item
+            <Plus className="w-3 h-3 mr-1" />
+            <span className="text-[10px]">Add Another Item</span>
           </Button>
         </div>
       )}

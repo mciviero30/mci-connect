@@ -428,17 +428,17 @@ export default function TripCalculator({
     (!needsDistanceCalc);
 
   return (
-    <Card className="bg-gradient-to-br from-blue-50/40 via-purple-50/30 to-pink-50/20 border-2 border-blue-300">
-      <CardHeader className="py-3 px-4">
-        <CardTitle className="flex items-center gap-2 text-slate-900 text-sm">
-          <Briefcase className="w-4 h-4 text-blue-600" />
+    <Card className="bg-gradient-to-br from-blue-50/40 via-purple-50/30 to-pink-50/20 border border-blue-300">
+      <CardHeader className="py-1.5 px-2">
+        <CardTitle className="flex items-center gap-1.5 text-slate-900 text-[10px]">
+          <Briefcase className="w-3 h-3 text-blue-600" />
           {language === 'es' ? 'Calculadora de Viajes' : 'Trip Calculator'}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3 p-4">
+      <CardContent className="space-y-1.5 p-2">
         {/* Trip Type Selector */}
         <div>
-          <Label className="text-[9px] font-bold mb-1 block">
+          <Label className="text-[8px] font-bold mb-0.5 block">
             {language === 'es' ? 'Tipo de Viaje' : 'Trip Type'}
           </Label>
           <Select value={tripType} onValueChange={(val) => {
@@ -446,26 +446,26 @@ export default function TripCalculator({
             setTravelMetrics([]);
             setError(null);
           }}>
-            <SelectTrigger className="h-8 text-xs">
+            <SelectTrigger className="h-6 text-[10px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="standard">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-blue-600" />
-                  {language === 'es' ? 'Fuera de Área (Estándar)' : 'Out of Area (Standard)'}
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-3 h-3 text-blue-600" />
+                  <span className="text-[10px]">{language === 'es' ? 'Fuera de Área (Estándar)' : 'Out of Area (Standard)'}</span>
                 </div>
               </SelectItem>
               <SelectItem value="punch">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-green-600" />
-                  {language === 'es' ? 'Punch Trip' : 'Punch Trip'}
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3 h-3 text-green-600" />
+                  <span className="text-[10px]">{language === 'es' ? 'Punch Trip' : 'Punch Trip'}</span>
                 </div>
               </SelectItem>
               <SelectItem value="verification">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-purple-600" />
-                  {language === 'es' ? 'Field Verification Trip' : 'Field Verification Trip'}
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3 h-3 text-purple-600" />
+                  <span className="text-[10px]">{language === 'es' ? 'Field Verification Trip' : 'Field Verification Trip'}</span>
                 </div>
               </SelectItem>
             </SelectContent>
@@ -473,107 +473,107 @@ export default function TripCalculator({
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="p-1.5 bg-red-50 border border-red-200 rounded">
+            <p className="text-[9px] text-red-600">{error}</p>
           </div>
         )}
 
         {/* PUNCH TRIP CONFIGURATION */}
         {tripType === 'punch' && (
-          <div className="space-y-1.5 p-2 bg-green-50/50 rounded-lg border border-green-200">
-            <div className="flex items-center gap-1.5 pb-1 border-b border-green-200">
-              <Clock className="w-3 h-3 text-green-600" />
-              <h4 className="text-[9px] font-bold text-slate-700">Punch Trip Setup</h4>
+          <div className="space-y-1 p-1.5 bg-green-50/50 rounded border border-green-200">
+            <div className="flex items-center gap-1 pb-0.5 border-b border-green-200">
+              <Clock className="w-2.5 h-2.5 text-green-600" />
+              <h4 className="text-[8px] font-bold text-slate-700">Punch Trip Setup</h4>
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-1">
               <div>
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Horas/Téc' : 'Hrs/Tech'}</Label>
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Horas/Téc' : 'Hrs/Tech'}</Label>
                 <Input
                   type="number"
                   min="1"
                   max="24"
                   value={punchLaborHours}
                   onChange={(e) => setPunchLaborHours(parseFloat(e.target.value) || 8)}
-                  className="h-7 text-xs"
+                  className="h-6 text-[10px]"
                 />
               </div>
               <div>
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
                 <Input
                   type="number"
                   min="1"
                   max="20"
                   value={techCount}
                   onChange={(e) => setTechCount(parseInt(e.target.value) || 2)}
-                  className="h-7 text-xs"
+                  className="h-6 text-[10px]"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Viajes' : 'Trips'}</Label>
+              <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Viajes' : 'Trips'}</Label>
               <Input
                 type="number"
                 min="1"
                 max="10"
                 value={roundTrips}
                 onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
-                className="h-7 text-xs"
+                className="h-6 text-[10px]"
               />
             </div>
 
-            <div className="flex items-center gap-1.5 p-1.5 bg-white rounded border border-green-300">
+            <div className="flex items-center gap-1 p-1 bg-white rounded border border-green-300">
               <input
                 type="checkbox"
                 checked={punchNeedsTravel}
                 onChange={(e) => setPunchNeedsTravel(e.target.checked)}
-                className="w-3 h-3"
+                className="w-2.5 h-2.5"
               />
-              <Label className="text-[9px] font-semibold cursor-pointer" onClick={() => setPunchNeedsTravel(!punchNeedsTravel)}>
+              <Label className="text-[8px] font-semibold cursor-pointer" onClick={() => setPunchNeedsTravel(!punchNeedsTravel)}>
                 {language === 'es' ? 'Fuera del área? (viaje + estadía)' : 'Out of area? (travel + stay)'}
               </Label>
             </div>
 
             {punchNeedsTravel && (
-              <div className="space-y-1 pl-3 border-l-2 border-green-300">
-                <div className="grid grid-cols-2 gap-1.5">
+              <div className="space-y-0.5 pl-2 border-l border-green-300">
+                <div className="grid grid-cols-2 gap-1">
                   <div>
-                    <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Días/Viaje' : 'Days/Trip'}</Label>
+                    <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Días/Viaje' : 'Days/Trip'}</Label>
                     <Input
                       type="number"
                       min="1"
                       value={daysPerTrip}
                       onChange={(e) => setDaysPerTrip(parseInt(e.target.value) || 2)}
-                      className="h-6 text-xs"
+                      className="h-5 text-[10px]"
                     />
                   </div>
                   <div>
-                    <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Noches/Viaje' : 'Nights/Trip'}</Label>
+                    <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Noches/Viaje' : 'Nights/Trip'}</Label>
                     <Input
                       type="number"
                       min="0"
                       value={nightsPerTrip}
                       onChange={(e) => setNightsPerTrip(parseInt(e.target.value) || 2)}
-                      className="h-6 text-xs"
+                      className="h-5 text-[10px]"
                     />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Cuartos/Noche' : 'Rooms/Night'}</Label>
+                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Cuartos/Noche' : 'Rooms/Night'}</Label>
                   <Input
                     type="number"
                     min="1"
                     value={roomsPerNight}
                     onChange={(e) => setRoomsPerNight(parseInt(e.target.value) || 1)}
-                    className="h-6 text-xs"
+                    className="h-5 text-[10px]"
                   />
                 </div>
               </div>
             )}
 
-            <div className="pt-1 border-t border-green-200">
-              <p className="text-[8px] text-slate-600 leading-tight">
+            <div className="pt-0.5 border-t border-green-200">
+              <p className="text-[7px] text-slate-600 leading-tight">
                 <strong>{language === 'es' ? 'Resumen:' : 'Summary:'}</strong> {punchLaborHours * techCount * roundTrips}h labor
                 {punchNeedsTravel && ` + travel + ${roomsPerNight * nightsPerTrip * roundTrips} rooms + ${techCount * daysPerTrip * roundTrips} per diems`}
               </p>
@@ -583,110 +583,110 @@ export default function TripCalculator({
 
         {/* FIELD VERIFICATION TRIP CONFIGURATION */}
         {tripType === 'verification' && (
-          <div className="space-y-1.5 p-2 bg-purple-50/50 rounded-lg border border-purple-200">
-            <div className="flex items-center gap-1.5 pb-1 border-b border-purple-200">
-              <CheckCircle2 className="w-3 h-3 text-purple-600" />
-              <h4 className="text-[9px] font-bold text-slate-700">Field Verification Setup</h4>
+          <div className="space-y-1 p-1.5 bg-purple-50/50 rounded border border-purple-200">
+            <div className="flex items-center gap-1 pb-0.5 border-b border-purple-200">
+              <CheckCircle2 className="w-2.5 h-2.5 text-purple-600" />
+              <h4 className="text-[8px] font-bold text-slate-700">Field Verification Setup</h4>
             </div>
 
             {/* Mode selector */}
             <div>
-              <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Modo de Viaje' : 'Travel Mode'}</Label>
+              <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Modo de Viaje' : 'Travel Mode'}</Label>
               <Select value={verificationMode} onValueChange={(val) => {
                 setVerificationMode(val);
                 setTravelMetrics([]);
               }}>
-                <SelectTrigger className="h-7 text-xs">
+                <SelectTrigger className="h-6 text-[10px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="flight">
-                    <div className="flex items-center gap-2">
-                      <Plane className="w-4 h-4 text-purple-600" />
-                      {language === 'es' ? 'Avión (Vuelo + Uber + Hotel + Per Diem)' : 'Flight (Flight + Uber + Hotel + Per Diem)'}
+                    <div className="flex items-center gap-1">
+                      <Plane className="w-3 h-3 text-purple-600" />
+                      <span className="text-[9px]">{language === 'es' ? 'Avión (Vuelo + Uber + Hotel + Per Diem)' : 'Flight (Flight + Uber + Hotel + Per Diem)'}</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="driving">
-                    <div className="flex items-center gap-2">
-                      <Car className="w-4 h-4 text-purple-600" />
-                      {language === 'es' ? 'Carro (Millas + Manejo + Hotel + Per Diem)' : 'Driving (Miles + Drive Time + Hotel + Per Diem)'}
+                    <div className="flex items-center gap-1">
+                      <Car className="w-3 h-3 text-purple-600" />
+                      <span className="text-[9px]">{language === 'es' ? 'Carro (Millas + Manejo + Hotel + Per Diem)' : 'Driving (Miles + Drive Time + Hotel + Per Diem)'}</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-1">
               <div>
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Hrs Verif.' : 'Verif. Hrs'}</Label>
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Hrs Verif.' : 'Verif. Hrs'}</Label>
                 <Input
                   type="number"
                   min="1"
                   max="24"
                   value={verificationHours}
                   onChange={(e) => setVerificationHours(parseFloat(e.target.value) || 4)}
-                  className="h-7 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
               <div>
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
                 <Input
                   type="number"
                   min="1"
                   max="20"
                   value={techCount}
                   onChange={(e) => setTechCount(parseInt(e.target.value) || 2)}
-                  className="h-7 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-3 gap-1">
               <div>
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Viajes' : 'Trips'}</Label>
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Viajes' : 'Trips'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={roundTrips}
                   onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
-                  className="h-6 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
               <div>
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Días' : 'Days'}</Label>
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Días' : 'Days'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={verificationDays}
                   onChange={(e) => setVerificationDays(parseInt(e.target.value) || 1)}
-                  className="h-6 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
               <div>
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Noches' : 'Nights'}</Label>
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Noches' : 'Nights'}</Label>
                 <Input
                   type="number"
                   min="0"
                   value={verificationNights}
                   onChange={(e) => setVerificationNights(parseInt(e.target.value) || 1)}
-                  className="h-6 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Cuartos/Noche' : 'Rooms/Night'}</Label>
+              <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Cuartos/Noche' : 'Rooms/Night'}</Label>
               <Input
                 type="number"
                 min="1"
                 value={roomsPerNight}
                 onChange={(e) => setRoomsPerNight(parseInt(e.target.value) || 1)}
-                className="h-6 text-xs"
+                className="h-5 text-[10px]"
               />
             </div>
 
-            <div className="pt-1 border-t border-purple-200">
-              <p className="text-[8px] text-slate-600 leading-tight">
+            <div className="pt-0.5 border-t border-purple-200">
+              <p className="text-[7px] text-slate-600 leading-tight">
                 <strong>{language === 'es' ? 'Resumen:' : 'Summary:'}</strong> {verificationHours * techCount * roundTrips}h labor + 
                 {verificationMode === 'flight' 
                   ? ` ${techCount * roundTrips * 2} flights + ${techCount * roundTrips * 4} ubers` 
@@ -700,59 +700,59 @@ export default function TripCalculator({
 
         {/* STANDARD OUT OF AREA CONFIGURATION */}
         {tripType === 'standard' && (
-          <div className="space-y-2">
-            <div className="grid grid-cols-3 gap-1.5">
-              <div className="p-1 bg-white rounded border border-blue-200">
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
+          <div className="space-y-1">
+            <div className="grid grid-cols-3 gap-1">
+              <div className="p-0.5 bg-white rounded border border-blue-200">
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={techCount}
                   onChange={(e) => setTechCount(parseInt(e.target.value) || 2)}
-                  className="h-6 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
-              <div className="p-1 bg-white rounded border border-blue-200">
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Viajes' : 'Trips'}</Label>
+              <div className="p-0.5 bg-white rounded border border-blue-200">
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Viajes' : 'Trips'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={roundTrips}
                   onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
-                  className="h-6 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
-              <div className="p-1 bg-white rounded border border-blue-200">
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Cuartos' : 'Rooms'}</Label>
+              <div className="p-0.5 bg-white rounded border border-blue-200">
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Cuartos' : 'Rooms'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={roomsPerNight}
                   onChange={(e) => setRoomsPerNight(parseInt(e.target.value) || 1)}
-                  className="h-6 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-1.5">
-              <div className="p-1 bg-white rounded border border-purple-200">
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Días/Viaje' : 'Days/Trip'}</Label>
+            <div className="grid grid-cols-2 gap-1">
+              <div className="p-0.5 bg-white rounded border border-purple-200">
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Días/Viaje' : 'Days/Trip'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={daysPerTrip}
                   onChange={(e) => setDaysPerTrip(parseInt(e.target.value) || 2)}
-                  className="h-6 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
-              <div className="p-1 bg-white rounded border border-purple-200">
-                <Label className="text-[9px] mb-0.5 block font-semibold">{language === 'es' ? 'Noches/Viaje' : 'Nights/Trip'}</Label>
+              <div className="p-0.5 bg-white rounded border border-purple-200">
+                <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Noches/Viaje' : 'Nights/Trip'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={nightsPerTrip}
                   onChange={(e) => setNightsPerTrip(parseInt(e.target.value) || 2)}
-                  className="h-6 text-xs"
+                  className="h-5 text-[10px]"
                 />
               </div>
             </div>
@@ -761,19 +761,19 @@ export default function TripCalculator({
 
         {/* Distance Calculation Results (for trips that need it) */}
         {needsDistanceCalc && travelMetrics.length > 0 && (
-          <div className="space-y-2 p-3 bg-white rounded-lg border border-slate-200">
-            <h4 className="text-xs font-bold text-slate-700 flex items-center gap-2">
-              <Car className="w-3 h-3 text-blue-600" />
+          <div className="space-y-1 p-1.5 bg-white rounded border border-slate-200">
+            <h4 className="text-[9px] font-bold text-slate-700 flex items-center gap-1">
+              <Car className="w-2.5 h-2.5 text-blue-600" />
               {language === 'es' ? 'Distancias Calculadas' : 'Calculated Distances'}
             </h4>
             {travelMetrics.map(metric => (
-              <div key={metric.teamId} className="p-2 bg-slate-50 rounded border border-slate-200">
-                <p className="text-xs font-semibold text-slate-900">{metric.teamName}</p>
+              <div key={metric.teamId} className="p-1 bg-slate-50 rounded border border-slate-200">
+                <p className="text-[9px] font-semibold text-slate-900">{metric.teamName}</p>
                 {metric.success ? (
-                  <div className="flex items-center justify-between mt-1">
-                    <p className="text-xs text-slate-600">{metric.roundTripMiles} miles round-trip</p>
-                    <div className="flex items-center gap-2">
-                      <Label className="text-[10px] text-slate-500">Vehicles:</Label>
+                  <div className="flex items-center justify-between mt-0.5">
+                    <p className="text-[9px] text-slate-600">{metric.roundTripMiles} miles round-trip</p>
+                    <div className="flex items-center gap-1">
+                      <Label className="text-[8px] text-slate-500">Vehicles:</Label>
                       <Input
                         type="number"
                         min="1"
@@ -782,12 +782,12 @@ export default function TripCalculator({
                           ...prev,
                           [metric.teamId]: parseInt(e.target.value) || 1
                         }))}
-                        className="w-14 h-6 text-xs text-center"
+                        className="w-12 h-5 text-[9px] text-center"
                       />
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-red-600">{metric.error}</p>
+                  <p className="text-[9px] text-red-600">{metric.error}</p>
                 )}
               </div>
             ))}
@@ -795,16 +795,16 @@ export default function TripCalculator({
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-2 pt-2 border-t border-slate-200">
+        <div className="flex gap-1 pt-1 border-t border-slate-200">
           {needsDistanceCalc && travelMetrics.length === 0 && (
             <Button
               type="button"
               onClick={calculateDistances}
               disabled={isCalculating || !jobAddress || selectedTeamIds.length === 0}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-10"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-6"
             >
-              <Calculator className="w-4 h-4 mr-2" />
-              {isCalculating ? (language === 'es' ? 'Calculando...' : 'Calculating...') : (language === 'es' ? 'Calcular Distancias' : 'Calculate Distances')}
+              <Calculator className="w-3 h-3 mr-1" />
+              <span className="text-[10px]">{isCalculating ? (language === 'es' ? 'Calculando...' : 'Calculating...') : (language === 'es' ? 'Calcular Distancias' : 'Calculate Distances')}</span>
             </Button>
           )}
 
@@ -819,7 +819,7 @@ export default function TripCalculator({
               size="sm"
               className="flex-1"
             >
-              {language === 'es' ? 'Recalcular' : 'Recalculate'}
+              <span className="text-[10px]">{language === 'es' ? 'Recalcular' : 'Recalculate'}</span>
             </Button>
           )}
 
@@ -827,10 +827,10 @@ export default function TripCalculator({
             type="button"
             onClick={generateItems}
             disabled={!canGenerate}
-            className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold h-10"
+            className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold h-6"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            {language === 'es' ? 'Agregar Todo al Estimado' : 'Add All to Quote'}
+            <Plus className="w-3 h-3 mr-1" />
+            <span className="text-[10px]">{language === 'es' ? 'Agregar Todo al Estimado' : 'Add All to Quote'}</span>
           </Button>
         </div>
       </CardContent>
