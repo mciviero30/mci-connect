@@ -796,60 +796,59 @@ export default function Chat() {
           {/* Main Chat Area */}
           <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-slate-50/30 dark:from-[#0a0a0a] dark:to-[#0f0f0f]">
             {/* Chat Header */}
-            <div className="px-8 py-5 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl">
-              <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20">
-                  <MessageSquare className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-black text-xl text-slate-900 dark:text-white tracking-tight">
-                    {chatMode === 'direct' && selectedDMConv
-                      ? selectedDMConv.other_user_name
-                      : chatMode === 'groups' && selectedCustomGroup
-                      ? selectedCustomGroup.group_name
-                      : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
-                    {chatMode === 'groups' && selectedCustomGroup 
-                      ? `${selectedCustomGroup.members.length} members`
-                      : 'Team channel'}
-                  </p>
-                </div>
-              </div>
-                
-              <div className="flex items-center gap-3">
-                {chatMode === 'channels' && selectedGroup !== 'general' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowJobMembers(true)}
-                    className="h-10 px-4 text-sm font-bold text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Invite
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowExportDialog(true)}
-                  className="h-10 px-4 text-sm font-bold text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
-                  title={language === 'es' ? 'Exportar chat' : 'Export chat'}
-                >
-                  <Download className="w-4 h-4" />
-                </Button>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                  <Input
-                    placeholder="Search messages..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-72 pl-11 h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium shadow-sm"
-                  />
-                </div>
-              </div>
-            </div>
+             <div className="hidden md:flex px-8 py-5 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl items-center justify-between gap-4">
+               <div className="flex items-center gap-4">
+                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20">
+                   <MessageSquare className="w-7 h-7 text-white" />
+                 </div>
+                 <div>
+                   <h3 className="font-black text-xl text-slate-900 dark:text-white tracking-tight">
+                     {chatMode === 'direct' && selectedDMConv
+                       ? selectedDMConv.other_user_name
+                       : chatMode === 'groups' && selectedCustomGroup
+                       ? selectedCustomGroup.group_name
+                       : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
+                   </h3>
+                   <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
+                     {chatMode === 'groups' && selectedCustomGroup 
+                       ? `${selectedCustomGroup.members.length} members`
+                       : 'Team channel'}
+                   </p>
+                 </div>
+               </div>
+
+               <div className="flex items-center gap-3">
+                 {chatMode === 'channels' && selectedGroup !== 'general' && (
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     onClick={() => setShowJobMembers(true)}
+                     className="h-10 px-4 text-sm font-bold text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
+                   >
+                     <UserPlus className="w-4 h-4 mr-2" />
+                     Invite
+                   </Button>
+                 )}
+                 <Button
+                   variant="ghost"
+                   size="sm"
+                   onClick={() => setShowExportDialog(true)}
+                   className="h-10 px-4 text-sm font-bold text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
+                   title={language === 'es' ? 'Exportar chat' : 'Export chat'}
+                 >
+                   <Download className="w-4 h-4" />
+                 </Button>
+                 <div className="relative">
+                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
+                   <Input
+                     placeholder="Search messages..."
+                     value={searchTerm}
+                     onChange={(e) => setSearchTerm(e.target.value)}
+                     className="w-72 pl-11 h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium shadow-sm"
+                   />
+                 </div>
+               </div>
+             </div>
 
             {/* Messages Area */}
             <div className="flex-1 flex flex-col">
