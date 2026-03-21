@@ -139,6 +139,7 @@ export default function CrearEstimado() {
   const [pricesLocked, setPricesLocked] = useState(false);
   const [showPunchCalculator, setShowPunchCalculator] = useState(false);
   const [punchCalculatorType, setPunchCalculatorType] = useState('punch');
+  const [frozenItemsForCalculator, setFrozenItemsForCalculator] = useState([]);
 
   const [stayConfig, setStayConfig] = useState({ roundTrips: 1, daysPerTrip: 2, nightsPerTrip: 2, total_nights: null, total_calendar_days: null });
 
@@ -650,7 +651,8 @@ export default function CrearEstimado() {
       // SPECIAL HANDLING: Open calculator for Punch Trip or Field Verification
       if (itemName === 'Punch Trip') {
         setPunchCalculatorType('punch');
-        // Pass current formData.items so calculator can extract travel data
+        // FREEZE items snapshot to prevent re-render issues
+        setFrozenItemsForCalculator([...formData.items]);
         console.log('[CrearEstimado] Opening Punch Trip with items:', formData.items);
         setShowPunchCalculator(true);
         return; // Don't add the item yet - calculator will do it
@@ -658,7 +660,8 @@ export default function CrearEstimado() {
 
       if (itemName === 'Field Verification') {
         setPunchCalculatorType('field_verification');
-        // Pass current formData.items so calculator can extract travel data
+        // FREEZE items snapshot to prevent re-render issues
+        setFrozenItemsForCalculator([...formData.items]);
         console.log('[CrearEstimado] Opening Field Verification with items:', formData.items);
         setShowPunchCalculator(true);
         return; // Don't add the item yet - calculator will do it
@@ -1331,7 +1334,7 @@ export default function CrearEstimado() {
            originAddress={formData.team_ids.length > 0 ? (teams.find(t => t.id === formData.team_ids[0])?.base_address || formData.job_address) : formData.job_address}
            travelTimeHours={travelTimeHours || 0}
            travelMiles={derivedValues?.travelMiles || 0}
-           existingItems={formData.items}
+           existingItems={frozenItemsForCalculator}
            originalTechCount={projectTechCount}
            language={language}
         />
