@@ -961,6 +961,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   };
   
   if (activeSession) {
+    // DEBUG: Verify session is set
+    console.log('🎯 [LiveTimeTracker] Rendering active session:', {
+      jobName: activeSession.jobName,
+      elapsed,
+      hasLocation: !!activeSession.location
+    });
+    
     // Use clean UI with map background
     return (
       <CleanTimeTrackerUI
