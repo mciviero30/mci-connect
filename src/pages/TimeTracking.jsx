@@ -225,7 +225,49 @@ export default function TimeTracking() {
 
   const activeBreak = todayEntry?.breaks?.find(b => !b.end_time);
 
+  // Monitor active session and elapsed time
+  useEffect(() => {
+    const savedSession = sessionStorage.getItem('liveTimeTracker_work');
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        setSessionData(session);
+        setShowCleanUI(true);
+        
+        // Update elapsed time
+        const interval = setInterval(() => {
+          const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
+          setElapsedTime(elapsed);
+        }, 1000);
+        
+        return () => clearInterval(interval);
+      } catch (e) {
+        setShowCleanUI(false);
+      }
+    }
+  }, []);
 
+  // Show clean UI if session is active
+  if (showCleanUI && sessionData) {
+    return (
+      <CleanTimeTrackerUI
+        activeSession={sessionData}
+        elapsed={elapsedTime}
+        onBreakToggle={async () => {
+          // This would be handled by LiveTimeTracker logic
+          window.location.reload();
+        }}
+        onClockOut={async () => {
+          window.location.reload();
+        }}
+        onBack={() => {
+          setShowCleanUI(false);
+          window.location.reload();
+        }}
+        language={language}
+      />
+    );
+  }
 
   return (
     <SectionErrorBoundary 
