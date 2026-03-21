@@ -22,10 +22,10 @@ const buttonVariants = cva(
         success: "bg-green-600 text-white shadow hover:bg-green-700",
       },
       size: {
-        default: "h-8 px-3 py-1.5 text-xs",
+        default: "h-7 px-2.5 py-1 text-[11px]",
         sm: "h-6 rounded-md px-2 text-[10px]",
-        lg: "h-9 rounded-md px-5",
-        icon: "h-8 w-8",
+        lg: "h-8 rounded-md px-4",
+        icon: "h-7 w-7",
       },
     },
     defaultVariants: {
