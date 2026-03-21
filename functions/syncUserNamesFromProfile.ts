@@ -30,7 +30,8 @@ Deno.serve(async (req) => {
         }
 
         const userRecord = users[0];
-        const profileFullName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+        // Clean up the name - remove double spaces and trim
+        const profileFullName = `${profile.first_name || ''} ${profile.last_name || ''}`.replace(/\s+/g, ' ').trim();
 
         // Check if names are different
         if (userRecord.full_name !== profileFullName && profileFullName) {
@@ -40,6 +41,7 @@ Deno.serve(async (req) => {
           });
 
           updates.push({
+            user_id: userRecord.id,
             email: userRecord.email,
             old_name: userRecord.full_name,
             new_name: profileFullName
