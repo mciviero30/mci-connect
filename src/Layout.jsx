@@ -258,9 +258,9 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
         
         return (
           <AccordionItem key={idx} value={sectionId} className="border-none mb-2">
-            <AccordionTrigger className="text-[10px] font-bold tracking-wider bg-[#EBF2FF] dark:bg-slate-800 rounded-lg px-3 py-2 flex items-center gap-2 text-[#507DB4] dark:text-slate-300 border border-[#507DB4]/10 dark:border-slate-700 hover:no-underline hover:bg-[#507DB4]/10 transition-colors">
-              <div className="flex items-center gap-2">
-                {section.icon && <section.icon className="w-3.5 h-3.5" />}
+            <AccordionTrigger className="text-[9px] font-bold tracking-wider bg-[#EBF2FF] dark:bg-slate-800 rounded px-2 py-1 flex items-center gap-1.5 text-[#507DB4] dark:text-slate-300 border border-[#507DB4]/10 dark:border-slate-700 hover:no-underline hover:bg-[#507DB4]/10 transition-colors">
+              <div className="flex items-center gap-1">
+                {section.icon && <section.icon className="w-2.5 h-2.5" />}
                 {section.section}
               </div>
             </AccordionTrigger>
@@ -286,19 +286,19 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
                               return newSet;
                             });
                           }}
-                          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 text-slate-600 dark:text-slate-400 hover:bg-[#507DB4]/10 dark:hover:bg-[#507DB4]/20 transition-all"
+                          className="w-full flex items-center gap-2 px-2 py-1.5 rounded mb-0.5 text-slate-600 dark:text-slate-400 hover:bg-[#507DB4]/10 dark:hover:bg-[#507DB4]/20 transition-all"
                         >
-                          <item.icon className="w-4 h-4 flex-shrink-0 text-[#FF8C00]" style={{ 
-                            filter: 'drop-shadow(0 0 8px rgba(255, 140, 0, 0.3))'
+                          <item.icon className="w-3 h-3 flex-shrink-0 text-[#FF8C00]" style={{ 
+                            filter: 'drop-shadow(0 0 6px rgba(255, 140, 0, 0.3))'
                           }} />
-                          <span className="font-medium text-sm flex-1 text-left bg-gradient-to-r from-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent font-bold">
+                          <span className="font-medium text-[10px] flex-1 text-left bg-gradient-to-r from-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent font-bold">
                             {item.title}
                           </span>
-                          <ChevronRight className={`w-4 h-4 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
+                          <ChevronRight className={`w-3 h-3 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
                         </button>
 
                         {isExpanded && (
-                          <div className="space-y-1 pl-6">
+                          <div className="space-y-0.5 pl-4">
                             {item.children.map((child) => {
                               const isActive = location.pathname === child.url;
                               const childItemIndex = itemIndex++;
@@ -307,33 +307,33 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
                                 <SidebarMenuItem key={child.title}>
                                   <SidebarMenuButton
                                     asChild
-                                    className={`transition-all duration-200 rounded-lg mb-1 border-none ${
+                                    className={`transition-all duration-200 rounded mb-0.5 border-none ${
                                       isActive
                                         ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md'
-                                        : 'hover:bg-[#507DB4]/15 dark:hover:bg-[#507DB4]/25 text-slate-600 dark:text-slate-400 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] hover:translate-x-1 hover:shadow-sm'
+                                        : 'hover:bg-[#507DB4]/15 dark:hover:bg-[#507DB4]/25 text-slate-600 dark:text-slate-400 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] hover:translate-x-0.5 hover:shadow-sm'
                                     }`}
                                   >
                                     <Link 
                                       ref={el => itemRefs.current[childItemIndex] = el}
                                       to={child.url} 
                                       onClick={() => setOpenMobile(false)} 
-                                      className={`flex items-center gap-3 px-3 py-2.5 relative group outline-none ${
-                                        focusedIndex === childItemIndex ? 'ring-2 ring-[#507DB4] ring-offset-2' : ''
+                                      className={`flex items-center gap-2 px-2 py-1.5 relative group outline-none ${
+                                        focusedIndex === childItemIndex ? 'ring-1 ring-[#507DB4] ring-offset-1' : ''
                                       }`}
                                       data-sidebar-item
                                       tabIndex={0}>
-                                      <child.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 ${
+                                      <child.icon className={`w-3 h-3 flex-shrink-0 transition-transform group-hover:scale-105 ${
                                         isActive ? 'text-white' : 'text-[#FF8C00]'
                                       }`} style={{ 
-                                        filter: isActive ? 'none' : 'drop-shadow(0 0 8px rgba(255, 140, 0, 0.3))'
+                                        filter: isActive ? 'none' : 'drop-shadow(0 0 6px rgba(255, 140, 0, 0.3))'
                                       }} />
-                                      <span className={`font-medium text-sm ${
+                                      <span className={`font-medium text-[10px] ${
                                         isActive ? '' : 'bg-gradient-to-r from-[#FF8C00] to-[#FFB347] bg-clip-text text-transparent'
                                       }`}>
                                         {child.title}
                                       </span>
                                       {isActive && (
-                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-sm" />
+                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3 bg-white rounded-r-full shadow-sm" />
                                       )}
                                     </Link>
                                   </SidebarMenuButton>
@@ -352,35 +352,35 @@ const SidebarNavigation = React.memo(function SidebarNavigation({ navigation, lo
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton
                           asChild
-                          className={`transition-all duration-200 rounded-lg mb-1 border-none ${
+                          className={`transition-all duration-200 rounded mb-0.5 border-none ${
                             isActive
                               ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md'
-                              : 'hover:bg-[#507DB4]/15 dark:hover:bg-[#507DB4]/25 text-slate-600 dark:text-slate-400 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] hover:translate-x-1 hover:shadow-sm'
+                              : 'hover:bg-[#507DB4]/15 dark:hover:bg-[#507DB4]/25 text-slate-600 dark:text-slate-400 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] hover:translate-x-0.5 hover:shadow-sm'
                           }`}
                         >
                           <Link 
                             ref={el => itemRefs.current[currentItemIndex] = el}
                             to={item.url} 
                             onClick={() => setOpenMobile(false)} 
-                            className={`flex items-center gap-3 px-3 py-2.5 relative group outline-none ${
-                              focusedIndex === currentItemIndex ? 'ring-2 ring-[#507DB4] ring-offset-2' : ''
+                            className={`flex items-center gap-2 px-2 py-1.5 relative group outline-none ${
+                              focusedIndex === currentItemIndex ? 'ring-1 ring-[#507DB4] ring-offset-1' : ''
                             }`}
                             data-sidebar-item
                             tabIndex={0}>
-                            <item.icon className={`w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-105 text-slate-500 dark:text-slate-400`} />
-                            <span className="font-medium text-sm">
+                            <item.icon className={`w-3 h-3 flex-shrink-0 transition-transform group-hover:scale-105 text-slate-500 dark:text-slate-400`} />
+                            <span className="font-medium text-[10px]">
                               {item.title}
                             </span>
                             {showBadge && (
-                              <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 shadow-lg shadow-red-500/30 animate-pulse">
+                              <Badge className="bg-red-500 text-white text-[8px] px-1 py-0 shadow-lg shadow-red-500/30 animate-pulse">
                                 {pendingExpenses}
                               </Badge>
                             )}
                             {item.badge && (
-                              <span className="text-xs">{item.badge}</span>
+                              <span className="text-[9px]">{item.badge}</span>
                             )}
                             {isActive && (
-                              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-5 bg-white rounded-r-full shadow-sm" />
+                              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-3 bg-white rounded-r-full shadow-sm" />
                             )}
                           </Link>
                         </SidebarMenuButton>
