@@ -794,7 +794,7 @@ export default function Dashboard() {
                  {user ? `${t('hello')}, ${getDisplayName(user)}!` : t('hello')}
                 </h1>
                 <p className="text-slate-600 dark:text-slate-400 text-[9px] sm:text-[10px] md:text-xs mt-0 sm:mt-0.5 truncate">
-                  {isAdmin ? (language === 'es' ? '¡Bienvenido al panel de administración!' : 'Welcome to the admin panel!') : (language === 'es' ? '¡Que tengas un gran día!' : 'Have a great day!')}
+                  {isAdmin ? (language === 'es' ? '¡Bienvenido al panel de administración!' : 'Welcome to the admin panel!') : getGreeting()}
                 </p>
               </div>
             </div>
