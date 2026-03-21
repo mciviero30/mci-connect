@@ -1324,7 +1324,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="p-0 md:hidden flex-shrink-0 h-14 relative bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
+              className="p-0 md:hidden flex-shrink-0 h-14 relative bg-[#D4E4F7] dark:from-slate-900 dark:to-slate-900/50"
               >
               <div className="absolute inset-0 flex items-center justify-center px-12">
                 <img
