@@ -1324,7 +1324,16 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="p-0 md:hidden flex-shrink-0 h-14 relative bg-[#D4E4F7] dark:from-slate-900 dark:to-slate-900/50"
+              className="p-0 md:hidden flex-shrink-0 h-14 relative"
+              style={{
+                background: 'linear-gradient(135deg, #D4E4F7 0%, #E8F1FA 100%)',
+                backgroundImage: `
+                  radial-gradient(circle at 20% 50%, rgba(100, 150, 200, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(100, 150, 200, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 40% 80%, rgba(100, 150, 200, 0.08) 0%, transparent 50%),
+                  linear-gradient(135deg, #D4E4F7 0%, #E8F1FA 100%)
+                `
+              }}
               >
               <div className="absolute inset-0 flex items-center justify-center px-12">
                 <img
