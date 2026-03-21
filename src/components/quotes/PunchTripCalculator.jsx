@@ -110,9 +110,18 @@ export default function PunchTripCalculator({
     return (extractedTravelData.miles * techCount) / extractedTravelData.originalTechs;
   }, [extractedTravelData, techCount]);
   
-  // CRITICAL: Initialize with proportional values directly
-  const [travelTimeHours, setTravelTimeHours] = useState(proportionalTravelHours);
-  const [travelMiles, setTravelMiles] = useState(proportionalTravelMiles);
+  // CRITICAL: Use lazy initialization to ensure extractedTravelData is processed first
+  const [travelTimeHours, setTravelTimeHours] = useState(() => {
+    // This function runs AFTER useMemo, ensuring extractedTravelData is ready
+    const initial = (extractedTravelData.drivingHours * techCount) / (extractedTravelData.originalTechs || 1);
+    console.log('[PunchTripCalculator] Lazy init travelTimeHours:', initial);
+    return initial;
+  });
+  const [travelMiles, setTravelMiles] = useState(() => {
+    const initial = (extractedTravelData.miles * techCount) / (extractedTravelData.originalTechs || 1);
+    console.log('[PunchTripCalculator] Lazy init travelMiles:', initial);
+    return initial;
+  });
   // Field Verification should auto-enable out of town to charge travel
   const [isOutOfTown, setIsOutOfTown] = useState(itemType === 'field_verification');
   
