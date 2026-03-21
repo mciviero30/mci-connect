@@ -440,7 +440,7 @@ export default function LineItemsEditor({
                 onChange={(e) => updateItem(index, 'description', e.target.value)}
                 required
                 placeholder="Description"
-                className="min-h-[35px] text-[10px] leading-tight text-slate-600 resize-none bg-white border-slate-200 py-1"
+                className="min-h-[25px] text-[9px] leading-tight text-slate-600 resize-none bg-white border-slate-200 py-0.5 px-1"
               />
             </div>
           </div>
