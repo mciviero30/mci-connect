@@ -769,7 +769,7 @@ export default function Dashboard() {
   // Dynamic greetings - changes daily based on day of week
   const getGreeting = useCallback(() => {
     const today = new Date();
-    const dayOfWeek = getDay(today); // 0=Sunday, 1=Monday... 6=Saturday
+    const dayOfWeek = today.getDay(); // 0=Sunday, 1=Monday... 6=Saturday
     
     const greetings = [
       // Sunday (0)
