@@ -895,7 +895,7 @@ export default function Chat() {
               )}
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-8 py-6 space-y-3 bg-slate-50/50 dark:bg-[#0a0a0a]">
+              <div className="flex-1 overflow-y-auto px-4 md:px-8 py-4 md:py-6 space-y-3 bg-slate-50/50 dark:bg-[#0a0a0a]">
                 {isLoading && (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
