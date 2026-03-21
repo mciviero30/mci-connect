@@ -353,53 +353,53 @@
         .radius-xl { @apply rounded-2xl; }       /* 16px */
 
         /* ============================================ */
-        /* TYPOGRAPHY HIERARCHY                        */
+        /* TYPOGRAPHY HIERARCHY - UNIFIED MOBILE/WEB  */
         /* ============================================ */
 
-        /* Headings */
+        /* Headings - FIXED SIZES (no responsive) */
         .text-h1 {
-          @apply text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight;
-          letter-spacing: -0.02em;
+          @apply text-sm font-bold text-slate-900 dark:text-white tracking-tight;
+          letter-spacing: -0.01em;
         }
         .text-h2 {
-          @apply text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight;
+          @apply text-xs font-bold text-slate-900 dark:text-white tracking-tight;
           letter-spacing: -0.01em;
         }
         .text-h3 {
-          @apply text-xs sm:text-sm font-semibold text-slate-900 dark:text-white;
+          @apply text-[11px] font-semibold text-slate-900 dark:text-white;
         }
         .text-h4 {
-          @apply text-[11px] sm:text-xs font-semibold text-slate-900 dark:text-white;
+          @apply text-[10px] font-semibold text-slate-900 dark:text-white;
         }
 
-        /* Body Text */
+        /* Body Text - FIXED SIZES */
         .text-body-lg {
-          @apply text-xs text-slate-700 dark:text-slate-300 leading-snug;
+          @apply text-[11px] text-slate-700 dark:text-slate-300 leading-snug;
         }
         .text-body {
-          @apply text-[11px] text-slate-700 dark:text-slate-300 leading-tight;
+          @apply text-[10px] text-slate-700 dark:text-slate-300 leading-tight;
         }
         .text-body-sm {
-          @apply text-[10px] text-slate-600 dark:text-slate-400 leading-tight;
+          @apply text-[9px] text-slate-600 dark:text-slate-400 leading-tight;
         }
 
-        /* Status & Labels */
+        /* Status & Labels - FIXED SIZES */
         .text-label {
-          @apply text-[10px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider;
+          @apply text-[9px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider;
         }
         .text-status {
           @apply text-[8px] font-bold uppercase tracking-widest;
         }
 
-        /* Field Mode Typography (High Contrast) */
+        /* Field Mode Typography */
         .text-field-h1 {
-          @apply text-2xl sm:text-3xl font-bold text-white tracking-tight;
+          @apply text-lg font-bold text-white tracking-tight;
         }
         .text-field-h2 {
-          @apply text-xl sm:text-2xl font-bold text-white tracking-tight;
+          @apply text-base font-bold text-white tracking-tight;
         }
         .text-field-body {
-          @apply text-sm text-slate-200 leading-relaxed;
+          @apply text-[11px] text-slate-200 leading-relaxed;
         }
 
         /* ============================================ */
@@ -663,20 +663,52 @@
     @apply transition-all min-h-[32px] text-[10px];
   }
 
-  /* Mobile-first spacing */
+  /* ============================================ */
+  /* MOBILE OPTIMIZATION - COMPACT SPACING      */
+  /* ============================================ */
   @media (max-width: 768px) {
     .page-container {
       @apply px-2 py-2;
     }
     
     .card-enterprise {
-      @apply p-3;
+      @apply p-2;
     }
     
     .spacing-xs { @apply gap-1 p-1; }
-    .spacing-sm { @apply gap-1.5 p-1.5; }
-    .spacing-md { @apply gap-2 p-2; }
+    .spacing-sm { @apply gap-1 p-1; }
+    .spacing-md { @apply gap-1.5 p-1.5; }
     .spacing-lg { @apply gap-2 p-2; }
+    
+    /* Compact all inputs on mobile */
+    input, select, textarea {
+      min-height: 32px !important;
+      padding: 0.25rem 0.5rem !important;
+      font-size: 10px !important;
+    }
+    
+    /* Compact all buttons on mobile */
+    button {
+      min-height: 32px !important;
+      padding: 0.25rem 0.75rem !important;
+      font-size: 10px !important;
+    }
+    
+    /* Compact labels */
+    label {
+      font-size: 9px !important;
+      margin-bottom: 0.125rem !important;
+    }
+    
+    /* Reduce card padding */
+    [class*="card-"] {
+      padding: 0.5rem !important;
+    }
+    
+    /* Compact headers */
+    h1, h2, h3, h4, h5, h6 {
+      line-height: 1.2 !important;
+    }
   }
 }
 

@@ -19,10 +19,9 @@ const Input = React.forwardRef(({ className, type, autoCapitalizeInput = false, 
         type={type}
         className={cn(
           "flex h-8 w-full rounded border border-input bg-background px-2 py-1 text-[10px] ring-offset-background file:border-0 file:bg-transparent file:text-[9px] file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50",
-          "touch-action-manipulation",
+          "touch-action-manipulation min-h-[32px]",
           className
         )}
-        style={{ fontSize: 'max(10px, 0.625rem)' }}
         ref={ref}
         onChange={handleChange}
         {...props}
