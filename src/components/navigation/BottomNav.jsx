@@ -106,7 +106,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
         <div className="grid grid-cols-5 h-16 px-1 relative">
           {mainNavItems.map((item) => {
             const active = isActive(item.url);
-            
+
             // Time menu handler
             if (item.isTimeMenu) {
               return (
@@ -161,21 +161,6 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             );
           })}
 
-          {/* Sync indicator - only when syncing */}
-          {pendingCount > 0 && (
-            <div className="flex flex-col items-center justify-center gap-0.5 relative">
-              <div className="relative">
-                <Cloud className="w-5 h-5 text-blue-600 dark:text-blue-400 animate-pulse" strokeWidth={2.5} />
-                <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px] bg-blue-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
-                  {pendingCount > 9 ? '9+' : pendingCount}
-                </Badge>
-              </div>
-              <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 truncate max-w-full text-center leading-tight">
-                Sync
-              </span>
-            </div>
-          )}
-
           {/* More Menu - 6 Quick Access */}
           <button
             onClick={() => setMoreExpanded(!moreExpanded)}
@@ -187,6 +172,11 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
           >
             <div className="relative">
               <Menu className={`w-5 h-5 transition-all duration-300`} strokeWidth={moreExpanded ? 2.5 : 2} />
+              {pendingCount > 0 && (
+                <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px] bg-blue-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
+                  Syncing
+                </Badge>
+              )}
               {moreExpanded && (
                 <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#507DB4] dark:bg-[#6B9DD8]" />
               )}
