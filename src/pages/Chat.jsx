@@ -851,10 +851,10 @@ export default function Chat() {
              </div>
 
             {/* Messages Area */}
-            <div className="flex-1 flex flex-col">
-              {/* Reply indicator */}
-              {replyingTo && (
-                <div className="px-6 py-3 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/30 flex items-center justify-between">
+            <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Reply indicator */}
+            {replyingTo && (
+              <div className="px-4 md:px-6 py-3 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/30 flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
                       {language === 'es' ? 'Respondiendo a' : 'Replying to'} {replyingTo.sender_name}
