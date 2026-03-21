@@ -306,13 +306,13 @@
 
 @layer utilities {
         /* ============================================ */
-        /* UNIFIED SPACING SYSTEM                      */
+        /* UNIFIED SPACING SYSTEM - ULTRA COMPACT     */
         /* ============================================ */
-        .spacing-xs { @apply gap-1 p-1; }        /* 4px */
-        .spacing-sm { @apply gap-1.5 p-1.5; }    /* 6px */
-        .spacing-md { @apply gap-2 p-2; }        /* 8px */
-        .spacing-lg { @apply gap-3 p-3; }        /* 12px */
-        .spacing-xl { @apply gap-4 p-4; }        /* 16px */
+        .spacing-xs { @apply gap-0.5 p-0.5; }    /* 2px */
+        .spacing-sm { @apply gap-1 p-1; }        /* 4px */
+        .spacing-md { @apply gap-1.5 p-1.5; }    /* 6px */
+        .spacing-lg { @apply gap-2 p-2; }        /* 8px */
+        .spacing-xl { @apply gap-3 p-3; }        /* 12px */
 
         /* ============================================ */
         /* UNIFIED SHADOW SYSTEM                       */
@@ -403,16 +403,16 @@
         }
 
         /* ============================================ */
-        /* ENTERPRISE CARD SYSTEM                      */
+        /* ENTERPRISE CARD SYSTEM - ULTRA COMPACT     */
         /* ============================================ */
         .card-enterprise {
-          @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 radius-sm shadow-enterprise-md;
+          @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 radius-sm shadow-enterprise-md p-2;
         }
         .card-enterprise-hover {
           @apply card-enterprise hover:shadow-enterprise-lg transition-all duration-200;
         }
         .card-field {
-          @apply bg-slate-800 border border-slate-700 radius-sm shadow-enterprise-lg;
+          @apply bg-slate-800 border border-slate-700 radius-sm shadow-enterprise-lg p-2;
         }
 
         /* Soft Blue */
@@ -639,18 +639,18 @@
   }
 
   /* ============================================ */
-  /* ENTERPRISE PANEL SYSTEM                     */
+  /* ENTERPRISE PANEL SYSTEM - ULTRA COMPACT    */
   /* ============================================ */
   .panel-header {
-    @apply border-b border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-900/50;
+    @apply border-b border-slate-200 dark:border-slate-700 px-2 py-1 bg-slate-50 dark:bg-slate-900/50;
   }
 
   .panel-content {
-    @apply px-3 py-2;
+    @apply px-2 py-1.5;
   }
 
   .panel-footer {
-    @apply border-t border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-900/50;
+    @apply border-t border-slate-200 dark:border-slate-700 px-2 py-1 bg-slate-50 dark:bg-slate-900/50;
   }
 
   /* ============================================ */
@@ -664,51 +664,73 @@
   }
 
   /* ============================================ */
-  /* MOBILE OPTIMIZATION - COMPACT SPACING      */
+  /* MOBILE OPTIMIZATION - ULTRA COMPACT        */
   /* ============================================ */
   @media (max-width: 768px) {
     .page-container {
-      @apply px-2 py-2;
+      @apply px-1 py-1;
     }
     
     .card-enterprise {
-      @apply p-2;
+      @apply p-1.5;
     }
     
-    .spacing-xs { @apply gap-1 p-1; }
+    .spacing-xs { @apply gap-0.5 p-0.5; }
     .spacing-sm { @apply gap-1 p-1; }
-    .spacing-md { @apply gap-1.5 p-1.5; }
-    .spacing-lg { @apply gap-2 p-2; }
+    .spacing-md { @apply gap-1 p-1; }
+    .spacing-lg { @apply gap-1.5 p-1.5; }
     
-    /* Compact all inputs on mobile */
+    /* Ultra compact inputs on mobile */
     input, select, textarea {
-      min-height: 32px !important;
-      padding: 0.25rem 0.5rem !important;
+      min-height: 28px !important;
+      padding: 0.125rem 0.375rem !important;
       font-size: 10px !important;
+      line-height: 1.2 !important;
     }
     
-    /* Compact all buttons on mobile */
+    /* Ultra compact buttons on mobile */
     button {
-      min-height: 32px !important;
-      padding: 0.25rem 0.75rem !important;
+      min-height: 28px !important;
+      padding: 0.125rem 0.5rem !important;
       font-size: 10px !important;
+      line-height: 1.2 !important;
     }
     
-    /* Compact labels */
+    /* Minimal labels */
     label {
       font-size: 9px !important;
       margin-bottom: 0.125rem !important;
+      line-height: 1.1 !important;
     }
     
-    /* Reduce card padding */
+    /* Ultra compact cards */
     [class*="card-"] {
-      padding: 0.5rem !important;
+      padding: 0.375rem !important;
     }
     
     /* Compact headers */
     h1, h2, h3, h4, h5, h6 {
-      line-height: 1.2 !important;
+      line-height: 1.1 !important;
+      margin: 0 !important;
     }
+    
+    /* Reduce all gaps */
+    [class*="gap-"] {
+      gap: 0.25rem !important;
+    }
+    
+    /* Compact form groups */
+    .space-y-4 { @apply space-y-1.5; }
+    .space-y-3 { @apply space-y-1; }
+    .space-y-2 { @apply space-y-1; }
+    
+    /* Minimal margins */
+    .mb-6 { @apply mb-2; }
+    .mb-4 { @apply mb-1.5; }
+    .mt-6 { @apply mt-2; }
+    .mt-4 { @apply mt-1.5; }
+    .my-6 { @apply my-2; }
+    .my-4 { @apply my-1.5; }
   }
 }
 

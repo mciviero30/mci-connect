@@ -1322,29 +1322,29 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
-              className="p-0 md:hidden flex-shrink-0 h-20 relative overflow-hidden bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
+              className="p-0 md:hidden flex-shrink-0 h-14 relative overflow-hidden bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
               >
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
                 alt="MCI Connect"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 flex items-center justify-between px-2 z-10">
+              <div className="absolute inset-0 flex items-center justify-between px-1.5 z-10">
                 {!shouldHideSidebar && (
-                  <SidebarTrigger className="p-1.5 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[32px] min-h-[32px]">
-                    <Menu className="w-4 h-4 text-[#1E3A8A]" />
+                  <SidebarTrigger className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[28px] min-h-[28px]">
+                    <Menu className="w-3.5 h-3.5 text-[#1E3A8A]" />
                   </SidebarTrigger>
                 )}
-                <div className="flex-shrink-0 flex items-center gap-1">
+                <div className="flex-shrink-0 flex items-center gap-0.5">
                       <NetworkSpeedIndicator />
                       <RecentlyViewed />
                       {!isFieldMode && !isFocusMode && (
                         <button
                           onClick={toggleFocusMode}
-                          className="p-1.5 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[32px] min-h-[32px]"
+                          className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[28px] min-h-[28px]"
                           title="Focus Mode"
                         >
-                          <Maximize2 className="w-4 h-4 text-[#1E3A8A]" />
+                          <Maximize2 className="w-3.5 h-3.5 text-[#1E3A8A]" />
                         </button>
                       )}
                       <button
@@ -1358,13 +1358,13 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                           }
                           localStorage.setItem('theme', newTheme);
                         }}
-                        className="p-1.5 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[32px] min-h-[32px]"
+                        className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[28px] min-h-[28px]"
                         title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
                       >
                         {theme === 'light' ? (
-                          <Moon className="w-4 h-4 text-[#1E3A8A]" />
+                          <Moon className="w-3.5 h-3.5 text-[#1E3A8A]" />
                         ) : (
-                          <Sun className="w-4 h-4 text-yellow-400" />
+                          <Sun className="w-3.5 h-3.5 text-yellow-400" />
                         )}
                       </button>
                       <NotificationBell user={user} />
@@ -1385,7 +1385,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             touchAction: 'auto',
             overscrollBehavior: 'auto'
           }}>
-            <div className="min-h-full w-full max-w-screen-2xl mx-auto px-safe md:p-0 p-0 pb-20 md:pb-0">
+            <div className="min-h-full w-full max-w-screen-2xl mx-auto px-1 md:px-0 py-1 md:py-0 pb-16 md:pb-0">
               {children}
             </div>
           </div>
