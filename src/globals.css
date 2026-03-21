@@ -271,7 +271,7 @@
 
   /* All cards use MCI white/slate-800 — NO dark custom hex backgrounds */
   .card-standard {
-    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm;
+    @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm;
   }
 
   /* Dialog backgrounds - standardized */
@@ -279,19 +279,19 @@
     @apply bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700;
   }
 
-  /* All action buttons in headers = h-10 */
+  /* All action buttons in headers = h-6 */
   .btn-header {
-    @apply h-10 px-4 text-sm font-medium;
+    @apply h-6 px-2 text-[10px] font-medium;
   }
 
   /* Standard input height */
   .input-standard {
-    @apply h-10;
+    @apply h-6;
   }
 
   /* Mobile responsive text - avoid overflow */
   .page-title {
-    @apply text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-slate-100;
+    @apply text-sm md:text-base lg:text-lg font-bold text-slate-900 dark:text-slate-100;
   }
 
   /* Mobile-first table container */
@@ -347,10 +347,10 @@
         /* ============================================ */
         /* UNIFIED BORDER RADIUS SYSTEM                */
         /* ============================================ */
-        .radius-sm { @apply rounded-lg; }        /* 8px */
-        .radius-md { @apply rounded-xl; }        /* 12px */
-        .radius-lg { @apply rounded-2xl; }       /* 16px */
-        .radius-xl { @apply rounded-3xl; }       /* 24px */
+        .radius-sm { @apply rounded; }           /* 4px */
+        .radius-md { @apply rounded-lg; }        /* 8px */
+        .radius-lg { @apply rounded-xl; }        /* 12px */
+        .radius-xl { @apply rounded-2xl; }       /* 16px */
 
         /* ============================================ */
         /* TYPOGRAPHY HIERARCHY                        */
@@ -406,13 +406,13 @@
         /* ENTERPRISE CARD SYSTEM                      */
         /* ============================================ */
         .card-enterprise {
-          @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 radius-md shadow-enterprise-md;
+          @apply bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 radius-sm shadow-enterprise-md;
         }
         .card-enterprise-hover {
           @apply card-enterprise hover:shadow-enterprise-lg transition-all duration-200;
         }
         .card-field {
-          @apply bg-slate-800 border border-slate-700 radius-md shadow-enterprise-lg;
+          @apply bg-slate-800 border border-slate-700 radius-sm shadow-enterprise-lg;
         }
 
         /* Soft Blue */
@@ -563,29 +563,29 @@
   .btn-primary {
     @apply bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90;
     @apply text-white font-semibold shadow-enterprise-md;
-    @apply radius-md min-h-[48px] px-6;
-    @apply active:scale-95 transition-all;
+    @apply radius-sm min-h-[24px] px-3;
+    @apply active:scale-95 transition-all text-[10px];
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600;
+    @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600;
     @apply text-slate-900 dark:text-white font-semibold shadow-enterprise-sm;
-    @apply radius-md min-h-[48px] px-6;
-    @apply hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all;
+    @apply radius-sm min-h-[24px] px-3;
+    @apply hover:bg-slate-50 dark:hover:bg-slate-700 active:scale-95 transition-all text-[10px];
   }
 
   .btn-tertiary {
     @apply bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800;
     @apply text-slate-700 dark:text-slate-300 font-medium;
-    @apply radius-md min-h-[44px] px-4;
-    @apply hover:bg-slate-200 dark:hover:bg-slate-800 transition-all;
+    @apply radius-sm min-h-[22px] px-2;
+    @apply hover:bg-slate-200 dark:hover:bg-slate-800 transition-all text-[9px];
   }
 
   .btn-field {
     @apply bg-gradient-to-r from-[#FF8C00] to-[#FFB347] hover:from-[#FF8C00]/90 hover:to-[#FFB347]/90;
     @apply text-white font-bold shadow-enterprise-lg;
-    @apply radius-md min-h-[56px] px-6;
-    @apply active:scale-95 transition-all;
+    @apply radius-sm min-h-[28px] px-3;
+    @apply active:scale-95 transition-all text-[10px];
   }
 
   /* ============================================ */
@@ -642,15 +642,15 @@
   /* ENTERPRISE PANEL SYSTEM                     */
   /* ============================================ */
   .panel-header {
-    @apply border-b border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50 dark:bg-slate-900/50;
+    @apply border-b border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-900/50;
   }
 
   .panel-content {
-    @apply px-6 py-4;
+    @apply px-3 py-2;
   }
 
   .panel-footer {
-    @apply border-t border-slate-200 dark:border-slate-700 px-6 py-4 bg-slate-50 dark:bg-slate-900/50;
+    @apply border-t border-slate-200 dark:border-slate-700 px-3 py-2 bg-slate-50 dark:bg-slate-900/50;
   }
 
   /* ============================================ */
@@ -658,9 +658,9 @@
   /* ============================================ */
   .input-enterprise {
     @apply bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600;
-    @apply text-slate-900 dark:text-white radius-md px-4 py-3;
-    @apply focus:ring-2 focus:ring-[#507DB4] focus:border-transparent;
-    @apply transition-all min-h-[48px];
+    @apply text-slate-900 dark:text-white radius-sm px-2 py-1;
+    @apply focus:ring-1 focus:ring-[#507DB4] focus:border-transparent;
+    @apply transition-all min-h-[24px] text-[10px];
   }
 }
 
