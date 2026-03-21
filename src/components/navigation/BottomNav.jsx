@@ -177,13 +177,30 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             </div>
           )}
 
-          {/* More Menu */}
+          {/* More Menu - 6 Quick Access */}
+          <button
+            onClick={() => setMoreExpanded(!moreExpanded)}
+            className={`flex flex-col items-center justify-center gap-0.5 relative transition-all duration-300 rounded-lg active:scale-95 ${
+              moreExpanded
+                ? 'text-[#507DB4] dark:text-[#6B9DD8] scale-125' 
+                : 'text-slate-600 dark:text-slate-400 scale-100'
+            }`}
+          >
+            <div className="relative">
+              <Menu className={`w-5 h-5 transition-all duration-300`} strokeWidth={moreExpanded ? 2.5 : 2} />
+              {moreExpanded && (
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#507DB4] dark:bg-[#6B9DD8]" />
+              )}
+            </div>
+            <span className={`text-[10px] ${moreExpanded ? 'font-bold' : 'font-medium'} truncate max-w-full text-center leading-tight transition-all duration-300`}>
+              More
+            </span>
+          </button>
+
+          {/* More Menu Sheet - kept for larger screens */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
             <SheetTrigger asChild>
-              <button className="flex flex-col items-center justify-center gap-0.5 text-slate-600 dark:text-slate-400 rounded-lg active:scale-95 transition-all duration-200">
-                <Menu className="w-5 h-5" strokeWidth={2} />
-                <span className="text-[10px] font-medium truncate max-w-full text-center leading-tight">More</span>
-              </button>
+              <div className="hidden" />
             </SheetTrigger>
             <SheetContent side="bottom" className="bg-white dark:bg-slate-900 h-[85vh] rounded-t-3xl">
               <SheetHeader className="pb-4 border-b border-slate-200 dark:border-slate-800">
