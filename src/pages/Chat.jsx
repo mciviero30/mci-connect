@@ -1131,9 +1131,8 @@ export default function Chat() {
         </div>
 
         {/* Dialogs */}
-        <>
-          {/* New Direct Message Dialog */}
-          <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
+        {/* New Direct Message Dialog */}
+        <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
             <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-md">
               <DialogHeader>
                 <DialogTitle className="text-slate-900 dark:text-white">Start Direct Message</DialogTitle>
