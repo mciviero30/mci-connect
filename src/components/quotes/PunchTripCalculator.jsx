@@ -31,16 +31,28 @@ export default function PunchTripCalculator({
       };
     }
     
-    // Search for driving/travel time item - more flexible matching
+    // Search for driving/travel time item - ULTRA FLEXIBLE matching
     const drivingItem = existingItems.find(i => {
       const name = i.item_name?.toLowerCase() || '';
-      return name.includes('driving') || i.travel_item_type === 'driving_time' || name.includes('travel time');
+      const desc = i.description?.toLowerCase() || '';
+      return (
+        i.travel_item_type === 'driving_time' ||
+        name.includes('driving time') ||
+        name.includes('travel time') ||
+        desc.includes('travel time')
+      );
     });
     
-    // Search for mileage item
+    // Search for mileage item - ULTRA FLEXIBLE matching
     const mileageItem = existingItems.find(i => {
       const name = i.item_name?.toLowerCase() || '';
-      return name.includes('mileage') || i.travel_item_type === 'mileage' || name.includes('miles');
+      const desc = i.description?.toLowerCase() || '';
+      return (
+        i.travel_item_type === 'mileage' ||
+        name.includes('mileage') ||
+        name.includes('miles per vehicle') ||
+        desc.includes('miles')
+      );
     });
     
     // Get mileage quantity - try multiple fields
