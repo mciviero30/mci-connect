@@ -202,9 +202,9 @@ export default function Manejo() {
   };
 
   const pageStats = [
-    { icon: Car, value: `${stats.monthMiles.toFixed(0)}mi`, label: language === 'es' ? 'Este Mes' : 'This Month', subtitle: `$${stats.monthAmount.toFixed(0)}`, iconBg: "bg-blue-100", iconColor: "text-blue-600" },
-    { icon: TrendingUp, value: `${stats.ytdMiles.toFixed(0)}mi`, label: language === 'es' ? 'Año' : 'Year', subtitle: `$${stats.ytdAmount.toFixed(0)}`, iconBg: "bg-green-100", iconColor: "text-green-600" },
-    { icon: DollarSign, value: `$${stats.pendingAmount.toFixed(0)}`, label: t('pending'), iconBg: "bg-amber-100", iconColor: "text-amber-600" }
+    { icon: Car, value: `${stats.monthMiles.toFixed(0)}`, label: language === 'es' ? 'Este Mes (mi)' : 'This Month (mi)', subtitle: `$${stats.monthAmount.toFixed(0)}`, iconBg: "bg-blue-100 dark:bg-blue-900/50", iconColor: "text-blue-600 dark:text-blue-400" },
+    { icon: TrendingUp, value: `${stats.ytdMiles.toFixed(0)}`, label: language === 'es' ? 'Año (mi)' : 'Year (mi)', subtitle: `$${stats.ytdAmount.toFixed(0)}`, iconBg: "bg-green-100 dark:bg-green-900/50", iconColor: "text-green-600 dark:text-green-400" },
+    { icon: DollarSign, value: `$${stats.pendingAmount.toFixed(0)}`, label: t('pending'), iconBg: "bg-amber-100 dark:bg-amber-900/50", iconColor: "text-amber-600 dark:text-amber-400" }
   ];
 
   return (
