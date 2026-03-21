@@ -29,39 +29,46 @@ import { hasFullAccess } from '@/components/core/roleRules';
 
 const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigation }) {
   const location = useLocation();
-  const [sheetOpen, setSheetOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [timeExpanded, setTimeExpanded] = useState(false);
 
   // STEP 2: Track pending sync operations count
   const { pendingCount } = useSyncQueue();
 
-  // Memoize navigation items to prevent recreation
-  const mainNavItems = React.useMemo(() => [
-    { 
-      title: 'Dashboard', 
-      url: createPageUrl("Dashboard"), 
-      icon: LayoutDashboard,
-      color: 'from-[#507DB4] to-[#6B9DD8]'
-    },
-    { 
-      title: hasFullAccess(user) ? 'Jobs' : 'Field', 
-      url: createPageUrl(hasFullAccess(user) ? "Trabajos" : "Field"), 
-      icon: hasFullAccess(user) ? Briefcase : MapPin,
-      color: 'from-indigo-500 to-indigo-600'
-    },
-    { 
-      title: 'Time', 
-      url: createPageUrl("TimeTracking"), 
-      icon: Clock,
-      color: 'from-green-500 to-green-600'
-    },
-    { 
-      title: hasFullAccess(user) ? 'Expenses' : 'Per Diem', 
-      url: createPageUrl(hasFullAccess(user) ? "Gastos" : "PerDiem"), 
-      icon: hasFullAccess(user) ? Receipt : Banknote,
-      badge: hasFullAccess(user) && pendingExpenses > 0 ? pendingExpenses : null,
-      color: hasFullAccess(user) ? 'from-amber-500 to-amber-600' : 'from-emerald-500 to-emerald-600'
-    },
-  ], [pendingExpenses, user]);
+  // Memoize navigation items - new order: My Expenses, Per Diem, Time, Field, Mileage
+  const mainNavItems = React.useMemo(() => {
+    const items = [
+      { 
+        title: 'My Expenses', 
+        url: createPageUrl("MisGastos"), 
+        icon: Receipt,
+        badge: pendingExpenses > 0 ? pendingExpenses : null,
+      },
+      { 
+        title: 'Per Diem', 
+        url: createPageUrl("PerDiem"), 
+        icon: Banknote,
+      },
+      { 
+        title: 'Time', 
+        url: createPageUrl("TimeTracking"), 
+        icon: Clock,
+        isTimeMenu: true,
+      },
+      { 
+        title: 'Field', 
+        url: createPageUrl("Field"), 
+        icon: MapPin,
+      },
+      { 
+        title: 'Mileage', 
+        url: createPageUrl("Manejo"), 
+        icon: Zap,
+      },
+    ];
+    return items;
+  }, [pendingExpenses]);
 
   // Memoize isActive to prevent recreation
   const isActive = React.useCallback((url) => location.pathname === url, [location.pathname]);
