@@ -648,9 +648,9 @@ export default function Calendario() {
             </Card>
           </div>
 
-          <Card className="bg-white shadow-md border-slate-200/50 mb-3 rounded-xl">
-            <CardContent className="p-3">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4">
+          <Card className="bg-white dark:bg-slate-800 shadow-md border-slate-200/50 dark:border-slate-700/50 mb-3 rounded-lg md:rounded-xl">
+            <CardContent className="p-2 md:p-3">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-1.5 md:gap-4">
                 <div className="space-y-2">
                   <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
                     {language === 'es' ? 'Tipo de Turno' : 'Shift Type'}
