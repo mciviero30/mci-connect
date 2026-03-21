@@ -581,18 +581,18 @@ export default function Calendario() {
           />
 
           {/* CLICKABLE WORKLOAD SUMMARY CARDS - Quick Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 md:gap-2 mb-2 md:mb-3">
             <Card 
-              className="bg-gradient-to-br from-blue-50 to-blue-100/50 border border-blue-200/50 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+              className="bg-gradient-to-br from-[#507DB4]/10 to-[#6B9DD8]/10 border border-[#507DB4]/30 dark:border-[#6B9DD8]/30 shadow-sm cursor-pointer hover:shadow-md hover:border-[#507DB4]/50 transition-all"
               onClick={() => setEventTypeFilter('all')}
             >
-              <CardContent className="p-2 md:p-3">
-                <div className="flex flex-col gap-1">
+              <CardContent className="p-1.5 md:p-3">
+                <div className="flex flex-col gap-0.5">
                   <div className="flex items-center justify-between">
-                    <p className="text-xl md:text-2xl font-bold leading-tight">{workload.totalEvents}</p>
-                    <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 opacity-60" />
+                    <p className="text-lg md:text-2xl font-bold leading-tight text-[#507DB4] dark:text-[#6B9DD8]">{workload.totalEvents}</p>
+                    <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4]/60 dark:text-[#6B9DD8]/60" />
                   </div>
-                  <p className="text-[10px] md:text-xs font-medium opacity-90 leading-tight">
+                  <p className="text-[9px] md:text-xs font-semibold text-[#507DB4]/80 dark:text-[#6B9DD8]/80 leading-tight">
                     {language === 'es' ? 'Total' : 'Total'}
                   </p>
                 </div>
@@ -600,16 +600,16 @@ export default function Calendario() {
             </Card>
 
             <Card 
-              className="bg-white shadow-sm border-slate-200 cursor-pointer hover:shadow-md hover:border-[#1E3A8A]/40 transition-all"
+              className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#507DB4]/40 dark:hover:border-[#6B9DD8]/40 transition-all"
               onClick={() => setEventTypeFilter('job_work')}
             >
-              <CardContent className="p-2 md:p-3">
-                <div className="flex flex-col gap-1">
+              <CardContent className="p-1.5 md:p-3">
+                <div className="flex flex-col gap-0.5">
                   <div className="flex items-center justify-between">
-                    <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.jobWork}</p>
-                    <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] opacity-60" />
+                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.jobWork}</p>
+                    <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
                   </div>
-                  <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight">
+                  <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
                     {language === 'es' ? 'Trabajo' : 'Work'}
                   </p>
                 </div>
@@ -617,30 +617,30 @@ export default function Calendario() {
             </Card>
 
             <Card 
-              className="bg-white shadow-sm border-slate-200 cursor-pointer hover:shadow-md hover:border-[#1E3A8A]/40 transition-all"
+              className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#507DB4]/40 dark:hover:border-[#6B9DD8]/40 transition-all"
               onClick={() => setEventTypeFilter('appointment')}
             >
-              <CardContent className="p-2 md:p-3">
-                <div className="flex flex-col gap-1">
+              <CardContent className="p-1.5 md:p-3">
+                <div className="flex flex-col gap-0.5">
                   <div className="flex items-center justify-between">
-                    <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.appointments}</p>
-                    <CalendarClock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] opacity-60" />
+                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.appointments}</p>
+                    <CalendarClock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
                   </div>
-                  <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight">
+                  <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
                     {language === 'es' ? 'Citas' : 'Appts'}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-white shadow-sm border-slate-200 col-span-2 md:col-span-1">
-              <CardContent className="p-2 md:p-3">
-                <div className="flex flex-col gap-1">
+            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 col-span-2 md:col-span-1">
+              <CardContent className="p-1.5 md:p-3">
+                <div className="flex flex-col gap-0.5">
                   <div className="flex items-center justify-between">
-                    <p className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.totalEstimatedHours.toFixed(1)}h</p>
-                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] opacity-60" />
+                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.totalEstimatedHours.toFixed(1)}h</p>
+                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
                   </div>
-                  <p className="text-[10px] md:text-xs font-medium text-slate-600 dark:text-slate-400 leading-tight">
+                  <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
                     {language === 'es' ? 'Horas' : 'Hours'}
                   </p>
                 </div>
