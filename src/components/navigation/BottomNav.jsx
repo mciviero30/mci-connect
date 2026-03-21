@@ -38,7 +38,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   // STEP 2: Track pending sync operations count
   const { pendingCount } = useSyncQueue();
 
-  // Memoize navigation items - new order: My Expenses, Per Diem, Time, Field, Mileage
+  // Memoize navigation items - consolidated: My Expenses, Travel (Per Diem + Mileage), Time, Field, More
   const mainNavItems = React.useMemo(() => {
     const items = [
       { 
@@ -48,9 +48,10 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
         badge: pendingExpenses > 0 ? pendingExpenses : null,
       },
       { 
-        title: 'Per Diem', 
+        title: 'Travel', 
         url: createPageUrl("PerDiem"), 
         icon: Banknote,
+        isTravelMenu: true,
       },
       { 
         title: 'Time', 
@@ -62,11 +63,6 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
         title: 'Field', 
         url: createPageUrl("Field"), 
         icon: MapPin,
-      },
-      { 
-        title: 'Mileage', 
-        url: createPageUrl("Manejo"), 
-        icon: Zap,
       },
     ];
     return items;
