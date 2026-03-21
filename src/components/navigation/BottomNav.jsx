@@ -270,6 +270,34 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             </div>
           </div>
         )}
+
+        {/* More Menu - 6 Quick Access Popup */}
+        {moreExpanded && (
+          <div className="absolute bottom-20 right-2 transform transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 origin-bottom z-50">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 grid grid-cols-2 gap-2 w-64">
+              {quickAccessItems.map((item) => {
+                const active = isActive(item.url);
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.url}
+                    onClick={() => setMoreExpanded(false)}
+                    className={`flex flex-col items-center justify-center gap-1 p-3 rounded-xl text-center transition-all active:scale-95 ${
+                      active
+                        ? 'bg-gradient-to-r from-[#507DB4]/20 to-[#6B9DD8]/20 border border-[#507DB4]/30 dark:border-[#6B9DD8]/30'
+                        : 'hover:bg-slate-100 dark:hover:bg-slate-700 border border-transparent'
+                    }`}
+                  >
+                    <item.icon className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" strokeWidth={2.5} />
+                    <span className={`text-[11px] font-semibold truncate max-w-full leading-tight ${active ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-700 dark:text-slate-300'}`}>
+                      {item.title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Spacer to prevent content from being hidden behind bottom nav */}
