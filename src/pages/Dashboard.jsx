@@ -919,19 +919,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* Quick Actions for Employees - Mobile-First */}
-        {!isAdmin && (
-          <div className="mb-2 sm:mb-3 md:mb-4">
-            <QuickActions user={user} certifications={certifications} />
-          </div>
-        )}
 
-        {/* Live Clock for Employees */}
-        {!isAdmin && (
-          <div className="mb-2 sm:mb-3 md:mb-4">
-            <LiveClock />
-          </div>
-        )}
 
         {/* I1 - Actual vs Estimated Chart (Admin Only) */}
         {isAdmin && jobs.length > 0 && quotes.length > 0 && (
