@@ -635,18 +635,12 @@ export default function Chat() {
           {/* Sidebar */}
           <div className={`absolute md:relative md:flex w-80 md:w-80 lg:w-[400px] h-full flex-col bg-gradient-to-b from-white to-slate-50/50 dark:from-[#1a1a1a] dark:to-[#141414] border-r border-slate-200/60 dark:border-slate-800/60 transform md:transform-none transition-transform ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-50 md:z-auto`}>
             {/* Sidebar Header */}
-            <div className="px-4 md:px-6 py-4 md:py-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm flex items-center justify-between md:block">
+            <div className="px-3 md:px-6 py-3 md:py-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm flex items-center justify-between md:block gap-2">
             <div className="hidden md:block">
               <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Messages</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Team communication</p>
             </div>
-            <button 
-              onClick={() => setShowMobileSidebar(false)}
-              className="md:hidden p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
-            >
-              <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
-            </button>
-            <div className="flex gap-2">
+            <div className="flex gap-1 md:gap-2">
               <Button
                 size="icon"
                 variant="ghost"
@@ -654,10 +648,10 @@ export default function Chat() {
                   setShowCreateGroup(true);
                   setShowMobileSidebar(false);
                 }}
-                className="h-10 w-10 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all"
+                className="h-9 w-9 md:h-10 md:w-10 rounded-lg md:rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all text-xs md:text-sm"
                 title="Create group chat"
               >
-                <Users className="w-5 h-5" />
+                <Users className="w-4 h-4 md:w-5 md:h-5" />
               </Button>
               <Button
                 size="icon"
@@ -666,29 +660,35 @@ export default function Chat() {
                   setShowNewDM(true);
                   setShowMobileSidebar(false);
                 }}
-                className="h-10 w-10 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all"
+                className="h-9 w-9 md:h-10 md:w-10 rounded-lg md:rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all text-xs md:text-sm"
                 title="Start direct message"
               >
-                <UserPlus className="w-5 h-5" />
+                <UserPlus className="w-4 h-4 md:w-5 md:h-5" />
               </Button>
+              <button 
+                onClick={() => setShowMobileSidebar(false)}
+                className="md:hidden p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors ml-auto"
+              >
+                <X className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+              </button>
             </div>
             </div>
 
             {/* Sidebar Content */}
-            <div className="flex-1 overflow-y-auto px-3 md:px-4 py-3">
+            <div className="flex-1 overflow-y-auto px-2 md:px-4 py-2 md:py-3">
               <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
-                <TabsList className="w-full h-12 bg-slate-100/80 dark:bg-slate-900/50 mb-4 grid grid-cols-3 p-1.5 rounded-2xl shadow-inner">
-                  <TabsTrigger value="channels" className="text-sm font-bold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
-                    <Hash className="w-4 h-4 mr-2" />
-                    Channels
+                <TabsList className="w-full h-10 md:h-12 bg-slate-100/80 dark:bg-slate-900/50 mb-3 grid grid-cols-3 p-1 md:p-1.5 rounded-xl md:rounded-2xl shadow-inner text-xs md:text-sm">
+                  <TabsTrigger value="channels" className="text-xs md:text-sm font-bold rounded-lg md:rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
+                    <Hash className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                    <span className="hidden md:inline">Channels</span>
                   </TabsTrigger>
-                  <TabsTrigger value="groups" className="text-sm font-bold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
-                    <Users className="w-4 h-4 mr-2" />
-                    Groups
+                  <TabsTrigger value="groups" className="text-xs md:text-sm font-bold rounded-lg md:rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
+                    <Users className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                    <span className="hidden md:inline">Groups</span>
                   </TabsTrigger>
-                  <TabsTrigger value="direct" className="text-sm font-bold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
-                    <AtSign className="w-4 h-4 mr-2" />
-                    Direct
+                  <TabsTrigger value="direct" className="text-xs md:text-sm font-bold rounded-lg md:rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
+                    <AtSign className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
+                    <span className="hidden md:inline">Direct</span>
                   </TabsTrigger>
                 </TabsList>
 
