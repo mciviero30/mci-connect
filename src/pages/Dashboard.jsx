@@ -766,6 +766,31 @@ export default function Dashboard() {
 
   const imageKey = user?.profile_last_updated || user?.id;
 
+  // Dynamic greetings - changes daily based on day of week
+  const getGreeting = useCallback(() => {
+    const today = new Date();
+    const dayOfWeek = getDay(today); // 0=Sunday, 1=Monday... 6=Saturday
+    
+    const greetings = [
+      // Sunday (0)
+      language === 'es' ? '¡Espero que hayas descansado bien!' : 'Hope you had a good rest!',
+      // Monday (1)
+      language === 'es' ? '¡Dale con todo! 💪' : 'Let\'s crush it! 💪',
+      // Tuesday (2)
+      language === 'es' ? '¡Vamos, que el martes es grande! 🚀' : 'Keep it up, Tuesday is huge! 🚀',
+      // Wednesday (3)
+      language === 'es' ? '¡Mitad de semana, casi logrando! 🎯' : 'Midweek grind, almost there! 🎯',
+      // Thursday (4)
+      language === 'es' ? '¡Viernes es mañana, vamos! ⚡' : 'Friday is tomorrow, go! ⚡',
+      // Friday (5)
+      language === 'es' ? '¡Viernes, el día más hermoso! 🎉' : 'Friday is here, celebrate! 🎉',
+      // Saturday (6)
+      language === 'es' ? '¡Fin de semana, relájate! 😎' : 'Weekend mode: ON! 😎'
+    ];
+    
+    return greetings[dayOfWeek];
+  }, [language]);
+
   if (userLoading || prefsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
