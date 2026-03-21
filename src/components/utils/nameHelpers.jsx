@@ -67,8 +67,8 @@ export const getDisplayName = (employee) => {
     if (fullName) return fullName;
   }
   
-  // SECOND: If full_name exists and doesn't look like an email
-  if (employee.full_name && !employee.full_name.includes('@')) {
+  // SECOND: If full_name exists and doesn't look like an email (and is not just the email username)
+  if (employee.full_name && !employee.full_name.includes('@') && employee.full_name !== employee.email?.split('@')[0]) {
     return capitalizeName(employee.full_name);
   }
   
