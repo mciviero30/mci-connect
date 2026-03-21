@@ -811,7 +811,7 @@ export default function CrearEstimado() {
   }
 
   return (
-    <div className="min-h-screen p-4 md:p-8 bg-gradient-to-br from-slate-50 via-white to-sky-50">
+    <div className="min-h-screen p-2 md:p-4 bg-gradient-to-br from-slate-50 via-white to-sky-50">
       <div className="max-w-5xl mx-auto">
         <PageHeader
           title={editId ? t('editQuote') : t('newQuote')}
@@ -829,18 +829,18 @@ export default function CrearEstimado() {
         )}
 
         {/* NEW: Fixed Total Bar */}
-        <div className="sticky top-0 z-10 mb-6 p-4 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-2xl shadow-xl border-2 border-blue-300">
+        <div className="sticky top-0 z-10 mb-2 p-2 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded shadow-lg border border-blue-300">
           <div className="flex items-center justify-between">
             <div className="text-white">
-              <p className="text-sm opacity-90">{language === 'es' ? 'Total de la Cotización' : 'Quote Total'}</p>
-              <p className="text-4xl font-bold">${total.toFixed(2)}</p>
+              <p className="text-[9px] opacity-90">{language === 'es' ? 'Total de la Cotización' : 'Quote Total'}</p>
+              <p className="text-xl font-bold">${total.toFixed(2)}</p>
             </div>
-            <div className="text-right text-white text-sm">
+            <div className="text-right text-white text-[9px]">
               <p className="opacity-90">{t('subtotal')}: ${subtotal.toFixed(2)}</p>
               <p className="opacity-90">{t('tax')}: ${taxAmount.toFixed(2)}</p>
-              <p className="text-xs opacity-75 mt-1">{formData.items.length} {language === 'es' ? 'ítems' : 'items'}</p>
+              <p className="text-[8px] opacity-75 mt-0.5">{formData.items.length} {language === 'es' ? 'ítems' : 'items'}</p>
               {formData.items.reduce((sum, item) => sum + ((item.installation_time || 0) * (item.quantity || 0)), 0) > 0 && (
-                <p className="text-xs opacity-75 mt-0.5" title="Solo referencia interna MCI">
+                <p className="text-[8px] opacity-75" title="Solo referencia interna MCI">
                   ⏱ {formData.items.reduce((sum, item) => sum + ((item.installation_time || 0) * (item.quantity || 0)), 0).toFixed(1)}h {language === 'es' ? '(ref. MCI)' : '(MCI ref.)'}
                 </p>
               )}
@@ -849,12 +849,12 @@ export default function CrearEstimado() {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <Card className="glass-card shadow-xl border-slate-200 mb-6">
+          <Card className="glass-card shadow-xl border-slate-200 mb-2">
             <CardHeader className="border-b border-slate-200">
               <CardTitle className="text-slate-900">{t('customerInformation')}</CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="p-2 space-y-2">
+              <div className="grid md:grid-cols-2 gap-2">
                 <div>
                   <Label className="text-slate-700">{t('selectCustomer')}</Label>
                   <Select value={formData.customer_id} onValueChange={handleCustomerChange}>
@@ -903,12 +903,12 @@ export default function CrearEstimado() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card shadow-xl border-slate-200 mb-6">
+          <Card className="glass-card shadow-xl border-slate-200 mb-2">
             <CardHeader className="border-b border-slate-200">
               <CardTitle className="text-slate-900">{t('jobDetails')}</CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="p-2 space-y-2">
+              <div className="grid md:grid-cols-2 gap-2">
                 <div>
                   <Label className="text-slate-700">{t('selectExistingJob')} ({t('optional')})</Label>
                   <Select value={formData.job_id} onValueChange={handleJobChange}>
@@ -958,7 +958,7 @@ export default function CrearEstimado() {
                   <Textarea
                     value={formData.work_details}
                     onChange={(e) => setFormData({...formData, work_details: e.target.value})}
-                    className="h-20 bg-white border-slate-300 text-slate-900"
+                    className="min-h-[30px] bg-white border-slate-300 text-slate-900"
                     placeholder={language === 'es' ? 'Ej: Piso 2, Habitación 205, lado norte...' : 'e.g., Floor 2, Room 205, north side...'}
                   />
                 </div>
@@ -969,35 +969,35 @@ export default function CrearEstimado() {
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
-                        className="w-full justify-between bg-white border-slate-300 text-slate-900 h-10"
+                        className="w-full justify-between bg-white border-slate-300 text-slate-900 h-6"
                       >
-                        <span className="truncate">
+                        <span className="truncate text-[10px]">
                           {formData.team_ids.length === 0 
                             ? (language === 'es' ? 'Seleccionar equipos (requerido)' : 'Select teams (required)')
                             : formData.team_names.join(', ')}
                         </span>
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <ChevronsUpDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-full p-2 bg-white border-slate-200" align="start">
-                      <div className="space-y-1 max-h-60 overflow-y-auto">
+                    <PopoverContent className="w-full p-1 bg-white border-slate-200" align="start">
+                      <div className="space-y-0.5 max-h-60 overflow-y-auto">
                         {teams.map(team => {
                           const isSelected = formData.team_ids.includes(team.id);
                           return (
                             <div
                               key={team.id}
                               onClick={() => handleTeamToggle(team.id)}
-                              className={`flex items-center gap-2 px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                              className={`flex items-center gap-1.5 px-2 py-1 rounded cursor-pointer transition-colors ${
                                 isSelected 
                                   ? 'bg-blue-100 text-blue-900'
                                   : 'hover:bg-slate-100'
                               }`}
                             >
-                              <Check className={`h-4 w-4 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
+                              <Check className={`h-3 w-3 ${isSelected ? 'opacity-100' : 'opacity-0'}`} />
                               <div className="flex-1">
-                                <div className="font-medium text-sm">{team.team_name}</div>
+                                <div className="font-medium text-[10px]">{team.team_name}</div>
                                 {team.base_address && (
-                                  <div className="text-xs text-slate-500">📍 {team.base_address}</div>
+                                  <div className="text-[9px] text-slate-500">📍 {team.base_address}</div>
                                 )}
                               </div>
                             </div>
@@ -1006,7 +1006,7 @@ export default function CrearEstimado() {
                       </div>
                     </PopoverContent>
                   </Popover>
-                  <p className="text-xs text-slate-500 mt-1">
+                  <p className="text-[9px] text-slate-500 mt-0.5">
                     {language === 'es' 
                       ? 'Equipos responsables del proyecto (puedes seleccionar múltiples)' 
                       : 'Teams responsible for the project (you can select multiple)'}
@@ -1072,18 +1072,18 @@ export default function CrearEstimado() {
             </CardContent>
           </Card>
 
-          <Card className="glass-card shadow-xl border-slate-200 mb-6">
+          <Card className="glass-card shadow-xl border-slate-200 mb-2">
             <CardHeader className="border-b border-slate-200 flex flex-row items-center justify-between">
-              <CardTitle className="text-slate-900 flex items-center gap-2">
+              <CardTitle className="text-slate-900 flex items-center gap-1.5">
                 {t('items')}
                 {pricesLocked && (
-                  <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-xs">
-                    <Lock className="w-3 h-3 mr-1" />
+                  <Badge className="bg-amber-100 text-amber-700 border border-amber-300 text-[8px]">
+                    <Lock className="w-2.5 h-2.5 mr-0.5" />
                     {language === 'es' ? 'Precios Bloqueados' : 'Prices Locked'}
                   </Badge>
                 )}
               </CardTitle>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {editId && (
                   <Button
                     type="button"
@@ -1094,9 +1094,9 @@ export default function CrearEstimado() {
                     disabled={isCalculatingTravel}
                   >
                     {isCalculatingTravel ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
                     ) : (
-                      <RefreshCw className="w-4 h-4 mr-2" />
+                      <RefreshCw className="w-3 h-3 mr-1" />
                     )}
                     {language === 'es' ? 'Actualizar Precios' : 'Update Prices'}
                   </Button>
@@ -1108,11 +1108,11 @@ export default function CrearEstimado() {
                   variant="outline"
                   className="border-blue-300 text-blue-700 hover:bg-blue-50"
                 >
-                  <FileText className="w-4 h-4 mr-2" />
+                  <FileText className="w-3 h-3 mr-1" />
                   Items Match
                 </Button>
                 <Button type="button" onClick={addItem} size="sm" className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white">
-                  <Plus className="w-4 h-4 mr-2" />
+                  <Plus className="w-3 h-3 mr-1" />
                   {t('addItem')}
                 </Button>
               </div>
@@ -1130,23 +1130,23 @@ export default function CrearEstimado() {
                 pricesLocked={pricesLocked}
               />
 
-              <div className="mt-6 space-y-3 max-w-md ml-auto px-3 pb-4">
-                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                  <span className="font-medium">{t('subtotal')}:</span>
-                  <span className="text-lg font-bold">${subtotal.toFixed(2)}</span>
+              <div className="mt-2 space-y-1.5 max-w-md ml-auto px-2 pb-2">
+                <div className="flex justify-between items-center p-1.5 bg-slate-50 rounded">
+                  <span className="font-medium text-[10px]">{t('subtotal')}:</span>
+                  <span className="text-sm font-bold">${subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{t('tax')}:</span>
+                <div className="flex justify-between items-center p-1.5 bg-slate-50 rounded">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-[10px]">{t('tax')}:</span>
                     {companySettings?.auto_calculate_sales_tax && formData.auto_tax_enabled ? (
                       <>
-                        <span className="text-sm text-emerald-600 font-medium">{companySettings.default_tax_rate}% (auto)</span>
+                        <span className="text-[10px] text-emerald-600 font-medium">{companySettings.default_tax_rate}% (auto)</span>
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => setFormData({ ...formData, auto_tax_enabled: false })}
-                          className="h-6 px-2 text-xs text-slate-500 hover:text-slate-700"
+                          className="h-5 px-1 text-[9px] text-slate-500 hover:text-slate-700"
                         >
                           {language === 'es' ? 'Manual' : 'Manual'}
                         </Button>
@@ -1157,12 +1157,12 @@ export default function CrearEstimado() {
                           type="number"
                           value={formData.tax_rate}
                           onChange={e => setFormData({ ...formData, tax_rate: parseFloat(e.target.value) || 0 })}
-                          className="w-20 h-8"
+                          className="w-16 h-6"
                           min="0"
                           max="100"
                           step="0.1"
                         />
-                        <span>%</span>
+                        <span className="text-[10px]">%</span>
                         {companySettings?.auto_calculate_sales_tax && (
                           <Button
                             type="button"
@@ -1173,7 +1173,7 @@ export default function CrearEstimado() {
                               auto_tax_enabled: true,
                               tax_rate: companySettings.default_tax_rate || 0
                             })}
-                            className="h-6 px-2 text-xs text-emerald-600 hover:text-emerald-700"
+                            className="h-5 px-1 text-[9px] text-emerald-600 hover:text-emerald-700"
                           >
                             {language === 'es' ? 'Auto' : 'Auto'}
                           </Button>
@@ -1181,37 +1181,37 @@ export default function CrearEstimado() {
                       </>
                     )}
                   </div>
-                  <span className="text-lg font-bold">${taxAmount.toFixed(2)}</span>
+                  <span className="text-sm font-bold">${taxAmount.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-center p-4 bg-emerald-50 rounded-lg border-2 border-emerald-200">
-                  <span className="text-lg font-bold text-emerald-900">{t('total').toUpperCase()}:</span>
-                  <span className="text-2xl font-bold text-emerald-700">${total.toFixed(2)}</span>
+                <div className="flex justify-between items-center p-2 bg-emerald-50 rounded border border-emerald-200">
+                  <span className="text-sm font-bold text-emerald-900">{t('total').toUpperCase()}:</span>
+                  <span className="text-lg font-bold text-emerald-700">${total.toFixed(2)}</span>
                 </div>
 
                 {/* Profit Target */}
-                <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{language === 'es' ? 'Meta de Ganancia:' : 'Profit Target:'}</span>
-                    <Input type="number" value={profitTargetPercent} onChange={e => setProfitTargetPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} min="0" max="100" step="1" className="w-20 h-8" />
-                    <span>%</span>
+                <div className="flex justify-between items-center p-1.5 bg-slate-50 rounded">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-[10px]">{language === 'es' ? 'Meta de Ganancia:' : 'Profit Target:'}</span>
+                    <Input type="number" value={profitTargetPercent} onChange={e => setProfitTargetPercent(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))} min="0" max="100" step="1" className="w-16 h-6" />
+                    <span className="text-[10px]">%</span>
                   </div>
-                  <span className="text-lg font-bold text-violet-700">${(subtotal * profitTargetPercent / 100).toFixed(2)}</span>
+                  <span className="text-sm font-bold text-violet-700">${(subtotal * profitTargetPercent / 100).toFixed(2)}</span>
                 </div>
                 </div>
             </CardContent>
           </Card>
 
-          <Card className="glass-card shadow-xl border-slate-200 mb-6">
+          <Card className="glass-card shadow-xl border-slate-200 mb-2">
             <CardHeader className="border-b border-slate-200">
               <CardTitle className="text-slate-900">{t('notesAndTerms')}</CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="p-2 space-y-2">
               <div>
                 <Label className="text-slate-700">{t('notes')}</Label>
                 <Textarea
                   value={formData.notes}
                   onChange={(e) => setFormData({...formData, notes: e.target.value})}
-                  className="h-24 bg-white border-slate-300 text-slate-900"
+                  className="min-h-[40px] bg-white border-slate-300 text-slate-900"
                   placeholder={t('additionalNotes')}
                 />
               </div>
@@ -1221,10 +1221,10 @@ export default function CrearEstimado() {
                 <Textarea
                   value={formData.terms}
                   onChange={(e) => setFormData({...formData, terms: e.target.value})}
-                  className="h-24 bg-white border-slate-300 text-slate-900"
+                  className="min-h-[40px] bg-white border-slate-300 text-slate-900"
                   placeholder={t('paymentTerms')}
                 />
-                <p className="text-xs text-slate-500 mt-1">
+                <p className="text-[9px] text-slate-500 mt-0.5">
                   {language === 'es' 
                     ? 'Términos estándar pre-cargados. Puedes editarlos según necesites.' 
                     : 'Standard terms pre-loaded. You can edit them as needed.'}
@@ -1233,14 +1233,14 @@ export default function CrearEstimado() {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end gap-3">
+          <div className="flex justify-end gap-1.5">
             <Button
               type="button"
               variant="outline"
               onClick={() => navigate(createPageUrl('Estimados'))}
               className="bg-white border-slate-300 text-slate-700"
             >
-              <X className="w-4 h-4 mr-2" />
+              <X className="w-3 h-3 mr-1" />
               {t('cancel')}
             </Button>
             {pricesLocked && (
@@ -1258,7 +1258,7 @@ export default function CrearEstimado() {
                 }}
                 className="bg-white border-amber-300 text-amber-700 hover:bg-amber-50"
               >
-                <Lock className="w-4 h-4 mr-2" />
+                <Lock className="w-3 h-3 mr-1" />
                 {language === 'es' ? 'Desbloquear Precios' : 'Unlock Prices'}
               </Button>
             )}
@@ -1267,7 +1267,7 @@ export default function CrearEstimado() {
               disabled={createMutation.isPending || updateMutation.isPending}
               className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white"
             >
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-3 h-3 mr-1" />
               {(createMutation.isPending || updateMutation.isPending) ? t('saving') : t('save')}
             </Button>
           </div>
