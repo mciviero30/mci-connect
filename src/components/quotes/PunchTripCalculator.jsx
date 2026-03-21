@@ -21,6 +21,25 @@ export default function PunchTripCalculator({
   originalTechCount = 8, // Original tech count to calculate proportions
   language = 'en'
 }) {
+  // DEBUG: Log what we receive
+  console.log('🔍 [PunchTripCalculator] PROPS RECEIVED:', {
+    isOpen,
+    itemType,
+    jobAddress,
+    initialTravelHours,
+    initialTravelMiles,
+    originalTechCount,
+    existingItemsCount: existingItems?.length,
+    existingItems: existingItems?.map(i => ({
+      name: i.item_name,
+      desc: i.description,
+      qty: i.quantity,
+      duration: i.duration_value,
+      techCount: i.tech_count,
+      is_travel: i.is_travel_item,
+      travel_type: i.travel_item_type
+    }))
+  });
   // Extract travel data from existing items (from the quote)
   const extractedTravelData = useMemo(() => {
     if (!existingItems || existingItems.length === 0) {
