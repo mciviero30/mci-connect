@@ -27,6 +27,9 @@ export default function TimeTracking() {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showCleanUI, setShowCleanUI] = useState(false);
+  const [sessionData, setSessionData] = useState(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
   
   // C1 FIX: useLanguage moved to top-level (React Hooks rule)
   const { language = 'en', t = (key) => key } = useLanguage() || {};
