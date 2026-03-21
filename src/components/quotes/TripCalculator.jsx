@@ -438,7 +438,7 @@ export default function TripCalculator({
       <CardContent className="space-y-3 p-4">
         {/* Trip Type Selector */}
         <div>
-          <Label className="text-xs font-semibold mb-2 block">
+          <Label className="text-[10px] font-bold mb-1.5 block">
             {language === 'es' ? 'Tipo de Viaje' : 'Trip Type'}
           </Label>
           <Select value={tripType} onValueChange={(val) => {
@@ -446,7 +446,7 @@ export default function TripCalculator({
             setTravelMetrics([]);
             setError(null);
           }}>
-            <SelectTrigger className="h-10">
+            <SelectTrigger className="h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -480,46 +480,46 @@ export default function TripCalculator({
 
         {/* PUNCH TRIP CONFIGURATION */}
         {tripType === 'punch' && (
-          <div className="space-y-3 p-3 bg-green-50/50 rounded-lg border border-green-200">
-            <div className="flex items-center gap-2 pb-2 border-b border-green-200">
-              <Clock className="w-4 h-4 text-green-600" />
-              <h4 className="text-xs font-bold text-slate-700">Punch Trip Setup</h4>
+          <div className="space-y-2 p-2.5 bg-green-50/50 rounded-lg border border-green-200">
+            <div className="flex items-center gap-2 pb-1.5 border-b border-green-200">
+              <Clock className="w-3.5 h-3.5 text-green-600" />
+              <h4 className="text-[10px] font-bold text-slate-700">Punch Trip Setup</h4>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Horas por Técnico' : 'Hours per Tech'}</Label>
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Horas por Técnico' : 'Hours per Tech'}</Label>
                 <Input
                   type="number"
                   min="1"
                   max="24"
                   value={punchLaborHours}
                   onChange={(e) => setPunchLaborHours(parseFloat(e.target.value) || 8)}
-                  className="h-9"
+                  className="h-8 text-sm"
                 />
               </div>
               <div>
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Técnicos' : 'Technicians'}</Label>
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Técnicos' : 'Technicians'}</Label>
                 <Input
                   type="number"
                   min="1"
                   max="20"
                   value={techCount}
                   onChange={(e) => setTechCount(parseInt(e.target.value) || 2)}
-                  className="h-9"
+                  className="h-8 text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="text-xs mb-1 block">{language === 'es' ? 'Viajes Redondos' : 'Round Trips'}</Label>
+              <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Viajes Redondos' : 'Round Trips'}</Label>
               <Input
                 type="number"
                 min="1"
                 max="10"
                 value={roundTrips}
                 onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
-                className="h-9"
+                className="h-8 text-sm"
               />
             </div>
 
@@ -528,52 +528,52 @@ export default function TripCalculator({
                 type="checkbox"
                 checked={punchNeedsTravel}
                 onChange={(e) => setPunchNeedsTravel(e.target.checked)}
-                className="w-4 h-4"
+                className="w-3.5 h-3.5"
               />
-              <Label className="text-xs font-medium cursor-pointer" onClick={() => setPunchNeedsTravel(!punchNeedsTravel)}>
+              <Label className="text-[10px] font-semibold cursor-pointer" onClick={() => setPunchNeedsTravel(!punchNeedsTravel)}>
                 {language === 'es' ? '¿Fuera del área local? (incluir viaje + estadía)' : 'Out of local area? (include travel + stay)'}
               </Label>
             </div>
 
             {punchNeedsTravel && (
-              <div className="space-y-2 pl-6 border-l-2 border-green-300">
+              <div className="space-y-1.5 pl-4 border-l-2 border-green-300">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-xs mb-1 block">{language === 'es' ? 'Días por Viaje' : 'Days per Trip'}</Label>
+                    <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Días por Viaje' : 'Days per Trip'}</Label>
                     <Input
                       type="number"
                       min="1"
                       value={daysPerTrip}
                       onChange={(e) => setDaysPerTrip(parseInt(e.target.value) || 2)}
-                      className="h-8"
+                      className="h-7 text-sm"
                     />
                   </div>
                   <div>
-                    <Label className="text-xs mb-1 block">{language === 'es' ? 'Noches por Viaje' : 'Nights per Trip'}</Label>
+                    <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Noches por Viaje' : 'Nights per Trip'}</Label>
                     <Input
                       type="number"
                       min="0"
                       value={nightsPerTrip}
                       onChange={(e) => setNightsPerTrip(parseInt(e.target.value) || 2)}
-                      className="h-8"
+                      className="h-7 text-sm"
                     />
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs mb-1 block">{language === 'es' ? 'Cuartos por Noche' : 'Rooms per Night'}</Label>
+                  <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Cuartos por Noche' : 'Rooms per Night'}</Label>
                   <Input
                     type="number"
                     min="1"
                     value={roomsPerNight}
                     onChange={(e) => setRoomsPerNight(parseInt(e.target.value) || 1)}
-                    className="h-8"
+                    className="h-7 text-sm"
                   />
                 </div>
               </div>
             )}
 
-            <div className="pt-2 border-t border-green-200">
-              <p className="text-xs text-slate-600 mb-1">
+            <div className="pt-1.5 border-t border-green-200">
+              <p className="text-[10px] text-slate-600">
                 <strong>{language === 'es' ? 'Resumen:' : 'Summary:'}</strong> {punchLaborHours * techCount * roundTrips}h labor
                 {punchNeedsTravel && ` + travel + ${roomsPerNight * nightsPerTrip * roundTrips} rooms + ${techCount * daysPerTrip * roundTrips} per diems`}
               </p>
@@ -583,20 +583,20 @@ export default function TripCalculator({
 
         {/* FIELD VERIFICATION TRIP CONFIGURATION */}
         {tripType === 'verification' && (
-          <div className="space-y-3 p-3 bg-purple-50/50 rounded-lg border border-purple-200">
-            <div className="flex items-center gap-2 pb-2 border-b border-purple-200">
-              <CheckCircle2 className="w-4 h-4 text-purple-600" />
-              <h4 className="text-xs font-bold text-slate-700">Field Verification Setup</h4>
+          <div className="space-y-2 p-2.5 bg-purple-50/50 rounded-lg border border-purple-200">
+            <div className="flex items-center gap-2 pb-1.5 border-b border-purple-200">
+              <CheckCircle2 className="w-3.5 h-3.5 text-purple-600" />
+              <h4 className="text-[10px] font-bold text-slate-700">Field Verification Setup</h4>
             </div>
 
             {/* Mode selector */}
             <div>
-              <Label className="text-xs mb-2 block">{language === 'es' ? 'Modo de Viaje' : 'Travel Mode'}</Label>
+              <Label className="text-[10px] mb-1 block font-semibold">{language === 'es' ? 'Modo de Viaje' : 'Travel Mode'}</Label>
               <Select value={verificationMode} onValueChange={(val) => {
                 setVerificationMode(val);
                 setTravelMetrics([]);
               }}>
-                <SelectTrigger className="h-9">
+                <SelectTrigger className="h-8">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -618,75 +618,75 @@ export default function TripCalculator({
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Horas de Verificación' : 'Verification Hours'}</Label>
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Horas de Verificación' : 'Verification Hours'}</Label>
                 <Input
                   type="number"
                   min="1"
                   max="24"
                   value={verificationHours}
                   onChange={(e) => setVerificationHours(parseFloat(e.target.value) || 4)}
-                  className="h-9"
+                  className="h-8 text-sm"
                 />
               </div>
               <div>
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Técnicos' : 'Technicians'}</Label>
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Técnicos' : 'Technicians'}</Label>
                 <Input
                   type="number"
                   min="1"
                   max="20"
                   value={techCount}
                   onChange={(e) => setTechCount(parseInt(e.target.value) || 2)}
-                  className="h-9"
+                  className="h-8 text-sm"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Viajes' : 'Trips'}</Label>
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Viajes' : 'Trips'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={roundTrips}
                   onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
-                  className="h-8"
+                  className="h-7 text-sm"
                 />
               </div>
               <div>
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Días' : 'Days'}</Label>
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Días' : 'Days'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={verificationDays}
                   onChange={(e) => setVerificationDays(parseInt(e.target.value) || 1)}
-                  className="h-8"
+                  className="h-7 text-sm"
                 />
               </div>
               <div>
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Noches' : 'Nights'}</Label>
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Noches' : 'Nights'}</Label>
                 <Input
                   type="number"
                   min="0"
                   value={verificationNights}
                   onChange={(e) => setVerificationNights(parseInt(e.target.value) || 1)}
-                  className="h-8"
+                  className="h-7 text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="text-xs mb-1 block">{language === 'es' ? 'Cuartos por Noche' : 'Rooms per Night'}</Label>
+              <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Cuartos por Noche' : 'Rooms per Night'}</Label>
               <Input
                 type="number"
                 min="1"
                 value={roomsPerNight}
                 onChange={(e) => setRoomsPerNight(parseInt(e.target.value) || 1)}
-                className="h-8"
+                className="h-7 text-sm"
               />
             </div>
 
-            <div className="pt-2 border-t border-purple-200">
-              <p className="text-xs text-slate-600">
+            <div className="pt-1.5 border-t border-purple-200">
+              <p className="text-[10px] text-slate-600">
                 <strong>{language === 'es' ? 'Resumen:' : 'Summary:'}</strong> {verificationHours * techCount * roundTrips}h labor + 
                 {verificationMode === 'flight' 
                   ? ` ${techCount * roundTrips * 2} flights + ${techCount * roundTrips * 4} ubers` 
@@ -702,57 +702,57 @@ export default function TripCalculator({
         {tripType === 'standard' && (
           <div className="space-y-2">
             <div className="grid grid-cols-3 gap-2">
-              <div className="p-2 bg-white rounded border border-blue-200">
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Técnicos' : 'Technicians'}</Label>
+              <div className="p-1.5 bg-white rounded border border-blue-200">
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Técnicos' : 'Technicians'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={techCount}
                   onChange={(e) => setTechCount(parseInt(e.target.value) || 2)}
-                  className="h-8"
+                  className="h-7 text-sm"
                 />
               </div>
-              <div className="p-2 bg-white rounded border border-blue-200">
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Viajes' : 'Round Trips'}</Label>
+              <div className="p-1.5 bg-white rounded border border-blue-200">
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Viajes' : 'Round Trips'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={roundTrips}
                   onChange={(e) => setRoundTrips(parseInt(e.target.value) || 1)}
-                  className="h-8"
+                  className="h-7 text-sm"
                 />
               </div>
-              <div className="p-2 bg-white rounded border border-blue-200">
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Cuartos/Noche' : 'Rooms/Night'}</Label>
+              <div className="p-1.5 bg-white rounded border border-blue-200">
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Cuartos/Noche' : 'Rooms/Night'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={roomsPerNight}
                   onChange={(e) => setRoomsPerNight(parseInt(e.target.value) || 1)}
-                  className="h-8"
+                  className="h-7 text-sm"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 bg-white rounded border border-purple-200">
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Días por Viaje' : 'Days per Trip'}</Label>
+              <div className="p-1.5 bg-white rounded border border-purple-200">
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Días por Viaje' : 'Days per Trip'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={daysPerTrip}
                   onChange={(e) => setDaysPerTrip(parseInt(e.target.value) || 2)}
-                  className="h-8"
+                  className="h-7 text-sm"
                 />
               </div>
-              <div className="p-2 bg-white rounded border border-purple-200">
-                <Label className="text-xs mb-1 block">{language === 'es' ? 'Noches por Viaje' : 'Nights per Trip'}</Label>
+              <div className="p-1.5 bg-white rounded border border-purple-200">
+                <Label className="text-[10px] mb-0.5 block font-semibold">{language === 'es' ? 'Noches por Viaje' : 'Nights per Trip'}</Label>
                 <Input
                   type="number"
                   min="1"
                   value={nightsPerTrip}
                   onChange={(e) => setNightsPerTrip(parseInt(e.target.value) || 2)}
-                  className="h-8"
+                  className="h-7 text-sm"
                 />
               </div>
             </div>
