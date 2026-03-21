@@ -635,33 +635,43 @@ export default function Chat() {
           {/* Sidebar */}
           <div className={`absolute md:relative md:flex w-80 md:w-80 lg:w-[400px] h-full flex-col bg-gradient-to-b from-white to-slate-50/50 dark:from-[#1a1a1a] dark:to-[#141414] border-r border-slate-200/60 dark:border-slate-800/60 transform md:transform-none transition-transform ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-50 md:z-auto`}>
             {/* Sidebar Header */}
-            <div className="px-6 py-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Messages</h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Team communication</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => setShowCreateGroup(true)}
-                    className="h-10 w-10 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all"
-                    title="Create group chat"
-                  >
-                    <Users className="w-5 h-5" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => setShowNewDM(true)}
-                    className="h-10 w-10 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all"
-                    title="Start direct message"
-                  >
-                    <UserPlus className="w-5 h-5" />
-                  </Button>
-                </div>
-              </div>
+            <div className="px-4 md:px-6 py-4 md:py-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm flex items-center justify-between md:block">
+            <div className="hidden md:block">
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Messages</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Team communication</p>
+            </div>
+            <button 
+              onClick={() => setShowMobileSidebar(false)}
+              className="md:hidden p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+            >
+              <X className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+            </button>
+            <div className="flex gap-2">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  setShowCreateGroup(true);
+                  setShowMobileSidebar(false);
+                }}
+                className="h-10 w-10 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all"
+                title="Create group chat"
+              >
+                <Users className="w-5 h-5" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => {
+                  setShowNewDM(true);
+                  setShowMobileSidebar(false);
+                }}
+                className="h-10 w-10 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all"
+                title="Start direct message"
+              >
+                <UserPlus className="w-5 h-5" />
+              </Button>
+            </div>
             </div>
 
             {/* Sidebar Content */}
