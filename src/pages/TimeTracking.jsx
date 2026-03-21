@@ -20,6 +20,7 @@ import { exportToExcel } from "@/components/shared/UniversalExcelExport";
 import { FileSpreadsheet } from "lucide-react";
 import { buildUserQuery } from "@/components/utils/userResolution";
 import PageHeader from "@/components/shared/PageHeader";
+import CleanTimeTrackerUI from "@/components/time-tracking/CleanTimeTrackerUI";
 
 export default function TimeTracking() {
   const toast = useToast();
