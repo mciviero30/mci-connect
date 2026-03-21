@@ -136,7 +136,7 @@ export default function WelcomeScreen({ user, onComplete }) {
               </div>
 
               {/* Quick Start */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-5 rounded-2xl border-2 border-blue-200 dark:border-blue-800 mb-6">
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-5 rounded-2xl border-2 border-blue-200 dark:border-blue-800 mb-6 flex-shrink-0">
                 <h4 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-blue-600" />
                   {language === 'es' ? 'Primeros pasos:' : 'Quick Start:'}
