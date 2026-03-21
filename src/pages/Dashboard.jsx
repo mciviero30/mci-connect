@@ -25,7 +25,7 @@ import {
   Trophy,
   Download
 } from "lucide-react";
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay } from "date-fns";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, format, isSameDay, getDay } from "date-fns";
 import LiveClock from "../components/dashboard/LiveClock";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import { Link } from "react-router-dom";
