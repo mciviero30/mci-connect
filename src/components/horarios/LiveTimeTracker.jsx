@@ -961,129 +961,20 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   };
   
   if (activeSession) {
-    const sessionHours = elapsed / 3600;
-    // MAX HOURS: use scheduled shift if available, otherwise defaults (work=10h, driving=16h)
-    const getMaxHours = (workType, scheduledShift) => {
-      if (scheduledShift?.enforce_scheduled_hours && scheduledShift?.max_daily_hours) {
-        return scheduledShift.max_daily_hours;
-      }
-      if (workType === 'driving') return 16;
-      return 10;
-    };
-    const maxHours = getMaxHours(activeSession.workType, activeSession.scheduledShift);
-    const exceedsMaxHours = sessionHours >= maxHours;
-
+    // Use clean UI with map background
     return (
-      <Card className={`border-0 shadow-2xl mb-8 overflow-hidden ${
-        exceedsMaxHours 
-          ? 'bg-gradient-to-br from-red-600 via-red-700 to-red-800 ring-4 ring-red-500/50' 
-          : 'bg-gradient-to-br from-green-600 via-green-700 to-green-800'
-      } text-white animate-pulse-slow`}>
-        <CardContent className="p-8 text-center">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
-              <Briefcase className="w-6 h-6"/>
-            </div>
-            <div className="text-left">
-              <Badge variant="secondary" className="text-base font-bold px-3 py-1 shadow-md">{activeSession.jobName}</Badge>
-              {activeSession.workType !== 'normal' && (
-                <Badge variant="outline" className="bg-white/20 border-white/40 text-white ml-2 font-semibold">
-                  {activeSession.workType === 'driving' ? (language === 'es' ? 'Manejo' : 'Driving') :
-                   activeSession.workType === 'setup' ? (language === 'es' ? 'Preparación' : 'Setup') :
-                   (language === 'es' ? 'Limpieza' : 'Cleanup')}
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          {exceedsMaxHours && (
-            <div className="mb-6 p-4 bg-red-900/60 border-2 border-red-300 rounded-2xl flex items-center justify-center gap-3 shadow-lg animate-pulse">
-              <AlertTriangle className="w-6 h-6" />
-              <span className="font-black text-base">
-                {language === 'es' 
-                  ? `¡LÍMITE DE ${maxHours}H ALCANZADO! Cierra tu turno ahora` 
-                  : `${maxHours}H LIMIT REACHED! Clock out now`}
-              </span>
-            </div>
-          )}
-
-          <div className="bg-black/20 rounded-3xl p-6 mb-6 shadow-inner">
-            <h1 className="text-5xl sm:text-6xl md:text-8xl font-black font-mono tracking-tight mb-2 drop-shadow-lg">
-              {activeSession.onBreak ? formatTime(activeSession.breakDuration / 1000) : formatTime(elapsed)}
-            </h1>
-            <div className="flex items-center justify-center gap-3 text-base font-bold opacity-90">
-              <MapPin className="w-5 h-5"/>
-              <span>{language === 'es' ? 'Entrada' : 'Started'}: {activeSession.checkIn}</span>
-              <Badge variant="outline" className="bg-white/10 border-white/30 text-white">
-                {Math.round(activeSession.distanceMeters)}m
-              </Badge>
-            </div>
-          </div>
-
-          {/* Driving: show captured clock-in location */}
-          {activeSession.workType === 'driving' && activeSession.location && (
-            <div className="mb-4 p-3 bg-blue-500/20 border border-blue-300 rounded-2xl flex items-center justify-center gap-2">
-              <MapPin className="w-4 h-4 flex-shrink-0" />
-              <span className="font-semibold text-xs">
-                {language === 'es' ? '📍 Inicio:' : '📍 Start:'} {activeSession.location.lat?.toFixed(5)}, {activeSession.location.lng?.toFixed(5)}
-              </span>
-            </div>
-          )}
-
-          {activeSession.onBreak && (
-            <div className="mb-4 p-3 bg-amber-500/30 border border-amber-300 rounded-2xl flex items-center justify-center gap-2">
-              <Coffee className="w-5 h-5" />
-              <span className="font-bold text-sm">
-                {language === 'es' ? 'EN PAUSA' : 'ON BREAK'}
-              </span>
-            </div>
-          )}
-
-          {locationError && (
-            <div className="mb-4 p-4 bg-red-900/60 border-2 border-red-300 rounded-2xl shadow-lg">
-              <AlertCircle className="w-6 h-6 mx-auto mb-2" />
-              <p className="text-sm font-bold whitespace-pre-line">
-                {typeof locationError === 'string' ? locationError : 'Location error'}
-              </p>
-              <p className="text-xs mt-2 opacity-90">
-                {language === 'es' 
-                  ? 'Acércate al sitio del proyecto o contacta a tu supervisor.' 
-                  : 'Move closer to project site or contact your supervisor.'}
-              </p>
-            </div>
-          )}
-          
-          <div className="flex gap-4 justify-center mt-6">
-            <Button 
-              onClick={handleToggleBreak} 
-              variant="secondary" 
-              size="lg" 
-              className="rounded-2xl h-14 px-8 font-bold text-base shadow-lg hover:scale-105 transition-transform"
-            >
-              <Coffee className="w-5 h-5 mr-2"/>
-              {activeSession.onBreak ? (language === 'es' ? 'Reanudar' : 'Resume') : (language === 'es' ? 'Pausa' : 'Break')}
-            </Button>
-            <Button 
-              onClick={handleClockOut} 
-              variant="destructive" 
-              size="lg" 
-              className="rounded-2xl h-14 px-8 font-bold text-base shadow-lg hover:scale-105 transition-transform bg-red-600 hover:bg-red-700" 
-              disabled={isLoading}
-            >
-              <Square className="w-5 h-5 mr-2"/>
-              {language === 'es' ? 'Salida' : 'Clock Out'}
-            </Button>
-          </div>
-
-          {exceedsMaxHours && (
-            <p className="text-sm text-white/90 mt-4 font-semibold bg-red-900/40 p-3 rounded-xl">
-              {language === 'es' 
-                ? `⚠️ Límite de ${maxHours}h alcanzado. Al cerrar, las horas serán registradas para revisión del supervisor.` 
-                : `⚠️ ${maxHours}h limit reached. On clock-out, hours will be flagged for supervisor review.`}
-            </p>
-          )}
-        </CardContent>
-      </Card>
+      <CleanTimeTrackerUI
+        activeSession={activeSession}
+        elapsed={elapsed}
+        onBreakToggle={handleToggleBreak}
+        onClockOut={handleClockOut}
+        onBack={() => {
+          localStorage.removeItem(storageKey);
+          setActiveSession(null);
+          setElapsed(0);
+        }}
+        language={language}
+      />
     );
   }
 
