@@ -1239,7 +1239,6 @@ export default function Chat() {
               </div>
             </DialogContent>
           </Dialog>
-        </>
       </div>
     </div>
   );
