@@ -21,6 +21,16 @@ export default function PunchTripCalculator({
   originalTechCount = 8, // Original tech count to calculate proportions
   language = 'en'
 }) {
+  // CRITICAL: Freeze items on first open to prevent stale data from re-renders
+  const frozenItems = React.useRef([]);
+  
+  React.useEffect(() => {
+    if (isOpen && existingItems?.length > 0) {
+      frozenItems.current = [...existingItems];
+      console.log('🔍 [PunchTripCalculator] FROZEN items on open:', frozenItems.current.length);
+    }
+  }, [isOpen, existingItems]);
+  
   // DEBUG: Log what we receive
   console.log('🔍 [PunchTripCalculator] PROPS RECEIVED:', {
     isOpen,
@@ -30,19 +40,13 @@ export default function PunchTripCalculator({
     initialTravelMiles,
     originalTechCount,
     existingItemsCount: existingItems?.length,
-    existingItems: existingItems?.map(i => ({
-      name: i.item_name,
-      desc: i.description,
-      qty: i.quantity,
-      duration: i.duration_value,
-      techCount: i.tech_count,
-      is_travel: i.is_travel_item,
-      travel_type: i.travel_item_type
-    }))
+    frozenItemsCount: frozenItems.current?.length
   });
+  
   // Extract travel data from existing items (from the quote)
   const extractedTravelData = useMemo(() => {
-    if (!existingItems || existingItems.length === 0) {
+    const itemsToUse = frozenItems.current.length > 0 ? frozenItems.current : existingItems;
+    if (!itemsToUse || itemsToUse.length === 0) {
       return {
         drivingHours: initialTravelHours,
         miles: initialTravelMiles,
@@ -51,7 +55,7 @@ export default function PunchTripCalculator({
     }
     
     // Search for driving/travel time item - ULTRA FLEXIBLE matching
-    const drivingItem = existingItems.find(i => {
+    const drivingItem = itemsToUse.find(i => {
       const name = i.item_name?.toLowerCase() || '';
       const desc = i.description?.toLowerCase() || '';
       return (
@@ -63,7 +67,7 @@ export default function PunchTripCalculator({
     });
     
     // Search for mileage item - ULTRA FLEXIBLE matching
-    const mileageItem = existingItems.find(i => {
+    const mileageItem = itemsToUse.find(i => {
       const name = i.item_name?.toLowerCase() || '';
       const desc = i.description?.toLowerCase() || '';
       return (
@@ -93,7 +97,7 @@ export default function PunchTripCalculator({
       miles: mileageQuantity,
       originalTechs: drivingItem?.tech_count || originalTechCount
     };
-  }, [existingItems, initialTravelHours, initialTravelMiles, originalTechCount]);
+  }, [frozenItems.current, initialTravelHours, initialTravelMiles, originalTechCount]);
   
   const [techCount, setTechCount] = useState(itemType === 'field_verification' ? 1 : 2);
   const [workHours, setWorkHours] = useState(itemType === 'field_verification' ? 4 : 4);
