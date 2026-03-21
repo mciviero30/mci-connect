@@ -85,6 +85,18 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
     setTimeExpanded(false);
   };
 
+  // More menu with 6 quick access items
+  const quickAccessItems = [
+    { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+    { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+    { title: 'Calendar', url: createPageUrl("Calendario"), icon: Clock },
+    { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase },
+    { title: 'My Payroll', url: createPageUrl("MyPayroll"), icon: Banknote },
+    { title: 'Installation Library', url: createPageUrl("KnowledgeLibrary"), icon: BookOpen },
+  ];
+
+  const [moreExpanded, setMoreExpanded] = useState(false);
+
   return (
     <>
       {/* Bottom Navigation Bar - Fixed at bottom - ANIMATED */}
