@@ -735,7 +735,7 @@ export default function Dashboard() {
       <div className="min-h-screen pb-20 md:pb-0 relative overflow-hidden" style={{
         background: 'linear-gradient(135deg, #E8F4FD 0%, #D9E9F4 50%, #F1F5F9 100%)'
       }}>
-        <div className="p-3 sm:p-4 md:p-6 lg:p-8">
+        <div className="p-2 sm:p-2 md:p-3 lg:p-4">
       {/* Network Pattern Background */}
       <div className="absolute inset-0 opacity-30 pointer-events-none">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -762,10 +762,10 @@ export default function Dashboard() {
       
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
-        <div className="mb-4 sm:mb-6 md:mb-8">
+        <div className="mb-2 sm:mb-3 md:mb-4">
           {/* Top row: Avatar, greeting, and badge */}
-          <div className="flex items-start justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
-            <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2 sm:gap-2 mb-2 sm:mb-2">
+            <div className="flex items-center gap-2 sm:gap-2 flex-1 min-w-0">
               <button
                 onClick={() => setShowPhotoManager(true)}
                 className="group relative hover:scale-105 transition-transform flex-shrink-0"
@@ -775,57 +775,57 @@ export default function Dashboard() {
                     key={imageKey}
                     src={`${profileImage}?v=${imageKey}`}
                     alt={user?.full_name}
-                    className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover ring-2 sm:ring-4 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg"
+                    className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full object-cover ring-1 sm:ring-2 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg"
                   />
                 ) : (
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] flex items-center justify-center ring-2 sm:ring-4 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg">
-                    <span className="text-white font-bold text-lg sm:text-xl md:text-2xl">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] flex items-center justify-center ring-1 sm:ring-2 ring-[#1E3A8A]/40 hover:ring-[#3B82F6]/60 transition-all shadow-lg">
+                    <span className="text-white font-bold text-[10px] sm:text-xs md:text-sm">
                       {user?.full_name?.[0]?.toUpperCase() || 'U'}
                     </span>
                   </div>
                 )}
                 <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
-                  <User className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <User className="w-3 h-3 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </button>
 
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white leading-tight truncate">
+                <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-slate-900 dark:text-white leading-tight truncate">
                  {user ? `${t('hello')}, ${getDisplayName(user)}!` : t('hello')}
                 </h1>
-                <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm md:text-base mt-0.5 sm:mt-1 truncate">
+                <p className="text-slate-600 dark:text-slate-400 text-[9px] sm:text-[10px] md:text-xs mt-0 sm:mt-0.5 truncate">
                   {isAdmin ? (language === 'es' ? '¡Bienvenido al panel de administración!' : 'Welcome to the admin panel!') : (language === 'es' ? '¡Que tengas un gran día!' : 'Have a great day!')}
                 </p>
               </div>
             </div>
 
             <div className="flex-shrink-0">
-              <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm whitespace-nowrap text-xs sm:text-sm px-2 sm:px-3 py-1">
+              <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm whitespace-nowrap text-[8px] sm:text-[9px] px-1.5 sm:px-2 py-0">
                 <span className="hidden sm:inline">MCI Connect • </span>Customizable
               </Badge>
             </div>
           </div>
 
           {/* Action buttons row */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5">
             {isEditMode ? (
               <>
                 <Button
                   onClick={handleCancelEdit}
                   variant="outline"
                   size="sm"
-                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 min-h-[40px] px-3 text-xs sm:text-sm"
+                  className="border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 h-6 px-2 text-[10px]"
                 >
-                  <XIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <XIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
                   <span className="hidden sm:inline">Cancel</span>
                 </Button>
                 <Button
                   onClick={handleSaveLayout}
                   size="sm"
-                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md min-h-[40px] px-3 text-xs sm:text-sm"
+                  className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md h-6 px-2 text-[10px]"
                   disabled={savePreferencesMutation.isPending}
                 >
-                  <Save className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <Save className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
                   {savePreferencesMutation.isPending ? 'Saving...' : <span className="hidden sm:inline">Save Layout</span>}
                   <span className="sm:hidden">Save</span>
                 </Button>
@@ -855,10 +855,10 @@ export default function Dashboard() {
                   }}
                   variant="outline"
                   size="sm"
-                  className="border-green-200 text-green-600 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
+                  className="border-green-200 text-green-600 hover:bg-green-50 dark:border-green-800 dark:text-green-400 dark:hover:bg-green-900/20 h-6 px-1.5 sm:px-2 text-[10px]"
                   disabled={(isAdmin ? jobs.length : timeEntries.length) === 0}
                 >
-                  <FileSpreadsheet className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <FileSpreadsheet className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
                   <span className="hidden sm:inline">Excel</span>
                 </Button>
                 {isAdmin && (
@@ -866,9 +866,9 @@ export default function Dashboard() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50/30 dark:hover:bg-green-900/10 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
+                      className="border-green-300 dark:border-green-700 text-green-700 dark:text-green-400 hover:bg-green-50/30 dark:hover:bg-green-900/10 h-6 px-1.5 sm:px-2 text-[10px]"
                     >
-                      <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                      <Download className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
                       <span className="hidden sm:inline">Export ZIP</span>
                     </Button>
                   </Link>
@@ -877,27 +877,27 @@ export default function Dashboard() {
                   onClick={() => setShowKudosDialog(true)}
                   size="sm"
                   variant="outline"
-                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 h-6 px-1.5 sm:px-2 text-[10px]"
                 >
-                  <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <Award className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
                   <span className="hidden sm:inline">Give Kudos</span>
                 </Button>
                 <Button
                   onClick={() => setShowWidgetLibrary(true)}
                   variant="outline"
                   size="sm"
-                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 h-6 px-1.5 sm:px-2 text-[10px]"
                 >
-                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <Plus className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
                   <span className="hidden sm:inline">Add Widget</span>
                 </Button>
                 <Button
                   onClick={() => setIsEditMode(true)}
                   size="sm"
                   variant="outline"
-                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 min-h-[40px] px-2.5 sm:px-3 text-xs sm:text-sm"
+                  className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 h-6 px-1.5 sm:px-2 text-[10px]"
                 >
-                  <SettingsIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+                  <SettingsIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-0.5" />
                   <span className="hidden sm:inline">Customize</span>
                 </Button>
               </>
@@ -909,27 +909,27 @@ export default function Dashboard() {
         <FieldWorkIndicator />
 
         {/* Quick Stats Widgets */}
-        <div className="mb-4 sm:mb-6 md:mb-8">
+        <div className="mb-2 sm:mb-3 md:mb-4">
           <QuickStatsWidgets user={user} />
         </div>
 
         {/* AR Widget - Admin Only */}
         {isAdmin && (
-          <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="mb-2 sm:mb-3 md:mb-4">
             <ARWidget />
           </div>
         )}
 
         {/* Quick Actions for Employees - Mobile-First */}
         {!isAdmin && (
-          <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="mb-2 sm:mb-3 md:mb-4">
             <QuickActions user={user} certifications={certifications} />
           </div>
         )}
 
         {/* Live Clock for Employees */}
         {!isAdmin && (
-          <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="mb-2 sm:mb-3 md:mb-4">
             <LiveClock />
           </div>
         )}
@@ -937,7 +937,7 @@ export default function Dashboard() {
         {/* I1 - Actual vs Estimated Chart (Admin Only) */}
         {isAdmin && jobs.length > 0 && quotes.length > 0 && (
           <FadeInUp delay={0.1}>
-            <div className="mb-4 sm:mb-6 md:mb-8">
+            <div className="mb-2 sm:mb-3 md:mb-4">
               <ActualVsEstimatedChart jobs={jobs} quotes={quotes} />
             </div>
           </FadeInUp>
@@ -946,7 +946,7 @@ export default function Dashboard() {
         {/* AI Predictions (Admin Only) */}
         {isAdmin && (
           <FadeInUp delay={0.2}>
-            <div className="mb-4 sm:mb-6 md:mb-8">
+            <div className="mb-2 sm:mb-3 md:mb-4">
               <AIPredictor 
                 jobs={Array.isArray(jobs) ? jobs : []} 
                 timeEntries={allTimeEntries} 
@@ -959,7 +959,7 @@ export default function Dashboard() {
         {/* Performance Monitor (Admin Only - Dev) */}
         {isAdmin && import.meta.env?.DEV && (
           <FadeInUp delay={0.3}>
-            <div className="mb-4 sm:mb-6 md:mb-8">
+            <div className="mb-2 sm:mb-3 md:mb-4">
               <PerformanceMonitor />
             </div>
           </FadeInUp>
@@ -973,7 +973,7 @@ export default function Dashboard() {
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2 md:gap-3"
                 >
                   <AnimatePresence>
                     {widgets.filter(w => w.visible).sort((a, b) => a.position - b.position).map((widget, index) => (
@@ -1008,12 +1008,12 @@ export default function Dashboard() {
 
         {/* Actions for Employees */}
         {!isAdmin && (
-          <div className="text-center mt-6 sm:mt-8">
+          <div className="text-center mt-3 sm:mt-4">
             <Button
               onClick={() => setShowTimeOffDialog(true)}
-              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md w-full sm:w-auto min-h-[48px] text-sm sm:text-base px-6"
+              className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md w-full sm:w-auto h-6 text-[10px] px-3"
             >
-              <CalendarIcon className="w-4 h-4 mr-2" />
+              <CalendarIcon className="w-3 h-3 mr-1" />
               {t('requestTimeOff')}
             </Button>
           </div>

@@ -278,7 +278,7 @@ export default function Estimados() {
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
+      <div className="max-w-7xl mx-auto p-2 md:p-4">
         <PageHeader
           title={t('quotes')}
           description={`${draftQuotes.length} ${t('drafts').toLowerCase()}, ${sentQuotes.length} ${t('sent').toLowerCase()}, ${approvedQuotes.length} ${t('approved').toLowerCase()}`}
@@ -300,27 +300,27 @@ export default function Estimados() {
                   variant="outline"
                   size="sm"
                   onClick={() => navigate(createPageUrl("Papelera"))}
-                  className="h-10 border-red-200 text-red-600 hover:bg-red-50"
+                  className="h-6 border-red-200 text-red-600 hover:bg-red-50"
                 >
-                  <TrashIcon className="w-4 h-4 mr-2" />
+                  <TrashIcon className="w-3 h-3 mr-1" />
                   {language === 'es' ? 'Papelera' : 'Trash'}
                 </Button>
                 <QuotePDFImporter onSuccess={() => queryClient.invalidateQueries({ queryKey: ['quotes'] })} />
                 <Button
                   onClick={() => setShowAIWizard(true)}
-                  className="h-10 bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md px-3 sm:px-4"
+                  className="h-6 bg-gradient-to-r from-[#1E3A8A] to-[#3B82F6] hover:from-[#1E3A8A]/90 hover:to-[#3B82F6]/90 text-white shadow-md px-2"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">{language === 'es' ? 'IA' : 'AI'}</span>
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  <span className="hidden sm:inline text-[10px]">{language === 'es' ? 'IA' : 'AI'}</span>
                 </Button>
                 <Link to={createPageUrl("CrearEstimado")}>
                   <Button
                     variant="outline"
-                    className="h-10 border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 px-3 sm:px-4"
+                    className="h-6 border-[#507DB4]/30 dark:border-[#507DB4]/40 text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50/30 dark:hover:bg-blue-900/10 px-2"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">{t('newQuote')}</span>
-                    <span className="sm:hidden">{language === 'es' ? 'Nuevo' : 'New'}</span>
+                    <Plus className="w-3 h-3 mr-1" />
+                    <span className="hidden sm:inline text-[10px]">{t('newQuote')}</span>
+                    <span className="sm:hidden text-[10px]">{language === 'es' ? 'Nuevo' : 'New'}</span>
                   </Button>
                 </Link>
               </div>
@@ -328,7 +328,7 @@ export default function Estimados() {
           }
         />
 
-        <div className="mb-4 flex items-center gap-3">
+        <div className="mb-2 flex items-center gap-2">
           <div className="flex-1">
             <FilterBar
               searchTerm={searchTerm}
@@ -355,7 +355,7 @@ export default function Estimados() {
           <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
         </div>
 
-        <div className="mb-4">
+        <div className="mb-2">
           <SavedFilters
             page="quotes"
             currentFilters={{ searchTerm, statusFilter, teamFilter }}
@@ -373,7 +373,7 @@ export default function Estimados() {
           <SkeletonDocumentList count={6} />
         ) : viewMode === 'grid' ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
               {filteredQuotes.length > 0 && filteredQuotes.map(quote => (
                 <ModernQuoteCard
                   key={quote.id}
@@ -431,30 +431,30 @@ export default function Estimados() {
 
         {filteredQuotes.length === 0 && !isLoading && (
           <Card className="bg-white dark:bg-slate-800 shadow-lg border-slate-200 dark:border-slate-700">
-            <CardContent className="p-12 text-center">
-              <FileText className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-slate-700 dark:text-slate-300 mb-2">
+            <CardContent className="p-6 text-center">
+              <FileText className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 {quotes.length === 0 ? t('noQuotes') : (language === 'es' ? 'No se encontraron estimados' : 'No quotes found')}
               </h3>
-              <p className="text-slate-500 dark:text-slate-400 mb-6">
+              <p className="text-slate-500 dark:text-slate-400 mb-3 text-[10px]">
                 {quotes.length === 0
                   ? (language === 'es' ? 'Comienza creando tu primer estimado' : 'Start by creating your first quote')
                   : (language === 'es' ? 'Intenta ajustar los filtros' : 'Try adjusting your filters')
                 }
               </p>
               {isAdmin && quotes.length === 0 && (
-                <div className="flex justify-center gap-4">
+                <div className="flex justify-center gap-2">
                   <Button
                     onClick={() => setShowAIWizard(true)}
-                    className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md"
+                    className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md h-6"
                   >
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    {language === 'es' ? 'Crear con IA' : 'Create with AI'}
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    <span className="text-[10px]">{language === 'es' ? 'Crear con IA' : 'Create with AI'}</span>
                   </Button>
                   <Link to={createPageUrl("CrearEstimado")}>
-                    <Button className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md">
-                      <Plus className="w-4 h-4 mr-2" />
-                      {t('newQuote')}
+                    <Button className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-md h-6">
+                      <Plus className="w-3 h-3 mr-1" />
+                      <span className="text-[10px]">{t('newQuote')}</span>
                     </Button>
                   </Link>
                 </div>
@@ -467,8 +467,8 @@ export default function Estimados() {
         <Dialog open={showAIWizard} onOpenChange={setShowAIWizard}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
             <DialogHeader>
-              <DialogTitle className="text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-                <Sparkles className="w-6 h-6 text-[#507DB4]" />
+              <DialogTitle className="text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#507DB4]" />
                 {language === 'es' ? 'Crear Estimado con IA' : 'Create Quote with AI'}
               </DialogTitle>
             </DialogHeader>
