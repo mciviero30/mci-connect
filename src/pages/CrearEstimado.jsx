@@ -24,7 +24,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
-import UnifiedOutOfAreaCalculator from "../components/quotes/UnifiedOutOfAreaCalculator";
+import TripCalculator from "../components/quotes/TripCalculator";
 import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -1015,17 +1015,11 @@ export default function CrearEstimado() {
 
                 <div className="md:col-span-2">
                   <div className="space-y-4">
-                    <UnifiedOutOfAreaCalculator
+                    <TripCalculator
                       jobAddress={formData.job_address}
                       selectedTeamIds={formData.team_ids}
                       onAddAllItems={handleAddAllOutOfAreaItems}
-                      derivedValues={derivedValues}
-                      techCount={projectTechCount}
-                      onTechCountChange={setProjectTechCount}
-                      roomsPerNight={roomsPerNight}
-                      onRoomsPerNightChange={setRoomsPerNight}
-                      onStayConfigChange={setStayConfig}
-                      editMode={!!editId}
+                      totalLaborHours={derivedValues?.totalLaborHours || 0}
                     />
                     
                     <ProjectDurationSummary
