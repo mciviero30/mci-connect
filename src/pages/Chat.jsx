@@ -1130,114 +1130,117 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* New Direct Message Dialog */}
-        <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
-          <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white">Start Direct Message</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-2 max-h-96 overflow-y-auto p-2">
-              {employees && employees.length > 0 ? (
-                employees
-                  .filter(emp => emp.email !== user?.email && emp.status === 'active')
-                  .map(emp => {
-                    const displayName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email.split('@')[0];
-                    const displayPosition = emp.position || emp.email;
-                    
-                    return (
-                      <button
-                        key={emp.email}
-                        onClick={() => startDirectMessage({
-                          ...emp,
-                          full_name: displayName
-                        })}
-                        className="w-full p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors text-left border border-transparent hover:border-blue-200 dark:hover:border-blue-700"
-                      >
-                        <div className="relative">
-                          <div className="w-10 h-10 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                            <span className="text-white font-bold">
-                              {displayName[0]?.toUpperCase() || 'U'}
-                            </span>
+        {/* Dialogs */}
+        <>
+          {/* New Direct Message Dialog */}
+          <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
+            <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-slate-900 dark:text-white">Start Direct Message</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 max-h-96 overflow-y-auto p-2">
+                {employees && employees.length > 0 ? (
+                  employees
+                    .filter(emp => emp.email !== user?.email && emp.status === 'active')
+                    .map(emp => {
+                      const displayName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email.split('@')[0];
+                      const displayPosition = emp.position || emp.email;
+                      
+                      return (
+                        <button
+                          key={emp.email}
+                          onClick={() => startDirectMessage({
+                            ...emp,
+                            full_name: displayName
+                          })}
+                          className="w-full p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors text-left border border-transparent hover:border-blue-200 dark:hover:border-blue-700"
+                        >
+                          <div className="relative">
+                            <div className="w-10 h-10 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                              <span className="text-white font-bold">
+                                {displayName[0]?.toUpperCase() || 'U'}
+                              </span>
+                            </div>
+                            <div className="absolute -bottom-0.5 -right-0.5">
+                              <UserStatusIndicator 
+                                status={emp.is_online ? 'online' : 'offline'} 
+                                size="sm"
+                              />
+                            </div>
                           </div>
-                          <div className="absolute -bottom-0.5 -right-0.5">
-                            <UserStatusIndicator 
-                              status={emp.is_online ? 'online' : 'offline'} 
-                              size="sm"
-                            />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-slate-900 dark:text-white truncate">{displayName}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{displayPosition}</p>
                           </div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900 dark:text-white truncate">{displayName}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{displayPosition}</p>
-                        </div>
-                      </button>
-                    );
-                  })
-              ) : (
-                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                  <Users className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                  <p>No employees available</p>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Create Group Dialog */}
-        <CreateGroupDialog
-          open={showCreateGroup}
-          onOpenChange={setShowCreateGroup}
-          employees={employees}
-          currentUser={user}
-          onCreateGroup={handleCreateGroup}
-          onDeleteGroup={handleDeleteGroup}
-          editingGroup={selectedCustomGroup}
-        />
-
-        {/* User Profile Modal */}
-        <UserProfileModal
-          open={showUserProfile}
-          onOpenChange={setShowUserProfile}
-          userEmail={selectedProfileEmail}
-          currentUserEmail={user?.email}
-          isCurrentUser={selectedProfileEmail === user?.email}
-        />
-
-        {/* Job Chat Members Dialog */}
-        <JobChatMembers
-          jobId={selectedGroup}
-          jobName={groups.find(g => g.id === selectedGroup)?.name || ''}
-          isOpen={showJobMembers}
-          onClose={() => setShowJobMembers(false)}
-          language={t('language') === 'es' ? 'es' : 'en'}
-        />
-
-        {/* Export Dialog */}
-        <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
-          <DialogContent className="max-w-md bg-white dark:bg-[#282828]">
-            <DialogHeader>
-              <DialogTitle className="text-slate-900 dark:text-white">
-                {language === 'es' ? 'Exportar Conversación' : 'Export Conversation'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {language === 'es' 
-                  ? `Se exportarán ${filteredMessages.length} mensajes en formato CSV`
-                  : `${filteredMessages.length} messages will be exported as CSV`}
-              </p>
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setShowExportDialog(false)}>
-                  {language === 'es' ? 'Cancelar' : 'Cancel'}
-                </Button>
-                <Button onClick={handleExportChat} className="bg-green-600 hover:bg-green-700">
-                  <Download className="w-4 h-4 mr-2" />
-                  {language === 'es' ? 'Exportar' : 'Export'}
-                </Button>
+                        </button>
+                      );
+                    })
+                ) : (
+                  <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                    <Users className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                    <p>No employees available</p>
+                  </div>
+                )}
               </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+
+          {/* Create Group Dialog */}
+          <CreateGroupDialog
+            open={showCreateGroup}
+            onOpenChange={setShowCreateGroup}
+            employees={employees}
+            currentUser={user}
+            onCreateGroup={handleCreateGroup}
+            onDeleteGroup={handleDeleteGroup}
+            editingGroup={selectedCustomGroup}
+          />
+
+          {/* User Profile Modal */}
+          <UserProfileModal
+            open={showUserProfile}
+            onOpenChange={setShowUserProfile}
+            userEmail={selectedProfileEmail}
+            currentUserEmail={user?.email}
+            isCurrentUser={selectedProfileEmail === user?.email}
+          />
+
+          {/* Job Chat Members Dialog */}
+          <JobChatMembers
+            jobId={selectedGroup}
+            jobName={groups.find(g => g.id === selectedGroup)?.name || ''}
+            isOpen={showJobMembers}
+            onClose={() => setShowJobMembers(false)}
+            language={t('language') === 'es' ? 'es' : 'en'}
+          />
+
+          {/* Export Dialog */}
+          <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+            <DialogContent className="max-w-md bg-white dark:bg-[#282828]">
+              <DialogHeader>
+                <DialogTitle className="text-slate-900 dark:text-white">
+                  {language === 'es' ? 'Exportar Conversación' : 'Export Conversation'}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {language === 'es' 
+                    ? `Se exportarán ${filteredMessages.length} mensajes en formato CSV`
+                    : `${filteredMessages.length} messages will be exported as CSV`}
+                </p>
+                <div className="flex gap-2 justify-end">
+                  <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+                    {language === 'es' ? 'Cancelar' : 'Cancel'}
+                  </Button>
+                  <Button onClick={handleExportChat} className="bg-green-600 hover:bg-green-700">
+                    <Download className="w-4 h-4 mr-2" />
+                    {language === 'es' ? 'Exportar' : 'Export'}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
       </div>
     </div>
   );
