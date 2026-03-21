@@ -53,6 +53,7 @@ import {
                     Heart,
                     FileSpreadsheet,
                     Upload,
+                    Search,
                   } from "lucide-react";
 import {
   Sidebar,
@@ -71,6 +72,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
@@ -1336,37 +1338,63 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                   </SidebarTrigger>
                 )}
                 <div className="flex-shrink-0 flex items-center gap-0.5">
-                      <NetworkSpeedIndicator />
-                      <RecentlyViewed />
-                      {!isFieldMode && !isFocusMode && (
-                        <button
-                          onClick={toggleFocusMode}
-                          className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[28px] min-h-[28px]"
-                          title="Focus Mode"
-                        >
-                          <Maximize2 className="w-3.5 h-3.5 text-[#1E3A8A]" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          const newTheme = theme === 'light' ? 'dark' : 'light';
-                          setTheme(newTheme);
-                          if (newTheme === 'dark') {
-                            document.documentElement.classList.add('dark');
-                          } else {
-                            document.documentElement.classList.remove('dark');
-                          }
-                          localStorage.setItem('theme', newTheme);
-                        }}
-                        className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[28px] min-h-[28px]"
-                        title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-                      >
-                        {theme === 'light' ? (
-                          <Moon className="w-3.5 h-3.5 text-[#1E3A8A]" />
-                        ) : (
-                          <Sun className="w-3.5 h-3.5 text-yellow-400" />
-                        )}
-                      </button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[28px] min-h-[28px] bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50">
+                            <Menu className="w-3.5 h-3.5 text-[#1E3A8A] dark:text-white" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                          <DropdownMenuItem 
+                            onClick={() => setGlobalSearchOpen(true)}
+                            className="text-[10px] py-1.5"
+                          >
+                            <Search className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
+                            <span>Buscar</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              const newTheme = theme === 'light' ? 'dark' : 'light';
+                              setTheme(newTheme);
+                              if (newTheme === 'dark') {
+                                document.documentElement.classList.add('dark');
+                              } else {
+                                document.documentElement.classList.remove('dark');
+                              }
+                              localStorage.setItem('theme', newTheme);
+                            }}
+                            className="text-[10px] py-1.5"
+                          >
+                            {theme === 'light' ? (
+                              <>
+                                <Moon className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
+                                <span>Modo Oscuro</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sun className="w-3.5 h-3.5 mr-2 text-yellow-400" />
+                                <span>Modo Claro</span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          {!isFieldMode && !isFocusMode && (
+                            <DropdownMenuItem 
+                              onClick={toggleFocusMode}
+                              className="text-[10px] py-1.5"
+                            >
+                              <Maximize2 className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
+                              <span>Modo Enfoque</span>
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem 
+                            onClick={() => navigate(createPageUrl("Configuracion"))}
+                            className="text-[10px] py-1.5"
+                          >
+                            <Settings className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
+                            <span>Configuración</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                       <NotificationBell user={user} />
                     </div>
               </div>
