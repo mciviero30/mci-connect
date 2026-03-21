@@ -73,25 +73,64 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   // Memoize isActive to prevent recreation
   const isActive = React.useCallback((url) => location.pathname === url, [location.pathname]);
 
+  const handleTimeClick = (e) => {
+    e.preventDefault();
+    setTimeExpanded(!timeExpanded);
+  };
+
+  const handleTimeSubSelect = (type) => {
+    // type can be 'work' or 'driving'
+    const baseUrl = createPageUrl("TimeTracking");
+    navigate(baseUrl, { state: { timeType: type } });
+    setTimeExpanded(false);
+  };
+
   return (
     <>
-      {/* Bottom Navigation Bar - Fixed at bottom - OPTIMIZED */}
+      {/* Bottom Navigation Bar - Fixed at bottom - ANIMATED */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 z-[40] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 shadow-lg pb-safe">
-        <div className="grid grid-cols-5 h-16 px-1">
+        <div className="grid grid-cols-5 h-16 px-1 relative">
           {mainNavItems.map((item) => {
             const active = isActive(item.url);
+            
+            // Time menu handler
+            if (item.isTimeMenu) {
+              return (
+                <button
+                  key={item.title}
+                  onClick={handleTimeClick}
+                  className={`flex flex-col items-center justify-center gap-0.5 relative transition-all duration-300 rounded-lg active:scale-95 ${
+                    active || timeExpanded
+                      ? 'text-[#507DB4] dark:text-[#6B9DD8] scale-125' 
+                      : 'text-slate-600 dark:text-slate-400 scale-100'
+                  }`}
+                >
+                  <div className="relative">
+                    <item.icon className={`w-5 h-5 transition-all duration-300`} strokeWidth={active || timeExpanded ? 2.5 : 2} />
+                    {active && (
+                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#507DB4] dark:bg-[#6B9DD8]" />
+                    )}
+                  </div>
+                  <span className={`text-[10px] ${active || timeExpanded ? 'font-bold' : 'font-medium'} truncate max-w-full text-center leading-tight transition-all duration-300`}>
+                    {item.title}
+                  </span>
+                </button>
+              );
+            }
+
+            // Regular link items
             return (
               <Link
-                 key={item.title}
-                 to={item.url}
-                 className={`flex flex-col items-center justify-center gap-0.5 relative transition-all duration-200 rounded-lg active:scale-95 ${
-                   active 
-                     ? 'text-[#507DB4] dark:text-[#6B9DD8]' 
-                     : 'text-slate-600 dark:text-slate-400'
-                 }`}
-               >
+                key={item.title}
+                to={item.url}
+                className={`flex flex-col items-center justify-center gap-0.5 relative transition-all duration-300 rounded-lg active:scale-95 ${
+                  active 
+                    ? 'text-[#507DB4] dark:text-[#6B9DD8] scale-125' 
+                    : 'text-slate-600 dark:text-slate-400 scale-100'
+                }`}
+              >
                 <div className="relative">
-                  <item.icon className={`w-5 h-5 ${active ? 'scale-110' : ''} transition-transform`} strokeWidth={active ? 2.5 : 2} />
+                  <item.icon className={`w-5 h-5 transition-all duration-300`} strokeWidth={active ? 2.5 : 2} />
                   {item.badge && (
                     <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px] bg-red-600 text-white border-0 flex items-center justify-center font-bold shadow-md">
                       {item.badge > 9 ? '9+' : item.badge}
@@ -101,7 +140,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
                     <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[#507DB4] dark:bg-[#6B9DD8]" />
                   )}
                 </div>
-                <span className={`text-[10px] ${active ? 'font-bold' : 'font-medium'} truncate max-w-full text-center leading-tight`}>
+                <span className={`text-[10px] ${active ? 'font-bold' : 'font-medium'} truncate max-w-full text-center leading-tight transition-all duration-300`}>
                   {item.title}
                 </span>
               </Link>
@@ -177,6 +216,28 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             </SheetContent>
           </Sheet>
         </div>
+
+        {/* Time Submenu - Animated popup above Time button */}
+        {timeExpanded && (
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 transform transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 origin-bottom">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 flex flex-col gap-2">
+              <button
+                onClick={() => handleTimeSubSelect('work')}
+                className="px-4 py-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white font-semibold rounded-xl text-sm hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Clock className="w-4 h-4" />
+                Work Time (Normal)
+              </button>
+              <button
+                onClick={() => handleTimeSubSelect('driving')}
+                className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-xl text-sm hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Driving Time
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Spacer to prevent content from being hidden behind bottom nav */}
