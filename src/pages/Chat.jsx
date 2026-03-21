@@ -675,7 +675,7 @@ export default function Chat() {
             </div>
 
             {/* Sidebar Content */}
-            <div className="flex-1 overflow-y-auto px-4 py-3">
+            <div className="flex-1 overflow-y-auto px-3 md:px-4 py-3">
               <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
                 <TabsList className="w-full h-12 bg-slate-100/80 dark:bg-slate-900/50 mb-4 grid grid-cols-3 p-1.5 rounded-2xl shadow-inner">
                   <TabsTrigger value="channels" className="text-sm font-bold rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
