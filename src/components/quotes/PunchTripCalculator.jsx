@@ -91,22 +91,22 @@ export default function PunchTripCalculator({
     return (extractedTravelData.miles * techCount) / extractedTravelData.originalTechs;
   }, [extractedTravelData, techCount]);
   
-  const [travelTimeHours, setTravelTimeHours] = useState(0);
-  const [travelMiles, setTravelMiles] = useState(0);
+  // CRITICAL: Initialize with proportional values directly
+  const [travelTimeHours, setTravelTimeHours] = useState(proportionalTravelHours);
+  const [travelMiles, setTravelMiles] = useState(proportionalTravelMiles);
   // Field Verification should auto-enable out of town to charge travel
   const [isOutOfTown, setIsOutOfTown] = useState(itemType === 'field_verification');
   
-  // Initialize and update travel values when modal opens or extracted data changes
+  // Update travel values when modal opens or when proportions change
   useEffect(() => {
-    if (isOpen) {
-      setTravelTimeHours(proportionalTravelHours);
-      setTravelMiles(proportionalTravelMiles);
-      console.log('[PunchTripCalculator] Initialized travel values:', {
-        travelTimeHours: proportionalTravelHours,
-        travelMiles: proportionalTravelMiles
-      });
-    }
-  }, [isOpen, proportionalTravelHours, proportionalTravelMiles]);
+    setTravelTimeHours(proportionalTravelHours);
+    setTravelMiles(proportionalTravelMiles);
+    console.log('[PunchTripCalculator] Updated travel values:', {
+      travelTimeHours: proportionalTravelHours,
+      travelMiles: proportionalTravelMiles,
+      extractedData: extractedTravelData
+    });
+  }, [proportionalTravelHours, proportionalTravelMiles, extractedTravelData]);
   const [hotelRate, setHotelRate] = useState(200);
   const [perDiemRate, setPerDiemRate] = useState(55);
   
