@@ -37,7 +37,6 @@ import { enrichItemsWithDerivedQuantities } from "@/components/domain/calculatio
 import { computeQuoteDerived, createComputeInput } from "@/components/domain/quotes/computeQuoteDerived";
 import ItemsMatchImporter from "@/components/quotes/ItemsMatchImporter";
 import { useDraftPersistence } from "@/components/hooks/useDraftPersistence";
-import PunchTripCalculator from "@/components/quotes/PunchTripCalculator";
 
 export default function CrearEstimado() {
   const { t, language } = useLanguage();
@@ -137,14 +136,11 @@ export default function CrearEstimado() {
   }, [projectTechCount]);
   const [showItemsMatcher, setShowItemsMatcher] = useState(false);
   const [pricesLocked, setPricesLocked] = useState(false);
-  const [showPunchCalculator, setShowPunchCalculator] = useState(false);
-  const [punchCalculatorType, setPunchCalculatorType] = useState('punch');
 
   const [stayConfig, setStayConfig] = useState({ roundTrips: 1, daysPerTrip: 2, nightsPerTrip: 2, total_nights: null, total_calendar_days: null });
 
 
-
-
+  
   // Draft persistence - auto-save to localStorage
   const { clearDraft } = useDraftPersistence({
     draftKey: editId ? `quote-draft-${editId}` : 'quote-draft-new',
@@ -643,27 +639,10 @@ export default function CrearEstimado() {
     }
     
     if (field === 'item_name') {
-    const selectedItem = quoteItems.find(qi => qi.name === value);
-    if (selectedItem) {
-      const itemName = selectedItem.name || selectedItem.item_name;
-
-      // SPECIAL HANDLING: Open calculator for Punch Trip or Field Verification
-      if (itemName === 'Punch Trip') {
-        setPunchCalculatorType('punch');
-        console.log('[CrearEstimado] Opening Punch Trip with items:', formData.items);
-        setShowPunchCalculator(true);
-        return; // Don't add the item yet - calculator will do it
-      }
-
-      if (itemName === 'Field Verification') {
-        setPunchCalculatorType('field_verification');
-        console.log('[CrearEstimado] Opening Field Verification with items:', formData.items);
-        setShowPunchCalculator(true);
-        return; // Don't add the item yet - calculator will do it
-      }
-        
+      const selectedItem = quoteItems.find(qi => qi.name === value);
+      if (selectedItem) {
         // CRITICAL: Keep item_name in addition to description
-        newItems[index].item_name = itemName;
+        newItems[index].item_name = selectedItem.name || selectedItem.item_name;
         newItems[index].description = selectedItem.description || '';
         newItems[index].unit = selectedItem.unit || 'pcs';
         newItems[index].unit_price = selectedItem.unit_price || 0;
@@ -681,8 +660,8 @@ export default function CrearEstimado() {
         
         toast({
           title: language === 'es' 
-            ? `Ítem "${itemName}" cargado` 
-            : `Item "${itemName}" loaded`,
+            ? `Ítem "${selectedItem.name || selectedItem.item_name}" cargado` 
+            : `Item "${selectedItem.name || selectedItem.item_name}" loaded`,
           description: language === 'es'
             ? `Precio unitario: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Tiempo: ${selectedItem.installation_time}h` : ''}`
             : `Unit price: $${selectedItem.unit_price}${selectedItem.installation_time ? ` • Time: ${selectedItem.installation_time}h` : ''}`,
@@ -972,8 +951,6 @@ export default function CrearEstimado() {
                   />
                 </div>
 
-
-
                 <div className="md:col-span-2">
                   <Label className="text-slate-700">
                     {language === 'es' ? 'Detalles del Trabajo' : 'Work Details'} ({t('optional')})
@@ -1157,10 +1134,6 @@ export default function CrearEstimado() {
                 derivedValues={derivedValues}
                 onAddItem={addItem}
                 pricesLocked={pricesLocked}
-                jobAddress={formData.job_address}
-                travelTimeHours={travelTimeHours}
-                travelMiles={derivedValues?.travelMiles || 0}
-                language={language}
               />
 
               <div className="mt-6 space-y-3 max-w-md ml-auto px-3 pb-4">
@@ -1310,28 +1283,6 @@ export default function CrearEstimado() {
           isOpen={showItemsMatcher}
           onClose={() => setShowItemsMatcher(false)}
           onAddItems={handleAddMatchedItems}
-        />
-        
-        <PunchTripCalculator
-           isOpen={showPunchCalculator}
-           onClose={() => setShowPunchCalculator(false)}
-           onAddItems={(calculatedItems) => {
-             // Remove the empty item that triggered the modal
-             const filteredItems = formData.items.filter(item => item.item_name);
-             setFormData({
-               ...formData,
-               items: [...filteredItems, ...calculatedItems]
-             });
-             setShowPunchCalculator(false);
-           }}
-           itemType={punchCalculatorType}
-           jobAddress={formData.job_address}
-           originAddress={formData.team_ids.length > 0 ? (teams.find(t => t.id === formData.team_ids[0])?.base_address || formData.job_address) : formData.job_address}
-           travelTimeHours={travelTimeHours || 0}
-           travelMiles={derivedValues?.travelMiles || 0}
-           existingItems={formData.items}
-           originalTechCount={projectTechCount}
-           language={language}
         />
       </div>
     </div>

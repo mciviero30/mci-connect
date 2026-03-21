@@ -98,23 +98,22 @@ export default function AIContentGenerator({
     setIsGenerating(false);
   };
 
-  // AI Image generation disabled temporarily to save integration credits
-  // const generateAIImage = async () => {
-  //   if (!generatedContent?.title) return;
-  //   
-  //   setIsGeneratingImage(true);
-  //   try {
-  //     const result = await base44.integrations.Core.GenerateImage({
-  //       prompt: `Professional corporate image for company announcement: "${generatedContent.title}". Modern, clean, professional style suitable for business communication. No text in image.`
-  //     });
-  //     if (result?.url) {
-  //       setImageUrl(result.url);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error generating image:', error);
-  //   }
-  //   setIsGeneratingImage(false);
-  // };
+  const generateAIImage = async () => {
+    if (!generatedContent?.title) return;
+    
+    setIsGeneratingImage(true);
+    try {
+      const result = await base44.integrations.Core.GenerateImage({
+        prompt: `Professional corporate image for company announcement: "${generatedContent.title}". Modern, clean, professional style suitable for business communication. No text in image.`
+      });
+      if (result?.url) {
+        setImageUrl(result.url);
+      }
+    } catch (error) {
+      console.error('Error generating image:', error);
+    }
+    setIsGeneratingImage(false);
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -289,7 +288,21 @@ export default function AIContentGenerator({
                         </div>
                       ) : (
                         <div className="flex gap-2">
-                          {/* AI Image generation disabled temporarily to save integration credits */}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={generateAIImage}
+                            disabled={isGeneratingImage}
+                            className="flex-1 border-purple-300 dark:border-purple-600 text-purple-700 dark:text-purple-400"
+                          >
+                            {isGeneratingImage ? (
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                            ) : (
+                              <Sparkles className="w-4 h-4 mr-1" />
+                            )}
+                            AI Image
+                          </Button>
                           
                           <input
                             type="file"
@@ -304,14 +317,14 @@ export default function AIContentGenerator({
                             size="sm"
                             onClick={() => document.getElementById('ai-image-upload').click()}
                             disabled={isUploadingImage}
-                            className="w-full border-slate-300 dark:border-slate-600"
+                            className="flex-1 border-slate-300 dark:border-slate-600"
                           >
                             {isUploadingImage ? (
                               <Loader2 className="w-4 h-4 mr-1 animate-spin" />
                             ) : (
                               <Image className="w-4 h-4 mr-1" />
                             )}
-                            Upload Image
+                            Upload
                           </Button>
                         </div>
                       )}

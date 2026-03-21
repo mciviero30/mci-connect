@@ -197,7 +197,6 @@ User question: ${userMessage}`;
     setTimeout(() => handleSendMessage(), 100);
   };
 
-  // AI Assistant disabled temporarily to save integration credits
-  // Users can still get help through documentation and support
+  // No floating AI button - AI Assistant accessible via sidebar menu for employees
   return null;
 }
