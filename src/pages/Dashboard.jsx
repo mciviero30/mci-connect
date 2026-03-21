@@ -799,11 +799,13 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="flex-shrink-0">
-              <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm whitespace-nowrap text-[8px] sm:text-[9px] px-1.5 sm:px-2 py-0">
-                <span className="hidden sm:inline">MCI Connect • </span>Customizable
-              </Badge>
-            </div>
+            {isAdmin && (
+              <div className="flex-shrink-0">
+                <Badge className="border-[#507DB4]/20 dark:border-[#507DB4]/30 text-[#507DB4] dark:text-[#6B9DD8] bg-blue-50/40 dark:bg-blue-900/10 shadow-sm whitespace-nowrap text-[8px] sm:text-[9px] px-1.5 sm:px-2 py-0">
+                  <span className="hidden sm:inline">MCI Connect • </span>Customizable
+                </Badge>
+              </div>
+            )}
           </div>
 
           {/* Action buttons row */}
