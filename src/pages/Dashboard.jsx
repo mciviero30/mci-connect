@@ -1004,14 +1004,14 @@ export default function Dashboard() {
         )}
 
         {/* Widgets Grid with Stagger Animation */}
-        <StaggerContainer staggerDelay={0.05}>
+         <StaggerContainer staggerDelay={0.05}>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="dashboard" direction="horizontal">
               {(provided) => (
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2 md:gap-3"
+                  className={`grid gap-2 sm:gap-3 ${!isAdmin ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'}`}
                 >
                   <AnimatePresence>
                     {widgets.filter(w => w.visible).sort((a, b) => a.position - b.position).map((widget, index) => (
