@@ -1326,14 +1326,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               transition={{ duration: 0.3 }}
               className="p-0 md:hidden flex-shrink-0 h-14 relative overflow-hidden bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50"
               >
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-12">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
-                  alt="MCI Connect"
-                  className="h-full w-full object-contain"
-                  style={{ maxHeight: '56px' }}
-                />
-              </div>
+              <img
+                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
+                alt="MCI Connect"
+                className="w-full h-full object-cover absolute inset-0"
+              />
               <div className="absolute inset-0 flex items-center justify-between px-1.5 z-10">
                 {!shouldHideSidebar && (
                   <SidebarTrigger className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[28px] min-h-[28px]">
