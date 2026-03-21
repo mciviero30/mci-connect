@@ -1065,12 +1065,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
         </div>
       )}
 
-      {/* GPS Health Monitor - Real-time */}
-      {!activeSession && (
-        <GPSHealthMonitor 
-          nearestJob={nearestJob} 
-          language={language}
-        />
+      {/* GPS Signal Badge - Minimal */}
+      {!activeSession && nearestJob && (
+        <div className="mb-6 flex justify-center">
+          <GPSSignalBadge nearestJob={nearestJob} />
+        </div>
       )}
 
       {/* Real-time Geofence Monitor */}
