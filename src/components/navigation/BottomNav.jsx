@@ -292,6 +292,28 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
           </div>
         )}
 
+        {/* Travel Submenu - Animated popup above Travel button */}
+        {travelExpanded && (
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 transform transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 origin-bottom">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-2 flex flex-col gap-2">
+              <button
+                onClick={() => handleTravelSubSelect('PerDiem')}
+                className="px-4 py-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white font-semibold rounded-xl text-sm hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Banknote className="w-4 h-4" />
+                Per Diem
+              </button>
+              <button
+                onClick={() => handleTravelSubSelect('Manejo')}
+                className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl text-sm hover:shadow-lg transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Zap className="w-4 h-4" />
+                Mileage
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* More Menu - 6 Quick Access Popup */}
         {moreExpanded && (
           <div className="absolute bottom-20 right-2 transform transition-all duration-300 animate-in fade-in slide-in-from-bottom-2 origin-bottom z-50">
