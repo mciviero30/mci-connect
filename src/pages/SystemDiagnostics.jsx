@@ -1,7 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import PageHeader from '@/components/shared/PageHeader';
-import { TestRunner } from '@/components/testing/TestRunner';
 import { PerformanceMonitor } from '@/components/monitoring/PerformanceMonitor';
 import { AccessibilityChecker } from '@/components/accessibility/AccessibilityChecker';
 import { Settings, Zap, ShieldCheck } from 'lucide-react';
@@ -22,18 +21,13 @@ export default function SystemDiagnostics() {
         />
 
         <div className="grid gap-6 md:grid-cols-2">
-          {/* Automated Tests */}
-          <div>
-            <TestRunner />
-          </div>
-
           {/* Performance Monitoring */}
           <div>
             <PerformanceMonitor />
           </div>
 
           {/* Accessibility Checker */}
-          <div className="md:col-span-2">
+          <div>
             <AccessibilityChecker />
           </div>
         </div>
