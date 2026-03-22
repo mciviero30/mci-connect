@@ -106,119 +106,75 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
       <Card 
         onClick={() => navigate(createPageUrl(`EmployeeProfile?id=${employee.id}`))}
         className="bg-white dark:bg-slate-800 rounded-xl sm:rounded-[16px] shadow-sm sm:shadow-[0px_8px_24px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700 sm:border-0 overflow-hidden hover:shadow-md sm:hover:shadow-[0px_10px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] transition-all duration-300 w-full flex flex-col h-full touch-manipulation cursor-pointer">
-      <div className="p-3 sm:p-4 flex-1 flex flex-col">
-        {/* Header Section */}
-        <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
-          <div className="flex items-start gap-2 sm:gap-2.5">
-            {profileImage ? (
-              <img
-                key={employee.profile_last_updated || employee.id}
-                src={profileImage}
-                alt={displayName}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover flex-shrink-0"
-              />
-            ) : (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg flex-shrink-0 shadow-md">
-                {displayName[0]}
-              </div>
-            )}
-
-            <div className="flex-1 min-w-0">
-              <h3 className="text-sm sm:text-base md:text-[16px] font-bold text-slate-900 dark:text-white leading-tight mb-0.5 truncate" title={displayName}>
-                {displayName}
-              </h3>
-              <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 leading-tight truncate" title={formatPosition(employee.position)}>
+      <div className="p-4 flex-1 flex flex-col">
+        {/* Header: Avatar + Name + Position */}
+        <div className="flex items-start gap-3 mb-3">
+          {profileImage ? (
+            <img
+              key={employee.profile_last_updated || employee.id}
+              src={profileImage}
+              alt={displayName}
+              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+            />
+          ) : (
+            <div className="w-12 h-12 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+              {displayName[0]}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+              {displayName}
+            </h3>
+            {employee.position && (
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
                 {normalizeText(formatPosition(employee.position))}
               </p>
+            )}
+          </div>
+        </div>
+
+        {/* Position / Location Badges */}
+        <div className="space-y-1.5 mb-3">
+          {employee.position && (
+            <div className="flex items-center gap-2">
+              <IdCard className="w-4 h-4 text-slate-400 flex-shrink-0" />
+              <span className="text-xs text-slate-700 dark:text-slate-300">{normalizeText(formatPosition(employee.position))}</span>
             </div>
-          </div>
-
-          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
-            {hasOSHA30 && (
-              <div className="bg-green-100 p-1.5 rounded-full" title="OSHA 30 Certified">
-                <Shield className="w-3.5 h-3.5 text-green-600" />
+          )}
+          {teamName && (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 flex items-center justify-center text-slate-400 flex-shrink-0">
+                <MapPin size={14} />
               </div>
-            )}
-            {hasExpiredCerts && (
-              <div className="bg-red-100 p-1.5 rounded-full" title="Expired Certifications">
-                <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
-              </div>
-            )}
-            {showInviteButton && onInvite && (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onInvite();
-                }}
-                disabled={isInviting}
-                className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg min-h-[36px] sm:h-[26px] flex-shrink-0 touch-manipulation active:scale-95"
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-medium">
-                  {isInviting ? 'Sending...' : 'Invite'}
-                </span>
-              </Button>
-            )}
+              <Badge variant="outline" className="text-xs border-orange-300 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:border-orange-700 dark:text-orange-300 px-2 py-0.5">
+                {teamName}
+              </Badge>
+            </div>
+          )}
+        </div>
+
+        {/* Department / Team Info */}
+        {employee.department && (
+          <div className="flex items-center gap-2 mb-3 text-xs text-slate-600 dark:text-slate-300">
+            <Users size={14} className="flex-shrink-0 text-slate-400" />
+            <span>{employee.department}</span>
           </div>
-        </div>
+        )}
 
-        {/* Onboarding Progress */}
-        <div className="mb-3">
-          <p className="text-[10px] font-semibold text-[#666666] mb-1.5">
-            Onboarding Complete: {progressPercentage}%
-          </p>
-          <div className="w-full h-[3px] bg-[#E0E0E0] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] rounded-full transition-all duration-500"
-              style={{ width: `${progressPercentage}%` }}
-            />
+        {/* Phone Number */}
+        {employee.phone && (
+          <div className="flex items-center gap-2 mb-3 text-xs text-slate-600 dark:text-slate-300">
+            <Phone size={14} className="flex-shrink-0 text-slate-400" />
+            <span>{employee.phone}</span>
           </div>
-        </div>
+        )}
 
-        {/* Status Badges */}
-        <div className="flex items-center flex-wrap gap-1.5 mb-3">
-          {employee.employment_status === 'pending_invitation' && (
-            <Badge className="bg-yellow-50/60 text-yellow-900 border border-yellow-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
-              Pending Invitation
-            </Badge>
-          )}
-          {employee.employment_status === 'invited' && (
-            <Badge className="bg-blue-50/60 text-blue-900 border border-blue-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
-              Invited
-            </Badge>
-          )}
-          {employee.employment_status === 'active' && (
-            <Badge className="bg-green-50/60 text-green-900 border border-green-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
-              Active
-            </Badge>
-          )}
-          {employee.employment_status === 'archived' && (
-            <Badge className="bg-gray-50/60 text-gray-900 border border-gray-200/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center">
-              Archived
-            </Badge>
-          )}
-          <Badge 
-            variant="outline" 
-            className="border border-[#507DB4]/40 text-[#507DB4] bg-transparent hover:bg-transparent px-2.5 py-0.5 rounded-full text-[10px] font-bold h-[22px] flex items-center"
-          >
-            {teamLocation}
-          </Badge>
-        </div>
-
-        {/* Contact Info */}
-        <div className="space-y-1.5 mb-0 mt-auto">
+        {/* Email */}
+        <div className="mt-auto">
           {employee.email && (
-            <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-              <Mail className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={1.5} />
-              <span className="text-[10px] truncate">{employee.email}</span>
-            </div>
-          )}
-          {employee.phone && (
-            <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-              <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={1.5} />
-              <span className="text-[10px]">{employee.phone}</span>
+            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
+              <Mail size={14} className="flex-shrink-0 text-slate-400" />
+              <span className="truncate">{employee.email}</span>
             </div>
           )}
         </div>
