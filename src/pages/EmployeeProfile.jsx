@@ -121,10 +121,34 @@ export default function EmployeeProfile() {
         full_name: `${data.first_name} ${data.last_name}`.trim(),
         hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
       };
-      return base44.entities.EmployeeProfile.update(profile.id, updateData);
+      
+      // UPDATE via CENTRAL SYNC FUNCTION (syncs to ALL 3 sources automatically)
+      const response = await base44.asServiceRole.functions.invoke('updateEmployeeDataCentral', {
+        profile_id: profile.id,
+        user_id: targetUserId,
+        updates: {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          phone: data.phone,
+          position: data.position,
+          department: data.department,
+          team_name: data.team_name,
+          hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null
+        }
+      });
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Sync failed');
+      }
+      
+      return response;
     },
     onSuccess: () => {
+      // Invalidate ALL related queries to refresh UI everywhere
       queryClient.invalidateQueries({ queryKey: ["employeeProfile", targetUserId] });
+      queryClient.invalidateQueries({ queryKey: ["employee-directory"] });
+      queryClient.invalidateQueries({ queryKey: ["user-profile", targetUserId] });
+      queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
       setEditOpen(false);
     },
   });
