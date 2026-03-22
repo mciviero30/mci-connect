@@ -91,29 +91,15 @@ Deno.serve(async (req) => {
       accepted_date: new Date().toISOString()
     });
 
-    // 4. Update EmployeeDirectory to active (so admin sees them as active)
+    // 4. Run bidirectional sync: Profile → User → Directory
     try {
-      const dirEntries = await base44.asServiceRole.entities.EmployeeDirectory.filter(
-        { employee_email: email.toLowerCase() },
-        '',
-        1
-      );
-      if (dirEntries && dirEntries.length > 0) {
-        await base44.asServiceRole.entities.EmployeeDirectory.update(dirEntries[0].id, {
-          status: 'active',
-          user_id: user_id,
-          last_synced_at: new Date().toISOString()
-        });
-      }
-    } catch (dirErr) {
-      console.log('Note: EmployeeDirectory status update failed:', dirErr.message);
-    }
-
-    // 5. Sync additional invitation data to profile (department, phone, address, dob, ssn, team, etc)
-    try {
-      await base44.asServiceRole.functions.invoke('syncInvitationDataToProfile', { userId: user_id });
+      await base44.asServiceRole.functions.invoke('syncEmployeeDataBidirectional', { 
+        user_id: user_id,
+        profile_id: createdProfile.id
+      });
+      console.log('✅ Bidirectional sync completed');
     } catch (syncErr) {
-      console.log('Note: Data sync partially completed - some fields may not have been copied', syncErr.message);
+      console.log('Note: Bidirectional sync failed:', syncErr.message);
     }
 
     return Response.json({
