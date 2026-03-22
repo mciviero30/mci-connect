@@ -270,11 +270,11 @@ export default function Chat() {
     : groups.find(g => g.id === selectedGroup) || { name: 'Chat', icon: MessageSquare };
 
   return (
-    <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden pb-16 md:pb-0">
+    <div className="fixed inset-0 flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <OnlineStatusManager userEmail={user?.email} />
       
       {/* Top Header - MCI Style */}
-      <div className="flex-shrink-0 h-12 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center px-3 gap-2 shadow-md">
+      <div className="flex-shrink-0 h-14 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center px-3 gap-2 shadow-md">
         <button 
           onClick={() => setShowSidebar(!showSidebar)}
           className="md:hidden p-1.5 hover:bg-white/20 rounded-lg transition-colors active:scale-95"
@@ -318,7 +318,7 @@ export default function Chat() {
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* Sidebar Backdrop */}
         {showSidebar && (
           <div 
@@ -329,7 +329,7 @@ export default function Chat() {
         
         {/* Sidebar - MCI Style */}
         <div className={`
-          absolute md:relative w-[280px] h-full flex flex-col bg-white dark:bg-slate-800
+          fixed md:relative w-[280px] h-full flex flex-col bg-white dark:bg-slate-800
           transition-transform duration-300 ease-out z-50 md:z-auto shadow-xl md:shadow-none
           ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           md:border-r md:border-slate-200 md:dark:border-slate-700
