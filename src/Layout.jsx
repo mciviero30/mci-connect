@@ -1534,9 +1534,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                 <TwoFactorGate user={user}>
                   <AgreementGate>
                     <TaxProfileGate>
-                      <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
-                        {children}
-                      </LayoutContentWrapper>
+                      <EmployeeDirectoryGuard user={user}>
+                        <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
+                          {children}
+                        </LayoutContentWrapper>
+                      </EmployeeDirectoryGuard>
                     </TaxProfileGate>
                   </AgreementGate>
                 </TwoFactorGate>

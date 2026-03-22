@@ -11,6 +11,15 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
     
+    // SECURITY: Verify admin access
+    const caller = await base44.auth.me();
+    if (!caller) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (caller.role !== 'admin' && caller.role !== 'ceo') {
+      return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+    }
+    
     const { user_id, user_email } = await req.json();
 
     // Get user data
