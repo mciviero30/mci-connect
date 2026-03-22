@@ -9,9 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getDisplayName, capitalizeName } from "@/components/utils/nameHelpers";
-import { Link } from 'react-router-dom';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { createPageUrl } from '@/utils';
 import { canViewAllEmployees } from '@/components/permissions/permissionHelpers';
 import { resolveUser, resolveDisplayName } from '@/components/utils/userResolution';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
@@ -119,65 +117,63 @@ export default function Directory() {
               const isCurrentUser = emp.email === user?.email;
               
               return (
-                <Link key={emp.id} to={`/employee-profile?id=${emp.id}`}>
-                  <Card className={`group hover:shadow-xl transition-all duration-300 ${
-                    isCurrentUser ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-300 dark:border-blue-700' : 'bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700'
-                  }`}>
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        {emp.profile_photo_url ? (
-                          <img 
-                            src={emp.profile_photo_url} 
-                            alt={getDisplayName(emp)}
-                            className="w-16 h-16 rounded-full object-cover border-2 border-blue-200 group-hover:border-blue-400 transition-colors"
-                          />
-                        ) : (
-                          <div className="w-16 h-16 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                            <span className="text-white font-bold text-xl">
-                              {getDisplayName(emp)?.[0]?.toUpperCase()}
-                            </span>
-                          </div>
+                <Card key={emp.id} className={`${
+                  isCurrentUser ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-300 dark:border-blue-700' : 'bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700'
+                }`}>
+                  <CardContent className="p-6">
+                    <div className="flex items-start gap-4">
+                      {emp.profile_photo_url ? (
+                        <img 
+                          src={emp.profile_photo_url} 
+                          alt={getDisplayName(emp)}
+                          className="w-16 h-16 rounded-full object-cover border-2 border-blue-200"
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center">
+                          <span className="text-white font-bold text-xl">
+                            {getDisplayName(emp)?.[0]?.toUpperCase()}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate">
+                            {getDisplayName(emp)}
+                          </h3>
+                          {isCurrentUser && (
+                            <Badge className="bg-blue-500 text-white text-xs">You</Badge>
+                          )}
+                        </div>
+                        
+                        {emp.position && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{capitalizeName(emp.position)}</p>
                         )}
                         
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate">
-                              {getDisplayName(emp)}
-                            </h3>
-                            {isCurrentUser && (
-                              <Badge className="bg-blue-500 text-white text-xs">You</Badge>
-                            )}
-                          </div>
-                          
-                          {emp.position && (
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{capitalizeName(emp.position)}</p>
+                        {emp.team_name && (
+                          <Badge variant="outline" className="text-xs text-blue-700 border-blue-200 mb-2">
+                            {emp.team_name}
+                          </Badge>
+                        )}
+                        
+                        <div className="space-y-1 mt-2">
+                          {emp.phone && (
+                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                              <Phone className="w-3 h-3" />
+                              <span>{emp.phone}</span>
+                            </div>
                           )}
-                          
-                          {emp.department && (
-                            <Badge variant="outline" className="text-xs text-blue-700 border-blue-200 mb-2">
-                              {capitalizeName(emp.department)}
-                            </Badge>
+                          {emp.email && (
+                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                              <Mail className="w-3 h-3" />
+                              <span className="truncate">{emp.email}</span>
+                            </div>
                           )}
-                          
-                          <div className="space-y-1 mt-2">
-                            {emp.phone && (
-                              <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                                <Phone className="w-3 h-3" />
-                                <span>{emp.phone}</span>
-                              </div>
-                            )}
-                            {emp.email && (
-                              <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                                <Mail className="w-3 h-3" />
-                                <span className="truncate">{emp.email}</span>
-                              </div>
-                            )}
-                          </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                    </div>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
