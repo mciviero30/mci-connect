@@ -32,29 +32,55 @@ export default function Directory() {
     enabled: !!user,
   });
 
+  const { data: onboardingForms = [] } = useQuery({
+    queryKey: ['onboardingForms'],
+    queryFn: () => base44.entities.OnboardingForm.list(),
+    staleTime: 60000,
+    enabled: !!user,
+    initialData: []
+  });
+
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+    staleTime: 300000,
+    enabled: !!user,
+    initialData: []
+  });
+
   // PERFORMANCE: Transform to consistent format
   const employees = useMemo(() => 
     directoryEntries
       .filter(dir => dir.user_id && dir.full_name)
-      .map(dir => ({
-        id: dir.user_id,
-        profile_id: dir.id,
-        email: dir.employee_email || '',
-        full_name: dir.full_name,
-        first_name: dir.first_name || '',
-        last_name: dir.last_name || '',
-        position: dir.position || '',
-        department: dir.department || '',
-        phone: dir.phone || '',
-        team_id: dir.team_id || '',
-        team_name: dir.team_name || '',
-        status: dir.status,
-        role: 'user',
-        profile_photo_url: dir.profile_photo_url || null
-      }))
+      .map(dir => {
+        const empForms = onboardingForms.filter(f => f.user_id === dir.user_id && f.status === 'completed');
+        const completed = empForms.length;
+        const total = 4;
+        const progress = { percentage: Math.round((completed / total) * 100), completed, total, forms: empForms };
+        const resolvedTeamName = dir.team_name || (dir.team_id ? teams.find(t => t.id === dir.team_id)?.team_name : '') || '';
+
+        return {
+          id: dir.user_id,
+          profile_id: dir.id,
+          email: dir.employee_email || '',
+          full_name: dir.full_name,
+          first_name: dir.first_name || '',
+          last_name: dir.last_name || '',
+          position: dir.position || '',
+          department: dir.department || '',
+          phone: dir.phone || '',
+          team_id: dir.team_id || '',
+          team_name: resolvedTeamName,
+          status: dir.status,
+          role: 'user',
+          profile_photo_url: dir.profile_photo_url || null,
+          employment_status: dir.employment_status || 'active',
+          onboarding_progress: progress
+        };
+      })
       .filter(Boolean)
       .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase())),
-    [directoryEntries]
+    [directoryEntries, onboardingForms, teams]
   );
 
   // PERFORMANCE: Memoize filtered employees
