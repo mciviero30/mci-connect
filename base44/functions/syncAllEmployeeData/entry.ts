@@ -43,6 +43,29 @@ Deno.serve(async (req) => {
           continue;
         }
 
+        // REPAIR: If EmployeeProfile missing team_id, try to find it from EmployeeInvitation
+        let team_id = profile.team_id;
+        let team_name = profile.team_name;
+        
+        if (!team_id && userRecord.email) {
+          const invitations = await base44.asServiceRole.entities.EmployeeInvitation.filter({
+            email: userRecord.email.toLowerCase()
+          });
+          if (invitations.length > 0) {
+            team_id = invitations[0].team_id || team_id;
+            team_name = invitations[0].team_name || team_name;
+            
+            // Also update EmployeeProfile with recovered team info
+            if (team_id) {
+              await base44.asServiceRole.entities.EmployeeProfile.update(profile.id, {
+                team_id: team_id,
+                team_name: team_name
+              });
+              console.log(`  ℹ️ Recovered team from invitation: ${team_name}`);
+            }
+          }
+        }
+
         // SYNC PROFILE → USER
         const fullName = profile.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
         
@@ -51,8 +74,8 @@ Deno.serve(async (req) => {
           phone: profile.phone || null,
           position: profile.position || null,
           department: profile.department || null,
-          team_id: profile.team_id || null,
-          team_name: profile.team_name || null,
+          team_id: team_id || null,
+          team_name: team_name || null,
           employment_status: profile.employment_status || 'active'
         });
 
@@ -70,8 +93,8 @@ Deno.serve(async (req) => {
           position: profile.position || '',
           department: profile.department || '',
           phone: profile.phone || '',
-          team_id: profile.team_id || '',
-          team_name: profile.team_name || '',
+          team_id: team_id || '',
+          team_name: team_name || '',
           profile_photo_url: userRecord.profile_photo_url || '',
           status: profile.is_active ? 'active' : 'inactive',
           sync_source: 'admin_bulk_sync',

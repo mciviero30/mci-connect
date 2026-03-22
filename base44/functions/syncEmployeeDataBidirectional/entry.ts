@@ -38,14 +38,28 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // REPAIR: If EmployeeProfile missing team_id, try to find it from EmployeeInvitation
+    let team_id = profile.team_id;
+    let team_name = profile.team_name;
+    
+    if (!team_id && user.email) {
+      const invitations = await base44.asServiceRole.entities.EmployeeInvitation.filter({
+        email: user.email.toLowerCase()
+      });
+      if (invitations.length > 0) {
+        team_id = invitations[0].team_id || team_id;
+        team_name = invitations[0].team_name || team_name;
+      }
+    }
+
     // 3. SYNC PROFILE → USER
     const userUpdateData = {
       full_name: profile.full_name || `${profile.first_name || ''} ${profile.last_name || ''}`.trim(),
       phone: profile.phone || null,
       position: profile.position || null,
       department: profile.department || null,
-      team_id: profile.team_id || null,
-      team_name: profile.team_name || null,
+      team_id: team_id || null,
+      team_name: team_name || null,
       employment_status: profile.employment_status || 'active'
     };
 
@@ -66,8 +80,8 @@ Deno.serve(async (req) => {
       position: profile.position || '',
       department: profile.department || '',
       phone: profile.phone || '',
-      team_id: profile.team_id || '',
-      team_name: profile.team_name || '',
+      team_id: team_id || '',
+      team_name: team_name || '',
       profile_photo_url: user.profile_photo_url || '',
       status: profile.is_active ? 'active' : 'inactive',
       sync_source: 'user_direct',
