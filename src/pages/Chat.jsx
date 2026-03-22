@@ -587,23 +587,23 @@ export default function Chat() {
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F1F5F9] to-[#E8EEFA] dark:from-[#181818] dark:to-[#0f1419] pb-20 md:pb-0 p-0 md:p-6">
+    <div className="h-screen flex flex-col bg-white dark:bg-[#0a0a0a] overflow-hidden">
      <OnlineStatusManager userEmail={user?.email} />
-     <div className="max-w-[1800px] mx-auto h-screen md:h-[calc(100vh-3rem)] flex flex-col">
-       {/* Header - mobile/tablet */}
-       <div className="md:hidden px-3 py-3 bg-gradient-to-r from-white/95 to-white/90 dark:from-[#1a1a1a]/95 dark:to-[#151515]/90 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50 flex items-center justify-between">
-          <button 
-            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-            className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title="Toggle sidebar"
-          >
-            <MessageSquare className="w-5 h-5 text-[#507DB4] dark:text-[#6B9DD8]" />
-          </button>
-          <div className="flex-1 min-w-0 mx-2">
-            <h1 className="text-sm font-bold text-slate-900 dark:text-white truncate">{chatMode === 'direct' && selectedDMConv ? selectedDMConv.other_user_name : chatMode === 'groups' && selectedCustomGroup ? selectedCustomGroup.group_name : groups.find(g => g.id === selectedGroup)?.name || t('chat')}</h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">{t('realTimeCommunication')}</p>
-          </div>
-          <ChatNotificationCenter 
+     
+     {/* Mobile Header */}
+     <div className="md:hidden flex-shrink-0 px-2 py-2 bg-white dark:bg-[#1a1a1a] border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
+        <button 
+          onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+        >
+          <MessageSquare className="w-4 h-4 text-[#507DB4]" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
+            {chatMode === 'direct' && selectedDMConv ? selectedDMConv.other_user_name : chatMode === 'groups' && selectedCustomGroup ? selectedCustomGroup.group_name : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
+          </h1>
+        </div>
+        <ChatNotificationCenter 
               userEmail={user?.email}
               onNavigate={(notification) => {
                 if (notification.group_id) {
@@ -618,29 +618,26 @@ export default function Chat() {
                     setSelectedGroup(notification.group_id);
                   }
                 }
-              }}
-          />
-        </div>
+            }}
+        />
+      </div>
 
-        {/* Main Chat Container */}
-        <div className="flex-1 flex overflow-hidden bg-white/90 dark:bg-[#0a0a0a]/90 md:rounded-3xl md:shadow-2xl md:border md:border-slate-200/60 dark:md:border-slate-800/60 backdrop-blur-xl relative">
-          {/* Mobile Sidebar Overlay */}
-          {showMobileSidebar && (
-            <div 
-              className="fixed inset-0 bg-black/50 md:hidden z-40"
-              onClick={() => setShowMobileSidebar(false)}
-            />
-          )}
-          
-          {/* Sidebar */}
-          <div className={`absolute md:relative md:flex w-80 md:w-80 lg:w-[400px] h-full flex-col bg-gradient-to-b from-white to-slate-50/50 dark:from-[#1a1a1a] dark:to-[#141414] border-r border-slate-200/60 dark:border-slate-800/60 transform md:transform-none transition-transform ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 z-50 md:z-auto`}>
-            {/* Sidebar Header */}
-            <div className="px-3 md:px-6 py-3 md:py-6 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-sm flex items-center justify-between md:block gap-2">
-            <div className="hidden md:block">
-              <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Messages</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">Team communication</p>
-            </div>
-            <div className="flex gap-1 md:gap-2">
+      {/* Main Container */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Sidebar Overlay */}
+        {showMobileSidebar && (
+          <div 
+            className="fixed inset-0 bg-black/40 md:hidden z-40"
+            onClick={() => setShowMobileSidebar(false)}
+          />
+        )}
+        
+        {/* Sidebar */}
+        <div className={`absolute md:relative w-full md:w-72 h-full flex flex-col bg-white dark:bg-[#1a1a1a] border-r border-slate-200 dark:border-slate-700 transition-transform ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-50 md:z-auto`}>
+          {/* Sidebar Header */}
+          <div className="flex-shrink-0 px-2 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <h2 className="text-[11px] font-bold text-slate-900 dark:text-white">Chats</h2>
+            <div className="flex gap-1">
               <Button
                 size="icon"
                 variant="ghost"
@@ -648,10 +645,9 @@ export default function Chat() {
                   setShowCreateGroup(true);
                   setShowMobileSidebar(false);
                 }}
-                className="h-9 w-9 md:h-10 md:w-10 rounded-lg md:rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all text-xs md:text-sm"
-                title="Create group chat"
+                className="h-6 w-6 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                <Users className="w-4 h-4 md:w-5 md:h-5" />
+                <Users className="w-3 h-3" />
               </Button>
               <Button
                 size="icon"
@@ -660,482 +656,260 @@ export default function Chat() {
                   setShowNewDM(true);
                   setShowMobileSidebar(false);
                 }}
-                className="h-9 w-9 md:h-10 md:w-10 rounded-lg md:rounded-xl text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] transition-all text-xs md:text-sm"
-                title="Start direct message"
+                className="h-6 w-6 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
-                <UserPlus className="w-4 h-4 md:w-5 md:h-5" />
+                <UserPlus className="w-3 h-3" />
               </Button>
-              <button 
-                onClick={() => setShowMobileSidebar(false)}
-                className="md:hidden p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors ml-auto"
-              >
-                <X className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-              </button>
-            </div>
-            </div>
-
-            {/* Sidebar Content */}
-            <div className="flex-1 overflow-y-auto px-2 md:px-4 py-2 md:py-3">
-              <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
-                <TabsList className="w-full h-10 md:h-12 bg-slate-100/80 dark:bg-slate-900/50 mb-3 grid grid-cols-3 p-1 md:p-1.5 rounded-xl md:rounded-2xl shadow-inner text-xs md:text-sm">
-                  <TabsTrigger value="channels" className="text-xs md:text-sm font-bold rounded-lg md:rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
-                    <Hash className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-                    <span className="hidden md:inline">Channels</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="groups" className="text-xs md:text-sm font-bold rounded-lg md:rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
-                    <Users className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-                    <span className="hidden md:inline">Groups</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="direct" className="text-xs md:text-sm font-bold rounded-lg md:rounded-xl data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4] dark:data-[state=active]:text-[#6B9DD8] data-[state=active]:shadow-lg text-slate-600 dark:text-slate-400 transition-all">
-                    <AtSign className="w-3 h-3 md:w-4 md:h-4 md:mr-2" />
-                    <span className="hidden md:inline">Direct</span>
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="channels" className="mt-0">
-                  <div className="space-y-1">
-                    {groups.map(group => {
-                      const Icon = group.icon;
-                      const isActive = chatMode === 'channels' && selectedGroup === group.id;
-                      return (
-                        <button
-                          key={group.id}
-                          onClick={() => {
-                            setSelectedGroup(group.id);
-                            setSelectedDMConv(null);
-                            setSelectedCustomGroup(null);
-                            setShowMobileSidebar(false);
-                          }}
-                          className={`w-full px-3 md:px-4 py-2 md:py-3.5 rounded-lg md:rounded-2xl text-left flex items-center gap-2 md:gap-4 transition-all duration-200 group ${
-                            isActive
-                              ? 'bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 shadow-sm border-l-4 border-[#507DB4] dark:border-[#6B9DD8]'
-                              : 'hover:bg-slate-100/80 dark:hover:bg-slate-900/50 border-l-4 border-transparent'
-                          }`}
-                        >
-                          <div className={`w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex-shrink-0 flex items-center justify-center transition-all shadow-md ${
-                            isActive 
-                              ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] shadow-blue-500/30 scale-105' 
-                              : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 group-hover:scale-105'
-                          }`}>
-                            <Icon className={`w-5 h-5 md:w-6 md:h-6 ${isActive ? 'text-white' : 'text-slate-600 dark:text-slate-400'}`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className={`font-bold text-xs md:text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.name}</p>
-                            {isActive && <p className="hidden md:block text-xs text-[#507DB4]/70 dark:text-[#6B9DD8]/70 font-semibold mt-0.5">Active channel</p>}
-                          </div>
-                          <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={group.id} />
-                        </button>
-                      );
-                    })}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="groups" className="mt-0">
-                  <div className="space-y-1">
-                    {customGroups
-                      .filter(g => g.is_active && g.members.includes(user?.email))
-                      .map(group => {
-                        const colorClass = AVATAR_COLORS.find(c => c.value === group.avatar_color)?.class || 'from-blue-500 to-blue-600';
-                        const isActive = chatMode === 'groups' && selectedCustomGroup?.id === group.id;
-                        return (
-                          <button
-                            key={group.id}
-                            onClick={() => {
-                              selectCustomGroup(group);
-                              setShowMobileSidebar(false);
-                            }}
-                            className={`w-full px-3 md:px-4 py-2 md:py-3.5 rounded-lg md:rounded-2xl text-left flex items-center gap-2 md:gap-4 transition-all duration-200 group ${
-                              isActive
-                                ? 'bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-950/30 dark:to-blue-950/10 shadow-sm border-l-4 border-[#507DB4] dark:border-[#6B9DD8]'
-                                : 'hover:bg-slate-100/80 dark:hover:bg-slate-900/50 border-l-4 border-transparent'
-                            }`}
-                          >
-                            <div className={`w-10 h-10 md:w-12 md:h-12 flex-shrink-0 bg-gradient-to-br ${colorClass} rounded-lg md:rounded-2xl flex items-center justify-center shadow-md ${isActive ? 'scale-105' : 'group-hover:scale-105'} transition-transform`}>
-                              <Users className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className={`font-bold text-xs md:text-base truncate ${isActive ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-900 dark:text-white'}`}>{group.group_name}</p>
-                              <p className="hidden md:block text-xs text-slate-500 dark:text-slate-400 font-semibold mt-0.5 truncate">
-                                {group.members.length} members
-                              </p>
-                            </div>
-                            <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={`group_${group.id}`} />
-                          </button>
-                        );
-                      })}
-                    {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).length === 0 && (
-                      <div className="text-center py-8 md:py-12 text-slate-500 dark:text-slate-400">
-                        <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 rounded-2xl md:rounded-3xl flex items-center justify-center mx-auto mb-3 shadow-lg">
-                          <Users className="w-8 h-8 md:w-10 md:h-10 opacity-40" />
-                        </div>
-                        <p className="text-sm md:text-lg font-bold text-slate-900 dark:text-white mb-2">No groups yet</p>
-                        <p className="text-xs md:text-sm mb-4">Create a group to collaborate</p>
-                        <Button
-                          size="sm"
-                          onClick={() => setShowCreateGroup(true)}
-                          className="h-8 md:h-10 px-4 md:px-6 text-xs md:text-sm bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg rounded-lg md:rounded-xl font-bold"
-                        >
-                          Create Group
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="direct" className="mt-0">
-                  <DirectMessagesList
-                    conversations={[]}
-                    currentUserId={user?.email}
-                    onSelect={(conv) => {
-                      setSelectedDMConv(conv);
-                      setSelectedCustomGroup(null);
-                    }}
-                    selectedId={selectedDMConv?.id}
-                  />
-                </TabsContent>
-              </Tabs>
             </div>
           </div>
 
-          {/* Main Chat Area */}
-          <div className="flex-1 flex flex-col bg-gradient-to-b from-white to-slate-50/30 dark:from-[#0a0a0a] dark:to-[#0f0f0f]">
-            {/* Chat Header */}
-             <div className="hidden md:flex px-8 py-5 border-b border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl items-center justify-between gap-4">
-               <div className="flex items-center gap-4">
-                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center shadow-lg shadow-blue-500/20">
-                   <MessageSquare className="w-7 h-7 text-white" />
-                 </div>
-                 <div>
-                   <h3 className="font-black text-xl text-slate-900 dark:text-white tracking-tight">
-                     {chatMode === 'direct' && selectedDMConv
-                       ? selectedDMConv.other_user_name
-                       : chatMode === 'groups' && selectedCustomGroup
-                       ? selectedCustomGroup.group_name
-                       : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
-                   </h3>
-                   <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold mt-1">
-                     {chatMode === 'groups' && selectedCustomGroup 
-                       ? `${selectedCustomGroup.members.length} members`
-                       : 'Team channel'}
-                   </p>
-                 </div>
-               </div>
+          {/* Sidebar Tabs */}
+          <div className="flex-shrink-0 px-2 py-1.5">
+            <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
+              <TabsList className="w-full h-7 bg-slate-100 dark:bg-slate-900 grid grid-cols-3 p-0.5 rounded-lg">
+                <TabsTrigger value="channels" className="text-[9px] font-semibold rounded data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4]">
+                  <Hash className="w-3 h-3 mr-1" />
+                  Canales
+                </TabsTrigger>
+                <TabsTrigger value="groups" className="text-[9px] font-semibold rounded data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4]">
+                  <Users className="w-3 h-3 mr-1" />
+                  Grupos
+                </TabsTrigger>
+                <TabsTrigger value="direct" className="text-[9px] font-semibold rounded data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4]">
+                  <AtSign className="w-3 h-3 mr-1" />
+                  DMs
+                </TabsTrigger>
+              </TabsList>
 
-               <div className="flex items-center gap-3">
-                 {chatMode === 'channels' && selectedGroup !== 'general' && (
-                   <Button
-                     variant="ghost"
-                     size="sm"
-                     onClick={() => setShowJobMembers(true)}
-                     className="h-10 px-4 text-sm font-bold text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
-                   >
-                     <UserPlus className="w-4 h-4 mr-2" />
-                     Invite
-                   </Button>
-                 )}
-                 <Button
-                   variant="ghost"
-                   size="sm"
-                   onClick={() => setShowExportDialog(true)}
-                   className="h-10 px-4 text-sm font-bold text-[#507DB4] dark:text-[#6B9DD8] hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all"
-                   title={language === 'es' ? 'Exportar chat' : 'Export chat'}
-                 >
-                   <Download className="w-4 h-4" />
-                 </Button>
-                 <div className="relative">
-                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
-                   <Input
-                     placeholder="Search messages..."
-                     value={searchTerm}
-                     onChange={(e) => setSearchTerm(e.target.value)}
-                     className="w-72 pl-11 h-11 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-xl text-sm font-medium shadow-sm"
-                   />
-                 </div>
-               </div>
-             </div>
-
-            {/* Messages Area */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Reply indicator */}
-            {replyingTo && (
-              <div className="px-4 md:px-6 py-3 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/30 flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
-                      {language === 'es' ? 'Respondiendo a' : 'Replying to'} {replyingTo.sender_name}
-                    </p>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 truncate mt-0.5">{replyingTo.message}</p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setReplyingTo(null)}
-                    className="text-slate-500 dark:text-slate-400 h-8 w-8 rounded-lg"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-
-              {/* Editing indicator */}
-              {editingMessage && (
-                <div className="px-4 md:px-6 py-3 bg-yellow-50 dark:bg-yellow-950/30 border-b border-yellow-100 dark:border-yellow-900/30 flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-yellow-600 dark:text-yellow-400">
-                      {language === 'es' ? 'Editando mensaje' : 'Editing message'}
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setEditingMessage(null);
-                      setMessage('');
-                    }}
-                    className="text-slate-500 dark:text-slate-400 h-8 w-8 rounded-lg"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto px-4 md:px-8 py-4 md:py-6 space-y-3 bg-slate-50/50 dark:bg-[#0a0a0a]">
-                {isLoading && (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <div className="w-16 h-16 border-4 border-blue-500/20 border-t-[#507DB4] rounded-full animate-spin mx-auto mb-4 shadow-lg"></div>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">Loading messages...</p>
-                    </div>
-                  </div>
-                )}
-                {!isLoading && filteredMessages.length === 0 && !searchTerm && (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center max-w-sm">
-                      <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                        <MessageSquare className="w-12 h-12 text-slate-400 dark:text-slate-600" />
-                      </div>
-                      <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">Start the conversation!</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">No messages yet. Be the first to write something.</p>
-                    </div>
-                  </div>
-                )}
-                {!isLoading && filteredMessages.length === 0 && searchTerm && (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                        <Search className="w-10 h-10 text-slate-400 dark:text-slate-600" />
-                      </div>
-                      <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">No results found</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">No messages found with "<span className="font-semibold">{searchTerm}</span>"</p>
-                    </div>
-                  </div>
-                )}
-                
-                {/* Dual-Key Read via userResolution — user_id preferred, email fallback (legacy) */}
-                {filteredMessages.map((msg) => {
-                  const isMe = msg.sender_user_id ? msg.sender_user_id === user?.id : msg.sender_email === user?.email;
-                  
+              <TabsContent value="channels" className="mt-0 space-y-0">
+                {groups.map(group => {
+                  const Icon = group.icon;
+                  const isActive = chatMode === 'channels' && selectedGroup === group.id;
                   return (
-                  <UniversalMessageBubble
-                    key={msg.id}
-                    message={msg}
-                    isMe={isMe}
-                    onReply={setReplyingTo}
-                    onReaction={handleReaction}
-                    onEdit={handleEditMessage}
-                    onDelete={handleDeleteMessage}
-                    userEmail={user?.email}
-                    language={language}
-                    isDark={false}
-                  />
-                );
+                    <button
+                      key={group.id}
+                      onClick={() => {
+                        setSelectedGroup(group.id);
+                        setSelectedDMConv(null);
+                        setSelectedCustomGroup(null);
+                        setShowMobileSidebar(false);
+                      }}
+                      className={`w-full px-2 py-1.5 text-left flex items-center gap-2 transition-colors ${
+                        isActive ? 'bg-slate-100 dark:bg-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-900'
+                      }`}
+                    >
+                      <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center ${
+                        isActive ? 'bg-[#507DB4] text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                      }`}>
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-[10px] font-semibold truncate ${isActive ? 'text-[#507DB4] dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+                          {group.name}
+                        </p>
+                      </div>
+                      <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={group.id} />
+                    </button>
+                  );
                 })}
-                
-                <TypingIndicator users={typingUsers} />
-                <div ref={messagesEndRef} />
-              </div>
+              </TabsContent>
 
-              {/* Message Input */}
-              <form onSubmit={handleSend} className="px-4 md:px-8 py-4 md:py-5 border-t border-slate-200/60 dark:border-slate-800/60 bg-white/80 dark:bg-[#1a1a1a]/80 backdrop-blur-xl">
-                 <div className="flex gap-2 md:gap-3 items-end">
-                   <div className="hidden md:flex gap-2">
-                     <input
-                       type="file"
-                       accept="image/*"
-                       onChange={handleImageUpload}
-                       className="hidden"
-                       id="image-upload"
-                     />
-                     <Button
-                       type="button"
-                       variant="ghost"
-                       size="icon"
-                       onClick={() => document.getElementById('image-upload').click()}
-                       disabled={uploadingImage}
-                       className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
-                       title="Upload image"
-                     >
-                       <Image className="w-5 h-5" />
-                     </Button>
+              <TabsContent value="groups" className="mt-0 space-y-0">
+                {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).map(group => {
+                  const isActive = chatMode === 'groups' && selectedCustomGroup?.id === group.id;
+                  return (
+                    <button
+                      key={group.id}
+                      onClick={() => {
+                        selectCustomGroup(group);
+                        setShowMobileSidebar(false);
+                      }}
+                      className={`w-full px-2 py-1.5 text-left flex items-center gap-2 transition-colors ${
+                        isActive ? 'bg-slate-100 dark:bg-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-900'
+                      }`}
+                    >
+                      <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center ${
+                        isActive ? 'bg-[#507DB4] text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                      }`}>
+                        <Users className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-[10px] font-semibold truncate ${isActive ? 'text-[#507DB4] dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+                          {group.group_name}
+                        </p>
+                      </div>
+                      <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={`group_${group.id}`} />
+                    </button>
+                  );
+                })}
+                {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).length === 0 && (
+                  <div className="text-center py-6 px-2">
+                    <Users className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-700" />
+                    <p className="text-[9px] text-slate-500 dark:text-slate-400 mb-2">Sin grupos</p>
+                    <Button
+                      size="sm"
+                      onClick={() => setShowCreateGroup(true)}
+                      className="h-6 px-2 text-[9px] bg-[#507DB4]"
+                    >
+                      Crear Grupo
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
 
-                     <input
-                       type="file"
-                       onChange={handleFileUpload}
-                       className="hidden"
-                       id="file-upload"
-                     />
-                     <Button
-                       type="button"
-                       variant="ghost"
-                       size="icon"
-                       onClick={() => document.getElementById('file-upload').click()}
-                       disabled={uploadingFile}
-                       className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
-                       title="Upload file"
-                     >
-                       <Paperclip className="w-5 h-5" />
-                     </Button>
-
-                     <Popover>
-                       <PopoverTrigger asChild>
-                         <Button
-                           type="button"
-                           variant="ghost"
-                           size="icon"
-                           className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all shadow-sm"
-                           title="Emojis & GIFs"
-                         >
-                           <Smile className="w-5 h-5" />
-                         </Button>
-                       </PopoverTrigger>
-                       <PopoverContent className="w-80 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 p-0">
-                         <Tabs defaultValue="emojis">
-                           <TabsList className="w-full bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                             <TabsTrigger value="emojis" className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">Emojis</TabsTrigger>
-                             <TabsTrigger value="gifs" className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">GIFs</TabsTrigger>
-                           </TabsList>
-                           <TabsContent value="emojis" className="m-0">
-                             <EmojiPicker onSelect={handleEmojiSelect} />
-                           </TabsContent>
-                           <TabsContent value="gifs" className="m-0">
-                             <GifSearch onSelect={handleGifSelect} />
-                           </TabsContent>
-                         </Tabs>
-                       </PopoverContent>
-                     </Popover>
-
-                     {chatMode === 'groups' && selectedCustomGroup && canManageGroups && (
-                       <Button
-                         type="button"
-                         variant="ghost"
-                         size="icon"
-                         onClick={handleDeleteSelectedGroup}
-                         className="h-12 w-12 rounded-2xl bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-all shadow-sm"
-                         title="Delete group"
-                       >
-                         <Trash2 className="w-5 h-5" />
-                       </Button>
-                     )}
-                   </div>
-
-                   {/* Mobile attachment buttons in compact form */}
-                   <div className="md:hidden flex gap-1">
-                     <input
-                       type="file"
-                       accept="image/*"
-                       onChange={handleImageUpload}
-                       className="hidden"
-                       id="image-upload-mobile"
-                     />
-                     <Button
-                       type="button"
-                       variant="ghost"
-                       size="icon"
-                       onClick={() => document.getElementById('image-upload-mobile').click()}
-                       disabled={uploadingImage}
-                       className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all text-xs"
-                       title="Image"
-                     >
-                       <Image className="w-4 h-4" />
-                     </Button>
-
-                     <input
-                       type="file"
-                       onChange={handleFileUpload}
-                       className="hidden"
-                       id="file-upload-mobile"
-                     />
-                     <Button
-                       type="button"
-                       variant="ghost"
-                       size="icon"
-                       onClick={() => document.getElementById('file-upload-mobile').click()}
-                       disabled={uploadingFile}
-                       className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all text-xs"
-                       title="File"
-                     >
-                       <Paperclip className="w-4 h-4" />
-                     </Button>
-
-                     <Popover>
-                       <PopoverTrigger asChild>
-                         <Button
-                           type="button"
-                           variant="ghost"
-                           size="icon"
-                           className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-[#507DB4] dark:hover:text-[#6B9DD8] text-slate-600 dark:text-slate-400 transition-all text-xs"
-                           title="Emoji"
-                         >
-                           <Smile className="w-4 h-4" />
-                         </Button>
-                       </PopoverTrigger>
-                       <PopoverContent className="w-64 bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 p-0">
-                         <Tabs defaultValue="emojis">
-                           <TabsList className="w-full bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                             <TabsTrigger value="emojis" className="flex-1 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">Emojis</TabsTrigger>
-                             <TabsTrigger value="gifs" className="flex-1 text-xs data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white dark:text-slate-300">GIFs</TabsTrigger>
-                           </TabsList>
-                           <TabsContent value="emojis" className="m-0">
-                             <EmojiPicker onSelect={handleEmojiSelect} />
-                           </TabsContent>
-                           <TabsContent value="gifs" className="m-0">
-                             <GifSearch onSelect={handleGifSelect} />
-                           </TabsContent>
-                         </Tabs>
-                       </PopoverContent>
-                     </Popover>
-                   </div>
-
-                   <MentionInput
-                     value={message}
-                     onChange={handleTyping}
-                     onSubmit={handleSend}
-                     employees={employees}
-                     placeholder={
-                       editingMessage 
-                         ? (language === 'es' ? 'Editar...' : 'Edit...') 
-                         : replyingTo 
-                         ? (language === 'es' ? 'Responder...' : 'Reply...') 
-                         : (language === 'es' ? 'Mensaje...' : 'Message...')
-                     }
-                     className="h-10 md:h-12 text-sm md:text-base bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 font-medium shadow-sm"
-                     />
-                   <Button 
-                     type="submit" 
-                     disabled={!message.trim() || sendMutation.isPending} 
-                     className="h-10 md:h-12 px-3 md:px-8 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 text-white shadow-lg shadow-blue-500/20 rounded-2xl font-bold hover:scale-105 transition-all flex-shrink-0"
-                   >
-                     <Send className="w-4 md:w-5 h-4 md:h-5" />
-                   </Button>
-                 </div>
-               </form>
-              </div>
-            </div>
+              <TabsContent value="direct" className="mt-0">
+                <DirectMessagesList
+                  conversations={[]}
+                  currentUserId={user?.email}
+                  onSelect={(conv) => {
+                    setSelectedDMConv(conv);
+                    setSelectedCustomGroup(null);
+                    setShowMobileSidebar(false);
+                  }}
+                  selectedId={selectedDMConv?.id}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
 
-        {/* New Direct Message Dialog */}
-        <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-[#0a0a0a]">
+
+          {/* Reply/Edit Indicator */}
+          {replyingTo && (
+            <div className="flex-shrink-0 px-2 py-1.5 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-900 flex items-center justify-between">
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">Respondiendo a {replyingTo.sender_name}</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400 truncate">{replyingTo.message}</p>
+              </div>
+              <Button size="icon" variant="ghost" onClick={() => setReplyingTo(null)} className="h-5 w-5">
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+          {editingMessage && (
+            <div className="flex-shrink-0 px-2 py-1.5 bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900 flex items-center justify-between">
+              <p className="text-[9px] font-semibold text-amber-600 dark:text-amber-400">Editando mensaje</p>
+              <Button size="icon" variant="ghost" onClick={() => { setEditingMessage(null); setMessage(''); }} className="h-5 w-5">
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          )}
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto px-2 py-2 space-y-1.5">
+            {isLoading && (
+              <div className="flex items-center justify-center h-full">
+                <div className="w-8 h-8 border-2 border-[#507DB4]/30 border-t-[#507DB4] rounded-full animate-spin"></div>
+              </div>
+            )}
+            {!isLoading && filteredMessages.length === 0 && (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center px-4">
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <MessageSquare className="w-8 h-8 text-slate-400 dark:text-slate-600" />
+                  </div>
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">¡Inicia la conversación!</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">No hay mensajes aún. Sé el primero en escribir.</p>
+                </div>
+              </div>
+            )}
+            
+            {filteredMessages.map((msg) => {
+              const isMe = msg.sender_user_id ? msg.sender_user_id === user?.id : msg.sender_email === user?.email;
+              return (
+                <UniversalMessageBubble
+                  key={msg.id}
+                  message={msg}
+                  isMe={isMe}
+                  onReply={setReplyingTo}
+                  onReaction={handleReaction}
+                  onEdit={handleEditMessage}
+                  onDelete={handleDeleteMessage}
+                  userEmail={user?.email}
+                  language={language}
+                  isDark={false}
+                />
+              );
+            })}
+            <TypingIndicator users={typingUsers} />
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <form onSubmit={handleSend} className="flex-shrink-0 px-2 py-1.5 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a1a1a]">
+            <div className="flex gap-1 items-end">
+              <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => document.getElementById('image-upload').click()}
+                disabled={uploadingImage}
+                className="h-7 w-7 text-slate-500 dark:text-slate-400"
+              >
+                <Image className="w-3.5 h-3.5" />
+              </Button>
+              
+              <input type="file" onChange={handleFileUpload} className="hidden" id="file-upload" />
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => document.getElementById('file-upload').click()}
+                disabled={uploadingFile}
+                className="h-7 w-7 text-slate-500 dark:text-slate-400"
+              >
+                <Paperclip className="w-3.5 h-3.5" />
+              </Button>
+
+              <MentionInput
+                value={message}
+                onChange={handleTyping}
+                onSubmit={handleSend}
+                employees={employees}
+                placeholder={editingMessage ? 'Editar...' : replyingTo ? 'Responder...' : 'Mensaje...'}
+                className="h-7 text-[10px] bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-full"
+              />
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button type="button" size="icon" variant="ghost" className="h-7 w-7 text-slate-500">
+                    <Smile className="w-3.5 h-3.5" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-64 p-0">
+                  <Tabs defaultValue="emojis">
+                    <TabsList className="w-full bg-slate-100 dark:bg-slate-800">
+                      <TabsTrigger value="emojis" className="flex-1 text-[9px]">Emojis</TabsTrigger>
+                      <TabsTrigger value="gifs" className="flex-1 text-[9px]">GIFs</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="emojis" className="m-0">
+                      <EmojiPicker onSelect={handleEmojiSelect} />
+                    </TabsContent>
+                    <TabsContent value="gifs" className="m-0">
+                      <GifSearch onSelect={handleGifSelect} />
+                    </TabsContent>
+                  </Tabs>
+                </PopoverContent>
+              </Popover>
+              
+              <Button 
+                type="submit" 
+                disabled={!message.trim() || sendMutation.isPending} 
+                className="h-7 w-7 p-0 bg-[#507DB4] hover:bg-[#507DB4]/90"
+              >
+                <Send className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+        </div>
+
+      {/* New Direct Message Dialog */}
+      <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
           <DialogContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700 max-w-md">
             <DialogHeader>
               <DialogTitle className="text-slate-900 dark:text-white">Start Direct Message</DialogTitle>
@@ -1184,11 +958,11 @@ export default function Chat() {
                 </div>
               )}
             </div>
-          </DialogContent>
-        </Dialog>
+        </DialogContent>
+      </Dialog>
 
-        {/* Create Group Dialog */}
-        <CreateGroupDialog
+      {/* Create Group Dialog */}
+      <CreateGroupDialog
           open={showCreateGroup}
           onOpenChange={setShowCreateGroup}
           employees={employees}
@@ -1196,28 +970,28 @@ export default function Chat() {
           onCreateGroup={handleCreateGroup}
           onDeleteGroup={handleDeleteGroup}
           editingGroup={selectedCustomGroup}
-        />
+      />
 
-        {/* User Profile Modal */}
-        <UserProfileModal
+      {/* User Profile Modal */}
+      <UserProfileModal
           open={showUserProfile}
           onOpenChange={setShowUserProfile}
           userEmail={selectedProfileEmail}
           currentUserEmail={user?.email}
           isCurrentUser={selectedProfileEmail === user?.email}
-        />
+      />
 
-        {/* Job Chat Members Dialog */}
-        <JobChatMembers
+      {/* Job Chat Members Dialog */}
+      <JobChatMembers
           jobId={selectedGroup}
           jobName={groups.find(g => g.id === selectedGroup)?.name || ''}
           isOpen={showJobMembers}
           onClose={() => setShowJobMembers(false)}
           language={t('language') === 'es' ? 'es' : 'en'}
-        />
+      />
 
-        {/* Export Dialog */}
-        <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+      {/* Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
           <DialogContent className="max-w-md bg-white dark:bg-[#282828]">
             <DialogHeader>
               <DialogTitle className="text-slate-900 dark:text-white">
@@ -1240,8 +1014,8 @@ export default function Chat() {
                 </Button>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
