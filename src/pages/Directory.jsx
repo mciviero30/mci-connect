@@ -114,7 +114,7 @@ export default function Directory() {
             <p className="text-slate-600">Loading employees...</p>
           </div>
         ) : filteredEmployees.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {filteredEmployees.map((emp) => {
               const isCurrentUser = emp.email === user?.email;
               const displayName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || 'Unknown';
@@ -123,77 +123,75 @@ export default function Directory() {
               return (
                 <Card 
                   key={emp.id} 
-                  className={`shadow-md hover:shadow-lg transition-all ${
+                  className={`shadow-sm transition-all ${
                     isCurrentUser 
                       ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-300 dark:border-blue-700' 
                       : 'bg-white dark:bg-[#282828] border border-slate-200 dark:border-slate-700'
                   }`}
                 >
                   <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-4">
                       {emp.profile_photo_url ? (
                         <img 
                           src={emp.profile_photo_url} 
                           alt={displayName}
-                          className="w-14 h-14 rounded-full object-cover border-2 border-blue-200 flex-shrink-0"
+                          className="w-16 h-16 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600 flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-14 h-14 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                          <span className="text-white font-bold text-base">
+                        <div className="w-16 h-16 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
+                          <span className="text-white font-bold text-lg">
                             {initials}
                           </span>
                         </div>
                       )}
                       
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-base text-slate-900 dark:text-white leading-tight">
-                              {displayName}
-                            </h3>
-                            {isCurrentUser && (
-                              <Badge className="bg-blue-500 text-white text-xs mt-1">Tú</Badge>
-                            )}
-                          </div>
+                      <div className="flex-1 min-w-0 space-y-2">
+                        <div>
+                          <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-tight mb-0.5">
+                            {displayName}
+                          </h3>
+                          {isCurrentUser && (
+                            <Badge className="bg-blue-500 text-white text-xs">Tú</Badge>
+                          )}
                         </div>
                         
                         <div className="space-y-1.5">
                           {emp.position && (
-                            <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
-                              <Briefcase className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
-                              <span className="font-medium">{emp.position}</span>
+                            <div className="flex items-center gap-2">
+                              <Briefcase className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">{emp.position}</span>
                             </div>
                           )}
                           
                           {emp.team_name && (
-                            <div className="flex items-center gap-2 text-xs">
-                              <MapPin className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
-                              <Badge variant="outline" className="text-xs text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-700">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="w-4 h-4 text-orange-500 flex-shrink-0" />
+                              <Badge variant="outline" className="text-xs text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-700 font-semibold">
                                 {emp.team_name}
                               </Badge>
                             </div>
                           )}
                           
                           {emp.department && (
-                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                              <Users className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
-                              <span>{emp.department}</span>
+                            <div className="flex items-center gap-2">
+                              <Users className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                              <span className="text-sm text-slate-600 dark:text-slate-400">{emp.department}</span>
                             </div>
                           )}
                           
                           {emp.phone && (
-                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                              <Phone className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
-                              <a href={`tel:${emp.phone}`} className="hover:text-blue-600 transition-colors">
+                            <div className="flex items-center gap-2">
+                              <Phone className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <a href={`tel:${emp.phone}`} className="text-sm text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors">
                                 {emp.phone}
                               </a>
                             </div>
                           )}
                           
                           {emp.email && (
-                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                              <Mail className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
-                              <a href={`mailto:${emp.email}`} className="truncate hover:text-blue-600 transition-colors">
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                              <a href={`mailto:${emp.email}`} className="text-sm text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors truncate">
                                 {emp.email}
                               </a>
                             </div>
