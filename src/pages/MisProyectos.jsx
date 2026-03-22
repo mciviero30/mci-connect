@@ -83,8 +83,8 @@ export default function MisProyectos() {
   const totalHoursAllJobs = myJobs.reduce((sum, j) => sum + j.totalHours, 0);
   const avgProgress = myJobs.length > 0 ? myJobs.reduce((sum, j) => sum + j.progress, 0) / myJobs.length : 0;
 
-  // Check if user can see metrics (admin, CEO, manager, supervisor)
-  const canSeeMetrics = hasFullAccess(user) || user?.role === 'manager' || user?.position === 'Supervisor';
+  // ROLE-BASED VISIBILITY: Only admins/CEOs see financial metrics
+  const canSeeMetrics = canViewJobFinancials(user);
 
   return (
     <div className="min-h-screen bg-[#F1F5F9] dark:bg-[#181818] pb-20 md:pb-0">
