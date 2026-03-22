@@ -772,6 +772,8 @@ export default function Chat() {
             </Tabs>
           </div>
         </div>
+        
+        {/* CRITICAL: Close sidebar wrapper */}
 
         {/* Chat Area */}
         <div className="flex-1 flex flex-col bg-slate-50 dark:bg-[#0a0a0a]">
