@@ -122,18 +122,18 @@ export default function Directory() {
             <p className="text-slate-600">Loading employees...</p>
           </div>
         ) : filteredEmployees.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredEmployees.map((emp) => (
-              <ModernEmployeeCard
-                key={emp.id}
-                employee={emp}
-                showInviteButton={false}
-                onboardingProgress={null}
-                isReadOnly={true}
-              />
-            ))}
-          </div>
-        ) : (
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+             {filteredEmployees.map((emp) => (
+               <ModernEmployeeCard
+                 key={emp.id}
+                 employee={emp}
+                 showInviteButton={false}
+                 onboardingProgress={emp.onboarding_progress}
+                 isReadOnly={true}
+               />
+             ))}
+           </div>
+         ) : (
           <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
             <CardContent className="p-12 text-center">
               <Users className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
