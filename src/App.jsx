@@ -11,7 +11,6 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import SupervisorDashboard from '@/pages/SupervisorDashboard';
 import ForemanDashboard from '@/pages/ForemanDashboard';
-import SystemTestDashboard from '@/pages/SystemTestDashboard';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -54,7 +53,6 @@ const AuthenticatedApp = () => {
         ))}
         <Route path="/SupervisorDashboard" element={<LayoutWrapper currentPageName="SupervisorDashboard"><SupervisorDashboard /></LayoutWrapper>} />
         <Route path="/ForemanDashboard" element={<LayoutWrapper currentPageName="ForemanDashboard"><ForemanDashboard /></LayoutWrapper>} />
-        <Route path="/SystemTestDashboard" element={<LayoutWrapper currentPageName="SystemTestDashboard"><SystemTestDashboard /></LayoutWrapper>} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </LayoutWrapper>
