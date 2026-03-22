@@ -316,7 +316,7 @@ export default function Chat() {
         />
       </div>
 
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      <div className="flex-1 flex overflow-hidden min-h-0 relative">
         {/* Sidebar Backdrop */}
         {showSidebar && (
           <div 
@@ -327,10 +327,11 @@ export default function Chat() {
         
         {/* Sidebar - MCI Style */}
         <div className={`
-          fixed md:relative w-[280px] h-full flex flex-col bg-white dark:bg-slate-800
+          fixed md:relative w-[280px] flex flex-col bg-white dark:bg-slate-800
           transition-transform duration-300 ease-out z-50 md:z-auto shadow-xl md:shadow-none
           ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
           md:border-r md:border-slate-200 md:dark:border-slate-700
+          md:h-full h-[calc(100vh-3.5rem-3.5rem)]
         `}>
           {/* Sidebar Header */}
           <div className="flex-shrink-0 h-11 px-2 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center justify-between">
@@ -473,9 +474,9 @@ export default function Chat() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900 min-h-0">
+        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900 min-h-0 relative">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
+          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2 pb-32">
             {isLoading && (
               <div className="flex items-center justify-center h-full">
                 <div className="w-10 h-10 border-3 border-[#507DB4]/30 border-t-[#507DB4] rounded-full animate-spin"></div>
@@ -515,21 +516,23 @@ export default function Chat() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Reply/Edit Banner */}
-          {replyingTo && (
-            <div className="flex-shrink-0 px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-t border-blue-200 dark:border-blue-800 flex items-center justify-between">
-              <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">Respondiendo a {replyingTo.sender_name}</p>
-                <p className="text-[10px] text-slate-600 dark:text-slate-400 truncate">{replyingTo.message}</p>
+          {/* Input Area Container - Fixed at bottom */}
+          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+            {/* Reply/Edit Banner */}
+            {replyingTo && (
+              <div className="px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800 flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <p className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">Respondiendo a {replyingTo.sender_name}</p>
+                  <p className="text-[10px] text-slate-600 dark:text-slate-400 truncate">{replyingTo.message}</p>
+                </div>
+                <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded">
+                  <X className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                </button>
               </div>
-              <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded">
-                <X className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-              </button>
-            </div>
-          )}
+            )}
 
-          {/* Input Area - MCI Style */}
-          <form onSubmit={handleSend} className="flex-shrink-0 px-3 py-2 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+            {/* Input Area - MCI Style */}
+            <form onSubmit={handleSend} className="px-3 py-2">
             <div className="flex gap-1.5 items-end">
               <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
               <button
@@ -582,6 +585,7 @@ export default function Chat() {
               </button>
             </div>
           </form>
+          </div>
         </div>
       </div>
 
