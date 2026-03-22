@@ -46,23 +46,23 @@ Deno.serve(async (req) => {
         // REPAIR: If EmployeeProfile missing team_id, try to find it from EmployeeInvitation
         let team_id = profile.team_id;
         let team_name = profile.team_name;
+        let recovered = false;
         
         if (!team_id && userRecord.email) {
           const invitations = await base44.asServiceRole.entities.EmployeeInvitation.filter({
             email: userRecord.email.toLowerCase()
           });
-          if (invitations.length > 0) {
-            team_id = invitations[0].team_id || team_id;
-            team_name = invitations[0].team_name || team_name;
+          if (invitations.length > 0 && invitations[0].team_id) {
+            team_id = invitations[0].team_id;
+            team_name = invitations[0].team_name || team_id;
+            recovered = true;
             
-            // Also update EmployeeProfile with recovered team info
-            if (team_id) {
-              await base44.asServiceRole.entities.EmployeeProfile.update(profile.id, {
-                team_id: team_id,
-                team_name: team_name
-              });
-              console.log(`  ℹ️ Recovered team from invitation: ${team_name}`);
-            }
+            // Update EmployeeProfile with recovered team info
+            await base44.asServiceRole.entities.EmployeeProfile.update(profile.id, {
+              team_id: team_id,
+              team_name: team_name
+            });
+            console.log(`  ✅ Recovered team from invitation: ${team_name}`);
           }
         }
 
