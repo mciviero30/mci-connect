@@ -91,7 +91,32 @@ Deno.serve(async (req) => {
       accepted_date: new Date().toISOString()
     });
 
-    // 4. Run bidirectional sync: Profile → User → Directory
+    // 4. CREATE EMPLOYEE DIRECTORY IMMEDIATELY
+    const directoryData = {
+      user_id: user_id,
+      employee_email: email,
+      full_name: profileData.full_name,
+      first_name: profileData.first_name,
+      last_name: profileData.last_name,
+      position: profileData.position || '',
+      department: profileData.department || '',
+      phone: profileData.phone || '',
+      team_id: profileData.team_id || '',
+      team_name: profileData.team_name || '',
+      profile_photo_url: '',
+      status: 'active',
+      sync_source: 'user_registration',
+      last_synced_at: new Date().toISOString()
+    };
+
+    try {
+      await base44.asServiceRole.entities.EmployeeDirectory.create(directoryData);
+      console.log(`✅ EmployeeDirectory created for ${email}`);
+    } catch (dirErr) {
+      console.error('❌ EmployeeDirectory creation failed:', dirErr.message);
+    }
+
+    // 5. Run bidirectional sync: Profile → User → Directory (ensures sync)
     try {
       await base44.asServiceRole.functions.invoke('syncEmployeeDataBidirectional', { 
         user_id: user_id,
