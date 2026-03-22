@@ -53,11 +53,25 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
            
            await base44.entities.EmployeeProfile.update(employee.profile_id, profilePayload);
            
-           // Trigger bidirectional sync: Profile → User → Directory
-           await base44.functions.invoke('syncEmployeeDataBidirectional', {
+           // UPDATE: Use CENTRAL SYNC (syncs to all 3 sources + denormalized)
+           const response = await base44.asServiceRole.functions.invoke('updateEmployeeDataCentral', {
+             profile_id: employee.profile_id,
              user_id: employee.id,
-             profile_id: employee.profile_id
+             updates: {
+               first_name: firstName,
+               last_name: lastName,
+               phone: data.phone,
+               position: data.position,
+               department: data.department,
+               team_id: data.team_id,
+               team_name: data.team_name,
+               hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25
+             }
            });
+
+           if (!response.success) {
+             throw new Error(response.error || 'Central sync failed');
+           }
            
            return { success: true };
          }
