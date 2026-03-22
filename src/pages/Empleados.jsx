@@ -170,46 +170,46 @@ export default function Empleados() {
   }
 
   // SSOT: EmployeeProfile only (1:1 with User via user_id, no admin)
-  const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
-    queryKey: ['employees'],
-    queryFn: async () => {
-      const [profiles, users, teams] = await Promise.all([
-        base44.entities.EmployeeProfile.list('-created_date', 200),
-        base44.entities.User.list('-created_date', 200),
-        base44.entities.Team.list()
-      ]);
+   const { data: employees = [], isLoading, refetch: refetchEmployees } = useQuery({
+     queryKey: ['employees'],
+     queryFn: async () => {
+       const [profiles, users, teams] = await Promise.all([
+         base44.entities.EmployeeProfile.list('-created_date', 200),
+         base44.entities.User.list('-created_date', 200),
+         base44.entities.Team.list()
+       ]);
 
-      return profiles
-        .filter(p => p.user_id)
-        .map(p => {
-          const user = users.find(u => u.id === p.user_id);
-          const resolvedTeamName = p.team_name || 
-            (p.team_id ? teams.find(t => t.id === p.team_id)?.team_name : '') || '';
-          return {
-            id: p.user_id,
-            profile_id: p.id,
-            email: user?.email || '',
-            full_name: user?.full_name || `${p.first_name} ${p.last_name}`.trim(),
-            first_name: p.first_name,
-            last_name: p.last_name,
-            position: p.position,
-            department: p.department || '',
-            phone: p.phone || '',
-            team_id: p.team_id || '',
-            team_name: resolvedTeamName,
-            employment_status: p.employment_status,
-            role: user?.role || 'user',
-            hourly_rate: p.hourly_rate || null
-          };
-        })
-        .filter(Boolean)
-        .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase()));
-    },
-    staleTime: 0,
-    refetchOnMount: true,
-    refetchOnWindowFocus: true,
-    retry: 3,
-  });
+       return profiles
+         .filter(p => p.user_id)
+         .map(p => {
+           const user = users.find(u => u.id === p.user_id);
+           const resolvedTeamName = p.team_name || 
+             (p.team_id ? teams.find(t => t.id === p.team_id)?.team_name : '') || '';
+           return {
+             id: p.user_id,
+             profile_id: p.id,
+             email: user?.email || '',
+             full_name: user?.full_name || `${p.first_name} ${p.last_name}`.trim(),
+             first_name: p.first_name,
+             last_name: p.last_name,
+             position: p.position,
+             department: p.department || '',
+             phone: p.phone || '',
+             team_id: p.team_id || '',
+             team_name: resolvedTeamName,
+             employment_status: p.employment_status,
+             role: user?.role || 'user',
+             hourly_rate: p.hourly_rate || null
+           };
+         })
+         .filter(Boolean)
+         .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase()));
+     },
+     staleTime: 0,
+     refetchOnMount: 'stale',
+     refetchOnWindowFocus: 'stale',
+     retry: 3,
+   });
 
   // EmployeeInvitation bridge query (pre-registration)
   const { data: allInvitations = [] } = useQuery({
@@ -607,11 +607,14 @@ export default function Empleados() {
                         const res = await base44.functions.invoke('syncAllEmployeeData', {});
                         const { results } = res?.data || res || {};
                         if (results?.synced > 0) {
-                          toast.success(`✅ Synced ${results.synced} employees completely`);
-                          queryClient.invalidateQueries({ queryKey: ['employees'] });
-                          queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
-                          queryClient.invalidateQueries({ queryKey: ['allUsers'] });
-                          queryClient.invalidateQueries({ queryKey: ['employeeProfiles'] });
+                          toast.success(`✅ Synced ${results.synced} employees - loading updates...`);
+                          // Invalidate all caches
+                          await queryClient.invalidateQueries({ queryKey: ['employees'] });
+                          await queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
+                          await queryClient.invalidateQueries({ queryKey: ['allUsers'] });
+                          await queryClient.invalidateQueries({ queryKey: ['employeeProfiles'] });
+                          // Force refetch
+                          await refetchEmployees();
                         } else {
                           toast.success('Everything is up to date.');
                         }
