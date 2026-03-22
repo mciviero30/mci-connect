@@ -112,6 +112,7 @@ import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import SessionTimeoutManager from "@/components/security/SessionTimeoutManager";
 import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
 import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
+import { Hammer } from "lucide-react";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
 import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
 import GlobalSearch from "@/components/search/GlobalSearch";
@@ -764,6 +765,105 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
   // adminNavigation_PEOPLE removed (unused)
 
+  // FASE 3: Supervisor Navigation
+  const supervisorNavigation = [
+    {
+      section: 'SUPERVISOR',
+      icon: Shield,
+      items: [
+        { title: 'Supervisor Dashboard', url: createPageUrl("SupervisorDashboard"), icon: TrendingUp },
+        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+        { title: 'My Profile', url: createPageUrl("EmployeeProfile"), icon: User },
+      ]
+    },
+    {
+      section: 'TEAM MANAGEMENT',
+      icon: Users,
+      items: [
+        { title: 'Time Approvals', url: createPageUrl("Horarios"), icon: Clock },
+        { title: 'Expense Approvals', url: createPageUrl("Gastos"), icon: Receipt },
+        { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
+        { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
+      ]
+    },
+    {
+      section: 'JOBS',
+      icon: Briefcase,
+      items: [
+        { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase },
+        { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
+        {
+          title: 'MCI Field',
+          icon: MapPin,
+          children: [
+            { title: 'Field', url: createPageUrl("Field"), icon: MapPin },
+            { title: 'Measurement', url: createPageUrl("Measurement"), icon: Ruler }
+          ]
+        },
+      ]
+    },
+    {
+      section: 'RESOURCES',
+      icon: BookOpen,
+      items: [
+        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+        { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
+        { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
+      ]
+    }
+  ];
+
+  // FASE 3: Foreman Navigation
+  const foremanNavigation = [
+    {
+      section: 'FOREMAN',
+      icon: Hammer,
+      items: [
+        { title: 'Foreman Dashboard', url: createPageUrl("ForemanDashboard"), icon: Hammer },
+        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+        { title: 'My Profile', url: createPageUrl("EmployeeProfile"), icon: User },
+      ]
+    },
+    {
+      section: 'JOB SITES',
+      icon: MapPin,
+      items: [
+        { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase },
+        { title: 'Jobs', url: createPageUrl("Trabajos"), icon: Briefcase },
+        {
+          title: 'MCI Field',
+          icon: MapPin,
+          children: [
+            { title: 'Field', url: createPageUrl("Field"), icon: MapPin },
+            { title: 'Measurement', url: createPageUrl("Measurement"), icon: Ruler }
+          ]
+        },
+        { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
+      ]
+    },
+    {
+      section: 'MY WORK',
+      icon: Clock,
+      items: [
+        { title: 'My Hours', url: createPageUrl("MisHoras"), icon: Clock },
+        { title: 'My Expenses', url: createPageUrl("MisGastos"), icon: Receipt },
+        { title: 'Mileage', url: createPageUrl("Manejo"), icon: Car },
+        { title: 'Directory', url: createPageUrl("Directory"), icon: Users },
+      ]
+    },
+    {
+      section: 'RESOURCES',
+      icon: BookOpen,
+      items: [
+        { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+        { title: 'Announcements', url: createPageUrl("NewsFeed"), icon: Megaphone },
+        { title: 'Training', url: createPageUrl("Capacitacion"), icon: GraduationCap },
+        { title: 'Forms', url: createPageUrl("Formularios"), icon: ClipboardList },
+      ]
+    }
+  ];
+
   const employeeNavigation = [
     {
       section: 'HOME',
@@ -894,7 +994,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   // UNIFIED ROLE SYSTEM - Single source of truth
   const isAdmin = hasFullAccess(displayUser || user);
 
-  // Memoize navigation to prevent recalculation - MUST be before early returns
+  // FASE 3: Memoize navigation with role-based routing
   const navigation = useMemo(() => {
     const effectiveUser = displayUser || user;
 
@@ -903,8 +1003,14 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       return adminNavigation;
     }
 
-    const navType = getNavigationForRole(effectiveUser);
-    return navType === 'admin' ? adminNavigation : employeeNavigation;
+    // FASE 3: Role-based navigation
+    const role = effectiveUser?.role;
+    if (role === 'admin' || role === 'ceo') return adminNavigation;
+    if (role === 'manager') return managerNavigation;
+    if (role === 'supervisor') return supervisorNavigation;
+    if (role === 'foreman') return foremanNavigation;
+    
+    return employeeNavigation;
   }, [displayUser, user]);
 
   // Profile image computation
