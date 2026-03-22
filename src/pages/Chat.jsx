@@ -906,7 +906,6 @@ export default function Chat() {
           </form>
         </div>
       </div>
-        </div>
 
       {/* New Direct Message Dialog */}
       <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
