@@ -6,6 +6,7 @@ import PageHeader from "../components/shared/PageHeader";
 import { Briefcase, Clock, Calendar, TrendingUp, Target, Folder } from "lucide-react";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { canViewJobFinancials } from '@/components/permissions/permissionHelpers';
 import { buildUserQuery } from "@/components/utils/userResolution";
 import { format, addDays, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
