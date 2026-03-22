@@ -70,7 +70,6 @@ import ClientManagement from './pages/ClientManagement';
 import ClientPortal from './pages/ClientPortal';
 import ClientProfitabilityReport from './pages/ClientProfitabilityReport';
 import Clientes from './pages/Clientes';
-import ClockInTests from './pages/ClockInTests';
 import CodebaseExport from './pages/CodebaseExport';
 import CommissionAgreements from './pages/CommissionAgreements';
 import CommissionDashboard from './pages/CommissionDashboard';
@@ -178,14 +177,12 @@ import Submittals from './pages/Submittals';
 import SystemDiagnostics from './pages/SystemDiagnostics';
 import SystemHealthCheck from './pages/SystemHealthCheck';
 import SystemReadiness from './pages/SystemReadiness';
-import SystemTest from './pages/SystemTest';
 import TMInvoiceBuilder from './pages/TMInvoiceBuilder';
 import TaxOnboarding from './pages/TaxOnboarding';
 import TeamDetails from './pages/TeamDetails';
 import TeamGoals from './pages/TeamGoals';
 import TeamUtilizationReport from './pages/TeamUtilizationReport';
 import Teams from './pages/Teams';
-import TestingChecklist from './pages/TestingChecklist';
 import TimeOffRequests from './pages/TimeOffRequests';
 import TimeReports from './pages/TimeReports';
 import TimeTracking from './pages/TimeTracking';
@@ -227,7 +224,6 @@ export const PAGES = {
     "ClientPortal": ClientPortal,
     "ClientProfitabilityReport": ClientProfitabilityReport,
     "Clientes": Clientes,
-    "ClockInTests": ClockInTests,
     "CodebaseExport": CodebaseExport,
     "CommissionAgreements": CommissionAgreements,
     "CommissionDashboard": CommissionDashboard,
@@ -335,14 +331,12 @@ export const PAGES = {
     "SystemDiagnostics": SystemDiagnostics,
     "SystemHealthCheck": SystemHealthCheck,
     "SystemReadiness": SystemReadiness,
-    "SystemTest": SystemTest,
     "TMInvoiceBuilder": TMInvoiceBuilder,
     "TaxOnboarding": TaxOnboarding,
     "TeamDetails": TeamDetails,
     "TeamGoals": TeamGoals,
     "TeamUtilizationReport": TeamUtilizationReport,
     "Teams": Teams,
-    "TestingChecklist": TestingChecklist,
     "TimeOffRequests": TimeOffRequests,
     "TimeReports": TimeReports,
     "TimeTracking": TimeTracking,
