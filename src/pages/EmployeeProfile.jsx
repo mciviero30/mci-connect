@@ -13,6 +13,7 @@ import {
   Award, Clock, AlertCircle, ArrowLeft, DollarSign, Shield, Pencil, Save, X
 } from "lucide-react";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { isAdmin as checkIsAdmin } from '@/components/permissions/permissionHelpers';
 
 // Convert ALL CAPS or any case to proper Title Case
 function toTitleCase(str) {
@@ -56,7 +57,8 @@ export default function EmployeeProfile() {
     staleTime: Infinity,
   });
 
-  const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
+  const isAdmin = checkIsAdmin(currentUser);
+  const isAdminUser = isAdmin;
 
   // Fetch the target user if viewing another employee
   const { data: targetUser } = useQuery({

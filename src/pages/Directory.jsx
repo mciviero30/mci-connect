@@ -12,6 +12,7 @@ import { getDisplayName, capitalizeName } from "@/components/utils/nameHelpers";
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { createPageUrl } from '@/utils';
+import { canViewAllEmployees } from '@/components/permissions/permissionHelpers';
 import { resolveUser, resolveDisplayName } from '@/components/utils/userResolution';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 import { useMemo } from 'react';

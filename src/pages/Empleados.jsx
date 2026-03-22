@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
+import { isAdmin } from '@/components/permissions/permissionHelpers';
 import InvitationDetailView from "@/components/empleados/InvitationDetailView";
 import ImportEmployeesDialog from "@/components/empleados/ImportEmployeesDialog";
 import OnboardingDetailsModal from "@/components/empleados/OnboardingDetailsModal";
@@ -169,7 +170,6 @@ export default function Empleados() {
         .filter(p => p.user_id)
         .map(p => {
           const user = users.find(u => u.id === p.user_id);
-          if (user?.email === 'mciviero30@gmail.com') return null;
           const resolvedTeamName = p.team_name || 
             (p.team_id ? teams.find(t => t.id === p.team_id)?.team_name : '') || '';
           return {
@@ -299,8 +299,7 @@ export default function Empleados() {
     onError: (error) => handleError(error, 'Bulk invite'),
   });
 
-  const OWNER_EMAIL = 'marzio.civiero@mci-us.com';
-  const INVISIBLE_EMAIL = 'mciviero30@gmail.com'; // Invisible employee - has full access but not listed
+  // REMOVED HARDCODED EMAIL BYPASSES (FASE 2)
   
   // Filtered lists by employment_status (clean, no duplication logic)
   const { activeEmployees, inactiveEmployees, onLeaveEmployees, terminatedEmployees } = useMemo(() => {
