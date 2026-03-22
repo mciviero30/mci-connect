@@ -602,16 +602,18 @@ export default function Empleados() {
                     size="sm"
                     className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50 gap-1.5"
                     onClick={async () => {
-                      toast.success('Running sync...');
+                      toast.success('Running full data sync...');
                       try {
-                        const res = await base44.functions.invoke('reconcileEmployeeProfiles', {});
-                        const { fixed } = res?.data?.summary || res?.summary || {};
-                        if (fixed > 0) {
-                          toast.success(`Sync complete: ${fixed} profile(s) created.`);
+                        const res = await base44.functions.invoke('syncAllEmployeeData', {});
+                        const { results } = res?.data || res || {};
+                        if (results?.synced > 0) {
+                          toast.success(`✅ Synced ${results.synced} employees completely`);
                           queryClient.invalidateQueries({ queryKey: ['employees'] });
-                          queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
+                          queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
+                          queryClient.invalidateQueries({ queryKey: ['allUsers'] });
+                          queryClient.invalidateQueries({ queryKey: ['employeeProfiles'] });
                         } else {
-                          toast.success('Sync complete: everything is up to date.');
+                          toast.success('Everything is up to date.');
                         }
                       } catch (err) {
                         toast.error('Sync failed: ' + err.message);
@@ -619,7 +621,7 @@ export default function Empleados() {
                     }}
                   >
                     <RefreshCw className="w-3.5 h-3.5" />
-                    Sync Profiles Now
+                    Sync All Data
                   </Button>
                 </div>
                 <EmployeeGrid employees={activeEmployees} />
