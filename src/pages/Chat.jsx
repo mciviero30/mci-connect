@@ -474,9 +474,9 @@ export default function Chat() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900 min-h-0 relative">
+        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2 pb-32">
+          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2 pb-24">
             {isLoading && (
               <div className="flex items-center justify-center h-full">
                 <div className="w-10 h-10 border-3 border-[#507DB4]/30 border-t-[#507DB4] rounded-full animate-spin"></div>
@@ -517,7 +517,7 @@ export default function Chat() {
           </div>
 
           {/* Input Area Container - Fixed at bottom */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex-shrink-0 w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
             {/* Reply/Edit Banner */}
             {replyingTo && (
               <div className="px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800 flex items-center justify-between">
