@@ -1436,8 +1436,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           <AIAssistant currentPage={currentPageName} />
           <EnhancedOfflineSync />
 
-          {/* Bottom Navigation: Hidden in Field/Focus Mode */}
-          {!shouldHideSidebar && (
+          {/* Bottom Navigation: Hidden in Field/Focus Mode or Chat */}
+          {!shouldHideSidebar && !isChatPage && (
             <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
           )}
 
