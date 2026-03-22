@@ -590,54 +590,68 @@ export default function Chat() {
     <div className="h-screen flex flex-col bg-white dark:bg-[#0a0a0a] overflow-hidden">
      <OnlineStatusManager userEmail={user?.email} />
      
-     {/* Mobile Header */}
-     <div className="md:hidden flex-shrink-0 px-2 py-2 bg-white dark:bg-[#1a1a1a] border-b border-slate-200 dark:border-slate-700 flex items-center gap-2">
-        <button 
-          onClick={() => setShowMobileSidebar(!showMobileSidebar)}
-          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-        >
-          <MessageSquare className="w-4 h-4 text-[#507DB4]" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
-            {chatMode === 'direct' && selectedDMConv ? selectedDMConv.other_user_name : chatMode === 'groups' && selectedCustomGroup ? selectedCustomGroup.group_name : groups.find(g => g.id === selectedGroup)?.name || t('chat')}
-          </h1>
-        </div>
-        <ChatNotificationCenter 
-              userEmail={user?.email}
-              onNavigate={(notification) => {
-                if (notification.group_id) {
-                  if (notification.group_id.startsWith('dm_')) {
-                    setChatMode('direct');
-                    setSelectedDMConv({ id: notification.group_id.replace('dm_', '') });
-                  } else if (notification.group_id.startsWith('group_')) {
-                    const group = customGroups.find(g => g.id === notification.group_id.replace('group_', ''));
-                    if (group) selectCustomGroup(group);
-                  } else {
-                    setChatMode('channels');
-                    setSelectedGroup(notification.group_id);
-                  }
-                }
-            }}
-        />
-      </div>
+     {/* Mobile Header - Professional WhatsApp Style */}
+     <div className="md:hidden flex-shrink-0 px-3 py-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center gap-3 shadow-md">
+       <button 
+         onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+         className="p-1.5 rounded-lg hover:bg-white/20 transition-colors active:scale-95"
+       >
+         <Menu className="w-5 h-5 text-white" />
+       </button>
+       <div className="flex-1 min-w-0 flex items-center gap-2">
+         <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+           {chatMode === 'direct' && selectedDMConv ? (
+             <span className="text-white font-bold text-xs">{selectedDMConv.other_user_name?.[0]?.toUpperCase()}</span>
+           ) : chatMode === 'groups' && selectedCustomGroup ? (
+             <Users className="w-4 h-4 text-white" />
+           ) : (
+             <Hash className="w-4 h-4 text-white" />
+           )}
+         </div>
+         <div className="flex-1 min-w-0">
+           <h1 className="text-sm font-bold text-white truncate">
+             {chatMode === 'direct' && selectedDMConv ? selectedDMConv.other_user_name : chatMode === 'groups' && selectedCustomGroup ? selectedCustomGroup.group_name : groups.find(g => g.id === selectedGroup)?.name || 'Chat'}
+           </h1>
+           <p className="text-[9px] text-white/80">
+             {chatMode === 'direct' ? 'Mensaje directo' : chatMode === 'groups' ? 'Grupo' : 'Canal'}
+           </p>
+         </div>
+       </div>
+       <ChatNotificationCenter 
+             userEmail={user?.email}
+             onNavigate={(notification) => {
+               if (notification.group_id) {
+                 if (notification.group_id.startsWith('dm_')) {
+                   setChatMode('direct');
+                   setSelectedDMConv({ id: notification.group_id.replace('dm_', '') });
+                 } else if (notification.group_id.startsWith('group_')) {
+                   const group = customGroups.find(g => g.id === notification.group_id.replace('group_', ''));
+                   if (group) selectCustomGroup(group);
+                 } else {
+                   setChatMode('channels');
+                   setSelectedGroup(notification.group_id);
+                 }
+               }
+           }}
+       />
+     </div>
 
       {/* Main Container */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* Sidebar Overlay */}
+        {/* Sidebar Overlay - WhatsApp Style */}
         {showMobileSidebar && (
           <div 
-            className="fixed inset-0 bg-black/40 md:hidden z-40"
+            className="fixed inset-0 bg-black/50 md:hidden z-40 backdrop-blur-sm"
             onClick={() => setShowMobileSidebar(false)}
           />
         )}
         
-        {/* Sidebar */}
-        <div className={`absolute md:relative w-full md:w-72 h-full flex flex-col bg-white dark:bg-[#1a1a1a] border-r border-slate-200 dark:border-slate-700 transition-transform ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} z-50 md:z-auto`}>
-          {/* Sidebar Header */}
-          <div className="flex-shrink-0 px-2 py-2 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-            <h2 className="text-[11px] font-bold text-slate-900 dark:text-white">Chats</h2>
-            <div className="flex gap-1">
+        {/* Sidebar - Professional Slide-in */}
+        <div className={`absolute md:relative w-[85%] md:w-72 h-full flex flex-col bg-white dark:bg-[#1a1a1a] transition-transform duration-300 ease-out ${showMobileSidebar ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'} z-50 md:z-auto md:border-r md:border-slate-200 md:dark:border-slate-700`}>
+          {/* Sidebar Header - Professional */}
+          <div className="flex-shrink-0 px-4 py-4 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center justify-between">
+            <h2 className="text-base font-bold text-white">Mensajes</h2>
+            <div className="flex gap-2">
               <Button
                 size="icon"
                 variant="ghost"
@@ -645,9 +659,9 @@ export default function Chat() {
                   setShowCreateGroup(true);
                   setShowMobileSidebar(false);
                 }}
-                className="h-6 w-6 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="h-8 w-8 text-white hover:bg-white/20"
               >
-                <Users className="w-3 h-3" />
+                <Users className="w-4 h-4" />
               </Button>
               <Button
                 size="icon"
@@ -656,32 +670,32 @@ export default function Chat() {
                   setShowNewDM(true);
                   setShowMobileSidebar(false);
                 }}
-                className="h-6 w-6 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                className="h-8 w-8 text-white hover:bg-white/20"
               >
-                <UserPlus className="w-3 h-3" />
+                <UserPlus className="w-4 h-4" />
               </Button>
             </div>
           </div>
 
-          {/* Sidebar Tabs */}
-          <div className="flex-shrink-0 px-2 py-1.5">
+          {/* Sidebar Tabs - Modern */}
+          <div className="flex-shrink-0 px-3 py-3 bg-slate-50 dark:bg-slate-900/50">
             <Tabs value={chatMode} onValueChange={setChatMode} className="w-full">
-              <TabsList className="w-full h-7 bg-slate-100 dark:bg-slate-900 grid grid-cols-3 p-0.5 rounded-lg">
-                <TabsTrigger value="channels" className="text-[9px] font-semibold rounded data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4]">
-                  <Hash className="w-3 h-3 mr-1" />
+              <TabsList className="w-full h-9 bg-white dark:bg-slate-800 grid grid-cols-3 p-1 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+                <TabsTrigger value="channels" className="text-[10px] font-semibold rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
+                  <Hash className="w-3.5 h-3.5 mr-1" />
                   Canales
                 </TabsTrigger>
-                <TabsTrigger value="groups" className="text-[9px] font-semibold rounded data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4]">
-                  <Users className="w-3 h-3 mr-1" />
+                <TabsTrigger value="groups" className="text-[10px] font-semibold rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
+                  <Users className="w-3.5 h-3.5 mr-1" />
                   Grupos
                 </TabsTrigger>
-                <TabsTrigger value="direct" className="text-[9px] font-semibold rounded data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-[#507DB4]">
-                  <AtSign className="w-3 h-3 mr-1" />
+                <TabsTrigger value="direct" className="text-[10px] font-semibold rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#507DB4] data-[state=active]:to-[#6B9DD8] data-[state=active]:text-white data-[state=active]:shadow-md transition-all">
+                  <AtSign className="w-3.5 h-3.5 mr-1" />
                   DMs
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="channels" className="mt-0 space-y-0">
+              <TabsContent value="channels" className="mt-2 space-y-1">
                 {groups.map(group => {
                   const Icon = group.icon;
                   const isActive = chatMode === 'channels' && selectedGroup === group.id;
@@ -694,17 +708,17 @@ export default function Chat() {
                         setSelectedCustomGroup(null);
                         setShowMobileSidebar(false);
                       }}
-                      className={`w-full px-2 py-1.5 text-left flex items-center gap-2 transition-colors ${
-                        isActive ? 'bg-slate-100 dark:bg-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-900'
+                      className={`w-full px-3 py-2.5 text-left flex items-center gap-3 transition-all rounded-xl ${
+                        isActive ? 'bg-gradient-to-r from-[#507DB4]/10 to-[#6B9DD8]/10 border-l-4 border-[#507DB4]' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center ${
-                        isActive ? 'bg-[#507DB4] text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                      <div className={`w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center shadow-sm ${
+                        isActive ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                       }`}>
-                        <Icon className="w-3.5 h-3.5" />
+                        <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-[10px] font-semibold truncate ${isActive ? 'text-[#507DB4] dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <p className={`text-sm font-semibold truncate ${isActive ? 'text-[#507DB4] dark:text-white' : 'text-slate-900 dark:text-slate-100'}`}>
                           {group.name}
                         </p>
                       </div>
@@ -714,7 +728,7 @@ export default function Chat() {
                 })}
               </TabsContent>
 
-              <TabsContent value="groups" className="mt-0 space-y-0">
+              <TabsContent value="groups" className="mt-2 space-y-1">
                 {customGroups.filter(g => g.is_active && g.members.includes(user?.email)).map(group => {
                   const isActive = chatMode === 'groups' && selectedCustomGroup?.id === group.id;
                   return (
@@ -724,17 +738,17 @@ export default function Chat() {
                         selectCustomGroup(group);
                         setShowMobileSidebar(false);
                       }}
-                      className={`w-full px-2 py-1.5 text-left flex items-center gap-2 transition-colors ${
-                        isActive ? 'bg-slate-100 dark:bg-slate-800' : 'hover:bg-slate-50 dark:hover:bg-slate-900'
+                      className={`w-full px-3 py-2.5 text-left flex items-center gap-3 transition-all rounded-xl ${
+                        isActive ? 'bg-gradient-to-r from-[#507DB4]/10 to-[#6B9DD8]/10 border-l-4 border-[#507DB4]' : 'hover:bg-slate-100 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <div className={`w-7 h-7 rounded-lg flex-shrink-0 flex items-center justify-center ${
-                        isActive ? 'bg-[#507DB4] text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                      <div className={`w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center shadow-sm ${
+                        isActive ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                       }`}>
-                        <Users className="w-3.5 h-3.5" />
+                        <Users className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={`text-[10px] font-semibold truncate ${isActive ? 'text-[#507DB4] dark:text-white' : 'text-slate-700 dark:text-slate-300'}`}>
+                        <p className={`text-sm font-semibold truncate ${isActive ? 'text-[#507DB4] dark:text-white' : 'text-slate-900 dark:text-slate-100'}`}>
                           {group.group_name}
                         </p>
                       </div>
