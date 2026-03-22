@@ -9,7 +9,6 @@ import { useUI } from '@/components/contexts/FieldModeContext';
 import FieldLifecycleValidator from '@/components/field/FieldLifecycleValidator';
 import FieldDataLossValidator from '@/components/field/FieldDataLossValidator';
 import FieldPerformanceMonitor from '@/components/field/performance/FieldPerformanceMonitor';
-import FieldStressTest from '@/components/field/performance/FieldStressTest';
 import OfflineSyncValidator from '@/components/field/offline/OfflineSyncValidator';
 import { useFieldDebugMode } from '@/components/field/hooks/useFieldDebugMode';
 import { DebugUI } from '@/components/policies/UIVisibilityWrapper';
@@ -57,7 +56,6 @@ const FieldProjectMemoized = React.memo(function FieldProject() {
                 <FieldLifecycleValidator jobId={jobId} />
                 <FieldDataLossValidator jobId={jobId} />
                 <OfflineSyncValidator />
-                <FieldStressTest jobId={jobId} />
               </DebugUI>
             </FieldContextProvider>
           </FieldOfflineProvider>
