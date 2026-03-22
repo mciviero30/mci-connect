@@ -588,179 +588,183 @@ export default function Calendario() {
             icon={CalendarIcon}
           />
 
-          {/* CLICKABLE WORKLOAD SUMMARY CARDS - Quick Filters */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 md:gap-2 mb-2 md:mb-3">
-            <Card 
-              className="bg-gradient-to-br from-[#507DB4]/10 to-[#6B9DD8]/10 border border-[#507DB4]/30 dark:border-[#6B9DD8]/30 shadow-sm cursor-pointer hover:shadow-md hover:border-[#507DB4]/50 transition-all"
-              onClick={() => setEventTypeFilter('all')}
-            >
-              <CardContent className="p-1.5 md:p-3">
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg md:text-2xl font-bold leading-tight text-[#507DB4] dark:text-[#6B9DD8]">{workload.totalEvents}</p>
-                    <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4]/60 dark:text-[#6B9DD8]/60" />
-                  </div>
-                  <p className="text-[9px] md:text-xs font-semibold text-[#507DB4]/80 dark:text-[#6B9DD8]/80 leading-tight">
-                    {language === 'es' ? 'Total' : 'Total'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+          {/* ADMIN ONLY: Workload Summary & Filters */}
+          {isAdmin && (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-1.5 md:gap-2 mb-2 md:mb-3">
+                <Card 
+                  className="bg-gradient-to-br from-[#507DB4]/10 to-[#6B9DD8]/10 border border-[#507DB4]/30 dark:border-[#6B9DD8]/30 shadow-sm cursor-pointer hover:shadow-md hover:border-[#507DB4]/50 transition-all"
+                  onClick={() => setEventTypeFilter('all')}
+                >
+                  <CardContent className="p-1.5 md:p-3">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg md:text-2xl font-bold leading-tight text-[#507DB4] dark:text-[#6B9DD8]">{workload.totalEvents}</p>
+                        <CalendarIcon className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4]/60 dark:text-[#6B9DD8]/60" />
+                      </div>
+                      <p className="text-[9px] md:text-xs font-semibold text-[#507DB4]/80 dark:text-[#6B9DD8]/80 leading-tight">
+                        {language === 'es' ? 'Total' : 'Total'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card 
-              className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#507DB4]/40 dark:hover:border-[#6B9DD8]/40 transition-all"
-              onClick={() => setEventTypeFilter('job_work')}
-            >
-              <CardContent className="p-1.5 md:p-3">
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.jobWork}</p>
-                    <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
-                  </div>
-                  <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
-                    {language === 'es' ? 'Trabajo' : 'Work'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                <Card 
+                  className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#507DB4]/40 dark:hover:border-[#6B9DD8]/40 transition-all"
+                  onClick={() => setEventTypeFilter('job_work')}
+                >
+                  <CardContent className="p-1.5 md:p-3">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.jobWork}</p>
+                        <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
+                      </div>
+                      <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
+                        {language === 'es' ? 'Trabajo' : 'Work'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card 
-              className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#507DB4]/40 dark:hover:border-[#6B9DD8]/40 transition-all"
-              onClick={() => setEventTypeFilter('appointment')}
-            >
-              <CardContent className="p-1.5 md:p-3">
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.appointments}</p>
-                    <CalendarClock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
-                  </div>
-                  <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
-                    {language === 'es' ? 'Citas' : 'Appts'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+                <Card 
+                  className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 cursor-pointer hover:shadow-md hover:border-[#507DB4]/40 dark:hover:border-[#6B9DD8]/40 transition-all"
+                  onClick={() => setEventTypeFilter('appointment')}
+                >
+                  <CardContent className="p-1.5 md:p-3">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.appointments}</p>
+                        <CalendarClock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
+                      </div>
+                      <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
+                        {language === 'es' ? 'Citas' : 'Appts'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 col-span-2 md:col-span-1">
-              <CardContent className="p-1.5 md:p-3">
-                <div className="flex flex-col gap-0.5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.totalEstimatedHours.toFixed(1)}h</p>
-                    <Clock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
-                  </div>
-                  <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
-                    {language === 'es' ? 'Horas' : 'Hours'}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card className="bg-white dark:bg-slate-800 shadow-md border-slate-200/50 dark:border-slate-700/50 mb-3 rounded-lg md:rounded-xl">
-            <CardContent className="p-2 md:p-3">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-1.5 md:gap-4">
-                <div className="space-y-2">
-                  <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
-                    {language === 'es' ? 'Tipo de Turno' : 'Shift Type'}
-                  </Label>
-                  <Select value={eventTypeFilter} onValueChange={setEventTypeFilter}>
-                    <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                      <SelectItem value="all">
-                        {language === 'es' ? 'Todos los Tipos' : 'All Types'}
-                      </SelectItem>
-                      <SelectItem value="appointment">
-                        {language === 'es' ? 'Citas/Reuniones' : 'Appointments/Meetings'}
-                      </SelectItem>
-                      <SelectItem value="job_work">
-                        {language === 'es' ? 'Trabajo de Campo' : 'Job Work'}
-                      </SelectItem>
-                      <SelectItem value="time_off">
-                        {language === 'es' ? 'Ausencias' : 'Time-Off'}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
-                    {language === 'es' ? 'Empleado' : 'Employee'}
-                  </Label>
-                  <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
-                    <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                      <SelectItem value="all">
-                        {language === 'es' ? 'Todos los Empleados' : 'All Employees'}
-                      </SelectItem>
-                      {uniqueEmployees.map(identifier => {
-                        // identifier can be user_id or email
-                        const emp = employees.find(e => e.id === identifier || e.email === identifier);
-                        return (
-                          <SelectItem key={identifier} value={identifier}>
-                            {emp?.full_name || identifier}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
-                    {language === 'es' ? 'Trabajo' : 'Job'}
-                  </Label>
-                  <Select value={jobFilter} onValueChange={setJobFilter}>
-                    <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
-                      <SelectItem value="all">
-                        {language === 'es' ? 'Todos los Trabajos' : 'All Jobs'}
-                      </SelectItem>
-                      {uniqueJobs.map(jobId => {
-                        const job = jobs.find(j => j.id === jobId);
-                        return (
-                          <SelectItem key={jobId} value={jobId}>
-                            {job?.name || jobId}
-                          </SelectItem>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium opacity-0">Clear</Label>
-                  <Button
-                    variant="outline"
-                    className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
-                    onClick={() => {
-                      setEventTypeFilter('all');
-                      setEmployeeFilter('all');
-                      setJobFilter('all');
-                    }}
-                    disabled={eventTypeFilter === 'all' && employeeFilter === 'all' && jobFilter === 'all'}
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    {language === 'es' ? 'Limpiar' : 'Clear'}
-                  </Button>
-                </div>
+                <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 col-span-2 md:col-span-1">
+                  <CardContent className="p-1.5 md:p-3">
+                    <div className="flex flex-col gap-0.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight">{workload.totalEstimatedHours.toFixed(1)}h</p>
+                        <Clock className="w-4 h-4 md:w-5 md:h-5 text-[#507DB4] dark:text-[#6B9DD8] opacity-60" />
+                      </div>
+                      <p className="text-[9px] md:text-xs font-semibold text-slate-600 dark:text-slate-400 leading-tight">
+                        {language === 'es' ? 'Horas' : 'Hours'}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
-              {(eventTypeFilter !== 'all' || employeeFilter !== 'all' || jobFilter !== 'all') && (
-                <div className="mt-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                  <Filter className="w-4 h-4" />
-                  <span>
-                    {language === 'es' ? 'Mostrando' : 'Showing'} {filteredShifts.length} {language === 'es' ? 'de' : 'of'} {shifts.length} {language === 'es' ? 'turnos' : 'shifts'}
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+              <Card className="bg-white dark:bg-slate-800 shadow-md border-slate-200/50 dark:border-slate-700/50 mb-3 rounded-lg md:rounded-xl">
+                <CardContent className="p-2 md:p-3">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-1.5 md:gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+                        {language === 'es' ? 'Tipo de Turno' : 'Shift Type'}
+                      </Label>
+                      <Select value={eventTypeFilter} onValueChange={setEventTypeFilter}>
+                        <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                          <SelectItem value="all">
+                            {language === 'es' ? 'Todos los Tipos' : 'All Types'}
+                          </SelectItem>
+                          <SelectItem value="appointment">
+                            {language === 'es' ? 'Citas/Reuniones' : 'Appointments/Meetings'}
+                          </SelectItem>
+                          <SelectItem value="job_work">
+                            {language === 'es' ? 'Trabajo de Campo' : 'Job Work'}
+                          </SelectItem>
+                          <SelectItem value="time_off">
+                            {language === 'es' ? 'Ausencias' : 'Time-Off'}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+                        {language === 'es' ? 'Empleado' : 'Employee'}
+                      </Label>
+                      <Select value={employeeFilter} onValueChange={setEmployeeFilter}>
+                        <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                          <SelectItem value="all">
+                            {language === 'es' ? 'Todos los Empleados' : 'All Employees'}
+                          </SelectItem>
+                          {uniqueEmployees.map(identifier => {
+                            // identifier can be user_id or email
+                            const emp = employees.find(e => e.id === identifier || e.email === identifier);
+                            return (
+                              <SelectItem key={identifier} value={identifier}>
+                                {emp?.full_name || identifier}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium">
+                        {language === 'es' ? 'Trabajo' : 'Job'}
+                      </Label>
+                      <Select value={jobFilter} onValueChange={setJobFilter}>
+                        <SelectTrigger className="bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700">
+                          <SelectItem value="all">
+                            {language === 'es' ? 'Todos los Trabajos' : 'All Jobs'}
+                          </SelectItem>
+                          {uniqueJobs.map(jobId => {
+                            const job = jobs.find(j => j.id === jobId);
+                            return (
+                              <SelectItem key={jobId} value={jobId}>
+                                {job?.name || jobId}
+                              </SelectItem>
+                            );
+                          })}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-slate-700 dark:text-slate-300 text-sm font-medium opacity-0">Clear</Label>
+                      <Button
+                        variant="outline"
+                        className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                        onClick={() => {
+                          setEventTypeFilter('all');
+                          setEmployeeFilter('all');
+                          setJobFilter('all');
+                        }}
+                        disabled={eventTypeFilter === 'all' && employeeFilter === 'all' && jobFilter === 'all'}
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        {language === 'es' ? 'Limpiar' : 'Clear'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {(eventTypeFilter !== 'all' || employeeFilter !== 'all' || jobFilter !== 'all') && (
+                    <div className="mt-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                      <Filter className="w-4 h-4" />
+                      <span>
+                        {language === 'es' ? 'Mostrando' : 'Showing'} {filteredShifts.length} {language === 'es' ? 'de' : 'of'} {shifts.length} {language === 'es' ? 'turnos' : 'shifts'}
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          )}
 
           <div className="flex items-start justify-between gap-2 md:gap-4 mb-3 md:mb-6">
             <div className="flex items-center gap-1 md:gap-2 flex-1 min-w-0">
