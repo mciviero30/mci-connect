@@ -30,26 +30,36 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
      mutationFn: async (data) => {
        const firstName = (data.first_name || '').charAt(0).toUpperCase() + (data.first_name || '').slice(1);
        const lastName = (data.last_name || '').charAt(0).toUpperCase() + (data.last_name || '').slice(1);
+       const fullName = `${firstName} ${lastName}`.trim();
 
        if (employee?.id) {
-         // UPDATE: User + EmployeeProfile
-         const fullName = `${firstName} ${lastName}`.trim();
-         const userPayload = { full_name: fullName };
-         await base44.entities.User.update(employee.id, userPayload);
-
+         // UPDATE: EmployeeProfile (SSOT) + trigger bidirectional sync
          if (employee.profile_id) {
            const profilePayload = {
              first_name: firstName,
              last_name: lastName,
+             full_name: fullName,
              hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : 25,
              phone: data.phone || null,
-             address: data.address || null,
-             t_shirt_size: data.tshirt_size || null,
-             hire_date: data.hire_date || null,
-             employment_type: data.employment_type || 'W2',
+             address_line_1: data.address || null,
+             date_of_birth: data.dob || null,
+             ssn_encrypted: data.ssn_tax_id || null,
+             position: data.position || null,
+             department: data.department || null,
+             team_id: data.team_id || null,
+             team_name: data.team_name || null,
              employment_status: data.employment_status || 'active'
            };
-           return await base44.entities.EmployeeProfile.update(employee.profile_id, profilePayload);
+           
+           await base44.entities.EmployeeProfile.update(employee.profile_id, profilePayload);
+           
+           // Trigger bidirectional sync: Profile → User → Directory
+           await base44.functions.invoke('syncEmployeeDataBidirectional', {
+             user_id: employee.id,
+             profile_id: employee.profile_id
+           });
+           
+           return { success: true };
          }
        } else {
          // CREATE: EmployeeInvitation (pre-registration bridge)
@@ -79,7 +89,10 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
      onSuccess: async () => {
        await queryClient.invalidateQueries({ queryKey: ['employees'] });
        await queryClient.invalidateQueries({ queryKey: ['employeeInvitations'] });
-       toast.success(employee ? 'Employee updated!' : 'Invitation created! Go to the Invitations tab to send the email.');
+       await queryClient.invalidateQueries({ queryKey: ['employeeDirectory'] });
+       await queryClient.invalidateQueries({ queryKey: ['allUsers'] });
+       await queryClient.invalidateQueries({ queryKey: ['employeeProfiles'] });
+       toast.success(employee ? 'Employee updated and synced!' : 'Invitation created! Go to the Invitations tab to send the email.');
        onClose();
      },
      onError: (error) => {
