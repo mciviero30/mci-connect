@@ -270,11 +270,11 @@ export default function Chat() {
     : groups.find(g => g.id === selectedGroup) || { name: 'Chat', icon: MessageSquare };
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <div className="absolute inset-0 flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden -m-4 md:-m-0">
       <OnlineStatusManager userEmail={user?.email} />
       
       {/* Top Header - MCI Style */}
-      <div className="flex-shrink-0 h-14 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center px-3 gap-2 shadow-md">
+      <div className="flex-shrink-0 h-14 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center px-3 gap-2 shadow-md z-10">
         <button 
           onClick={() => setShowSidebar(!showSidebar)}
           className="md:hidden p-1.5 hover:bg-white/20 rounded-lg transition-colors active:scale-95"
