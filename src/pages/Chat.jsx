@@ -270,25 +270,25 @@ export default function Chat() {
     : groups.find(g => g.id === selectedGroup) || { name: 'Chat', icon: MessageSquare };
 
   return (
-    <div className="h-screen flex flex-col bg-[#0a0a0a] overflow-hidden">
+    <div className="h-screen flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden pb-16 md:pb-0">
       <OnlineStatusManager userEmail={user?.email} />
       
-      {/* Top Header - WhatsApp Style */}
-      <div className="flex-shrink-0 h-14 bg-[#202c33] border-b border-[#2a3942] flex items-center px-4 gap-3">
+      {/* Top Header - MCI Style */}
+      <div className="flex-shrink-0 h-12 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center px-3 gap-2 shadow-md">
         <button 
           onClick={() => setShowSidebar(!showSidebar)}
-          className="md:hidden p-2 hover:bg-white/10 rounded-full transition-colors active:scale-95"
+          className="md:hidden p-1.5 hover:bg-white/20 rounded-lg transition-colors active:scale-95"
         >
-          <Menu className="w-5 h-5 text-[#aebac1]" />
+          <Menu className="w-5 h-5 text-white" />
         </button>
         
-        <div className="flex-1 flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-[#374248] flex items-center justify-center flex-shrink-0">
-            {currentChat.icon && <currentChat.icon className="w-5 h-5 text-[#aebac1]" />}
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            {currentChat.icon && <currentChat.icon className="w-4 h-4 text-white" />}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-medium text-white truncate">{currentChat.name}</h1>
-            <p className="text-xs text-[#8696a0]">
+            <h1 className="text-sm font-semibold text-white truncate">{currentChat.name}</h1>
+            <p className="text-[9px] text-white/80 truncate">
               {chatMode === 'channels' && `${groups.length} canales`}
               {chatMode === 'groups' && 'Grupo privado'}
               {chatMode === 'direct' && 'En línea'}
@@ -296,7 +296,7 @@ export default function Chat() {
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5">
           <ChatNotificationCenter 
             userEmail={user?.email}
             onNavigate={(notification) => {
@@ -327,72 +327,72 @@ export default function Chat() {
           />
         )}
         
-        {/* Sidebar - WhatsApp Style */}
+        {/* Sidebar - MCI Style */}
         <div className={`
-          absolute md:relative w-[280px] h-full flex flex-col bg-[#111b21] 
-          transition-transform duration-300 ease-out z-50 md:z-auto
+          absolute md:relative w-[280px] h-full flex flex-col bg-white dark:bg-slate-800
+          transition-transform duration-300 ease-out z-50 md:z-auto shadow-xl md:shadow-none
           ${showSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-          md:border-r md:border-[#2a3942]
+          md:border-r md:border-slate-200 md:dark:border-slate-700
         `}>
           {/* Sidebar Header */}
-          <div className="flex-shrink-0 h-14 px-4 bg-[#202c33] border-b border-[#2a3942] flex items-center justify-between">
-            <h2 className="text-base font-semibold text-white">Chats</h2>
-            <div className="flex gap-2">
+          <div className="flex-shrink-0 h-12 px-3 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-white">Mensajes</h2>
+            <div className="flex gap-1">
               <button
                 onClick={() => {
                   setShowCreateGroup(true);
                   setShowSidebar(false);
                 }}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
               >
-                <Users className="w-4 h-4 text-[#aebac1]" />
+                <Users className="w-4 h-4 text-white" />
               </button>
               <button
                 onClick={() => {
                   setShowNewDM(true);
                   setShowSidebar(false);
                 }}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
               >
-                <UserPlus className="w-4 h-4 text-[#aebac1]" />
+                <UserPlus className="w-4 h-4 text-white" />
               </button>
             </div>
           </div>
 
           {/* Chat Mode Tabs */}
-          <div className="flex-shrink-0 p-2 bg-[#111b21]">
-            <div className="flex gap-1 bg-[#202c33] rounded-lg p-1">
+          <div className="flex-shrink-0 p-2 bg-slate-50 dark:bg-slate-900">
+            <div className="flex gap-1 bg-white dark:bg-slate-800 rounded-lg p-0.5 shadow-sm border border-slate-200 dark:border-slate-700">
               <button
                 onClick={() => setChatMode('channels')}
-                className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                className={`flex-1 px-2 py-1.5 rounded-md text-[9px] font-semibold transition-all ${
                   chatMode === 'channels' 
-                    ? 'bg-[#00a884] text-white shadow-md' 
-                    : 'text-[#8696a0] hover:bg-[#2a3942]'
+                    ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md' 
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
-                <Hash className="w-3.5 h-3.5 inline mr-1" />
+                <Hash className="w-3 h-3 inline mr-1" />
                 Canales
               </button>
               <button
                 onClick={() => setChatMode('groups')}
-                className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                className={`flex-1 px-2 py-1.5 rounded-md text-[9px] font-semibold transition-all ${
                   chatMode === 'groups' 
-                    ? 'bg-[#00a884] text-white shadow-md' 
-                    : 'text-[#8696a0] hover:bg-[#2a3942]'
+                    ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md' 
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
-                <Users className="w-3.5 h-3.5 inline mr-1" />
+                <Users className="w-3 h-3 inline mr-1" />
                 Grupos
               </button>
               <button
                 onClick={() => setChatMode('direct')}
-                className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                className={`flex-1 px-2 py-1.5 rounded-md text-[9px] font-semibold transition-all ${
                   chatMode === 'direct' 
-                    ? 'bg-[#00a884] text-white shadow-md' 
-                    : 'text-[#8696a0] hover:bg-[#2a3942]'
+                    ? 'bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white shadow-md' 
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                 }`}
               >
-                <AtSign className="w-3.5 h-3.5 inline mr-1" />
+                <AtSign className="w-3 h-3 inline mr-1" />
                 DMs
               </button>
             </div>
@@ -412,18 +412,18 @@ export default function Chat() {
                     setSelectedCustomGroup(null);
                     setShowSidebar(false);
                   }}
-                  className={`w-full px-4 py-3 flex items-center gap-3 transition-colors border-b border-[#2a3942] ${
-                    isActive ? 'bg-[#2a3942]' : 'hover:bg-[#202c33]'
+                  className={`w-full px-3 py-2.5 flex items-center gap-2.5 transition-colors border-b border-slate-200 dark:border-slate-700 ${
+                    isActive ? 'bg-[#507DB4]/10' : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    isActive ? 'bg-[#00a884]' : 'bg-[#374248]'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${
+                    isActive ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]' : 'bg-slate-200 dark:bg-slate-700'
                   }`}>
-                    <Icon className="w-6 h-6 text-white" />
+                    <Icon className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="text-sm font-medium text-white truncate">{group.name}</p>
-                    <p className="text-xs text-[#8696a0] truncate">Canal de equipo</p>
+                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{group.name}</p>
+                    <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate">Canal de equipo</p>
                   </div>
                   <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={group.id} />
                 </button>
@@ -441,18 +441,18 @@ export default function Chat() {
                     setSelectedDMConv(null);
                     setShowSidebar(false);
                   }}
-                  className={`w-full px-4 py-3 flex items-center gap-3 transition-colors border-b border-[#2a3942] ${
-                    isActive ? 'bg-[#2a3942]' : 'hover:bg-[#202c33]'
+                  className={`w-full px-3 py-2.5 flex items-center gap-2.5 transition-colors border-b border-slate-200 dark:border-slate-700 ${
+                    isActive ? 'bg-[#507DB4]/10' : 'hover:bg-slate-100 dark:hover:bg-slate-700'
                   }`}
                 >
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    isActive ? 'bg-[#00a884]' : 'bg-[#374248]'
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm ${
+                    isActive ? 'bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]' : 'bg-slate-200 dark:bg-slate-700'
                   }`}>
-                    <Users className="w-6 h-6 text-white" />
+                    <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0 text-left">
-                    <p className="text-sm font-medium text-white truncate">{group.group_name}</p>
-                    <p className="text-xs text-[#8696a0] truncate">{group.members?.length || 0} miembros</p>
+                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{group.group_name}</p>
+                    <p className="text-[9px] text-slate-500 dark:text-slate-400 truncate">{group.members?.length || 0} miembros</p>
                   </div>
                   <ChatUnreadBadge userId={user?.id} userEmail={user?.email} groupId={`group_${group.id}`} />
                 </button>
@@ -475,23 +475,23 @@ export default function Chat() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-[#0b141a]">
+        <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900 min-h-0">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-2">
+          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
             {isLoading && (
               <div className="flex items-center justify-center h-full">
-                <div className="w-10 h-10 border-3 border-[#00a884]/30 border-t-[#00a884] rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-3 border-[#507DB4]/30 border-t-[#507DB4] rounded-full animate-spin"></div>
               </div>
             )}
             
             {!isLoading && messages.length === 0 && (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <div className="w-20 h-20 bg-[#202c33] rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="w-10 h-10 text-[#8696a0]" />
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <MessageSquare className="w-8 h-8 text-slate-400" />
                   </div>
-                  <h3 className="text-base font-medium text-white mb-2">¡Inicia la conversación!</h3>
-                  <p className="text-sm text-[#8696a0]">Envía un mensaje para empezar</p>
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-1">¡Inicia la conversación!</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Envía un mensaje para empezar</p>
                 </div>
               </div>
             )}
@@ -509,7 +509,7 @@ export default function Chat() {
                   onDelete={(msgId) => deleteMessageMutation.mutate(msgId)}
                   userEmail={user?.email}
                   language={language}
-                  isDark={true}
+                  isDark={false}
                 />
               );
             })}
@@ -519,28 +519,28 @@ export default function Chat() {
 
           {/* Reply/Edit Banner */}
           {replyingTo && (
-            <div className="flex-shrink-0 px-4 py-2 bg-[#202c33] border-t border-[#2a3942] flex items-center justify-between">
+            <div className="flex-shrink-0 px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-t border-blue-200 dark:border-blue-800 flex items-center justify-between">
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-[#00a884]">Respondiendo a {replyingTo.sender_name}</p>
-                <p className="text-xs text-[#8696a0] truncate">{replyingTo.message}</p>
+                <p className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">Respondiendo a {replyingTo.sender_name}</p>
+                <p className="text-[10px] text-slate-600 dark:text-slate-400 truncate">{replyingTo.message}</p>
               </div>
-              <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-white/10 rounded">
-                <X className="w-4 h-4 text-[#8696a0]" />
+              <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded">
+                <X className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               </button>
             </div>
           )}
 
-          {/* Input Area - WhatsApp Style */}
-          <form onSubmit={handleSend} className="flex-shrink-0 px-4 py-3 bg-[#202c33] border-t border-[#2a3942]">
-            <div className="flex gap-2 items-end">
+          {/* Input Area - MCI Style */}
+          <form onSubmit={handleSend} className="flex-shrink-0 px-3 py-2 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex gap-1.5 items-end">
               <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" id="image-upload" />
               <button
                 type="button"
                 onClick={() => document.getElementById('image-upload').click()}
                 disabled={uploadingImage}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0"
               >
-                <Image className="w-5 h-5 text-[#8696a0]" />
+                <Image className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               </button>
               
               <input type="file" onChange={handleFileUpload} className="hidden" id="file-upload" />
@@ -548,29 +548,29 @@ export default function Chat() {
                 type="button"
                 onClick={() => document.getElementById('file-upload').click()}
                 disabled={uploadingFile}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0"
               >
-                <Paperclip className="w-5 h-5 text-[#8696a0]" />
+                <Paperclip className="w-4 h-4 text-slate-600 dark:text-slate-400" />
               </button>
 
-              <div className="flex-1 bg-[#2a3942] rounded-lg overflow-hidden">
+              <div className="flex-1 bg-slate-100 dark:bg-slate-900 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700">
                 <MentionInput
                   value={message}
                   onChange={setMessage}
                   onSubmit={handleSend}
                   employees={employees}
-                  placeholder={editingMessage ? 'Editar mensaje...' : 'Escribe un mensaje'}
-                  className="bg-transparent border-none text-sm text-white placeholder:text-[#8696a0] focus:ring-0"
+                  placeholder="Escribe un mensaje"
+                  className="bg-transparent border-none text-xs text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-0 px-3 py-2"
                 />
               </div>
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <button type="button" className="p-2 hover:bg-white/10 rounded-full transition-colors flex-shrink-0">
-                    <Smile className="w-5 h-5 text-[#8696a0]" />
+                  <button type="button" className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0">
+                    <Smile className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-72 p-0 bg-[#202c33] border-[#2a3942]">
+                <PopoverContent className="w-72 p-0 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   <EmojiPicker onSelect={(emoji) => setMessage(message + emoji)} />
                 </PopoverContent>
               </Popover>
@@ -578,9 +578,9 @@ export default function Chat() {
               <button 
                 type="submit" 
                 disabled={!message.trim() || sendMutation.isPending}
-                className="p-2.5 bg-[#00a884] hover:bg-[#06cf9c] rounded-full transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                className="p-2 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] hover:from-[#507DB4]/90 hover:to-[#6B9DD8]/90 rounded-full transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 shadow-md"
               >
-                <Send className="w-5 h-5 text-white" />
+                <Send className="w-4 h-4 text-white" />
               </button>
             </div>
           </form>
@@ -589,9 +589,9 @@ export default function Chat() {
 
       {/* Dialogs */}
       <Dialog open={showNewDM} onOpenChange={setShowNewDM}>
-        <DialogContent className="bg-[#202c33] border-[#2a3942] max-w-md">
+        <DialogContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-white">Nuevo Mensaje</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-white">Nuevo Mensaje</DialogTitle>
           </DialogHeader>
           <div className="space-y-1 max-h-96 overflow-y-auto">
             {employees.filter(emp => emp.email !== user?.email && emp.status === 'active').map(emp => {
@@ -600,14 +600,14 @@ export default function Chat() {
                 <button
                   key={emp.email}
                   onClick={() => startDirectMessage(emp)}
-                  className="w-full p-3 rounded-lg hover:bg-[#2a3942] flex items-center gap-3 transition-colors"
+                  className="w-full p-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors border border-transparent hover:border-[#507DB4]/30"
                 >
-                  <div className="w-12 h-12 bg-gradient-to-br from-[#00a884] to-[#06cf9c] rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">{displayName[0]?.toUpperCase()}</span>
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center shadow-md">
+                    <span className="text-white font-semibold text-base">{displayName[0]?.toUpperCase()}</span>
                   </div>
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-medium text-white">{displayName}</p>
-                    <p className="text-xs text-[#8696a0]">{emp.position || 'Empleado'}</p>
+                    <p className="text-sm font-medium text-slate-900 dark:text-white">{displayName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{emp.position || 'Empleado'}</p>
                   </div>
                   <UserStatusIndicator status={emp.is_online ? 'online' : 'offline'} size="sm" />
                 </button>
