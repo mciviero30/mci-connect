@@ -501,6 +501,14 @@ export default function Calendario() {
   // PERFORMANCE: Memoize filtered shifts
   const filteredShifts = useMemo(() => {
     return shifts.filter(shift => {
+      // EMPLOYEE PRIVACY: Non-admins only see their own shifts
+      if (!isAdmin && user) {
+        const isMyShift = shift.user_id 
+          ? shift.user_id === user.id 
+          : shift.employee_email === user.email;
+        if (!isMyShift) return false;
+      }
+      
       if (eventTypeFilter !== 'all' && shift.shift_type !== eventTypeFilter) {
         return false;
       }
@@ -516,7 +524,7 @@ export default function Calendario() {
       }
       return true;
     });
-  }, [shifts, eventTypeFilter, employeeFilter, jobFilter]);
+  }, [shifts, eventTypeFilter, employeeFilter, jobFilter, isAdmin, user]);
 
   // PERFORMANCE: Memoize workload calculation
   const workload = useMemo(() => {
@@ -765,168 +773,170 @@ export default function Calendario() {
               <Button variant="ghost" size="sm" onClick={handleNext} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10 h-9 flex-shrink-0">
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              <h2 className="text-sm md:text-xl font-bold text-slate-900 ml-2 md:ml-4 truncate" title={dateRangeLabel}>{dateRangeLabel}</h2>
+              <h2 className="text-sm md:text-xl font-bold text-slate-900 dark:text-white ml-2 md:ml-4 truncate" title={dateRangeLabel}>{dateRangeLabel}</h2>
             </div>
 
             <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
               <Tabs value={view} onValueChange={setView}>
-                <TabsList className="bg-white shadow-sm border border-slate-200 h-9 rounded-xl">
-                  <TabsTrigger value="day" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 text-xs md:text-sm px-3 md:px-4 h-7 rounded-lg">
+                <TabsList className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 h-9 rounded-xl">
+                  <TabsTrigger value="day" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 dark:text-slate-300 text-xs md:text-sm px-3 md:px-4 h-7 rounded-lg">
                     {language === 'es' ? 'Día' : 'Day'}
                   </TabsTrigger>
-                  <TabsTrigger value="week" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 text-xs md:text-sm px-3 md:px-4 h-7 rounded-lg">
+                  <TabsTrigger value="week" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 dark:text-slate-300 text-xs md:text-sm px-3 md:px-4 h-7 rounded-lg">
                     {language === 'es' ? 'Semana' : 'Week'}
                   </TabsTrigger>
-                  <TabsTrigger value="month" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 text-xs md:text-sm px-3 md:px-4 h-7 rounded-lg">
+                  <TabsTrigger value="month" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 dark:text-slate-300 text-xs md:text-sm px-3 md:px-4 h-7 rounded-lg">
                     {language === 'es' ? 'Mes' : 'Month'}
                   </TabsTrigger>
-                  <TabsTrigger value="agenda" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 h-7 px-2 rounded-lg">
+                  <TabsTrigger value="agenda" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 dark:text-slate-300 h-7 px-2 rounded-lg">
                     <List className="w-3 h-3 md:w-4 md:h-4" />
                   </TabsTrigger>
-                  <TabsTrigger value="resource" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 h-7 px-2 hidden md:flex rounded-lg">
-                    <Grid3X3 className="w-3 h-3 md:w-4 md:h-4" />
-                  </TabsTrigger>
-                  <TabsTrigger value="timeline" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 h-7 px-2 hidden md:flex rounded-lg">
-                    <Timer className="w-3 h-3 md:w-4 md:h-4" />
-                  </TabsTrigger>
+                  {isAdmin && (
+                    <>
+                      <TabsTrigger value="resource" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 dark:text-slate-300 h-7 px-2 hidden md:flex rounded-lg">
+                        <Grid3X3 className="w-3 h-3 md:w-4 md:h-4" />
+                      </TabsTrigger>
+                      <TabsTrigger value="timeline" className="data-[state=active]:bg-[#1E3A8A] data-[state=active]:text-white text-slate-700 dark:text-slate-300 h-7 px-2 hidden md:flex rounded-lg">
+                        <Timer className="w-3 h-3 md:w-4 md:h-4" />
+                      </TabsTrigger>
+                    </>
+                  )}
                 </TabsList>
               </Tabs>
 
-              {/* Quick Actions */}
-              <div className="flex gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => {
-                    refetchShifts();
-                    toast.success(language === 'es' ? '🔄 Recargando...' : '🔄 Refreshing...');
-                  }} 
-                  className="text-green-600 hover:bg-green-50"
-                  title={language === 'es' ? 'Recargar Datos' : 'Refresh Data'}
-                >
-                  <Repeat className="w-4 h-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setShowQuickSearch(true)} 
-                  className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10"
-                  title={language === 'es' ? 'Búsqueda Rápida' : 'Quick Search'}
-                >
-                  <Search className="w-4 h-4" />
-                </Button>
-                
-                {isAdmin && (
-                  <>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setShowExport(true)} 
-                      className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10"
-                      title={language === 'es' ? 'Exportar' : 'Export'}
-                    >
-                      <Download className="w-4 h-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setShowUtilization(!showUtilization)} 
-                      className={`text-[#1E3A8A] hover:bg-[#1E3A8A]/10 ${showUtilization ? 'bg-[#1E3A8A]/10' : ''}`}
-                      title={language === 'es' ? 'Utilización' : 'Utilization'}
-                    >
-                      <TrendingUp className="w-4 h-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setShowConflicts(!showConflicts)} 
-                      className={`text-red-600 hover:bg-red-50 ${showConflicts ? 'bg-red-50' : ''}`}
-                      title={language === 'es' ? 'Conflictos' : 'Conflicts'}
-                    >
-                      <AlertTriangle className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={handleDeleteAllExceptLast} className="text-red-600 hover:bg-red-50" title={language === 'es' ? 'Borrar todos excepto el último' : 'Delete all except latest'}>
-                      <X className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setShowTemplates(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Plantillas' : 'Templates'}>
-                      <Layout className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setShowCopyWeek(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Copiar Semana' : 'Copy Week'}>
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setShowAvailability(!showAvailability)} 
-                      className={`text-[#1E3A8A] hover:bg-[#1E3A8A]/10 ${showAvailability ? 'bg-[#1E3A8A]/10' : ''}`}
-                      title={language === 'es' ? 'Disponibilidad' : 'Availability'}
-                    >
-                      <Users className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setShowStats(!showStats)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Estadísticas' : 'Stats'}>
-                      <BarChart3 className="w-4 h-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => setShowGoogleSync(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Sincronizar' : 'Sync'}>
-                      <CalendarIcon className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
-              </div>
+              {/* Quick Actions - ADMIN ONLY */}
+              {isAdmin && (
+                <div className="flex gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => {
+                      refetchShifts();
+                      toast.success(language === 'es' ? '🔄 Recargando...' : '🔄 Refreshing...');
+                    }} 
+                    className="text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
+                    title={language === 'es' ? 'Recargar Datos' : 'Refresh Data'}
+                  >
+                    <Repeat className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowQuickSearch(true)} 
+                    className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10"
+                    title={language === 'es' ? 'Búsqueda Rápida' : 'Quick Search'}
+                  >
+                    <Search className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowExport(true)} 
+                    className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10"
+                    title={language === 'es' ? 'Exportar' : 'Export'}
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowUtilization(!showUtilization)} 
+                    className={`text-[#1E3A8A] hover:bg-[#1E3A8A]/10 ${showUtilization ? 'bg-[#1E3A8A]/10' : ''}`}
+                    title={language === 'es' ? 'Utilización' : 'Utilization'}
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowConflicts(!showConflicts)} 
+                    className={`text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ${showConflicts ? 'bg-red-50 dark:bg-red-900/20' : ''}`}
+                    title={language === 'es' ? 'Conflictos' : 'Conflicts'}
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleDeleteAllExceptLast} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" title={language === 'es' ? 'Borrar todos excepto el último' : 'Delete all except latest'}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowTemplates(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Plantillas' : 'Templates'}>
+                    <Layout className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowCopyWeek(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Copiar Semana' : 'Copy Week'}>
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowAvailability(!showAvailability)} 
+                    className={`text-[#1E3A8A] hover:bg-[#1E3A8A]/10 ${showAvailability ? 'bg-[#1E3A8A]/10' : ''}`}
+                    title={language === 'es' ? 'Disponibilidad' : 'Availability'}
+                  >
+                    <Users className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowStats(!showStats)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Estadísticas' : 'Stats'}>
+                    <BarChart3 className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowGoogleSync(true)} className="text-[#1E3A8A] hover:bg-[#1E3A8A]/10" title={language === 'es' ? 'Sincronizar' : 'Sync'}>
+                    <CalendarIcon className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Stats Panel */}
-          {showStats && (
-            <div className="mb-6">
-              <OccupancyStats
-                shifts={filteredShifts}
-                employees={employees}
-                currentDate={currentDate}
-                language={language}
-              />
-            </div>
-          )}
+          {/* ADMIN ONLY: Stats & Analytics Panels */}
+          {isAdmin && (
+            <>
+              {showStats && (
+                <div className="mb-6">
+                  <OccupancyStats
+                    shifts={filteredShifts}
+                    employees={employees}
+                    currentDate={currentDate}
+                    language={language}
+                  />
+                </div>
+              )}
 
-          {/* Utilization Panel */}
-          {showUtilization && (
-            <div className="mb-6">
-              <TeamUtilization
-                employees={employees}
-                shifts={filteredShifts}
-                currentDate={currentDate}
-                language={language}
-              />
-            </div>
-          )}
+              {showUtilization && (
+                <div className="mb-6">
+                  <TeamUtilization
+                    employees={employees}
+                    shifts={filteredShifts}
+                    currentDate={currentDate}
+                    language={language}
+                  />
+                </div>
+              )}
 
-          {/* Conflicts Panel */}
-          {showConflicts && (
-            <div className="mb-6">
-              <ConflictResolver
-                shifts={filteredShifts}
-                employees={employees}
-                onResolveConflict={(shift, action) => {
-                  if (action === 'delete') {
-                    handleDelete(shift.id);
-                  } else {
-                    handleShiftClick(shift);
-                  }
-                  setShowConflicts(false);
-                }}
-                language={language}
-              />
-            </div>
-          )}
+              {showConflicts && (
+                <div className="mb-6">
+                  <ConflictResolver
+                    shifts={filteredShifts}
+                    employees={employees}
+                    onResolveConflict={(shift, action) => {
+                      if (action === 'delete') {
+                        handleDelete(shift.id);
+                      } else {
+                        handleShiftClick(shift);
+                      }
+                      setShowConflicts(false);
+                    }}
+                    language={language}
+                  />
+                </div>
+              )}
 
-          {/* Availability Overview Panel */}
-          {showAvailability && (
-            <div className="mb-6">
-              <AvailabilityOverview
-                employees={employees}
-                currentDate={currentDate}
-                isAdmin={isAdmin}
-              />
-            </div>
+              {showAvailability && (
+                <div className="mb-6">
+                  <AvailabilityOverview
+                    employees={employees}
+                    currentDate={currentDate}
+                    isAdmin={isAdmin}
+                  />
+                </div>
+              )}
+            </>
           )}
 
           {/* Main Calendar Area - Full Width */}
@@ -1023,28 +1033,31 @@ export default function Calendario() {
             </TabsContent>
           </Tabs>
 
-          {/* Mini Calendar and Team Availability - Below Calendar */}
-          <div className="grid md:grid-cols-2 gap-4 mt-6">
-            <MiniCalendar
-              currentDate={currentDate}
-              onDateSelect={setCurrentDate}
-              shifts={shifts}
-              language={language}
-            />
-            <TeamAvailability
-              employees={employees}
-              shifts={shifts}
-              currentDate={currentDate}
-              timeOffRequests={timeOffRequests}
-              onEmployeeClick={(emp) => setEmployeeFilter(emp.id || emp.email)}
-              language={language}
-            />
-          </div>
+          {/* ADMIN ONLY: Mini Calendar, Team Availability & Color Legend */}
+          {isAdmin && (
+            <>
+              <div className="grid md:grid-cols-2 gap-4 mt-6">
+                <MiniCalendar
+                  currentDate={currentDate}
+                  onDateSelect={setCurrentDate}
+                  shifts={shifts}
+                  language={language}
+                />
+                <TeamAvailability
+                  employees={employees}
+                  shifts={shifts}
+                  currentDate={currentDate}
+                  timeOffRequests={timeOffRequests}
+                  onEmployeeClick={(emp) => setEmployeeFilter(emp.id || emp.email)}
+                  language={language}
+                />
+              </div>
 
-          {/* Color Legend */}
-          <div className="mt-4">
-            <ColorLegend jobs={jobs} language={language} />
-          </div>
+              <div className="mt-4">
+                <ColorLegend jobs={jobs} language={language} />
+              </div>
+            </>
+          )}
 
           <Dialog open={showEventTypeSelector} onOpenChange={setShowEventTypeSelector}>
             <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto bg-white border-0 rounded-2xl shadow-2xl">
