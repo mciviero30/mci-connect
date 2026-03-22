@@ -829,6 +829,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
   // Check if we're on a Field page
   const isFieldPage = location.pathname.includes('/Field');
+  
+  // Check if we're on Chat page
+  const isChatPage = location.pathname.includes('/Chat');
 
   // Prevent Layout from triggering Field remounts
   const wasFieldPage = useRef(false);
@@ -1318,8 +1321,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         )}
         
         <main className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden ${shouldHideSidebar ? 'w-full' : ''}`}>
-          {/* Mobile Header: Hidden when sidebar is hidden (Field/Focus Mode) */}
-          {!shouldHideSidebar && (
+          {/* Mobile Header: Hidden when sidebar is hidden (Field/Focus Mode) OR on Chat page */}
+          {!shouldHideSidebar && !isChatPage && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
