@@ -20,62 +20,41 @@ export default function Directory() {
     staleTime: 300000
   });
   
-  // Fetch Users to get profile photos and role info
-  const { data: allUsers = [] } = useQuery({
-    queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list('-created_date', 200),
-    staleTime: 60000,
+  // SSOT: Fetch EmployeeDirectory directly (already synced from EmployeeProfile)
+  const { data: directoryEntries = [], isLoading } = useQuery({
+    queryKey: ['employeeDirectory'],
+    queryFn: () => base44.entities.EmployeeDirectory.filter({ 
+      status: 'active'
+    }, '-created_date', 200),
+    staleTime: 0,
+    refetchOnMount: 'stale',
+    refetchOnWindowFocus: 'stale',
     enabled: !!user,
   });
 
-  // Fetch EmployeeProfiles to get full employee data
-  const { data: employeeProfiles = [], isLoading } = useQuery({
-    queryKey: ['employeeProfiles'],
-    queryFn: () => base44.entities.EmployeeProfile.filter({ 
-      employment_status: 'active',
-      is_active: true 
-    }),
-    staleTime: 30000,
-    enabled: !!user,
-  });
-
-  // Fetch Teams for team name resolution
-  const { data: teams = [] } = useQuery({
-    queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
-    staleTime: 120000,
-    enabled: !!user,
-  });
-
-  // PERFORMANCE: Memoize employees transformation (same format as Empleados page)
+  // PERFORMANCE: Transform to consistent format
   const employees = useMemo(() => 
-    employeeProfiles
-      .filter(p => p.user_id)
-      .map(p => {
-        const userRecord = allUsers.find(u => u.id === p.user_id);
-        const resolvedTeamName = p.team_name || 
-          (p.team_id ? teams.find(t => t.id === p.team_id)?.team_name : '') || '';
-        
-        return {
-          id: p.user_id,
-          profile_id: p.id,
-          email: userRecord?.email || '',
-          full_name: userRecord?.full_name || `${p.first_name} ${p.last_name}`.trim(),
-          first_name: p.first_name,
-          last_name: p.last_name,
-          position: p.position,
-          department: p.department || '',
-          phone: p.phone || '',
-          team_id: p.team_id || '',
-          team_name: resolvedTeamName,
-          employment_status: p.employment_status,
-          role: userRecord?.role || 'user',
-          profile_photo_url: userRecord?.profile_photo_url || null
-        };
-      })
+    directoryEntries
+      .filter(dir => dir.user_id && dir.full_name)
+      .map(dir => ({
+        id: dir.user_id,
+        profile_id: dir.id,
+        email: dir.employee_email || '',
+        full_name: dir.full_name,
+        first_name: dir.first_name || '',
+        last_name: dir.last_name || '',
+        position: dir.position || '',
+        department: dir.department || '',
+        phone: dir.phone || '',
+        team_id: dir.team_id || '',
+        team_name: dir.team_name || '',
+        status: dir.status,
+        role: 'user',
+        profile_photo_url: dir.profile_photo_url || null
+      }))
       .filter(Boolean)
       .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase())),
-    [employeeProfiles, allUsers, teams]
+    [directoryEntries]
   );
 
   // PERFORMANCE: Memoize filtered employees
