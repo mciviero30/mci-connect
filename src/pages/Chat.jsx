@@ -270,7 +270,7 @@ export default function Chat() {
     : groups.find(g => g.id === selectedGroup) || { name: 'Chat', icon: MessageSquare };
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden -m-4 md:-m-0">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden">
       <OnlineStatusManager userEmail={user?.email} />
       
       {/* Top Header - MCI Style */}
