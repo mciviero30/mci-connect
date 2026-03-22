@@ -155,7 +155,6 @@ export default function Directory() {
                  employee={emp}
                  showInviteButton={false}
                  onboardingProgress={emp.onboarding_progress}
-                 isReadOnly={true}
                />
              ))}
            </div>
