@@ -28,7 +28,7 @@ export default function Directory() {
   
   // ROLE-BASED ACCESS: Admin and Manager see all employees
   const userRole = (user?.role || 'employee').toLowerCase();
-  const isAdminOrManager = userRole === 'admin' || userRole === 'manager';
+  const isAdminOrManager = user?.role === 'admin' || user?.role === 'manager';
 
   // SSOT: EmployeeDirectory is the ONLY source for employee listings (no fallback)
   const { data: directoryEntries = [], isLoading } = useQuery({

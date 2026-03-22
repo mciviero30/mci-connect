@@ -130,7 +130,7 @@ export default function Empleados() {
   });
   
   const userRole = (currentUser?.role || 'employee').toLowerCase();
-  const hasFullAccess = userRole === 'admin' || userRole === 'ceo';
+  const hasFullAccess = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
 
   const { handleError } = useErrorHandler();
 
