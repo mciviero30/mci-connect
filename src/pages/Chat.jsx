@@ -89,7 +89,7 @@ export default function Chat() {
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.filter({ status: 'active' }, '-created_date', 100),
     initialData: [],
     staleTime: 60000,
   });
@@ -256,7 +256,7 @@ export default function Chat() {
 
   const groups = [
     { id: 'general', name: 'General', icon: Hash },
-    ...jobs.filter(j => j.status === 'active').map(job => ({
+    ...jobs.map(job => ({
       id: job.id,
       name: job.name,
       icon: MessageSquare
