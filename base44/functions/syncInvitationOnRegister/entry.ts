@@ -116,15 +116,24 @@ Deno.serve(async (req) => {
       console.error('❌ EmployeeDirectory creation failed:', dirErr.message);
     }
 
-    // 5. Run bidirectional sync: Profile → User → Directory (ensures sync)
+    // 5. Run CENTRAL SYNC: Profile → User → Directory → Denormalized (complete sync)
     try {
-      await base44.asServiceRole.functions.invoke('syncEmployeeDataBidirectional', { 
+      await base44.asServiceRole.functions.invoke('updateEmployeeDataCentral', { 
+        profile_id: createdProfile.id,
         user_id: user_id,
-        profile_id: createdProfile.id
+        updates: {
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
+          position: profileData.position,
+          department: profileData.department,
+          phone: profileData.phone,
+          team_id: profileData.team_id,
+          team_name: profileData.team_name
+        }
       });
-      console.log('✅ Bidirectional sync completed');
+      console.log('✅ Central sync completed (all denormalized fields synced)');
     } catch (syncErr) {
-      console.log('Note: Bidirectional sync failed:', syncErr.message);
+      console.log('Note: Central sync failed:', syncErr.message);
     }
 
     return Response.json({
