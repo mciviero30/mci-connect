@@ -116,13 +116,7 @@ export default function EmployeeProfile() {
 
   const updateMutation = useMutation({
     mutationFn: async (data) => {
-      const updateData = {
-        ...data,
-        full_name: `${data.first_name} ${data.last_name}`.trim(),
-        hourly_rate: data.hourly_rate ? parseFloat(data.hourly_rate) : null,
-      };
-      
-      // UPDATE via CENTRAL SYNC FUNCTION (syncs to ALL 3 sources automatically)
+      // UPDATE via CENTRAL SYNC - syncs to EmployeeProfile + User + EmployeeDirectory + denormalized fields
       const response = await base44.asServiceRole.functions.invoke('updateEmployeeDataCentral', {
         profile_id: profile.id,
         user_id: targetUserId,
@@ -144,7 +138,7 @@ export default function EmployeeProfile() {
       return response;
     },
     onSuccess: () => {
-      // Invalidate ALL related queries to refresh UI everywhere
+      // Invalidate ALL related queries - refreshes everywhere
       queryClient.invalidateQueries({ queryKey: ["employeeProfile", targetUserId] });
       queryClient.invalidateQueries({ queryKey: ["employee-directory"] });
       queryClient.invalidateQueries({ queryKey: ["user-profile", targetUserId] });
