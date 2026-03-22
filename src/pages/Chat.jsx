@@ -274,21 +274,21 @@ export default function Chat() {
       <OnlineStatusManager userEmail={user?.email} />
       
       {/* Top Header - MCI Style */}
-      <div className="flex-shrink-0 h-14 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center px-3 gap-2 shadow-md z-10">
+      <div className="flex-shrink-0 h-12 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center px-2 gap-1.5 shadow-md z-10">
         <button 
           onClick={() => setShowSidebar(!showSidebar)}
-          className="md:hidden p-1.5 hover:bg-white/20 rounded-lg transition-colors active:scale-95"
+          className="md:hidden p-1 hover:bg-white/20 rounded-lg transition-colors active:scale-95"
         >
-          <Menu className="w-5 h-5 text-white" />
+          <Menu className="w-4 h-4 text-white" />
         </button>
         
-        <div className="flex-1 flex items-center gap-2 min-w-0">
-          <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-            {currentChat.icon && <currentChat.icon className="w-4 h-4 text-white" />}
+        <div className="flex-1 flex items-center gap-1.5 min-w-0">
+          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+            {currentChat.icon && <currentChat.icon className="w-3.5 h-3.5 text-white" />}
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-sm font-semibold text-white truncate">{currentChat.name}</h1>
-            <p className="text-[9px] text-white/80 truncate">
+            <h1 className="text-xs font-semibold text-white truncate">{currentChat.name}</h1>
+            <p className="text-[8px] text-white/80 truncate">
               {chatMode === 'channels' && `${groups.length} canales`}
               {chatMode === 'groups' && 'Grupo privado'}
               {chatMode === 'direct' && 'En línea'}
@@ -296,26 +296,24 @@ export default function Chat() {
           </div>
         </div>
 
-        <div className="flex items-center gap-0.5">
-          <ChatNotificationCenter 
-            userEmail={user?.email}
-            onNavigate={(notification) => {
-              if (notification.group_id?.startsWith('dm_')) {
-                setChatMode('direct');
-                setSelectedDMConv({ id: notification.group_id.replace('dm_', '') });
-              } else if (notification.group_id?.startsWith('group_')) {
-                const group = customGroups.find(g => g.id === notification.group_id.replace('group_', ''));
-                if (group) {
-                  setChatMode('groups');
-                  setSelectedCustomGroup(group);
-                }
-              } else {
-                setChatMode('channels');
-                setSelectedGroup(notification.group_id);
+        <ChatNotificationCenter 
+          userEmail={user?.email}
+          onNavigate={(notification) => {
+            if (notification.group_id?.startsWith('dm_')) {
+              setChatMode('direct');
+              setSelectedDMConv({ id: notification.group_id.replace('dm_', '') });
+            } else if (notification.group_id?.startsWith('group_')) {
+              const group = customGroups.find(g => g.id === notification.group_id.replace('group_', ''));
+              if (group) {
+                setChatMode('groups');
+                setSelectedCustomGroup(group);
               }
-            }}
-          />
-        </div>
+            } else {
+              setChatMode('channels');
+              setSelectedGroup(notification.group_id);
+            }
+          }}
+        />
       </div>
 
       <div className="flex-1 flex overflow-hidden min-h-0">
@@ -335,26 +333,26 @@ export default function Chat() {
           md:border-r md:border-slate-200 md:dark:border-slate-700
         `}>
           {/* Sidebar Header */}
-          <div className="flex-shrink-0 h-12 px-3 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-white">Mensajes</h2>
-            <div className="flex gap-1">
+          <div className="flex-shrink-0 h-11 px-2 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center justify-between">
+            <h2 className="text-xs font-semibold text-white">Mensajes</h2>
+            <div className="flex gap-0.5">
               <button
                 onClick={() => {
                   setShowCreateGroup(true);
                   setShowSidebar(false);
                 }}
-                className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
               >
-                <Users className="w-4 h-4 text-white" />
+                <Users className="w-3.5 h-3.5 text-white" />
               </button>
               <button
                 onClick={() => {
                   setShowNewDM(true);
                   setShowSidebar(false);
                 }}
-                className="p-1.5 hover:bg-white/20 rounded-lg transition-colors"
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
               >
-                <UserPlus className="w-4 h-4 text-white" />
+                <UserPlus className="w-3.5 h-3.5 text-white" />
               </button>
             </div>
           </div>
