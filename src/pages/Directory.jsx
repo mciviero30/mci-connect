@@ -3,12 +3,12 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Users, Search, Phone, Mail, AlertCircle, MapPin, Briefcase } from "lucide-react";
+import { Users, Search, AlertCircle } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
-import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useLanguage } from '@/components/i18n/LanguageContext';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
+import ModernEmployeeCard from "@/components/empleados/ModernEmployeeCard";
 
 export default function Directory() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,33 +20,62 @@ export default function Directory() {
     staleTime: 300000
   });
   
-  // SSOT: EmployeeDirectory is the ONLY source for employee listings
-  const { data: directoryEntries = [], isLoading } = useQuery({
-    queryKey: ['employeeDirectory'],
-    queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
+  // Fetch Users to get profile photos and role info
+  const { data: allUsers = [] } = useQuery({
+    queryKey: ['allUsers'],
+    queryFn: () => base44.entities.User.list('-created_date', 200),
+    staleTime: 60000,
+    enabled: !!user,
+  });
+
+  // Fetch EmployeeProfiles to get full employee data
+  const { data: employeeProfiles = [], isLoading } = useQuery({
+    queryKey: ['employeeProfiles'],
+    queryFn: () => base44.entities.EmployeeProfile.filter({ 
+      employment_status: 'active',
+      is_active: true 
+    }),
     staleTime: 30000,
     enabled: !!user,
   });
 
-  // PERFORMANCE: Memoize employees transformation
+  // Fetch Teams for team name resolution
+  const { data: teams = [] } = useQuery({
+    queryKey: ['teams'],
+    queryFn: () => base44.entities.Team.list(),
+    staleTime: 120000,
+    enabled: !!user,
+  });
+
+  // PERFORMANCE: Memoize employees transformation (same format as Empleados page)
   const employees = useMemo(() => 
-    directoryEntries.map(d => {
-      // ENSURE full_name is always present (first_name + last_name)
-      const fullName = d.full_name || `${d.first_name || ''} ${d.last_name || ''}`.trim();
-      return {
-        id: d.user_id || d.id,
-        email: d.employee_email,
-        full_name: fullName,
-        first_name: d.first_name,
-        last_name: d.last_name,
-        position: d.position,
-        department: d.department,
-        phone: d.phone,
-        team_name: d.team_name,
-        profile_photo_url: d.profile_photo_url
-      };
-    }),
-    [directoryEntries]
+    employeeProfiles
+      .filter(p => p.user_id)
+      .map(p => {
+        const userRecord = allUsers.find(u => u.id === p.user_id);
+        const resolvedTeamName = p.team_name || 
+          (p.team_id ? teams.find(t => t.id === p.team_id)?.team_name : '') || '';
+        
+        return {
+          id: p.user_id,
+          profile_id: p.id,
+          email: userRecord?.email || '',
+          full_name: userRecord?.full_name || `${p.first_name} ${p.last_name}`.trim(),
+          first_name: p.first_name,
+          last_name: p.last_name,
+          position: p.position,
+          department: p.department || '',
+          phone: p.phone || '',
+          team_id: p.team_id || '',
+          team_name: resolvedTeamName,
+          employment_status: p.employment_status,
+          role: userRecord?.role || 'user',
+          profile_photo_url: userRecord?.profile_photo_url || null
+        };
+      })
+      .filter(Boolean)
+      .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase())),
+    [employeeProfiles, allUsers, teams]
   );
 
   // PERFORMANCE: Memoize filtered employees
@@ -114,95 +143,16 @@ export default function Directory() {
             <p className="text-slate-600">Loading employees...</p>
           </div>
         ) : filteredEmployees.length > 0 ? (
-          <div className="space-y-4">
-            {filteredEmployees.map((emp) => {
-              const isCurrentUser = emp.email === user?.email;
-              const displayName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || 'Unknown';
-              const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-              
-              return (
-                <Card 
-                  key={emp.id} 
-                  className={`shadow-sm transition-all ${
-                    isCurrentUser 
-                      ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-300 dark:border-blue-700' 
-                      : 'bg-white dark:bg-[#282828] border border-slate-200 dark:border-slate-700'
-                  }`}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                      {emp.profile_photo_url ? (
-                        <img 
-                          src={emp.profile_photo_url} 
-                          alt={displayName}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600 flex-shrink-0"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <span className="text-white font-bold text-lg">
-                            {initials}
-                          </span>
-                        </div>
-                      )}
-                      
-                      <div className="flex-1 min-w-0 space-y-2">
-                        <div>
-                          <h3 className="font-bold text-lg text-slate-900 dark:text-white leading-tight mb-0.5">
-                            {displayName}
-                          </h3>
-                          {isCurrentUser && (
-                            <Badge className="bg-blue-500 text-white text-xs">Tú</Badge>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-1.5">
-                          {emp.position && (
-                            <div className="flex items-center gap-2">
-                              <Briefcase className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                              <span className="text-sm text-slate-700 dark:text-slate-300 font-medium">{emp.position}</span>
-                            </div>
-                          )}
-                          
-                          {emp.team_name && (
-                            <div className="flex items-center gap-2">
-                              <MapPin className="w-4 h-4 text-orange-500 flex-shrink-0" />
-                              <Badge variant="outline" className="text-xs text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-700 font-semibold">
-                                {emp.team_name}
-                              </Badge>
-                            </div>
-                          )}
-                          
-                          {emp.department && (
-                            <div className="flex items-center gap-2">
-                              <Users className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                              <span className="text-sm text-slate-600 dark:text-slate-400">{emp.department}</span>
-                            </div>
-                          )}
-                          
-                          {emp.phone && (
-                            <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4 text-green-600 flex-shrink-0" />
-                              <a href={`tel:${emp.phone}`} className="text-sm text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors">
-                                {emp.phone}
-                              </a>
-                            </div>
-                          )}
-                          
-                          {emp.email && (
-                            <div className="flex items-center gap-2">
-                              <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                              <a href={`mailto:${emp.email}`} className="text-sm text-slate-700 dark:text-slate-300 hover:text-blue-600 transition-colors truncate">
-                                {emp.email}
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredEmployees.map((emp) => (
+              <ModernEmployeeCard
+                key={emp.id}
+                employee={emp}
+                showInviteButton={false}
+                onboardingProgress={null}
+                isReadOnly={true}
+              />
+            ))}
           </div>
         ) : (
           <Card className="bg-white dark:bg-[#282828] shadow-xl border-slate-200 dark:border-slate-700">
