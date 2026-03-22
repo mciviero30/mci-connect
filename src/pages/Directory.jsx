@@ -1,19 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Users, Search, Phone, Mail, AlertCircle } from "lucide-react";
+import { Users, Search, Phone, Mail, AlertCircle, MapPin, Briefcase } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getDisplayName, capitalizeName } from "@/components/utils/nameHelpers";
 import { useLanguage } from '@/components/i18n/LanguageContext';
-import { canViewAllEmployees } from '@/components/permissions/permissionHelpers';
-import { resolveUser, resolveDisplayName } from '@/components/utils/userResolution';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
-import { useMemo } from 'react';
 
 export default function Directory() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,10 +20,7 @@ export default function Directory() {
     staleTime: 300000
   });
   
-  // ROLE-BASED ACCESS: Admin and Manager see all employees
-  const isAdminOrManager = canViewAllEmployees(user);
-
-  // SSOT: EmployeeDirectory is the ONLY source for employee listings (no fallback)
+  // SSOT: EmployeeDirectory is the ONLY source for employee listings
   const { data: directoryEntries = [], isLoading } = useQuery({
     queryKey: ['employeeDirectory'],
     queryFn: () => base44.entities.EmployeeDirectory.filter({ status: 'active' }),
@@ -38,29 +30,39 @@ export default function Directory() {
 
   // PERFORMANCE: Memoize employees transformation
   const employees = useMemo(() => 
-    directoryEntries.map(d => ({
-      id: d.user_id || d.id,
-      email: d.employee_email,
-      full_name: d.full_name,
-      first_name: d.first_name,
-      last_name: d.last_name,
-      position: d.position,
-      department: d.department,
-      phone: d.phone,
-      team_name: d.team_name,
-      profile_photo_url: d.profile_photo_url
-    })),
+    directoryEntries.map(d => {
+      // ENSURE full_name is always present (first_name + last_name)
+      const fullName = d.full_name || `${d.first_name || ''} ${d.last_name || ''}`.trim();
+      return {
+        id: d.user_id || d.id,
+        email: d.employee_email,
+        full_name: fullName,
+        first_name: d.first_name,
+        last_name: d.last_name,
+        position: d.position,
+        department: d.department,
+        phone: d.phone,
+        team_name: d.team_name,
+        profile_photo_url: d.profile_photo_url
+      };
+    }),
     [directoryEntries]
   );
 
   // PERFORMANCE: Memoize filtered employees
   const filteredEmployees = useMemo(() => 
-    employees.filter(emp =>
-      getDisplayName(emp)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.position?.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
+    employees.filter(emp => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        emp.full_name?.toLowerCase().includes(searchLower) ||
+        emp.first_name?.toLowerCase().includes(searchLower) ||
+        emp.last_name?.toLowerCase().includes(searchLower) ||
+        emp.email?.toLowerCase().includes(searchLower) ||
+        emp.phone?.toLowerCase().includes(searchLower) ||
+        emp.position?.toLowerCase().includes(searchLower) ||
+        emp.team_name?.toLowerCase().includes(searchLower)
+      );
+    }),
     [employees, searchTerm]
   );
 
@@ -112,61 +114,88 @@ export default function Directory() {
             <p className="text-slate-600">Loading employees...</p>
           </div>
         ) : filteredEmployees.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredEmployees.map((emp) => {
               const isCurrentUser = emp.email === user?.email;
+              const displayName = emp.full_name || `${emp.first_name || ''} ${emp.last_name || ''}`.trim() || emp.email || 'Unknown';
+              const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
               
               return (
-                <Card key={emp.id} className={`${
-                  isCurrentUser ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-300 dark:border-blue-700' : 'bg-white dark:bg-[#282828] border-slate-200 dark:border-slate-700'
-                }`}>
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
+                <Card 
+                  key={emp.id} 
+                  className={`shadow-md hover:shadow-lg transition-all ${
+                    isCurrentUser 
+                      ? 'bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-300 dark:border-blue-700' 
+                      : 'bg-white dark:bg-[#282828] border border-slate-200 dark:border-slate-700'
+                  }`}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
                       {emp.profile_photo_url ? (
                         <img 
                           src={emp.profile_photo_url} 
-                          alt={getDisplayName(emp)}
-                          className="w-16 h-16 rounded-full object-cover border-2 border-blue-200"
+                          alt={displayName}
+                          className="w-14 h-14 rounded-full object-cover border-2 border-blue-200 flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-gradient-to-br from-[#3B9FF3] to-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-bold text-xl">
-                            {getDisplayName(emp)?.[0]?.toUpperCase()}
+                        <div className="w-14 h-14 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                          <span className="text-white font-bold text-base">
+                            {initials}
                           </span>
                         </div>
                       )}
                       
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-bold text-lg text-slate-900 dark:text-white truncate">
-                            {getDisplayName(emp)}
-                          </h3>
-                          {isCurrentUser && (
-                            <Badge className="bg-blue-500 text-white text-xs">You</Badge>
-                          )}
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-base text-slate-900 dark:text-white leading-tight">
+                              {displayName}
+                            </h3>
+                            {isCurrentUser && (
+                              <Badge className="bg-blue-500 text-white text-xs mt-1">Tú</Badge>
+                            )}
+                          </div>
                         </div>
                         
-                        {emp.position && (
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">{capitalizeName(emp.position)}</p>
-                        )}
-                        
-                        {emp.team_name && (
-                          <Badge variant="outline" className="text-xs text-blue-700 border-blue-200 mb-2">
-                            {emp.team_name}
-                          </Badge>
-                        )}
-                        
-                        <div className="space-y-1 mt-2">
-                          {emp.phone && (
-                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                              <Phone className="w-3 h-3" />
-                              <span>{emp.phone}</span>
+                        <div className="space-y-1.5">
+                          {emp.position && (
+                            <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                              <Briefcase className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                              <span className="font-medium">{emp.position}</span>
                             </div>
                           )}
+                          
+                          {emp.team_name && (
+                            <div className="flex items-center gap-2 text-xs">
+                              <MapPin className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
+                              <Badge variant="outline" className="text-xs text-orange-700 dark:text-orange-400 border-orange-300 dark:border-orange-700">
+                                {emp.team_name}
+                              </Badge>
+                            </div>
+                          )}
+                          
+                          {emp.department && (
+                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                              <Users className="w-3.5 h-3.5 text-slate-500 flex-shrink-0" />
+                              <span>{emp.department}</span>
+                            </div>
+                          )}
+                          
+                          {emp.phone && (
+                            <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                              <Phone className="w-3.5 h-3.5 text-green-600 flex-shrink-0" />
+                              <a href={`tel:${emp.phone}`} className="hover:text-blue-600 transition-colors">
+                                {emp.phone}
+                              </a>
+                            </div>
+                          )}
+                          
                           {emp.email && (
                             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
-                              <Mail className="w-3 h-3" />
-                              <span className="truncate">{emp.email}</span>
+                              <Mail className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+                              <a href={`mailto:${emp.email}`} className="truncate hover:text-blue-600 transition-colors">
+                                {emp.email}
+                              </a>
                             </div>
                           )}
                         </div>
