@@ -555,7 +555,6 @@ export default function Dashboard() {
                 <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <Progress value={Math.min(weekProgress, 100)} className="h-1.5" />
             <p className="text-[9px] text-blue-600 dark:text-blue-300 font-medium">{yearHours.toFixed(1)}h year-to-date</p>
           </motion.div>
         );
