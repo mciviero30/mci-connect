@@ -255,11 +255,11 @@ export default function EmployeeProfile() {
       )}
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className={`grid ${isAdmin ? 'grid-cols-4' : 'grid-cols-3'} w-full`}>
+        <TabsList className={`grid ${isAdminUser ? 'grid-cols-4' : 'grid-cols-3'} w-full`}>
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="contact">Contact</TabsTrigger>
           <TabsTrigger value="employment">Employment</TabsTrigger>
-          {isAdmin && <TabsTrigger value="compensation">Compensation</TabsTrigger>}
+          {isAdminUser && <TabsTrigger value="compensation">Compensation</TabsTrigger>}
         </TabsList>
 
         {/* OVERVIEW */}

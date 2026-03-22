@@ -129,8 +129,7 @@ export default function Empleados() {
     gcTime: Infinity
   });
   
-  const userRole = (currentUser?.role || 'employee').toLowerCase();
-  const hasFullAccess = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
+  const hasFullAccess = isAdmin(currentUser);
 
   const { handleError } = useErrorHandler();
 
