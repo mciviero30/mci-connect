@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { canViewSensitiveData } from "@/components/utils/employeeSecurity";
+import { POSITION_OPTIONS, DEPARTMENT_OPTIONS } from "@/components/utils/employeeFieldDefinitions";
 
 export default function EditEmployeeForm({ employee, currentUser, onFormChange }) {
   const [formData, setFormData] = useState({
@@ -112,18 +113,9 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
               className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
             >
               <option value="">Select Position</option>
-              <option value="CEO">CEO</option>
-              <option value="Owner">Owner</option>
-              <option value="manager">Manager</option>
-              <option value="supervisor">Supervisor</option>
-              <option value="foreman">Foreman</option>
-              <option value="technician">Technician</option>
-              <option value="administrator">Administrator</option>
-              <option value="IT Support">IT Support</option>
-              <option value="sales">Sales</option>
-              <option value="marketing">Marketing</option>
-              <option value="hr">HR</option>
-              <option value="operations">Operations</option>
+              {POSITION_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
 
@@ -151,18 +143,9 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
             className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
           >
             <option value="">Select Department</option>
-            <option value="executive">Executive</option>
-            <option value="management">Management</option>
-            <option value="operations">Operations</option>
-            <option value="administration">Administration</option>
-            <option value="field">Field Technician</option>
-            <option value="foreman">Foreman</option>
-            <option value="HR">Human Resources</option>
-            <option value="IT">IT Support</option>
-            <option value="sales">Sales</option>
-            <option value="marketing">Marketing</option>
-            <option value="finance">Finance</option>
-            <option value="customer_service">Customer Service</option>
+            {DEPARTMENT_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
           </select>
         </div>
 
