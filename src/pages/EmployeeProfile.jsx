@@ -114,6 +114,11 @@ export default function EmployeeProfile() {
     setEditOpen(true);
   };
 
+  const handleSave = () => {
+    console.log('[EmployeeProfile] Saving changes:', editForm);
+    updateMutation.mutate(editForm);
+  };
+
   const updateMutation = useMutation({
     mutationFn: async (data) => {
       // UPDATE via CENTRAL SYNC - syncs to EmployeeProfile + User + EmployeeDirectory + denormalized fields
@@ -284,7 +289,7 @@ export default function EmployeeProfile() {
               Cancel
             </Button>
             <Button
-              onClick={() => updateMutation.mutate(editForm)}
+              onClick={handleSave}
               disabled={updateMutation.isPending}
               className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white"
             >
