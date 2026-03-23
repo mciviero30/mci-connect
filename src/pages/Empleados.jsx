@@ -24,7 +24,30 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
    const queryClient = useQueryClient();
    const toast = useToast();
    const { handleError } = useErrorHandler();
-   const [formData, setFormData] = useState({});
+   
+   // Initialize formData with employee data when editing
+   const [formData, setFormData] = useState(() => {
+     if (employee) {
+       return {
+         first_name: employee.first_name || '',
+         last_name: employee.last_name || '',
+         email: employee.email || '',
+         phone: employee.phone || '',
+         position: employee.position || '',
+         department: employee.department || '',
+         team_id: employee.team_id || '',
+         team_name: employee.team_name || '',
+         address: employee.address || '',
+         dob: employee.dob || '',
+         ssn_tax_id: employee.ssn_tax_id || '',
+         tshirt_size: employee.tshirt_size || '',
+         hourly_rate: employee.hourly_rate || '',
+         role: employee.role || 'user',
+         employment_status: employee.employment_status || 'active',
+       };
+     }
+     return {};
+   });
 
    const mutation = useMutation({
      mutationFn: async (data) => {
