@@ -36,7 +36,7 @@ const formatTime = (seconds) => {
   return `${h}:${m}:${s}`;
 };
 
-export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
+export default function LiveTimeTracker({ trackingType, onSave, isLoading, preselectedWorkType }) {
   let language = 'en';
   let t = (key) => key;
   try {
