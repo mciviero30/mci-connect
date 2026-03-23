@@ -40,10 +40,7 @@ export default function AddressAutocomplete({
         // Load Google Maps Places API dynamically
         const script = document.createElement('script');
         const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-        if (!apiKey) {
-          console.error('Google Maps API key not found. Address autocomplete will not work.');
-          return;
-        }
+        if (!apiKey) return;
         script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
         script.async = true;
         script.defer = true;
