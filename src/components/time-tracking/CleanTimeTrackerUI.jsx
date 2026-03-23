@@ -60,17 +60,17 @@ export default function CleanTimeTrackerUI({
         {/* Time Display */}
         <div className="text-center">
           <div className={`text-8xl font-black font-mono tracking-tighter mb-4 ${
-            exceedsMaxHours 
-              ? 'text-red-500 animate-pulse' 
+            exceedsMaxHours
+              ? 'text-red-500 animate-pulse'
               : 'text-white drop-shadow-lg'
           }`}>
             {formatTime(elapsed)}
           </div>
-          
+
           {exceedsMaxHours && (
             <Badge className="bg-red-600 text-white px-4 py-2 text-base font-bold">
-              {language === 'es' 
-                ? `¡LÍMITE DE ${maxHours}H ALCANZADO!` 
+              {language === 'es'
+                ? `¡LÍMITE DE ${maxHours}H ALCANZADO!`
                 : `${maxHours}H LIMIT REACHED!`}
             </Badge>
           )}
@@ -84,10 +84,10 @@ export default function CleanTimeTrackerUI({
               {language === 'es' ? 'EN PAUSA' : 'ON BREAK'}
             </Badge>
           )}
-          
+
           {activeSession.workType !== 'normal' && (
             <Badge className="bg-blue-500 text-white px-3 py-1 font-bold">
-              {activeSession.workType === 'driving' 
+              {activeSession.workType === 'driving'
                 ? (language === 'es' ? 'Manejo' : 'Driving')
                 : (language === 'es' ? 'Setup' : 'Setup')}
             </Badge>
@@ -95,20 +95,20 @@ export default function CleanTimeTrackerUI({
         </div>
       </div>
 
-      {/* Bottom Action Bar */}
-      <div className="p-4 pb-safe bg-gradient-to-t from-slate-900 to-transparent border-t border-white/10">
-        <div className="flex gap-3 mb-3">
+      {/* Bottom Action Bar - extra padding so buttons don't hide behind banner */}
+      <div className="px-6 pt-4 pb-20 bg-gradient-to-t from-slate-900 to-transparent border-t border-white/10">
+        <div className="flex gap-3">
           <Button
             onClick={onBreakToggle}
             className="flex-1 h-14 rounded-2xl font-bold text-base bg-amber-600 hover:bg-amber-700 text-white"
           >
             <Coffee className="w-5 h-5 mr-2" />
-            {activeSession.onBreak 
+            {activeSession.onBreak
               ? (language === 'es' ? 'Reanudar' : 'Resume')
               : (language === 'es' ? 'Pausa' : 'Break')
             }
           </Button>
-          
+
           <Button
             onClick={onClockOut}
             className="flex-1 h-14 rounded-2xl font-bold text-base bg-red-600 hover:bg-red-700 text-white"
@@ -117,11 +117,11 @@ export default function CleanTimeTrackerUI({
             {language === 'es' ? 'Clock Out' : 'Clock Out'}
           </Button>
         </div>
-        
+
         {exceedsMaxHours && (
-          <p className="text-center text-xs text-red-300 font-semibold">
-            {language === 'es' 
-              ? `⚠️ Límite de ${maxHours}h alcanzado. Horas serán revisadas.` 
+          <p className="mt-4 text-center text-xs text-red-300 font-semibold">
+            {language === 'es'
+              ? `⚠️ Límite de ${maxHours}h alcanzado. Horas serán revisadas.`
               : `⚠️ ${maxHours}h limit reached. Hours will be reviewed.`}
           </p>
         )}
