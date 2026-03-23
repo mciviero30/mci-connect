@@ -61,9 +61,9 @@ export default function ActiveSessionBanner() {
   return (
     <div
       onClick={handleTap}
-      className="fixed top-0 left-0 right-0 z-[9999] cursor-pointer select-none"
+      className="fixed bottom-16 md:bottom-0 left-0 right-0 z-[9999] cursor-pointer select-none"
     >
-      <div className={`flex items-center gap-2 px-3 py-2 text-white shadow-lg ${
+      <div className={`flex items-center gap-2 px-4 py-2.5 text-white shadow-2xl ${
         isOnBreak
           ? 'bg-amber-600'
           : isDriving
@@ -81,20 +81,25 @@ export default function ActiveSessionBanner() {
         </span>
 
         {isDriving
-          ? <Car className="w-3.5 h-3.5 flex-shrink-0" />
-          : <Clock className="w-3.5 h-3.5 flex-shrink-0" />
+          ? <Car className="w-4 h-4 flex-shrink-0" />
+          : <Clock className="w-4 h-4 flex-shrink-0" />
         }
 
-        <span className="text-[11px] font-bold truncate flex-1">
-          {isOnBreak ? '⏸ ' : ''}
-          {session.jobName}
-        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-bold truncate">
+            {isOnBreak ? '⏸ EN PAUSA — ' : '● ACTIVO — '}
+            {session.jobName}
+          </p>
+          <p className="text-[9px] opacity-80">
+            {isDriving ? 'Driving Time' : 'Work Time'} • {isOnBreak ? 'En Pausa' : 'Toca para ver'}
+          </p>
+        </div>
 
-        <span className="text-[12px] font-black font-mono flex-shrink-0">
+        <span className="text-[16px] font-black font-mono flex-shrink-0 tabular-nums">
           {formatTime(elapsed)}
         </span>
 
-        <ChevronRight className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
+        <ChevronRight className="w-4 h-4 flex-shrink-0 opacity-70" />
       </div>
     </div>
   );
