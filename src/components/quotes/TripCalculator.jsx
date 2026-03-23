@@ -19,6 +19,9 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
   const [nightsPerTrip, setNightsPerTrip] = useState(1);
   const [daysPerTrip, setDaysPerTrip] = useState(2);
   const [roomsPerNight, setRoomsPerNight] = useState(1);
+  const [drivingHours, setDrivingHours] = useState(2);
+  const [miles, setMiles] = useState(100);
+  const [ratePerMile, setRatePerMile] = useState(0.70);
   const [includeLabor, setIncludeLabor] = useState(true);
   const [includeDriving, setIncludeDriving] = useState(true);
   const [includeVehicle, setIncludeVehicle] = useState(true);
@@ -44,17 +47,17 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
     staleTime: Infinity,
   });
 
-  // Use hardcoded rates (user-specified)
-  const laborRate = 60;
-  const drivingRatePerTech = 55;
-  const vehicleRate = 175.84;
+  // Fetch Labor from catalog
+  const laborItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('regular') && qi.name?.toLowerCase().includes('work'));
+  const laborRate = laborItem?.unit_price || 60;
+  const drivingRate = 60;
   const hotelRate = 200;
   const perDiemRate = 55;
 
   // Calculations
   const laborCost = includeLabor ? hoursPerTech * techCount * roundTrips * laborRate : 0;
-  const drivingCost = includeDriving ? roundTrips * techCount * drivingRatePerTech : 0;
-  const vehicleCost = includeVehicle ? 1 * roundTrips * vehicleRate : 0;
+  const drivingCost = includeDriving ? drivingHours * drivingRate : 0;
+  const vehicleCost = includeVehicle ? miles * ratePerMile : 0;
   const totalNights = nightsPerTrip * roundTrips;
   const totalHotelRooms = roomsPerNight * totalNights;
   const hotelCost = includeHotel ? totalHotelRooms * hotelRate : 0;
@@ -66,8 +69,8 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
   const buildDescription = () => {
     const lines = [];
     if (includeLabor) lines.push(`${hoursPerTech}h x ${techCount} tech${techCount>1?'s':''} x ${roundTrips} trip${roundTrips>1?'(s)':''} - $${laborCost.toFixed(0)}`);
-    if (includeDriving) lines.push(`${roundTrips} round trip${roundTrips>1?'(s)':''} x ${techCount} tech${techCount>1?'s':''} - $${drivingCost.toFixed(0)}`);
-    if (includeVehicle) lines.push(`1 vehicle${roundTrips>1?'(s)':''} x ${roundTrips} trip${roundTrips>1?'(s)':''} - $${vehicleCost.toFixed(2)}`);
+    if (includeDriving) lines.push(`${drivingHours}h driving x ${drivingRate}/h - $${drivingCost.toFixed(0)}`);
+    if (includeVehicle) lines.push(`${miles} miles x $${ratePerMile}/mile - $${vehicleCost.toFixed(2)}`);
     if (includeHotel) lines.push(`${roomsPerNight} room${roomsPerNight>1?'(s)':''} x ${totalNights} night${totalNights>1?'(s)':''} - $${hotelCost.toFixed(0)}`);
     if (includePerDiem) lines.push(`${techCount} tech${techCount>1?'(s)':''} x ${daysPerTrip * roundTrips} day${(daysPerTrip*roundTrips)>1?'(s)':''} - $${perDiemCost.toFixed(0)}`);
     return lines.join('\n');
@@ -180,11 +183,36 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
             </div>
           </div>
 
+          {/* Driving & Vehicle inputs */}
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <Label className="text-[10px] flex items-center gap-1 mb-1">
+                <Clock className="w-3 h-3 text-purple-500" />
+                {language === 'es' ? 'Horas Manejo' : 'Driving Hrs'}
+              </Label>
+              <Input type="number" min="0" max="16" step="0.5" value={drivingHours}
+                onChange={e => setDrivingHours(parseFloat(e.target.value) || 0)} className="h-7 text-sm" />
+            </div>
+            <div>
+              <Label className="text-[10px] flex items-center gap-1 mb-1">
+                <Car className="w-3 h-3 text-purple-500" />
+                Millas
+              </Label>
+              <Input type="number" min="0" max="2000" step="5" value={miles}
+                onChange={e => setMiles(parseFloat(e.target.value) || 0)} className="h-7 text-sm" />
+            </div>
+            <div>
+              <Label className="text-[10px] block mb-1">$/Milla</Label>
+              <Input type="number" min="0" max="5" step="0.01" value={ratePerMile}
+                onChange={e => setRatePerMile(parseFloat(e.target.value) || 0.70)} className="h-7 text-sm" />
+            </div>
+          </div>
+
           {/* Include toggles */}
           <div className="flex flex-wrap gap-3 p-2 bg-white rounded border border-purple-100">
             <Toggle checked={includeLabor} onChange={setIncludeLabor} label={`Labor ($${laborRate}/h)`} />
-            <Toggle checked={includeDriving} onChange={setIncludeDriving} label={`Driving ($${drivingRatePerTech}/tech)`} />
-            <Toggle checked={includeVehicle} onChange={setIncludeVehicle} label={`Vehicle ($${vehicleRate})`} />
+            <Toggle checked={includeDriving} onChange={setIncludeDriving} label={`Driving ($${drivingRate}/h)`} />
+            <Toggle checked={includeVehicle} onChange={setIncludeVehicle} label={`Vehicle (${ratePerMile}/mi)`} />
             <Toggle checked={includeHotel} onChange={setIncludeHotel} label={`Hotel ($${hotelRate}/nt)`} />
             <Toggle checked={includePerDiem} onChange={setIncludePerDiem} label={`Per Diem ($${perDiemRate}/day)`} />
           </div>
