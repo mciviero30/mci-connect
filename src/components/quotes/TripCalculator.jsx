@@ -795,16 +795,17 @@ export default function TripCalculator({
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-1 pt-1 border-t border-slate-200">
+        <div className="space-y-1 pt-1 border-t border-slate-200">
+          {/* Distance calc button - shown when needed and not yet calculated */}
           {needsDistanceCalc && travelMetrics.length === 0 && (
             <Button
               type="button"
               onClick={calculateDistances}
               disabled={isCalculating || !jobAddress || selectedTeamIds.length === 0}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-6"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white h-6"
             >
               <Calculator className="w-3 h-3 mr-1" />
-              <span className="text-[10px]">{isCalculating ? (language === 'es' ? 'Calculando...' : 'Calculating...') : (language === 'es' ? 'Calcular Distancias' : 'Calculate Distances')}</span>
+              <span className="text-[10px]">{isCalculating ? (language === 'es' ? 'Calculando...' : 'Calculating...') : (language === 'es' ? 'Calcular Distancias (Opcional)' : 'Calculate Distances (Optional)')}</span>
             </Button>
           )}
 
@@ -812,25 +813,26 @@ export default function TripCalculator({
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                setTravelMetrics([]);
-                setVehicleCounts({});
-              }}
+              onClick={() => { setTravelMetrics([]); setVehicleCounts({}); }}
               size="sm"
-              className="flex-1"
+              className="w-full h-6"
             >
-              <span className="text-[10px]">{language === 'es' ? 'Recalcular' : 'Recalculate'}</span>
+              <span className="text-[10px]">{language === 'es' ? 'Recalcular Distancias' : 'Recalculate Distances'}</span>
             </Button>
           )}
 
+          {/* Always visible - adds hotel/perdiem and driving if calculated */}
           <Button
             type="button"
             onClick={generateItems}
-            disabled={!canGenerate}
-            className="flex-1 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold h-6"
+            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold h-6"
           >
             <Plus className="w-3 h-3 mr-1" />
-            <span className="text-[10px]">{language === 'es' ? 'Agregar Todo al Estimado' : 'Add All to Quote'}</span>
+            <span className="text-[10px]">
+              {travelMetrics.length > 0
+                ? (language === 'es' ? 'Agregar Todo (Hotel + Millas + Per Diem)' : 'Add All (Hotel + Miles + Per Diem)')
+                : (language === 'es' ? 'Agregar Hotel + Per Diem' : 'Add Hotel + Per Diem')}
+            </span>
           </Button>
         </div>
       </CardContent>
