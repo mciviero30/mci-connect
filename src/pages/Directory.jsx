@@ -48,6 +48,15 @@ export default function Directory() {
     initialData: []
   });
 
+  // Fetch User records to get avatar/profile data
+  const { data: users = [] } = useQuery({
+    queryKey: ['directoryUsers'],
+    queryFn: () => base44.entities.User.list('', 200),
+    staleTime: 300000,
+    enabled: !!user && directoryEntries.length > 0,
+    initialData: []
+  });
+
   // PERFORMANCE: Transform to consistent format
   const employees = useMemo(() => 
     directoryEntries
@@ -58,6 +67,9 @@ export default function Directory() {
         const total = 4;
         const progress = { percentage: Math.round((completed / total) * 100), completed, total, forms: empForms };
         const resolvedTeamName = dir.team_name || (dir.team_id ? teams.find(t => t.id === dir.team_id)?.team_name : '') || '';
+        
+        // JOIN with User to get avatar and profile data
+        const userRecord = users.find(u => u.id === dir.user_id);
 
         return {
           id: dir.user_id,
@@ -72,18 +84,18 @@ export default function Directory() {
           team_id: dir.team_id || '',
           team_name: resolvedTeamName,
           status: dir.status,
-          role: 'user',
+          role: userRecord?.role || 'user',
           profile_photo_url: dir.profile_photo_url || null,
-          avatar_image_url: dir.avatar_image_url || null,
-          preferred_profile_image: dir.preferred_profile_image || 'photo',
-          profile_last_updated: dir.profile_last_updated || null,
-          employment_status: dir.employment_status || 'active',
+          avatar_image_url: userRecord?.avatar_image_url || null,
+          preferred_profile_image: userRecord?.preferred_profile_image || 'photo',
+          profile_last_updated: userRecord?.profile_last_updated || null,
+          employment_status: userRecord?.employment_status || 'active',
           onboarding_progress: progress
         };
       })
       .filter(Boolean)
       .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase())),
-    [directoryEntries, onboardingForms, teams]
+    [directoryEntries, onboardingForms, teams, users]
   );
 
   // PERFORMANCE: Memoize filtered employees
