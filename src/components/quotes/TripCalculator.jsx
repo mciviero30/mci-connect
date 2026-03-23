@@ -114,6 +114,20 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
       }
 
       const grandTotal = laborTotal + drivingTotal + milesTotal;
+      items.push({
+        item_name: 'Punch Trip',
+        description: descParts.join(' | '),
+        quantity: 1,
+        unit: 'trip',
+        unit_price: grandTotal,
+        total: grandTotal,
+        is_travel_item: false,
+        calculation_type: 'punch_trip',
+        tech_count: techCount,
+        duration_value: roundTrips,
+        auto_calculated: true
+      });
+    }
 
     if (tripType === 'verification') {
       const totalVerifHours = verificationHours * techCount * roundTrips;
