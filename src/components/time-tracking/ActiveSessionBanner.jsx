@@ -3,6 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import { Clock, Car } from 'lucide-react';
 
+const formatTime = (seconds) => {
+  const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+  return `${h}:${m}:${s}`;
+};
+
+const SESSION_KEYS = ['liveTimeTracker_work', 'liveTimeTracker_driving'];
+
+function getActiveSession() {
+  for (const key of SESSION_KEYS) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const session = JSON.parse(raw);
+        if (session && session.startTime) return { session, key };
+      }
+    } catch (e) {}
+  }
+  return null;
+}
+
 export default function ActiveSessionBanner() {
   const navigate = useNavigate();
   const [activeData, setActiveData] = useState(null);
