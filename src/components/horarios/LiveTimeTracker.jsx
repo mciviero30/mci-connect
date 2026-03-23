@@ -351,8 +351,24 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   };
 
   // GEOFENCING - Strict enforcement with 100m radius (EXCEPT for driving hours)
+  // Called directly (skipping dialog) when workType is pre-selected from BottomNav
+  const handleStartSessionWithJob = async (jobId, wType) => {
+    setSelectedJobForStart(jobId);
+    setWorkType(wType);
+    // Small delay to let state settle, then call the main handler
+    // We temporarily override workType for this call
+    await _startSession(jobId, wType);
+  };
+
   const handleStartSession = async () => {
     if (!selectedJobForStart) return;
+    await _startSession(selectedJobForStart, workType);
+  };
+
+  const _startSession = async (jobIdParam, workTypeParam) => {
+    const selectedJob = jobIdParam || selectedJobForStart;
+    const effectiveWorkType = workTypeParam || workType;
+    if (!selectedJob) return;
     if (!user) {
       setLocationError(language === 'es' ? 'Error: Usuario no cargado. Intenta de nuevo.' : 'Error: User not loaded. Please try again.');
       setShowWorkTypeDialog(false);
