@@ -1,29 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import { Clock, Car, ChevronRight } from 'lucide-react';
-
-const formatTime = (seconds) => {
-  const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
-  const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-  const s = Math.floor(seconds % 60).toString().padStart(2, '0');
-  return `${h}:${m}:${s}`;
-};
-
-const SESSION_KEYS = ['liveTimeTracker_work', 'liveTimeTracker_driving'];
-
-function getActiveSession() {
-  for (const key of SESSION_KEYS) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) {
-        const session = JSON.parse(raw);
-        if (session && session.startTime) return { session, key };
-      }
-    } catch (e) {}
-  }
-  return null;
-}
+import { Clock, Car } from 'lucide-react';
 
 export default function ActiveSessionBanner() {
   const navigate = useNavigate();
@@ -54,53 +32,25 @@ export default function ActiveSessionBanner() {
   const isDriving = session.workType === 'driving';
   const isOnBreak = session.onBreak;
 
-  const handleTap = () => {
-    navigate(createPageUrl('TimeTracking'));
-  };
-
   return (
-    <div
-      onClick={handleTap}
-      className="fixed bottom-16 md:bottom-0 left-0 right-0 z-[9999] cursor-pointer select-none"
-    >
-      <div className={`flex items-center gap-2 px-4 py-2.5 text-white shadow-2xl ${
+    <button
+      onClick={() => navigate(createPageUrl('TimeTracking'))}
+      className={`flex items-center gap-1 px-2 py-1 rounded-full text-white text-[9px] font-bold shadow-md transition-all active:scale-95 ${
         isOnBreak
-          ? 'bg-amber-600'
+          ? 'bg-amber-500'
           : isDriving
-          ? 'bg-gradient-to-r from-amber-500 to-orange-600'
-          : 'bg-gradient-to-r from-blue-700 to-blue-600'
-      }`}>
-        {/* Pulsing dot */}
-        <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-            isOnBreak ? 'bg-amber-200' : 'bg-green-300'
-          }`} />
-          <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-            isOnBreak ? 'bg-amber-200' : 'bg-green-400'
-          }`} />
-        </span>
-
-        {isDriving
-          ? <Car className="w-4 h-4 flex-shrink-0" />
-          : <Clock className="w-4 h-4 flex-shrink-0" />
-        }
-
-        <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-bold truncate">
-            {isOnBreak ? '⏸ EN PAUSA — ' : '● ACTIVO — '}
-            {session.jobName}
-          </p>
-          <p className="text-[9px] opacity-80">
-            {isDriving ? 'Driving Time' : 'Work Time'} • {isOnBreak ? 'En Pausa' : 'Toca para ver'}
-          </p>
-        </div>
-
-        <span className="text-[16px] font-black font-mono flex-shrink-0 tabular-nums">
-          {formatTime(elapsed)}
-        </span>
-
-        <ChevronRight className="w-4 h-4 flex-shrink-0 opacity-70" />
-      </div>
-    </div>
+          ? 'bg-orange-500'
+          : 'bg-green-600'
+      }`}
+      title={session.jobName}
+    >
+      {/* Pulsing dot */}
+      <span className="relative flex h-1.5 w-1.5 flex-shrink-0">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
+        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
+      </span>
+      {isDriving ? <Car className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+      <span className="font-mono tabular-nums">{formatTime(elapsed)}</span>
+    </button>
   );
 }
