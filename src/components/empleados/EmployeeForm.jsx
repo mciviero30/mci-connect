@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2 } from "lucide-react";
 import { ROLES } from "@/components/core/roleRules";
 import { useToast } from "@/components/ui/toast";
+import { POSITION_OPTIONS, DEPARTMENT_OPTIONS } from "@/components/utils/employeeFieldDefinitions";
 
 const formatPhone = (value) => {
   const cleaned = value.replace(/\D/g, '');
@@ -269,13 +270,9 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
               <SelectValue placeholder="Select role" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
-              <SelectItem value={ROLES.CEO}>CEO</SelectItem>
-              <SelectItem value={ROLES.ADMIN}>Administrator</SelectItem>
-              <SelectItem value={ROLES.MANAGER}>Manager</SelectItem>
-              <SelectItem value={ROLES.SUPERVISOR}>Supervisor</SelectItem>
-              <SelectItem value={ROLES.FOREMAN}>Foreman</SelectItem>
-              <SelectItem value={ROLES.TECHNICIAN}>Technician</SelectItem>
-              <SelectItem value={ROLES.EMPLOYEE}>Employee</SelectItem>
+              {POSITION_OPTIONS.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -284,18 +281,12 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
           <Label className="text-slate-900 font-medium">Department</Label>
           <Select value={formData.department} onValueChange={(value) => setFormData({ ...formData, department: value })}>
             <SelectTrigger className="bg-white border-slate-200 text-slate-900">
-              <SelectValue />
+              <SelectValue placeholder="Select department" />
             </SelectTrigger>
             <SelectContent className="bg-white border-slate-200">
-              <SelectItem value="HR">HR</SelectItem>
-              <SelectItem value="field">Field</SelectItem>
-              <SelectItem value="operations">Operations</SelectItem>
-              <SelectItem value="IT">IT</SelectItem>
-              <SelectItem value="administration">Administration</SelectItem>
-              <SelectItem value="designer">Designer</SelectItem>
-              <SelectItem value="PM">PM</SelectItem>
-              <SelectItem value="marketing">Marketing</SelectItem>
-              <SelectItem value="sales">Sales</SelectItem>
+              {DEPARTMENT_OPTIONS.map(opt => (
+                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
