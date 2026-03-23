@@ -96,7 +96,30 @@ export default function CleanTimeTrackerUI({
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="p-4 pb-8 bg-gradient-to-t from-slate-900 to-transparent border-t border-white/10">
+      <div className="p-4 pb-safe bg-gradient-to-t from-slate-900 to-transparent border-t border-white/10">
+        <div className="flex gap-3 mb-3">
+          <Button
+            onClick={onBreakToggle}
+            className="flex-1 h-14 rounded-2xl font-bold text-base bg-amber-600 hover:bg-amber-700 text-white"
+          >
+            <Coffee className="w-5 h-5 mr-2" />
+            {activeSession.onBreak 
+              ? (language === 'es' ? 'Reanudar' : 'Resume')
+              : (language === 'es' ? 'Pausa' : 'Break')
+            }
+          </Button>
+          
+          <Button
+            onClick={onClockOut}
+            className="flex-1 h-14 rounded-2xl font-bold text-base bg-red-600 hover:bg-red-700 text-white"
+          >
+            <Square className="w-5 h-5 mr-2" />
+            {language === 'es' ? 'Clock Out' : 'Clock Out'}
+          </Button>
+        </div>
+        
+        {exceedsMaxHours && (
+          <p className="text-center text-xs text-red-300 font-semibold">
             {language === 'es' 
               ? `⚠️ Límite de ${maxHours}h alcanzado. Horas serán revisadas.` 
               : `⚠️ ${maxHours}h limit reached. Hours will be reviewed.`}
