@@ -128,51 +128,19 @@ export default function Calendario() {
   });
 
   // 🚫 EMPLOYEE SSOT: EmployeeDirectory is canonical source
-  // DO NOT USE User.list() or User.filter() for employee lists
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
       const directory = await base44.entities.EmployeeDirectory.list();
       
-      // DEFENSIVE: Filter out records missing critical fields
+      // Only exclude records with no email (can't identify them) and deleted/archived
       const validEmployees = directory.filter(d => {
-        if (!d.user_id) {
-          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ EmployeeDirectory record missing user_id', {
-            component: 'Calendario',
-            employee_email: d.employee_email,
-            id: d.id
-          });
-          return false; // Skip records without user_id
-        }
-        if (!d.employee_email) {
-          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ EmployeeDirectory record missing email', {
-            component: 'Calendario',
-            user_id: d.user_id,
-            id: d.id
-          });
-          return false;
-        }
+        if (!d.employee_email) return false;
+        if (d.status === 'archived') return false;
         return true;
       });
       
       return validEmployees.map(d => ({
-        id: d.user_id,
-        email: d.employee_email,
-        full_name: d.full_name || `${d.first_name || ''} ${d.last_name || ''}`.trim(),
-        first_name: d.first_name,
-        last_name: d.last_name,
-        employment_status: d.status,
-        profile_photo_url: d.profile_photo_url,
-        avatar_image_url: d.avatar_image_url,
-        position: d.position,
-        department: d.department
-      }));
-    },
-    initialData: [],
-    staleTime: 300000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false
-  });
 
   const { data: timeOffRequests = [] } = useQuery({
     queryKey: ['timeOffRequests'],
