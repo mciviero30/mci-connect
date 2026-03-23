@@ -96,7 +96,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   }, []);
   
   // NEW: Prompt #52 - Work Type and Task Details
-  const [workType, setWorkType] = useState('normal');
+  // If preselectedWorkType is passed from BottomNav, use it and skip the work type dialog
+  const [workType, setWorkType] = useState(preselectedWorkType || 'normal');
   const [taskDetails, setTaskDetails] = useState('');
   const [selectedJobForStart, setSelectedJobForStart] = useState(null);
 
@@ -339,7 +340,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     if (!jobId) return;
     setSelectedJobForStart(jobId);
     setShowJobSelector(false);
-    setShowWorkTypeDialog(true); // NEW: Show work type dialog
+    // If work type already pre-selected from BottomNav, skip the dialog and start immediately
+    if (preselectedWorkType) {
+      // Trigger start session directly via a flag
+      setShowWorkTypeDialog(false);
+      setTimeout(() => handleStartSessionWithJob(jobId, preselectedWorkType), 50);
+    } else {
+      setShowWorkTypeDialog(true);
+    }
   };
 
   // GEOFENCING - Strict enforcement with 100m radius (EXCEPT for driving hours)
