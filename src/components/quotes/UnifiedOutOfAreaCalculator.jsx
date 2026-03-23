@@ -139,8 +139,8 @@ export default function UnifiedOutOfAreaCalculator({
       const milesPerTrip = parseFloat(metric.totalMiles) * vehicleCount; // miles for 1 trip, all vehicles
       const hoursPerTrip = parseFloat(metric.drivingHours); // round-trip hours for 1 trip (already ida+vuelta)
       // Total = hours × techs × trips
-      const totalDrivingHours = hoursPerTrip * techCount * roundTrips;
-      const totalMiles = milesPerTrip * roundTrips;
+      const totalDrivingHours = hoursPerTrip * techCount * roundTrips * 1.1;
+      const totalMiles = milesPerTrip * roundTrips * 1.1;
       // base_qty_per_trip = hours × techs for 1 round trip (so round_trips field scales correctly)
       const drivingBasePerTrip = hoursPerTrip * techCount;
 
