@@ -55,7 +55,7 @@ export default function ActiveSessionBanner() {
   const isOnBreak = session.onBreak;
 
   const handleTap = () => {
-    navigate(createPageUrl('MisHoras'));
+    navigate(createPageUrl('TimeTracking'));
   };
 
   return (

@@ -25,7 +25,7 @@ export default function CleanTimeTrackerUI({
   const exceedsMaxHours = sessionHours >= maxHours;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-gradient-to-b from-blue-900 via-blue-800 to-slate-900">
+    <div className="fixed inset-0 z-[10000] flex flex-col bg-gradient-to-b from-blue-900 via-blue-800 to-slate-900">
       {/* Top Bar */}
       <div className="p-4 flex items-center justify-between">
         <Button

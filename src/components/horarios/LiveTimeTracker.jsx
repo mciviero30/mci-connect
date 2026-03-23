@@ -1017,9 +1017,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         onBreakToggle={handleToggleBreak}
         onClockOut={handleClockOut}
         onBack={() => {
-          localStorage.removeItem(storageKey);
-          setActiveSession(null);
-          setElapsed(0);
+          // Do NOT delete session — just navigate away. Banner keeps tracking.
+          window.history.back();
         }}
         language={language}
       />
