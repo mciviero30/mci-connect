@@ -83,7 +83,11 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
 
     if (tripType === 'punch') {
       const totalLaborHrs = punchLaborHours * techCount * roundTrips;
-      items.push({ item_name: 'Punch Labor', description: `${punchLaborHours}h x ${techCount} techs x ${roundTrips} trip(s)`, quantity: totalLaborHrs, unit: 'hours', unit_price: laborRate, total: totalLaborHrs * laborRate, is_travel_item: false, calculation_type: 'punch_trip_labor', auto_calculated: true });
+      const laborTotal = totalLaborHrs * laborRate;
+
+      let drivingTotal = 0;
+      let milesTotal = 0;
+      let descParts = [`${punchLaborHours}h x ${techCount} techs x ${roundTrips} trip(s)`];
 
       if (punchNeedsTravel && travelMetrics.length > 0) {
         travelMetrics.forEach(metric => {
@@ -91,16 +95,34 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
           const vehicleCount = vehicleCounts[metric.teamId] || 1;
           const totalDrivingHours = parseFloat(metric.drivingHours) * techCount * roundTrips;
           const totalMiles = parseFloat(metric.totalMiles) * vehicleCount * roundTrips;
-          items.push({ item_name: `Driving Time - ${metric.teamName}`, description: `${roundTrips} round trip(s) x ${techCount} techs`, quantity: totalDrivingHours, unit: 'hours', unit_price: drivingRate, total: totalDrivingHours * drivingRate, is_travel_item: true, travel_item_type: 'driving_time', auto_calculated: true });
-          items.push({ item_name: `Miles - ${metric.teamName}`, description: `${vehicleCount} vehicle(s) x ${roundTrips} trip(s)`, quantity: totalMiles, unit: 'miles', unit_price: mileageRate, total: totalMiles * mileageRate, is_travel_item: true, travel_item_type: 'miles_per_vehicle', auto_calculated: true });
+          drivingTotal += totalDrivingHours * drivingRate;
+          milesTotal += totalMiles * mileageRate;
+          descParts.push(`${totalDrivingHours.toFixed(1)}h driving + ${totalMiles.toFixed(0)} miles (${metric.teamName})`);
         });
         if (nightsPerTrip > 0) {
           const totalNights = nightsPerTrip * roundTrips;
           const totalDays = daysPerTrip * roundTrips;
-          items.push({ item_name: hotelItem?.name || 'Hotel Rooms', description: `${roomsPerNight} room(s) x ${totalNights} night(s)`, quantity: roomsPerNight * totalNights, unit: 'night', unit_price: hotelRate, total: roomsPerNight * totalNights * hotelRate, is_travel_item: false, travel_item_type: 'hotel', auto_calculated: true });
-          items.push({ item_name: perDiemItem?.name || 'Per-Diem', description: `${techCount} tech(s) x ${totalDays} day(s)`, quantity: techCount * totalDays, unit: 'day', unit_price: perDiemRate, total: techCount * totalDays * perDiemRate, is_travel_item: false, travel_item_type: 'per_diem', auto_calculated: true });
+          const hotelTotal = roomsPerNight * totalNights * hotelRate;
+          const perDiemTotal = techCount * totalDays * perDiemRate;
+          drivingTotal += hotelTotal + perDiemTotal;
+          descParts.push(`${roomsPerNight} room(s) x ${totalNights} nights + per diem`);
         }
       }
+
+      const grandTotal = laborTotal + drivingTotal + milesTotal;
+      items.push({
+        item_name: 'Punch Trip',
+        description: descParts.join(' | '),
+        quantity: 1,
+        unit: 'trip',
+        unit_price: grandTotal,
+        total: grandTotal,
+        is_travel_item: false,
+        calculation_type: 'punch_trip',
+        tech_count: techCount,
+        duration_value: roundTrips,
+        auto_calculated: true
+      });
     }
 
     if (tripType === 'verification') {
