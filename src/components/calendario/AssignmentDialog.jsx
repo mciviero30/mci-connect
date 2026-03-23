@@ -271,7 +271,10 @@ export default function AssignmentDialog({
   const isAppointment = shiftType === 'appointment';
   const isJobWork = shiftType === 'job_work';
 
-  const activeEmployees = (employees || []).filter(e => e.employment_status === 'active');
+  // employment_status maps from EmployeeDirectory.status - don't filter strictly, show all non-deleted
+  const activeEmployees = (employees || []).filter(e => 
+    e.employment_status !== 'deleted' && e.employment_status !== 'archived'
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
