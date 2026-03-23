@@ -152,7 +152,7 @@ export default function MisGastos() {
             variant="outline"
           >
             <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            New Expense - Company Expense
+            {t('new_expense')} - Company Expense
           </Button>
         }
       >
