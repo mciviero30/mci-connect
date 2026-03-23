@@ -74,6 +74,9 @@ export default function Directory() {
           status: dir.status,
           role: 'user',
           profile_photo_url: dir.profile_photo_url || null,
+          avatar_image_url: dir.avatar_image_url || null,
+          preferred_profile_image: dir.preferred_profile_image || 'photo',
+          profile_last_updated: dir.profile_last_updated || null,
           employment_status: dir.employment_status || 'active',
           onboarding_progress: progress
         };
