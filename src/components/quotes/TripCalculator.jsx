@@ -97,6 +97,8 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
       round_trips: roundTrips,
       days_per_trip: daysPerTrip,
       nights_per_trip: nightsPerTrip,
+      total_nights: nightsPerTrip * roundTrips,
+      total_calendar_days: daysPerTrip * roundTrips,
     });
   };
 
