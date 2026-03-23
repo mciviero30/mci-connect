@@ -492,12 +492,10 @@ export default function AssignmentDialog({
                   <CommandGroup>
                     {(employees || [])
                       .filter(e => {
-                        // Exclude deleted/archived
+                        // Exclude deleted/archived (employment_status comes from EmployeeDirectory.status)
                         if (e.employment_status === 'deleted' || e.employment_status === 'archived') return false;
-                        
-                        // Exclude only Modern Components (mciviero30@yahoo.com)
-                        if (e.email === 'mciviero30@yahoo.com') return false;
-                        
+                        // Must have an email
+                        if (!e.email) return false;
                         return true;
                       })
                       .map(emp => {
