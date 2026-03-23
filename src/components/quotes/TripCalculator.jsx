@@ -127,26 +127,45 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
 
     if (tripType === 'verification') {
       const totalVerifHours = verificationHours * techCount * roundTrips;
-      items.push({ item_name: 'Field Verification Labor', description: `${verificationHours}h x ${techCount} tech(s) x ${roundTrips} trip(s)`, quantity: totalVerifHours, unit: 'hours', unit_price: laborRate, total: totalVerifHours * laborRate, is_travel_item: false, calculation_type: 'verification_labor', auto_calculated: true });
+      const laborTotal = totalVerifHours * laborRate;
+      let travelTotal = 0;
+      let descParts = [`${verificationHours}h x ${techCount} tech(s) x ${roundTrips} trip(s)`];
+
       if (verificationMode === 'flight') {
         const totalFlights = techCount * roundTrips * 2;
         const totalUbers = techCount * roundTrips * 4;
-        items.push({ item_name: flightItem?.name || 'Flight Tickets', description: `${techCount} tech(s) x ${roundTrips} trip(s) (round-trip)`, quantity: totalFlights, unit: 'ticket', unit_price: flightRate, total: totalFlights * flightRate, is_travel_item: true, travel_item_type: 'flight', auto_calculated: true });
-        items.push({ item_name: uberItem?.name || 'Uber/Taxi', description: 'Airport transfers', quantity: totalUbers, unit: 'ride', unit_price: uberRate, total: totalUbers * uberRate, is_travel_item: true, travel_item_type: 'uber', auto_calculated: true });
+        travelTotal += totalFlights * flightRate + totalUbers * uberRate;
+        descParts.push(`${totalFlights} flights + ${totalUbers} ubers`);
       } else if (travelMetrics.length > 0) {
         travelMetrics.forEach(metric => {
           if (!metric.success) return;
           const vehicleCount = vehicleCounts[metric.teamId] || 1;
           const totalDrivingHours = parseFloat(metric.drivingHours) * techCount * roundTrips;
           const totalMiles = parseFloat(metric.totalMiles) * vehicleCount * roundTrips;
-          items.push({ item_name: `Driving Time - ${metric.teamName}`, description: `${roundTrips} round trip(s) x ${techCount} techs`, quantity: totalDrivingHours, unit: 'hours', unit_price: drivingRate, total: totalDrivingHours * drivingRate, is_travel_item: true, travel_item_type: 'driving_time', auto_calculated: true });
-          items.push({ item_name: `Miles - ${metric.teamName}`, description: `${vehicleCount} vehicle(s) x ${roundTrips} trip(s)`, quantity: totalMiles, unit: 'miles', unit_price: mileageRate, total: totalMiles * mileageRate, is_travel_item: true, travel_item_type: 'miles_per_vehicle', auto_calculated: true });
+          travelTotal += totalDrivingHours * drivingRate + totalMiles * mileageRate;
+          descParts.push(`${totalDrivingHours.toFixed(1)}h driving + ${totalMiles.toFixed(0)} miles (${metric.teamName})`);
         });
       }
+
       const totalNights = verificationNights * roundTrips;
       const totalDays = verificationDays * roundTrips;
-      items.push({ item_name: hotelItem?.name || 'Hotel Rooms', description: `${roomsPerNight} room(s) x ${totalNights} night(s)`, quantity: roomsPerNight * totalNights, unit: 'night', unit_price: hotelRate, total: roomsPerNight * totalNights * hotelRate, is_travel_item: false, travel_item_type: 'hotel', auto_calculated: true });
-      items.push({ item_name: perDiemItem?.name || 'Per-Diem', description: `${techCount} tech(s) x ${totalDays} day(s)`, quantity: techCount * totalDays, unit: 'day', unit_price: perDiemRate, total: techCount * totalDays * perDiemRate, is_travel_item: false, travel_item_type: 'per_diem', auto_calculated: true });
+      travelTotal += roomsPerNight * totalNights * hotelRate + techCount * totalDays * perDiemRate;
+      descParts.push(`${roomsPerNight} room(s) x ${totalNights} nights + per diem`);
+
+      const grandTotal = laborTotal + travelTotal;
+      items.push({
+        item_name: 'Field Verification Trip',
+        description: descParts.join(' | '),
+        quantity: 1,
+        unit: 'trip',
+        unit_price: grandTotal,
+        total: grandTotal,
+        is_travel_item: false,
+        calculation_type: 'verification_trip',
+        tech_count: techCount,
+        duration_value: roundTrips,
+        auto_calculated: true
+      });
     }
 
     if (tripType === 'standard') {
