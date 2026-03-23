@@ -957,6 +957,7 @@ export const translations = {
     my_expenses: "Mis Gastos",
     track_your_expenses_and_receipts: "Registra tus gastos y recibos",
     new_expense: "Nuevos Gastos",
+    newExpense: "Nuevo Gasto",
     expense_created_pending_approval: "¡Gasto creado! Pendiente de aprobación.",
     perDiem: "Per-Diem",
     request_per_diem_for_work_days: "Solicita per diem para tus días de trabajo",
