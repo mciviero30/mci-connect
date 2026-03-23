@@ -423,9 +423,9 @@ export default function TripCalculator({
     (tripType === 'punch' && punchNeedsTravel) || 
     (tripType === 'verification' && verificationMode === 'driving');
 
-  const canGenerate = 
-    (needsDistanceCalc && travelMetrics.length > 0) || 
-    (!needsDistanceCalc);
+  // Can always generate — hotel/per diem don't require distance calc
+  // Driving items will simply be skipped if distances not yet calculated
+  const canGenerate = true;
 
   return (
     <Card className="bg-gradient-to-br from-blue-50/40 via-purple-50/30 to-pink-50/20 border border-blue-300">
