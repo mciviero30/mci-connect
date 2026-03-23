@@ -271,9 +271,9 @@ export default function AssignmentDialog({
   const isAppointment = shiftType === 'appointment';
   const isJobWork = shiftType === 'job_work';
 
-  // employment_status maps from EmployeeDirectory.status - don't filter strictly, show all non-deleted
+  // Filter active employees: status should NOT be archived or deleted (EmployeeDirectory.status)
   const activeEmployees = (employees || []).filter(e => 
-    e.employment_status !== 'deleted' && e.employment_status !== 'archived'
+    e.status !== 'archived' && e.status !== 'deleted'
   );
 
   return (
@@ -492,8 +492,8 @@ export default function AssignmentDialog({
                   <CommandGroup>
                     {(employees || [])
                       .filter(e => {
-                        // Exclude deleted/archived (employment_status comes from EmployeeDirectory.status)
-                        if (e.employment_status === 'deleted' || e.employment_status === 'archived') return false;
+                        // Exclude deleted/archived (status comes from EmployeeDirectory.status)
+                        if (e.status === 'deleted' || e.status === 'archived') return false;
                         // Must have an email
                         if (!e.email) return false;
                         return true;

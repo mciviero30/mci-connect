@@ -430,6 +430,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const sidebarContentRef = useRef(null);
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
+  const [showEmployeeQuickMenu, setShowEmployeeQuickMenu] = useState(false);
 
   // LAYER 3 FALLBACK: Auto-sync EmployeeDirectory if missing
   React.useEffect(() => {
@@ -1442,7 +1443,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                 `
               }}
               >
-              <div className="absolute inset-0 flex items-center justify-center px-12">
+              <div className="absolute inset-0 flex items-center justify-center px-8 sm:px-12">
                 <img
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
                   alt="MCI Connect"
