@@ -49,7 +49,7 @@ export default function FieldVerificationCalculator({ onAddAllItems }) {
   const perDiemItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('per') && qi.name?.toLowerCase().includes('diem'));
 
   const laborRate = laborItem?.unit_price || companySettings.default_labor_rate || 60;
-  const drivingRatePerTech = drivingItem?.unit_price || 270;
+  const drivingRatePerTech = drivingItem?.unit_price || 55;
   const vehicleRate = vehicleItem?.unit_price || 175.84;
   const hotelRate = hotelItem?.unit_price || 200;
   const perDiemRate = perDiemItem?.unit_price || 55;
