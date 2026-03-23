@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/toast";
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import TripCalculator from "../components/quotes/TripCalculator.jsx";
+import FieldVerificationCalculator from "../components/quotes/FieldVerificationCalculator";
 import UnifiedOutOfAreaCalculator from "../components/quotes/UnifiedOutOfAreaCalculator";
 import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
 import { Checkbox } from "@/components/ui/checkbox";
