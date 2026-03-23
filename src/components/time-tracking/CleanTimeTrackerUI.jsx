@@ -45,7 +45,7 @@ export default function CleanTimeTrackerUI({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 space-y-6">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 space-y-6 pb-4">
         {/* Job Info */}
         <div className="text-center">
           <p className="text-white/60 text-sm mb-2">
