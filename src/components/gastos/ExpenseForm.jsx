@@ -250,7 +250,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
         <CardTitle className="flex items-center justify-between text-slate-900">
           <div className="flex items-center gap-2">
             <Receipt className="w-5 h-5 text-[#3B9FF3]" />
-            {expense ? t('edit') : t('new_expense')}
+            {expense ? (language === 'es' ? 'Editar Gasto' : 'Edit Expense') : (language === 'es' ? 'Nuevo Gasto' : 'New Expense')}
           </div>
           <SyncStatusBadge 
             status={syncStatus}
