@@ -205,11 +205,10 @@ export default function EmployeeProfile() {
             </DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+            {/* Text inputs */}
             {[
               { key: 'first_name', label: 'First Name' },
               { key: 'last_name', label: 'Last Name' },
-              { key: 'department', label: 'Department' },
-              { key: 'position', label: 'Position' },
               { key: 'phone', label: 'Phone' },
               { key: 'personal_email', label: 'Personal Email' },
               { key: 'address_line_1', label: 'Address' },
@@ -230,6 +229,54 @@ export default function EmployeeProfile() {
                 />
               </div>
             ))}
+            
+            {/* Department Select */}
+            <div>
+              <Label className="text-slate-700 dark:text-slate-300 font-medium text-sm">Department</Label>
+              <select
+                value={editForm.department || ''}
+                onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+                className="w-full mt-1 h-10 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+              >
+                <option value="">Select Department</option>
+                <option value="executive">Executive</option>
+                <option value="management">Management</option>
+                <option value="operations">Operations</option>
+                <option value="administration">Administration</option>
+                <option value="field">Field Technician</option>
+                <option value="foreman">Foreman</option>
+                <option value="HR">Human Resources</option>
+                <option value="IT">IT Support</option>
+                <option value="sales">Sales</option>
+                <option value="marketing">Marketing</option>
+                <option value="finance">Finance</option>
+                <option value="customer_service">Customer Service</option>
+              </select>
+            </div>
+            
+            {/* Position Select */}
+            <div>
+              <Label className="text-slate-700 dark:text-slate-300 font-medium text-sm">Position</Label>
+              <select
+                value={editForm.position || ''}
+                onChange={(e) => setEditForm({ ...editForm, position: e.target.value })}
+                className="w-full mt-1 h-10 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+              >
+                <option value="">Select Position</option>
+                <option value="CEO">CEO</option>
+                <option value="Owner">Owner</option>
+                <option value="manager">Manager</option>
+                <option value="supervisor">Supervisor</option>
+                <option value="foreman">Foreman</option>
+                <option value="technician">Technician</option>
+                <option value="administrator">Administrator</option>
+                <option value="IT Support">IT Support</option>
+                <option value="sales">Sales</option>
+                <option value="marketing">Marketing</option>
+                <option value="hr">HR</option>
+                <option value="operations">Operations</option>
+              </select>
+            </div>
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t">
             <Button variant="outline" onClick={() => setEditOpen(false)}>
