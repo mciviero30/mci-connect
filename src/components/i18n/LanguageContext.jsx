@@ -314,6 +314,7 @@ export const translations = {
     my_expenses: "My Expenses",
     track_your_expenses_and_receipts: "Track your expenses and receipts",
     new_expense: "New Expense",
+    newExpense: "New Expense",
     expense_created_pending_approval: "Expense created! Pending approval.",
     perDiem: "Per-Diem",
     request_per_diem_for_work_days: "Request per diem for your work days",
