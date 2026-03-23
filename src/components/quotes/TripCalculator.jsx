@@ -15,25 +15,16 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
   const [tripType, setTripType] = useState('standard');
   const [verificationMode, setVerificationMode] = useState('flight');
 
-  // Shared config
   const [techCount, setTechCount] = useState(2);
   const [roundTrips, setRoundTrips] = useState(1);
   const [roomsPerNight, setRoomsPerNight] = useState(1);
-
-  // Punch trip
   const [punchLaborHours, setPunchLaborHours] = useState(8);
   const [punchNeedsTravel, setPunchNeedsTravel] = useState(false);
-
-  // Verification trip
   const [verificationHours, setVerificationHours] = useState(4);
   const [verificationDays, setVerificationDays] = useState(1);
   const [verificationNights, setVerificationNights] = useState(1);
-
-  // Standard
   const [daysPerTrip, setDaysPerTrip] = useState(2);
   const [nightsPerTrip, setNightsPerTrip] = useState(2);
-
-  // Travel metrics
   const [travelMetrics, setTravelMetrics] = useState([]);
   const [vehicleCounts, setVehicleCounts] = useState({});
   const [isCalculating, setIsCalculating] = useState(false);
@@ -53,7 +44,7 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
   });
 
   const calculateDistances = async () => {
-    if (!jobAddress || selectedTeamIds.length === 0) {
+    if (!jobAddress || !selectedTeamIds || selectedTeamIds.length === 0) {
       setError(language === 'es' ? 'Ingresa dirección del trabajo y selecciona al menos un equipo' : 'Enter job address and select at least one team');
       return;
     }
@@ -68,11 +59,10 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
         response.data.results.forEach(r => { if (r.success) counts[r.teamId] = 1; });
         setVehicleCounts(counts);
       }
-      setIsCalculating(false);
     } catch (err) {
       setError(err.data?.error || err.message || 'Failed to calculate distances');
-      setIsCalculating(false);
     }
+    setIsCalculating(false);
   };
 
   const generateItems = () => {
@@ -93,7 +83,7 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
 
     if (tripType === 'punch') {
       const totalLaborHrs = punchLaborHours * techCount * roundTrips;
-      items.push({ item_name: 'Punch Labor', description: `${punchLaborHours}h × ${techCount} techs × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`, quantity: totalLaborHrs, unit: 'hours', unit_price: laborRate, total: totalLaborHrs * laborRate, is_travel_item: false, calculation_type: 'punch_trip_labor', auto_calculated: true });
+      items.push({ item_name: 'Punch Labor', description: `${punchLaborHours}h x ${techCount} techs x ${roundTrips} trip(s)`, quantity: totalLaborHrs, unit: 'hours', unit_price: laborRate, total: totalLaborHrs * laborRate, is_travel_item: false, calculation_type: 'punch_trip_labor', auto_calculated: true });
 
       if (punchNeedsTravel && travelMetrics.length > 0) {
         travelMetrics.forEach(metric => {
@@ -101,40 +91,40 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
           const vehicleCount = vehicleCounts[metric.teamId] || 1;
           const totalDrivingHours = parseFloat(metric.drivingHours) * techCount * roundTrips;
           const totalMiles = parseFloat(metric.totalMiles) * vehicleCount * roundTrips;
-          items.push({ item_name: `Driving Time - ${metric.teamName}`, description: `${roundTrips} round trip${roundTrips > 1 ? 's' : ''} × ${techCount} techs`, quantity: totalDrivingHours, unit: 'hours', unit_price: drivingRate, total: totalDrivingHours * drivingRate, is_travel_item: true, travel_item_type: 'driving_time', auto_calculated: true });
-          items.push({ item_name: `Miles - ${metric.teamName}`, description: `${vehicleCount} vehicle${vehicleCount > 1 ? 's' : ''} × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`, quantity: totalMiles, unit: 'miles', unit_price: mileageRate, total: totalMiles * mileageRate, is_travel_item: true, travel_item_type: 'miles_per_vehicle', auto_calculated: true });
+          items.push({ item_name: `Driving Time - ${metric.teamName}`, description: `${roundTrips} round trip(s) x ${techCount} techs`, quantity: totalDrivingHours, unit: 'hours', unit_price: drivingRate, total: totalDrivingHours * drivingRate, is_travel_item: true, travel_item_type: 'driving_time', auto_calculated: true });
+          items.push({ item_name: `Miles - ${metric.teamName}`, description: `${vehicleCount} vehicle(s) x ${roundTrips} trip(s)`, quantity: totalMiles, unit: 'miles', unit_price: mileageRate, total: totalMiles * mileageRate, is_travel_item: true, travel_item_type: 'miles_per_vehicle', auto_calculated: true });
         });
         if (nightsPerTrip > 0) {
           const totalNights = nightsPerTrip * roundTrips;
           const totalDays = daysPerTrip * roundTrips;
-          items.push({ item_name: hotelItem?.name || 'Hotel Rooms', description: `${roomsPerNight} room${roomsPerNight > 1 ? 's' : ''} × ${totalNights} night${totalNights > 1 ? 's' : ''}`, quantity: roomsPerNight * totalNights, unit: 'night', unit_price: hotelRate, total: roomsPerNight * totalNights * hotelRate, is_travel_item: false, travel_item_type: 'hotel', auto_calculated: true });
-          items.push({ item_name: perDiemItem?.name || 'Per-Diem', description: `${techCount} tech${techCount > 1 ? 's' : ''} × ${totalDays} day${totalDays > 1 ? 's' : ''}`, quantity: techCount * totalDays, unit: 'day', unit_price: perDiemRate, total: techCount * totalDays * perDiemRate, is_travel_item: false, travel_item_type: 'per_diem', auto_calculated: true });
+          items.push({ item_name: hotelItem?.name || 'Hotel Rooms', description: `${roomsPerNight} room(s) x ${totalNights} night(s)`, quantity: roomsPerNight * totalNights, unit: 'night', unit_price: hotelRate, total: roomsPerNight * totalNights * hotelRate, is_travel_item: false, travel_item_type: 'hotel', auto_calculated: true });
+          items.push({ item_name: perDiemItem?.name || 'Per-Diem', description: `${techCount} tech(s) x ${totalDays} day(s)`, quantity: techCount * totalDays, unit: 'day', unit_price: perDiemRate, total: techCount * totalDays * perDiemRate, is_travel_item: false, travel_item_type: 'per_diem', auto_calculated: true });
         }
       }
     }
 
     if (tripType === 'verification') {
       const totalVerifHours = verificationHours * techCount * roundTrips;
-      items.push({ item_name: 'Field Verification Labor', description: `${verificationHours}h × ${techCount} tech${techCount > 1 ? 's' : ''} × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`, quantity: totalVerifHours, unit: 'hours', unit_price: laborRate, total: totalVerifHours * laborRate, is_travel_item: false, calculation_type: 'verification_labor', auto_calculated: true });
+      items.push({ item_name: 'Field Verification Labor', description: `${verificationHours}h x ${techCount} tech(s) x ${roundTrips} trip(s)`, quantity: totalVerifHours, unit: 'hours', unit_price: laborRate, total: totalVerifHours * laborRate, is_travel_item: false, calculation_type: 'verification_labor', auto_calculated: true });
       if (verificationMode === 'flight') {
         const totalFlights = techCount * roundTrips * 2;
         const totalUbers = techCount * roundTrips * 4;
-        items.push({ item_name: flightItem?.name || 'Flight Tickets', description: `${techCount} tech${techCount > 1 ? 's' : ''} × ${roundTrips} trip${roundTrips > 1 ? 's' : ''} (round-trip)`, quantity: totalFlights, unit: 'ticket', unit_price: flightRate, total: totalFlights * flightRate, is_travel_item: true, travel_item_type: 'flight', auto_calculated: true });
-        items.push({ item_name: uberItem?.name || 'Uber/Taxi', description: `Airport transfers`, quantity: totalUbers, unit: 'ride', unit_price: uberRate, total: totalUbers * uberRate, is_travel_item: true, travel_item_type: 'uber', auto_calculated: true });
+        items.push({ item_name: flightItem?.name || 'Flight Tickets', description: `${techCount} tech(s) x ${roundTrips} trip(s) (round-trip)`, quantity: totalFlights, unit: 'ticket', unit_price: flightRate, total: totalFlights * flightRate, is_travel_item: true, travel_item_type: 'flight', auto_calculated: true });
+        items.push({ item_name: uberItem?.name || 'Uber/Taxi', description: 'Airport transfers', quantity: totalUbers, unit: 'ride', unit_price: uberRate, total: totalUbers * uberRate, is_travel_item: true, travel_item_type: 'uber', auto_calculated: true });
       } else if (travelMetrics.length > 0) {
         travelMetrics.forEach(metric => {
           if (!metric.success) return;
           const vehicleCount = vehicleCounts[metric.teamId] || 1;
           const totalDrivingHours = parseFloat(metric.drivingHours) * techCount * roundTrips;
           const totalMiles = parseFloat(metric.totalMiles) * vehicleCount * roundTrips;
-          items.push({ item_name: `Driving Time - ${metric.teamName}`, description: `${roundTrips} round trip${roundTrips > 1 ? 's' : ''} × ${techCount} techs`, quantity: totalDrivingHours, unit: 'hours', unit_price: drivingRate, total: totalDrivingHours * drivingRate, is_travel_item: true, travel_item_type: 'driving_time', auto_calculated: true });
-          items.push({ item_name: `Miles - ${metric.teamName}`, quantity: totalMiles, unit: 'miles', unit_price: mileageRate, total: totalMiles * mileageRate, is_travel_item: true, travel_item_type: 'miles_per_vehicle', auto_calculated: true });
+          items.push({ item_name: `Driving Time - ${metric.teamName}`, description: `${roundTrips} round trip(s) x ${techCount} techs`, quantity: totalDrivingHours, unit: 'hours', unit_price: drivingRate, total: totalDrivingHours * drivingRate, is_travel_item: true, travel_item_type: 'driving_time', auto_calculated: true });
+          items.push({ item_name: `Miles - ${metric.teamName}`, description: `${vehicleCount} vehicle(s) x ${roundTrips} trip(s)`, quantity: totalMiles, unit: 'miles', unit_price: mileageRate, total: totalMiles * mileageRate, is_travel_item: true, travel_item_type: 'miles_per_vehicle', auto_calculated: true });
         });
       }
       const totalNights = verificationNights * roundTrips;
       const totalDays = verificationDays * roundTrips;
-      items.push({ item_name: hotelItem?.name || 'Hotel Rooms', description: `${roomsPerNight} room${roomsPerNight > 1 ? 's' : ''} × ${totalNights} night${totalNights > 1 ? 's' : ''}`, quantity: roomsPerNight * totalNights, unit: 'night', unit_price: hotelRate, total: roomsPerNight * totalNights * hotelRate, is_travel_item: false, travel_item_type: 'hotel', auto_calculated: true });
-      items.push({ item_name: perDiemItem?.name || 'Per-Diem', description: `${techCount} tech${techCount > 1 ? 's' : ''} × ${totalDays} day${totalDays > 1 ? 's' : ''}`, quantity: techCount * totalDays, unit: 'day', unit_price: perDiemRate, total: techCount * totalDays * perDiemRate, is_travel_item: false, travel_item_type: 'per_diem', auto_calculated: true });
+      items.push({ item_name: hotelItem?.name || 'Hotel Rooms', description: `${roomsPerNight} room(s) x ${totalNights} night(s)`, quantity: roomsPerNight * totalNights, unit: 'night', unit_price: hotelRate, total: roomsPerNight * totalNights * hotelRate, is_travel_item: false, travel_item_type: 'hotel', auto_calculated: true });
+      items.push({ item_name: perDiemItem?.name || 'Per-Diem', description: `${techCount} tech(s) x ${totalDays} day(s)`, quantity: techCount * totalDays, unit: 'day', unit_price: perDiemRate, total: techCount * totalDays * perDiemRate, is_travel_item: false, travel_item_type: 'per_diem', auto_calculated: true });
     }
 
     if (tripType === 'standard') {
@@ -143,13 +133,13 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
         const vehicleCount = vehicleCounts[metric.teamId] || 1;
         const totalDrivingHours = parseFloat(metric.drivingHours) * techCount * roundTrips;
         const totalMiles = parseFloat(metric.totalMiles) * vehicleCount * roundTrips;
-        items.push({ item_name: `Driving Time - ${metric.teamName}`, description: `${roundTrips} round trip${roundTrips > 1 ? 's' : ''} × ${techCount} techs`, quantity: totalDrivingHours, unit: 'hours', unit_price: drivingRate, total: totalDrivingHours * drivingRate, is_travel_item: true, travel_item_type: 'driving_time', auto_calculated: true });
-        items.push({ item_name: `Miles - ${metric.teamName}`, description: `${vehicleCount} vehicle${vehicleCount > 1 ? 's' : ''} × ${roundTrips} trip${roundTrips > 1 ? 's' : ''}`, quantity: totalMiles, unit: 'miles', unit_price: mileageRate, total: totalMiles * mileageRate, is_travel_item: true, travel_item_type: 'miles_per_vehicle', auto_calculated: true });
+        items.push({ item_name: `Driving Time - ${metric.teamName}`, description: `${roundTrips} round trip(s) x ${techCount} techs`, quantity: totalDrivingHours, unit: 'hours', unit_price: drivingRate, total: totalDrivingHours * drivingRate, is_travel_item: true, travel_item_type: 'driving_time', auto_calculated: true });
+        items.push({ item_name: `Miles - ${metric.teamName}`, description: `${vehicleCount} vehicle(s) x ${roundTrips} trip(s)`, quantity: totalMiles, unit: 'miles', unit_price: mileageRate, total: totalMiles * mileageRate, is_travel_item: true, travel_item_type: 'miles_per_vehicle', auto_calculated: true });
       });
       const totalNights = nightsPerTrip * roundTrips;
       const totalDays = daysPerTrip * roundTrips;
-      items.push({ item_name: hotelItem?.name || 'Hotel Rooms', description: `${roomsPerNight} room${roomsPerNight > 1 ? 's' : ''} × ${totalNights} night${totalNights > 1 ? 's' : ''}`, quantity: roomsPerNight * totalNights, unit: 'night', unit_price: hotelRate, total: roomsPerNight * totalNights * hotelRate, is_travel_item: false, travel_item_type: 'hotel', auto_calculated: true });
-      items.push({ item_name: perDiemItem?.name || 'Per-Diem', description: `${techCount} tech${techCount > 1 ? 's' : ''} × ${totalDays} day${totalDays > 1 ? 's' : ''}`, quantity: techCount * totalDays, unit: 'day', unit_price: perDiemRate, total: techCount * totalDays * perDiemRate, is_travel_item: false, travel_item_type: 'per_diem', auto_calculated: true });
+      items.push({ item_name: hotelItem?.name || 'Hotel Rooms', description: `${roomsPerNight} room(s) x ${totalNights} night(s)`, quantity: roomsPerNight * totalNights, unit: 'night', unit_price: hotelRate, total: roomsPerNight * totalNights * hotelRate, is_travel_item: false, travel_item_type: 'hotel', auto_calculated: true });
+      items.push({ item_name: perDiemItem?.name || 'Per-Diem', description: `${techCount} tech(s) x ${totalDays} day(s)`, quantity: techCount * totalDays, unit: 'day', unit_price: perDiemRate, total: techCount * totalDays * perDiemRate, is_travel_item: false, travel_item_type: 'per_diem', auto_calculated: true });
     }
 
     onAddAllItems(items);
@@ -159,7 +149,7 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
 
   return (
     <Card className="bg-gradient-to-br from-blue-50/40 via-purple-50/30 to-pink-50/20 border border-blue-300">
-      {/* Collapsed header — always visible */}
+      {/* Collapsed header - always visible */}
       <div
         className="flex items-center justify-between px-2 py-1.5 cursor-pointer select-none"
         onClick={() => setExpanded(e => !e)}
@@ -189,19 +179,32 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
               <SelectTrigger className="h-6 text-[10px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="standard">
-                  <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-blue-600" /><span className="text-[10px]">{language === 'es' ? 'Fuera de Área (Estándar)' : 'Out of Area (Standard)'}</span></div>
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3 h-3 text-blue-600" />
+                    <span className="text-[10px]">{language === 'es' ? 'Fuera de Area (Estandar)' : 'Out of Area (Standard)'}</span>
+                  </div>
                 </SelectItem>
                 <SelectItem value="punch">
-                  <div className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-green-600" /><span className="text-[10px]">Punch Trip</span></div>
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="w-3 h-3 text-green-600" />
+                    <span className="text-[10px]">Punch Trip</span>
+                  </div>
                 </SelectItem>
                 <SelectItem value="verification">
-                  <div className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-purple-600" /><span className="text-[10px]">Field Verification Trip</span></div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3 h-3 text-purple-600" />
+                    <span className="text-[10px]">Field Verification Trip</span>
+                  </div>
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {error && <div className="p-1.5 bg-red-50 border border-red-200 rounded"><p className="text-[9px] text-red-600">{error}</p></div>}
+          {error && (
+            <div className="p-1.5 bg-red-50 border border-red-200 rounded">
+              <p className="text-[9px] text-red-600">{error}</p>
+            </div>
+          )}
 
           {/* PUNCH TRIP */}
           {tripType === 'punch' && (
@@ -212,11 +215,11 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
               </div>
               <div className="grid grid-cols-2 gap-1">
                 <div>
-                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Horas/Téc' : 'Hrs/Tech'}</Label>
+                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Horas/Tec' : 'Hrs/Tech'}</Label>
                   <Input type="number" min="1" max="24" value={punchLaborHours} onChange={e => setPunchLaborHours(parseFloat(e.target.value) || 8)} className="h-6 text-[10px]" />
                 </div>
                 <div>
-                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
+                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Tecnicos' : 'Techs'}</Label>
                   <Input type="number" min="1" max="20" value={techCount} onChange={e => setTechCount(parseInt(e.target.value) || 2)} className="h-6 text-[10px]" />
                 </div>
               </div>
@@ -227,14 +230,14 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
               <div className="flex items-center gap-1 p-1 bg-white rounded border border-green-300">
                 <input type="checkbox" checked={punchNeedsTravel} onChange={e => setPunchNeedsTravel(e.target.checked)} className="w-2.5 h-2.5" />
                 <Label className="text-[8px] font-semibold cursor-pointer" onClick={() => setPunchNeedsTravel(!punchNeedsTravel)}>
-                  {language === 'es' ? 'Fuera del área? (viaje + estadía)' : 'Out of area? (travel + stay)'}
+                  {language === 'es' ? 'Fuera del area? (viaje + estadia)' : 'Out of area? (travel + stay)'}
                 </Label>
               </div>
               {punchNeedsTravel && (
                 <div className="space-y-0.5 pl-2 border-l border-green-300">
                   <div className="grid grid-cols-2 gap-1">
                     <div>
-                      <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Días/Viaje' : 'Days/Trip'}</Label>
+                      <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Dias/Viaje' : 'Days/Trip'}</Label>
                       <Input type="number" min="1" value={daysPerTrip} onChange={e => setDaysPerTrip(parseInt(e.target.value) || 2)} className="h-5 text-[10px]" />
                     </div>
                     <div>
@@ -263,8 +266,18 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
                 <Select value={verificationMode} onValueChange={val => { setVerificationMode(val); setTravelMetrics([]); }}>
                   <SelectTrigger className="h-6 text-[10px]"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="flight"><div className="flex items-center gap-1"><Plane className="w-3 h-3 text-purple-600" /><span className="text-[9px]">{language === 'es' ? 'Avión (Vuelo + Uber + Hotel + Per Diem)' : 'Flight (Flight + Uber + Hotel + Per Diem)'}</span></div></SelectItem>
-                    <SelectItem value="driving"><div className="flex items-center gap-1"><Car className="w-3 h-3 text-purple-600" /><span className="text-[9px]">{language === 'es' ? 'Carro (Millas + Manejo + Hotel + Per Diem)' : 'Driving (Miles + Drive Time + Hotel + Per Diem)'}</span></div></SelectItem>
+                    <SelectItem value="flight">
+                      <div className="flex items-center gap-1">
+                        <Plane className="w-3 h-3 text-purple-600" />
+                        <span className="text-[9px]">{language === 'es' ? 'Avion (Vuelo + Uber + Hotel + Per Diem)' : 'Flight (Flight + Uber + Hotel + Per Diem)'}</span>
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="driving">
+                      <div className="flex items-center gap-1">
+                        <Car className="w-3 h-3 text-purple-600" />
+                        <span className="text-[9px]">{language === 'es' ? 'Carro (Millas + Manejo + Hotel + Per Diem)' : 'Driving (Miles + Drive Time + Hotel + Per Diem)'}</span>
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -274,7 +287,7 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
                   <Input type="number" min="1" max="24" value={verificationHours} onChange={e => setVerificationHours(parseFloat(e.target.value) || 4)} className="h-5 text-[10px]" />
                 </div>
                 <div>
-                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
+                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Tecnicos' : 'Techs'}</Label>
                   <Input type="number" min="1" max="20" value={techCount} onChange={e => setTechCount(parseInt(e.target.value) || 2)} className="h-5 text-[10px]" />
                 </div>
               </div>
@@ -284,7 +297,7 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
                   <Input type="number" min="1" value={roundTrips} onChange={e => setRoundTrips(parseInt(e.target.value) || 1)} className="h-5 text-[10px]" />
                 </div>
                 <div>
-                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Días' : 'Days'}</Label>
+                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Dias' : 'Days'}</Label>
                   <Input type="number" min="1" value={verificationDays} onChange={e => setVerificationDays(parseInt(e.target.value) || 1)} className="h-5 text-[10px]" />
                 </div>
                 <div>
@@ -304,7 +317,7 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
             <div className="space-y-1">
               <div className="grid grid-cols-3 gap-1">
                 <div className="p-0.5 bg-white rounded border border-blue-200">
-                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Técnicos' : 'Techs'}</Label>
+                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Tecnicos' : 'Techs'}</Label>
                   <Input type="number" min="1" value={techCount} onChange={e => setTechCount(parseInt(e.target.value) || 2)} className="h-5 text-[10px]" />
                 </div>
                 <div className="p-0.5 bg-white rounded border border-blue-200">
@@ -318,7 +331,7 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
               </div>
               <div className="grid grid-cols-2 gap-1">
                 <div className="p-0.5 bg-white rounded border border-purple-200">
-                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Días/Viaje' : 'Days/Trip'}</Label>
+                  <Label className="text-[8px] mb-0 block font-semibold">{language === 'es' ? 'Dias/Viaje' : 'Days/Trip'}</Label>
                   <Input type="number" min="1" value={daysPerTrip} onChange={e => setDaysPerTrip(parseInt(e.target.value) || 2)} className="h-5 text-[10px]" />
                 </div>
                 <div className="p-0.5 bg-white rounded border border-purple-200">
@@ -344,7 +357,12 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
                       <p className="text-[9px] text-slate-600">{metric.roundTripMiles} miles round-trip</p>
                       <div className="flex items-center gap-1">
                         <Label className="text-[8px] text-slate-500">Vehicles:</Label>
-                        <Input type="number" min="1" value={vehicleCounts[metric.teamId] || 1} onChange={e => setVehicleCounts(prev => ({ ...prev, [metric.teamId]: parseInt(e.target.value) || 1 }))} className="w-12 h-5 text-[9px] text-center" />
+                        <Input
+                          type="number" min="1"
+                          value={vehicleCounts[metric.teamId] || 1}
+                          onChange={e => setVehicleCounts(prev => ({ ...prev, [metric.teamId]: parseInt(e.target.value) || 1 }))}
+                          className="w-12 h-5 text-[9px] text-center"
+                        />
                       </div>
                     </div>
                   ) : (
@@ -358,17 +376,34 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
           {/* Action Buttons */}
           <div className="space-y-1 pt-1 border-t border-slate-200">
             {needsDistanceCalc && travelMetrics.length === 0 && (
-              <Button type="button" onClick={calculateDistances} disabled={isCalculating || !jobAddress || selectedTeamIds.length === 0} className="w-full bg-blue-600 hover:bg-blue-700 text-white h-6">
+              <Button
+                type="button"
+                onClick={calculateDistances}
+                disabled={isCalculating || !jobAddress || !selectedTeamIds || selectedTeamIds.length === 0}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white h-6"
+              >
                 <Calculator className="w-3 h-3 mr-1" />
-                <span className="text-[10px]">{isCalculating ? (language === 'es' ? 'Calculando...' : 'Calculating...') : (language === 'es' ? 'Calcular Distancias (Opcional)' : 'Calculate Distances (Optional)')}</span>
+                <span className="text-[10px]">
+                  {isCalculating
+                    ? (language === 'es' ? 'Calculando...' : 'Calculating...')
+                    : (language === 'es' ? 'Calcular Distancias (Opcional)' : 'Calculate Distances (Optional)')}
+                </span>
               </Button>
             )}
             {needsDistanceCalc && travelMetrics.length > 0 && (
-              <Button type="button" variant="outline" onClick={() => { setTravelMetrics([]); setVehicleCounts({}); }} size="sm" className="w-full h-6">
+              <Button
+                type="button" variant="outline"
+                onClick={() => { setTravelMetrics([]); setVehicleCounts({}); }}
+                className="w-full h-6"
+              >
                 <span className="text-[10px]">{language === 'es' ? 'Recalcular Distancias' : 'Recalculate Distances'}</span>
               </Button>
             )}
-            <Button type="button" onClick={generateItems} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold h-6">
+            <Button
+              type="button"
+              onClick={generateItems}
+              className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold h-6"
+            >
               <Plus className="w-3 h-3 mr-1" />
               <span className="text-[10px]">
                 {travelMetrics.length > 0
