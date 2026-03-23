@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { formatPosition } from "@/components/utils/nameHelpers";
 import { useLanguage } from "@/components/i18n/LanguageContext";
+import { formatPhoneNumber } from "@/components/utils/phoneFormatter";
 
 export default function ModernEmployeeCard({ employee, onboardingProgress, onViewDetails, showInviteButton, onInvite, isInviting }) {
   const { language } = useLanguage();
@@ -218,7 +219,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
           {employee.phone && (
             <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
               <Phone className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" strokeWidth={1.5} />
-              <span className="text-[10px]">{employee.phone}</span>
+              <span className="text-[10px]">{formatPhoneNumber(employee.phone)}</span>
             </div>
           )}
         </div>
