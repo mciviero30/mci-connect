@@ -88,9 +88,36 @@ export default function MyProfile() {
   }, [user]);
 
   const updateProfileMutation = useMutation({
-    mutationFn: (data) => base44.auth.updateMe(data),
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData(CURRENT_USER_QUERY_KEY, updatedUser);
+    mutationFn: async (data) => {
+      // Check if user has EmployeeProfile (for proper sync)
+      const profile = await base44.entities.EmployeeProfile.filter({ user_id: user.id }, '', 1).then(r => r[0]);
+      
+      if (profile) {
+        // Use central sync function for full synchronization
+        const response = await base44.asServiceRole.functions.invoke('updateEmployeeDataCentral', {
+          profile_id: profile.id,
+          user_id: user.id,
+          updates: {
+            phone: data.phone,
+            address_line_1: data.address,
+            team_name: user.team_name,
+            personal_email: data.personal_email
+          }
+        });
+        
+        if (!response.success) {
+          throw new Error(response.error || 'Sync failed');
+        }
+        
+        return response;
+      } else {
+        // Fallback to direct user update
+        return base44.auth.updateMe(data);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: CURRENT_USER_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ['employeeProfile', user.id] });
       setEditing(false);
     },
   });
