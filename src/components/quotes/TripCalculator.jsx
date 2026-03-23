@@ -89,41 +89,31 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
       let milesTotal = 0;
       let descParts = [`${punchLaborHours}h x ${techCount} techs x ${roundTrips} trip(s)`];
 
-      if (punchNeedsTravel && travelMetrics.length > 0) {
-        travelMetrics.forEach(metric => {
-          if (!metric.success) return;
-          const vehicleCount = vehicleCounts[metric.teamId] || 1;
-          const totalDrivingHours = parseFloat(metric.drivingHours) * techCount * roundTrips;
-          const totalMiles = parseFloat(metric.totalMiles) * vehicleCount * roundTrips;
-          drivingTotal += totalDrivingHours * drivingRate;
-          milesTotal += totalMiles * mileageRate;
-          descParts.push(`${totalDrivingHours.toFixed(1)}h driving + ${totalMiles.toFixed(0)} miles (${metric.teamName})`);
-        });
+      if (punchNeedsTravel) {
+        // Driving + Miles: only if distances were calculated
+        if (travelMetrics.length > 0) {
+          travelMetrics.forEach(metric => {
+            if (!metric.success) return;
+            const vehicleCount = vehicleCounts[metric.teamId] || 1;
+            const totalDrivingHours = parseFloat(metric.drivingHours) * techCount * roundTrips;
+            const totalMiles = parseFloat(metric.totalMiles) * vehicleCount * roundTrips;
+            drivingTotal += totalDrivingHours * drivingRate;
+            milesTotal += totalMiles * mileageRate;
+            descParts.push(`${totalDrivingHours.toFixed(1)}h driving + ${totalMiles.toFixed(0)} miles (${metric.teamName})`);
+          });
+        }
+        // Hotel + Per Diem: always included when out-of-area is checked
         if (nightsPerTrip > 0) {
           const totalNights = nightsPerTrip * roundTrips;
           const totalDays = daysPerTrip * roundTrips;
           const hotelTotal = roomsPerNight * totalNights * hotelRate;
           const perDiemTotal = techCount * totalDays * perDiemRate;
           drivingTotal += hotelTotal + perDiemTotal;
-          descParts.push(`${roomsPerNight} room(s) x ${totalNights} nights + per diem`);
+          descParts.push(`${roomsPerNight} room(s) x ${totalNights} nights + per diem ${techCount} techs x ${totalDays} days`);
         }
       }
 
       const grandTotal = laborTotal + drivingTotal + milesTotal;
-      items.push({
-        item_name: 'Punch Trip',
-        description: descParts.join(' | '),
-        quantity: 1,
-        unit: 'trip',
-        unit_price: grandTotal,
-        total: grandTotal,
-        is_travel_item: false,
-        calculation_type: 'punch_trip',
-        tech_count: techCount,
-        duration_value: roundTrips,
-        auto_calculated: true
-      });
-    }
 
     if (tripType === 'verification') {
       const totalVerifHours = verificationHours * techCount * roundTrips;
