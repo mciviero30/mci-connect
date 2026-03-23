@@ -36,6 +36,27 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   const [timeExpanded, setTimeExpanded] = useState(false);
   const [travelExpanded, setTravelExpanded] = useState(false);
 
+  // Hide BottomNav when a time tracking session is active (buttons must not be covered)
+  const hasActiveSession = React.useMemo(() => {
+    try {
+      return !!JSON.parse(localStorage.getItem('liveTimeTracker_work'))?.startTime ||
+             !!JSON.parse(localStorage.getItem('liveTimeTracker_driving'))?.startTime;
+    } catch { return false; }
+  }, []);
+
+  // Re-check on every render tick so nav hides/shows as session changes
+  const [sessionActive, setSessionActive] = useState(hasActiveSession);
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      try {
+        const active = !!JSON.parse(localStorage.getItem('liveTimeTracker_work'))?.startTime ||
+                       !!JSON.parse(localStorage.getItem('liveTimeTracker_driving'))?.startTime;
+        setSessionActive(active);
+      } catch { setSessionActive(false); }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   // STEP 2: Track pending sync operations count
   const { pendingCount } = useSyncQueue();
 
@@ -105,6 +126,9 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   ];
 
   const [moreExpanded, setMoreExpanded] = useState(false);
+
+  // Don't render nav while a session is active — avoids covering clock-out buttons
+  if (sessionActive) return <div className="md:hidden h-16" />;
 
   return (
     <>
