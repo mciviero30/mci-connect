@@ -362,7 +362,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
               <RadioGroup 
                 value={formData.payment_method} 
                 onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
-                className="flex gap-4"
+                className="flex flex-wrap gap-4"
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="personal" id="personal" />
@@ -376,6 +376,14 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
                     {language === 'es' ? 'Tarjeta de la Compañía' : 'Company Card'}
                   </Label>
                 </div>
+                {(currentUser?.role === 'admin' || currentUser?.role === 'ceo') && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="already_paid" id="already_paid" />
+                    <Label htmlFor="already_paid" className="font-normal cursor-pointer text-green-600">
+                      {language === 'es' ? '✓ Ya Pagado (Admin)' : '✓ Already Paid (Admin)'}
+                    </Label>
+                  </div>
+                )}
               </RadioGroup>
             </div>
 
