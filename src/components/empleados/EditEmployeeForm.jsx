@@ -144,9 +144,9 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
         <div>
           <Label>Department</Label>
           <select 
-            value={formData.department} 
+            value={formData.department || ''} 
             onChange={(e) => handleFieldChange('department', e.target.value)}
-            className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
+            className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
           >
             <option value="">Select Department</option>
             <option value="executive">Executive</option>
@@ -155,10 +155,12 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
             <option value="administration">Administration</option>
             <option value="field">Field Technician</option>
             <option value="foreman">Foreman</option>
-            <option value="HR">HR</option>
-            <option value="IT">IT</option>
+            <option value="HR">Human Resources</option>
+            <option value="IT">IT Support</option>
             <option value="sales">Sales</option>
             <option value="marketing">Marketing</option>
+            <option value="finance">Finance</option>
+            <option value="customer_service">Customer Service</option>
           </select>
         </div>
 
