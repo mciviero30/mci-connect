@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { ClipboardCheck, Users, Moon, Bed, Plus, ChevronDown, ChevronUp, Car, Clock, Coffee } from 'lucide-react';
+import { ClipboardCheck, Users, Moon, Bed, Plus, ChevronDown, ChevronUp, Car, Clock, Coffee, Calculator } from 'lucide-react';
+import { calculateTravelMetrics } from '@/functions/calculateTravelMetrics';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
-export default function FieldVerificationCalculator({ onAddAllItems }) {
+export default function FieldVerificationCalculator({ jobAddress, selectedTeamIds, onAddAllItems }) {
   const { language } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [itemName, setItemName] = useState('Field Verification');
@@ -18,8 +19,10 @@ export default function FieldVerificationCalculator({ onAddAllItems }) {
   const [hoursPerTech, setHoursPerTech] = useState(4);
   const [nightsPerTrip, setNightsPerTrip] = useState(0);
   const [daysPerTrip, setDaysPerTrip] = useState(1);
-  const [drivingHours, setDrivingHours] = useState(1);
-  const [miles, setMiles] = useState(50);
+  const [drivingHours, setDrivingHours] = useState(0);
+  const [miles, setMiles] = useState(0);
+  const [showCalculateBtn, setShowCalculateBtn] = useState(true);
+  const [isCalculating, setIsCalculating] = useState(false);
   const [ratePerMile, setRatePerMile] = useState(0.70);
   const [includeLabor, setIncludeLabor] = useState(true);
   const [includeDriving, setIncludeDriving] = useState(true);
@@ -28,6 +31,24 @@ export default function FieldVerificationCalculator({ onAddAllItems }) {
   const [includePerDiem, setIncludePerDiem] = useState(false);
 
   const roomsPerNight = Math.ceil(techCount / 2);
+
+  const calculateMetrics = async () => {
+    if (!jobAddress || selectedTeamIds.length === 0) return;
+    setIsCalculating(true);
+    try {
+      const response = await calculateTravelMetrics({ team_ids: selectedTeamIds, job_address: jobAddress });
+      const metrics = response.data || [];
+      if (metrics.length > 0 && metrics[0].success) {
+        setDrivingHours(parseFloat(metrics[0].drivingHours) * 1.1);
+        setMiles(parseFloat(metrics[0].totalMiles) * 1.1);
+        setShowCalculateBtn(false);
+      }
+    } catch (e) {
+      console.error('Travel calc:', e);
+    } finally {
+      setIsCalculating(false);
+    }
+  };
 
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
@@ -183,7 +204,14 @@ export default function FieldVerificationCalculator({ onAddAllItems }) {
             </div>
           </div>
 
-          {/* Driving & Vehicle inputs */}
+          {showCalculateBtn && (
+            <Button type="button" onClick={calculateMetrics} disabled={isCalculating || !jobAddress || selectedTeamIds.length === 0} className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white">
+              <Calculator className="w-4 h-4 mr-2" />
+              {isCalculating ? 'Calculating...' : 'Calculate with Google Maps'}
+            </Button>
+          )}
+
+          {!showCalculateBtn && (
           <div className="grid grid-cols-3 gap-2">
             <div>
               <Label className="text-[10px] flex items-center gap-1 mb-1">
@@ -206,9 +234,10 @@ export default function FieldVerificationCalculator({ onAddAllItems }) {
               <Input type="number" min="0" max="5" step="0.01" value={ratePerMile}
                 onChange={e => setRatePerMile(parseFloat(e.target.value) || 0.70)} className="h-7 text-sm" />
             </div>
-          </div>
+            </div>
+            )}
 
-          {/* Include toggles */}
+            {/* Include toggles */}
           <div className="flex flex-wrap gap-3 p-2 bg-white rounded border border-emerald-100">
             <Toggle checked={includeLabor} onChange={setIncludeLabor} label={`Labor ($${laborRate}/h)`} />
             <Toggle checked={includeDriving} onChange={setIncludeDriving} label={`Driving ($60/h)`} />
