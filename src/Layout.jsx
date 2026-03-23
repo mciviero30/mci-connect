@@ -1426,8 +1426,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         )}
         
         <main className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden ${shouldHideSidebar ? 'w-full' : ''}`}>
-          {/* Mobile Header: Quick employee menu (Calendario, TimeTracking) */}
-          {!shouldHideSidebar && !isAdmin && (
+          {/* Mobile Header: Quick employee menu (Calendario, TimeTracking) - ALWAYS visible except Field */}
+          {!isFieldPage && !isAdmin && (
             <div className="md:hidden h-14 px-2 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/10 border-b border-slate-200 dark:border-slate-800">
               <button
                 onClick={() => navigate(createPageUrl('Calendario'))}
@@ -1446,8 +1446,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             </div>
           )}
 
-          {/* Mobile Header: Hidden when sidebar is hidden (Field/Focus Mode) */}
-          {!shouldHideSidebar && (
+          {/* Mobile Header: ALWAYS visible except Field/Focus Mode */}
+          {!isFieldPage && !isFocusMode && (
             <motion.header 
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -1562,8 +1562,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           <AIAssistant currentPage={currentPageName} />
           <EnhancedOfflineSync />
 
-          {/* Bottom Navigation: Hidden in Field/Focus Mode */}
-          {!shouldHideSidebar && (
+          {/* Bottom Navigation: Hidden ONLY in Field Mode (always visible in Focus Mode for navigation) */}
+          {!isFieldPage && (
             <BottomNav user={user} pendingExpenses={pendingExpenses} navigation={navigation} />
           )}
 
