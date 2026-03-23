@@ -30,6 +30,10 @@ export default function TimeTracking() {
   const [showCleanUI, setShowCleanUI] = useState(false);
   const [sessionData, setSessionData] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+
+  // Read timeType passed from BottomNav (work or driving)
+  const locationState = typeof window !== 'undefined' ? (window.history.state?.usr || {}) : {};
+  const preselectedTimeType = locationState.timeType || null;
   
   // C1 FIX: useLanguage moved to top-level (React Hooks rule)
   const { language = 'en', t = (key) => key } = useLanguage() || {};
@@ -325,7 +329,8 @@ export default function TimeTracking() {
 
         {/* Full-featured Time Tracker with job selection and geofencing */}
         <LiveTimeTracker 
-          trackingType="work"
+          trackingType={preselectedTimeType === 'driving' ? 'driving' : 'work'}
+          preselectedWorkType={preselectedTimeType === 'driving' ? 'driving' : preselectedTimeType === 'work' ? 'normal' : null}
           onSave={(timeEntryData) => {
             clockInMutation.mutate(timeEntryData);
           }}
