@@ -25,6 +25,7 @@ import { useToast } from "@/components/ui/toast";
 import LineItemsEditor from "../components/documentos/LineItemsEditor";
 import { safeErrorMessage } from "@/components/utils/safeErrorMessage";
 import TripCalculator from "../components/quotes/TripCalculator.jsx";
+import UnifiedOutOfAreaCalculator from "../components/quotes/UnifiedOutOfAreaCalculator";
 import { getCustomerDisplayName, sortCustomersByName } from "@/components/utils/nameHelpers";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -1016,14 +1017,44 @@ export default function CrearEstimado() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <div className="space-y-4">
+                  <div className="space-y-3">
+                    {/* Hotel & Per Diem - always visible */}
                     <TripCalculator
                       jobAddress={formData.job_address}
                       selectedTeamIds={formData.team_ids}
                       onAddAllItems={handleAddAllOutOfAreaItems}
                       totalLaborHours={derivedValues?.totalLaborHours || 0}
                     />
-                    
+
+                    {/* Out of Area toggle */}
+                    <div className="flex items-center gap-2 p-2 bg-orange-50 border border-orange-200 rounded">
+                      <input
+                        type="checkbox"
+                        id="out_of_area"
+                        checked={formData.out_of_area}
+                        onChange={e => handleOutOfAreaToggle(e.target.checked)}
+                        className="w-4 h-4 accent-orange-500"
+                      />
+                      <label htmlFor="out_of_area" className="text-[11px] font-semibold text-orange-800 cursor-pointer">
+                        {language === 'es' ? '📍 Trabajo Fuera del Área (calcular distancias)' : '📍 Out of Area Job (calculate distances)'}
+                      </label>
+                    </div>
+
+                    {formData.out_of_area && (
+                      <UnifiedOutOfAreaCalculator
+                        jobAddress={formData.job_address}
+                        selectedTeamIds={formData.team_ids}
+                        onAddAllItems={handleAddAllOutOfAreaItems}
+                        derivedValues={derivedValues}
+                        techCount={projectTechCount}
+                        onTechCountChange={setProjectTechCount}
+                        roomsPerNight={roomsPerNight}
+                        onRoomsPerNightChange={setRoomsPerNight}
+                        onStayConfigChange={(cfg) => setStayConfig(prev => ({ ...prev, ...cfg }))}
+                        editMode={!!editId}
+                      />
+                    )}
+
                     <ProjectDurationSummary
                       derivedValues={derivedValues}
                       quoteItems={formData.items}
