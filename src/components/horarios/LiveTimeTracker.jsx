@@ -296,6 +296,22 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading }) {
   }, [language]);
 
   const handleClockIn = async () => {
+    // BLOCK DUPLICATE: check all storage keys for any active session
+    const allKeys = ['liveTimeTracker_work', 'liveTimeTracker_driving'];
+    for (const k of allKeys) {
+      try {
+        const existing = JSON.parse(localStorage.getItem(k));
+        if (existing?.startTime) {
+          setLocationError(
+            language === 'es'
+              ? `⛔ Ya tienes una sesión activa en "${existing.jobName}". Haz Clock Out primero antes de iniciar una nueva.`
+              : `⛔ You already have an active session for "${existing.jobName}". Please Clock Out first before starting a new one.`
+          );
+          return;
+        }
+      } catch (e) {}
+    }
+
     // PASO 3: Pre-check GPS permissions BEFORE showing job selector
     const permission = await checkGeolocationPermission();
     
