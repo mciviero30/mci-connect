@@ -189,14 +189,10 @@ export default function CrearEstimado() {
   }, [formData.items, projectTechCount, travelTimeHours, roomsPerNight, stayConfig.roundTrips, stayConfig.nightsPerTrip]);
 
   const handleAddAllOutOfAreaItems = (allItems, stayData) => {
-    // Remove existing travel items, hotel/per diem items, AND consolidated trip items
+    // Remove ONLY completely empty items from the form (don't filter out travel items from other calculators)
     const filteredItems = formData.items.filter(item => {
-      const itemNameLower = item.item_name?.toLowerCase() || '';
-      const isHotel = itemNameLower.includes('hotel');
-      const isPerDiem = itemNameLower.includes('per') && itemNameLower.includes('diem');
-      const isConsolidatedTrip = item.travel_item_type === 'consolidated_trip';
       const isCompletelyEmpty = !item.item_name && (!item.quantity || item.quantity === 0);
-      return !item.is_travel_item && !isHotel && !isPerDiem && !isConsolidatedTrip && !isCompletelyEmpty;
+      return !isCompletelyEmpty;
     });
 
     // Preserve items exactly as calculated by the calculator, just fix total
