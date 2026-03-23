@@ -141,6 +141,23 @@ export default function Calendario() {
       });
       
       return validEmployees.map(d => ({
+        id: d.user_id || d.id,
+        email: d.employee_email,
+        full_name: d.full_name || `${d.first_name || ''} ${d.last_name || ''}`.trim() || d.employee_email,
+        first_name: d.first_name,
+        last_name: d.last_name,
+        employment_status: d.status,
+        profile_photo_url: d.profile_photo_url,
+        avatar_image_url: d.avatar_image_url,
+        position: d.position,
+        department: d.department
+      }));
+    },
+    initialData: [],
+    staleTime: 60000,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false
+  });
 
   const { data: timeOffRequests = [] } = useQuery({
     queryKey: ['timeOffRequests'],
