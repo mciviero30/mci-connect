@@ -125,7 +125,7 @@ export default function UnifiedOutOfAreaCalculator({
     
     // Fetch rates from Items Catalog
     const drivingItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('driving') || (qi.name?.toLowerCase().includes('hours') && qi.name?.toLowerCase().includes('manejo')));
-    const mileageItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('miles') || qi.name?.toLowerCase().includes('mileage'));
+    const mileageItem = quoteItems.find(qi => qi.name === 'Miles Per Vehicle' || qi.name?.toLowerCase().includes('miles per vehicle'));
 
     const drivingRate = drivingItem?.unit_price || companySettings?.travel_driving_time_rate || 60;
     const mileageRate = mileageItem?.unit_price || companySettings?.travel_mileage_rate || 0.70;
