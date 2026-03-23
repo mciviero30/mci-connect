@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -144,6 +144,13 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
 
     onAddAllItems(items);
   };
+
+  // Auto-sync roomsPerNight with techCount for standard Out of Area trips
+  useEffect(() => {
+    if (tripType === 'standard') {
+      setRoomsPerNight(techCount);
+    }
+  }, [techCount, tripType]);
 
   const needsDistanceCalc = tripType === 'standard' || (tripType === 'punch' && punchNeedsTravel) || (tripType === 'verification' && verificationMode === 'driving');
 
