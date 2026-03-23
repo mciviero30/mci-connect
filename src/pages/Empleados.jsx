@@ -197,8 +197,11 @@ export default function Empleados() {
          .filter(p => p.user_id)
          .map(p => {
            const user = users.find(u => u.id === p.user_id);
-           const resolvedTeamName = p.team_name || 
-             (p.team_id ? teams.find(t => t.id === p.team_id)?.team_name : '') || '';
+           // Read team from User (SSOT for team assignment)
+           const userTeamId = user?.team_id || '';
+           const userTeamName = user?.team_name || '';
+           const resolvedTeamName = userTeamName || 
+             (userTeamId ? teams.find(t => t.id === userTeamId)?.team_name : '') || '';
            return {
              id: p.user_id,
              profile_id: p.id,
@@ -209,11 +212,15 @@ export default function Empleados() {
              position: p.position,
              department: p.department || '',
              phone: p.phone || '',
-             team_id: p.team_id || '',
+             team_id: userTeamId,
              team_name: resolvedTeamName,
              employment_status: p.employment_status,
              role: user?.role || 'user',
-             hourly_rate: p.hourly_rate || null
+             hourly_rate: p.hourly_rate || null,
+             profile_photo_url: user?.profile_photo_url || null,
+             avatar_image_url: user?.avatar_image_url || null,
+             preferred_profile_image: user?.preferred_profile_image || 'photo',
+             profile_last_updated: user?.profile_last_updated || null
            };
          })
          .filter(Boolean)
