@@ -1020,12 +1020,17 @@ export default function CrearEstimado() {
 
                 <div className="md:col-span-2">
                   <div className="space-y-3">
-                    {/* Hotel & Per Diem - always visible */}
+                    {/* Trip Calculator - Punch Trip / Overnight */}
                     <TripCalculator
                       jobAddress={formData.job_address}
                       selectedTeamIds={formData.team_ids}
                       onAddAllItems={handleAddAllOutOfAreaItems}
                       totalLaborHours={derivedValues?.totalLaborHours || 0}
+                    />
+
+                    {/* Field Verification Calculator - Site Survey / Inspection */}
+                    <FieldVerificationCalculator
+                      onAddAllItems={handleAddAllOutOfAreaItems}
                     />
 
                     {/* Out of Area toggle */}
