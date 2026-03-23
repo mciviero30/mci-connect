@@ -208,14 +208,16 @@ export default function CrearEstimado() {
 
     const finalItems = [...filteredItems, ...updatedItems];
 
-    // CRITICAL: Update stayConfig with the values from the calculator
-    setStayConfig({
-      roundTrips: stayData.round_trips,
-      daysPerTrip: stayData.days_per_trip,
-      nightsPerTrip: stayData.nights_per_trip,
-      total_nights: stayData.total_nights,
-      total_calendar_days: stayData.total_calendar_days
-    });
+    // CRITICAL: Update stayConfig with the values from the calculator (only if stayData provided)
+    if (stayData) {
+      setStayConfig({
+        roundTrips: stayData.round_trips,
+        daysPerTrip: stayData.days_per_trip,
+        nightsPerTrip: stayData.nights_per_trip,
+        total_nights: stayData.total_nights,
+        total_calendar_days: stayData.total_calendar_days
+      });
+    }
 
     setFormData(prev => ({
       ...prev,
