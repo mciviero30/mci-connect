@@ -25,6 +25,7 @@ const CATEGORY_TO_ACCOUNT = {
   equipment: 'expense_equipment',
   warehouse: 'expense_materials',
   supplies: 'expense_materials',
+  payroll: 'expense_payroll',
   client_entertainment: 'expense_other',
   office: 'expense_other',
   other: 'expense_other',
@@ -40,6 +41,7 @@ const categories = [
   { value: 'warehouse', label: 'Bodega / Almacén', labelEn: 'Warehouse' },
   { value: 'office', label: 'Oficina', labelEn: 'Office' },
   { value: 'supplies', label: 'Suministros', labelEn: 'Supplies' },
+  { value: 'payroll', label: 'Payroll', labelEn: 'Payroll' },
   { value: 'other', label: 'Otro', labelEn: 'Other' },
 ];
 
