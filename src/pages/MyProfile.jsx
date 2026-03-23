@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { 
   User, Mail, Phone, Briefcase, Calendar, MapPin, Camera, AlertCircle, 
   Clock, UserCircle, FileText, Calendar as CalendarIcon, Receipt, Banknote,
-  Edit3, Save, X, Award, Shield, ChevronRight, Sparkles, Lock, Shirt, DollarSign
+  Edit3, Save, X, Award, Shield, ChevronRight, Sparkles, Lock, Shirt, DollarSign,
+  Upload, Download, CheckCircle2, XCircle, AlertTriangle, TrendingUp
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, differenceInDays } from "date-fns";
@@ -75,6 +76,35 @@ export default function MyProfile() {
     enabled: !!user,
     initialData: []
   });
+
+  // Fetch my documents
+  const { data: myDocuments = [] } = useQuery({
+    queryKey: ['myDocuments', user?.id, user?.email],
+    queryFn: () => {
+      const query = buildUserQuery(user, 'user_id', 'employee_email');
+      return base44.entities.EmployeeDocument.filter(query, '-uploaded_date', 20);
+    },
+    enabled: !!user,
+    initialData: []
+  });
+
+  // Fetch recent time entries for stats
+  const { data: recentTimeEntries = [] } = useQuery({
+    queryKey: ['myRecentTime', user?.id],
+    queryFn: () => base44.entities.TimeEntry.filter({ user_id: user.id }, '-date', 30),
+    enabled: !!user?.id,
+    initialData: []
+  });
+
+  // Calculate total hours this month
+  const totalHoursThisMonth = React.useMemo(() => {
+    const now = new Date();
+    const thisMonth = recentTimeEntries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate.getMonth() === now.getMonth() && entryDate.getFullYear() === now.getFullYear();
+    });
+    return thisMonth.reduce((sum, entry) => sum + (entry.hours_worked || 0), 0);
+  }, [recentTimeEntries]);
 
   const [formData, setFormData] = useState({
     phone: user?.phone || '',
@@ -274,21 +304,26 @@ export default function MyProfile() {
               {/* Right - Stats & Info */}
               <div className="flex-1 p-6">
                 {/* Stats Row */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
-                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20">
-                    <Award className="w-6 h-6 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalPoints}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('totalPoints')}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                  <div className="text-center p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+                    <Clock className="w-5 h-5 text-white mx-auto mb-1.5" />
+                    <p className="text-xl font-bold text-white">{totalHoursThisMonth.toFixed(1)}</p>
+                    <p className="text-[10px] text-blue-100">Hours This Month</p>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
-                    <Shield className="w-6 h-6 text-green-600 dark:text-green-400 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{myCertifications.length}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('certifications')}</p>
+                  <div className="text-center p-3 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg">
+                    <Award className="w-5 h-5 text-white mx-auto mb-1.5" />
+                    <p className="text-xl font-bold text-white">{totalPoints}</p>
+                    <p className="text-[10px] text-amber-100">Recognition Points</p>
                   </div>
-                  <div className="text-center p-4 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
-                    <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400 mx-auto mb-2" />
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{myRecognitions.length}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{t('recognitions')}</p>
+                  <div className="text-center p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg">
+                    <Shield className="w-5 h-5 text-white mx-auto mb-1.5" />
+                    <p className="text-xl font-bold text-white">{myCertifications.length}</p>
+                    <p className="text-[10px] text-green-100">Certifications</p>
+                  </div>
+                  <div className="text-center p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg">
+                    <FileText className="w-5 h-5 text-white mx-auto mb-1.5" />
+                    <p className="text-xl font-bold text-white">{myDocuments.length}</p>
+                    <p className="text-[10px] text-purple-100">Documents</p>
                   </div>
                 </div>
 
@@ -396,11 +431,9 @@ export default function MyProfile() {
                       {editing && <Edit3 className="w-3 h-3 text-green-600" />}
                     </Label>
                     {editing ? (
-                      <Input
-                        type="tel"
+                      <PhoneInput
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="(000)000-0000"
                         className="mt-1"
                       />
                     ) : (
@@ -521,10 +554,9 @@ export default function MyProfile() {
                   <div>
                     <Label className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('phone')}</Label>
                     {editing ? (
-                      <Input
+                      <PhoneInput
                         value={formData.emergency_contact_phone}
                         onChange={(e) => setFormData({ ...formData, emergency_contact_phone: e.target.value })}
-                        placeholder="(000)000-0000"
                         className="mt-1"
                       />
                     ) : (
@@ -645,40 +677,131 @@ export default function MyProfile() {
             </Card>
 
             {/* Certifications Summary */}
-            {myCertifications.length > 0 && (
-              <Card className="bg-white dark:bg-slate-800 shadow-sm border-slate-200 dark:border-slate-700 rounded-2xl">
-                <CardContent className="p-4">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-3 text-sm flex items-center gap-2">
-                    <Shield className="w-4 h-4 text-green-600" />
-                    {t('certifications')}
+            <Card className="bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg border-0 rounded-2xl">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                    <Shield className="w-5 h-5" />
+                    My Certifications
                   </h3>
-                  
+                  <Link to={createPageUrl('ComplianceHub')}>
+                    <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-white/20 text-[10px]">
+                      View All
+                      <ChevronRight className="w-3 h-3 ml-1" />
+                    </Button>
+                  </Link>
+                </div>
+                
+                {myCertifications.length === 0 ? (
+                  <p className="text-white/80 text-xs text-center py-4">No certifications yet</p>
+                ) : (
                   <div className="space-y-2">
-                    {myCertifications.slice(0, 4).map((cert) => {
+                    {myCertifications.slice(0, 3).map((cert) => {
                       const isExpired = cert.status === 'expired';
                       const daysLeft = cert.expiration_date 
                         ? differenceInDays(new Date(cert.expiration_date), new Date())
                         : null;
                       
                       return (
-                        <div key={cert.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
-                          <span className="text-sm text-slate-700 dark:text-slate-300 truncate flex-1">
-                            {cert.certification_name}
-                          </span>
+                        <div key={cert.id} className="flex items-center justify-between p-2.5 rounded-lg bg-white/20 backdrop-blur-sm">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            {isExpired ? (
+                              <XCircle className="w-4 h-4 text-red-200 flex-shrink-0" />
+                            ) : daysLeft !== null && daysLeft <= 30 ? (
+                              <AlertTriangle className="w-4 h-4 text-amber-200 flex-shrink-0" />
+                            ) : (
+                              <CheckCircle2 className="w-4 h-4 text-green-200 flex-shrink-0" />
+                            )}
+                            <span className="text-xs text-white font-medium truncate">
+                              {cert.certification_name}
+                            </span>
+                          </div>
                           {isExpired ? (
-                            <Badge className="bg-red-100 text-red-700 text-xs">{t('expired')}</Badge>
+                            <Badge className="bg-red-500 text-white text-[9px] border-0 shadow-sm">Expired</Badge>
                           ) : daysLeft !== null && daysLeft <= 30 ? (
-                            <Badge className="bg-amber-100 text-amber-700 text-xs">{daysLeft}d</Badge>
+                            <Badge className="bg-amber-400 text-slate-900 text-[9px] border-0 shadow-sm">{daysLeft}d left</Badge>
                           ) : (
-                            <Badge className="bg-green-100 text-green-700 text-xs">{t('active')}</Badge>
+                            <Badge className="bg-emerald-400 text-slate-900 text-[9px] border-0 shadow-sm">Active</Badge>
                           )}
                         </div>
                       );
                     })}
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                )}
+              </CardContent>
+            </Card>
+
+            {/* My Documents */}
+            <Card className="bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg border-0 rounded-2xl">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    My Documents
+                  </h3>
+                  <Button size="sm" variant="ghost" className="h-7 text-white hover:bg-white/20 text-[10px]">
+                    <Upload className="w-3 h-3 mr-1" />
+                    Upload
+                  </Button>
+                </div>
+                
+                {myDocuments.length === 0 ? (
+                  <div className="text-center py-4">
+                    <FileText className="w-8 h-8 text-white/40 mx-auto mb-2" />
+                    <p className="text-white/80 text-xs mb-3">No documents uploaded yet</p>
+                    <Button size="sm" variant="outline" className="h-8 text-white border-white/30 hover:bg-white/20 text-[10px]">
+                      <Upload className="w-3 h-3 mr-1" />
+                      Upload First Document
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {myDocuments.slice(0, 4).map((doc) => (
+                      <a 
+                        key={doc.id} 
+                        href={doc.file_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-between p-2.5 rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all group"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <FileText className="w-4 h-4 text-white flex-shrink-0" />
+                          <span className="text-xs text-white font-medium truncate">
+                            {doc.document_name}
+                          </span>
+                        </div>
+                        <Download className="w-3.5 h-3.5 text-white/60 group-hover:text-white transition-colors flex-shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Performance Snapshot */}
+            <Card className="bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg border-0 rounded-2xl">
+              <CardContent className="p-4">
+                <h3 className="font-bold text-white text-sm flex items-center gap-2 mb-3">
+                  <TrendingUp className="w-5 h-5" />
+                  This Month
+                </h3>
+                
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/20 backdrop-blur-sm">
+                    <span className="text-xs text-white/90">Hours Logged</span>
+                    <span className="text-sm font-bold text-white">{totalHoursThisMonth.toFixed(1)} hrs</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/20 backdrop-blur-sm">
+                    <span className="text-xs text-white/90">Recognitions</span>
+                    <span className="text-sm font-bold text-white">{myRecognitions.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 rounded-lg bg-white/20 backdrop-blur-sm">
+                    <span className="text-xs text-white/90">Documents</span>
+                    <span className="text-sm font-bold text-white">{myDocuments.length}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>
