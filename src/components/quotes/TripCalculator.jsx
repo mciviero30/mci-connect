@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Hotel, Users, Moon, Bed, Plus, ChevronDown, ChevronUp, Car, Clock, Coffee } from 'lucide-react';
+import { Hotel, Users, Moon, Bed, Plus, ChevronDown, ChevronUp, Car, Clock, Coffee, Calculator } from 'lucide-react';
+import { calculateTravelMetrics } from '@/functions/calculateTravelMetrics';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -19,8 +20,10 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
   const [nightsPerTrip, setNightsPerTrip] = useState(1);
   const [daysPerTrip, setDaysPerTrip] = useState(2);
   const [roomsPerNight, setRoomsPerNight] = useState(1);
-  const [drivingHours, setDrivingHours] = useState(2);
-  const [miles, setMiles] = useState(100);
+  const [drivingHours, setDrivingHours] = useState(0);
+  const [miles, setMiles] = useState(0);
+  const [showCalculateBtn, setShowCalculateBtn] = useState(true);
+  const [isCalculating, setIsCalculating] = useState(false);
   const [ratePerMile, setRatePerMile] = useState(0.70);
   const [includeLabor, setIncludeLabor] = useState(true);
   const [includeDriving, setIncludeDriving] = useState(true);
@@ -31,6 +34,24 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
   useEffect(() => {
     setRoomsPerNight(Math.ceil(techCount / 2));
   }, [techCount]);
+
+  const calculateMetrics = async () => {
+    if (!jobAddress || selectedTeamIds.length === 0) return;
+    setIsCalculating(true);
+    try {
+      const response = await calculateTravelMetrics({ team_ids: selectedTeamIds, job_address: jobAddress });
+      const metrics = response.data || [];
+      if (metrics.length > 0 && metrics[0].success) {
+        setDrivingHours(parseFloat(metrics[0].drivingHours) * 1.1);
+        setMiles(parseFloat(metrics[0].totalMiles) * 1.1);
+        setShowCalculateBtn(false);
+      }
+    } catch (e) {
+      console.error('Travel calc:', e);
+    } finally {
+      setIsCalculating(false);
+    }
+  };
 
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
@@ -187,7 +208,14 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
             </div>
           </div>
 
-          {/* Driving & Vehicle inputs */}
+          {showCalculateBtn && (
+            <Button type="button" onClick={calculateMetrics} disabled={isCalculating || !jobAddress || selectedTeamIds.length === 0} className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+              <Calculator className="w-4 h-4 mr-2" />
+              {isCalculating ? 'Calculating...' : 'Calculate with Google Maps'}
+            </Button>
+          )}
+
+          {!showCalculateBtn && (
           <div className="grid grid-cols-3 gap-2">
             <div>
               <Label className="text-[10px] flex items-center gap-1 mb-1">
