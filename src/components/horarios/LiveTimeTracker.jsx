@@ -384,10 +384,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       });
       setGpsProgress(null);
       
-      let job = jobs.find(j => j.id === selectedJobForStart);
+      let job = jobs.find(j => j.id === selectedJob);
       
       // Find scheduled shift for this job today
-      const todayShift = todayAssignments.find(a => a.job_id === selectedJobForStart && a.enforce_scheduled_hours);
+      const todayShift = todayAssignments.find(a => a.job_id === selectedJob && a.enforce_scheduled_hours);
       
       // SCHEDULED HOURS CONTROL: Adjust clock-in time if shift enforces hours
       let adjustedCheckIn = new Date();
@@ -406,17 +406,17 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       }
       
       // Skip geofence validation only for driving hours
-      if (workType === 'driving') {
+      if (effectiveWorkType === 'driving') {
         const session = {
           startTime: adjustedCheckIn.getTime(),
           checkIn: adjustedCheckIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          jobId: selectedJobForStart,
+          jobId: selectedJob,
           jobName: job.name,
           location,
           onBreak: false,
           breaks: [],
           breakDuration: 0,
-          workType,
+          workType: effectiveWorkType,
           taskDetails,
           geofenceValidated: false, // Not applicable for driving or testing jobs
           distanceMeters: 0,
@@ -428,10 +428,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         setActiveSession(session);
         setLocationError(null);
         setShowWorkTypeDialog(false);
-        autoCreateCalendarShift(selectedJobForStart, job.name, 'driving', adjustedCheckIn.getTime());
+        autoCreateCalendarShift(selectedJob, job.name, 'driving', adjustedCheckIn.getTime());
         
         // Reset form
-        setWorkType('normal');
+        if (!preselectedWorkType) setWorkType('normal');
         setTaskDetails('');
         return;
       }
@@ -481,14 +481,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         telemetry.log({
           event_type: 'clock_in_geofence_failed',
           user_email: user.email,
-          job_id: selectedJobForStart,
+          job_id: selectedJob,
           distance_meters: distanceMeters,
           accuracy: location.accuracy,
           source: 'frontend',
           metadata: { 
             job_name: job.name,
             max_distance: MAX_DISTANCE,
-            work_type: workType,
+            work_type: effectiveWorkType,
             job_address: job.address,
             job_latitude: job.latitude,
             job_longitude: job.longitude
@@ -541,13 +541,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       const session = {
         startTime: adjustedCheckIn.getTime(),
         checkIn: adjustedCheckIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        jobId: selectedJobForStart,
+        jobId: selectedJob,
         jobName: job.name,
         location,
         onBreak: false,
         breaks: [],
         breakDuration: 0,
-        workType,
+        workType: effectiveWorkType,
         taskDetails,
         geofenceValidated: true,
         distanceMeters: Math.round(distanceMeters),
@@ -559,10 +559,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       setActiveSession(session);
       setLocationError(null);
       setShowWorkTypeDialog(false);
-      autoCreateCalendarShift(selectedJobForStart, job.name, workType, adjustedCheckIn.getTime());
+      autoCreateCalendarShift(selectedJob, job.name, effectiveWorkType, adjustedCheckIn.getTime());
       
       // Reset form
-      setWorkType('normal');
+      if (!preselectedWorkType) setWorkType('normal');
       setTaskDetails('');
     } catch (error) {
       setLocationError(error);
