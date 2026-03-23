@@ -107,17 +107,23 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
           <div>
             <Label>Position</Label>
             <select 
-              value={formData.position} 
+              value={formData.position || ''} 
               onChange={(e) => handleFieldChange('position', e.target.value)}
-              className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800"
+              className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
             >
               <option value="">Select Position</option>
               <option value="CEO">CEO</option>
+              <option value="Owner">Owner</option>
               <option value="manager">Manager</option>
               <option value="supervisor">Supervisor</option>
               <option value="foreman">Foreman</option>
               <option value="technician">Technician</option>
               <option value="administrator">Administrator</option>
+              <option value="IT Support">IT Support</option>
+              <option value="sales">Sales</option>
+              <option value="marketing">Marketing</option>
+              <option value="hr">HR</option>
+              <option value="operations">Operations</option>
             </select>
           </div>
 
