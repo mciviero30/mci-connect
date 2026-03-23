@@ -130,13 +130,15 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
           <div>
             <Label>System Role *</Label>
             <select 
-              value={formData.role}
+              value={formData.role || 'user'}
               onChange={(e) => handleFieldChange('role', e.target.value)}
-              className="w-full h-10 px-3 py-2 border rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+              className="w-full h-10 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
             >
               <option value="user">User (Regular Employee)</option>
               <option value="admin">Admin (Full Access)</option>
               <option value="ceo">CEO (Full Access + Setup)</option>
+              <option value="manager">Manager (Limited Admin)</option>
+              <option value="foreman">Foreman (Field Supervisor)</option>
             </select>
           </div>
         </div>
