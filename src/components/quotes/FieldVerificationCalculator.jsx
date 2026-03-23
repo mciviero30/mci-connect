@@ -42,17 +42,12 @@ export default function FieldVerificationCalculator({ onAddAllItems }) {
     staleTime: Infinity,
   });
 
-  const laborItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('labor') || qi.name?.toLowerCase().includes('installation'));
-  const drivingItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('driving') || qi.name?.toLowerCase().includes('round trip'));
-  const vehicleItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('vehicle') || qi.name?.toLowerCase().includes('rental'));
-  const hotelItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('hotel'));
-  const perDiemItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('per') && qi.name?.toLowerCase().includes('diem'));
-
-  const laborRate = laborItem?.unit_price || companySettings.default_labor_rate || 60;
-  const drivingRatePerTech = drivingItem?.unit_price || 55;
-  const vehicleRate = vehicleItem?.unit_price || 175.84;
-  const hotelRate = hotelItem?.unit_price || 200;
-  const perDiemRate = perDiemItem?.unit_price || 55;
+  // Use hardcoded rates (user-specified)
+  const laborRate = 60;
+  const drivingRatePerTech = 55;
+  const vehicleRate = 175.84;
+  const hotelRate = 200;
+  const perDiemRate = 55;
 
   const laborCost = includeLabor ? hoursPerTech * techCount * roundTrips * laborRate : 0;
   const drivingCost = includeDriving ? roundTrips * techCount * drivingRatePerTech : 0;
