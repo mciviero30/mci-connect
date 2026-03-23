@@ -45,12 +45,16 @@ export default function FieldVerificationCalculator({ onAddAllItems }) {
     staleTime: Infinity,
   });
 
-  // Fetch Labor from catalog
+  // Fetch all rates from Items Catalog
   const laborItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('regular') && qi.name?.toLowerCase().includes('work'));
+  const drivingItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('driving') || (qi.name?.toLowerCase().includes('hours') && qi.name?.toLowerCase().includes('manejo')));
+  const hotelItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('hotel') || qi.name === 'Hotel Rooms');
+  const perDiemItem = quoteItems.find(qi => qi.name?.toLowerCase().includes('per') && qi.name?.toLowerCase().includes('diem'));
+  
   const laborRate = laborItem?.unit_price || 60;
-  const drivingRate = 60;
-  const hotelRate = 200;
-  const perDiemRate = 55;
+  const drivingRate = drivingItem?.unit_price || 60;
+  const hotelRate = hotelItem?.unit_price || 200;
+  const perDiemRate = perDiemItem?.unit_price || 55;
 
   const laborCost = includeLabor ? hoursPerTech * techCount * roundTrips * laborRate : 0;
   const drivingCost = includeDriving ? drivingHours * drivingRate : 0;
