@@ -238,9 +238,10 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
               <Input type="number" min="0" max="5" step="0.01" value={ratePerMile}
                 onChange={e => setRatePerMile(parseFloat(e.target.value) || 0.70)} className="h-7 text-sm" />
             </div>
-          </div>
+            </div>
+            )}
 
-          {/* Include toggles */}
+            {/* Include toggles */}
           <div className="flex flex-wrap gap-3 p-2 bg-white rounded border border-purple-100">
             <Toggle checked={includeLabor} onChange={setIncludeLabor} label={`Labor ($${laborRate}/h)`} />
             <Toggle checked={includeDriving} onChange={setIncludeDriving} label={`Driving ($${drivingRate}/h)`} />
