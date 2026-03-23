@@ -1635,8 +1635,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
   return (
     <ToastProvider>
-      <ErrorBoundary>
-        <LanguageProvider>
+      <LanguageProvider>
+        <ErrorBoundary>
           <PermissionsProvider>
             <UIProvider>
               <InvitationGate user={user}>
@@ -1654,8 +1654,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               </InvitationGate>
             </UIProvider>
           </PermissionsProvider>
-        </LanguageProvider>
-      </ErrorBoundary>
+        </ErrorBoundary>
+      </LanguageProvider>
     </ToastProvider>
   );
   }
