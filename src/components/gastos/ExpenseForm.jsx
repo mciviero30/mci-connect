@@ -15,15 +15,32 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { enforceUserIdOnWrite } from "@/components/utils/writeGuards";
 import { SyncStatusBadge, useSyncStatus } from "@/components/feedback/SyncStatusBadge";
 
+// Auto-mapping: category → account_category (invisible to employee)
+const CATEGORY_TO_ACCOUNT = {
+  travel: 'expense_travel_per_diem',
+  meals: 'expense_travel_per_diem',
+  transport: 'expense_travel_per_diem',
+  fuel: 'expense_travel_per_diem',
+  per_diem: 'expense_travel_per_diem',
+  equipment: 'expense_equipment',
+  warehouse: 'expense_materials',
+  supplies: 'expense_materials',
+  client_entertainment: 'expense_other',
+  office: 'expense_other',
+  other: 'expense_other',
+};
+
 const categories = [
-  { value: "travel", label: "Viajes", labelEn: "Travel" },
-  { value: "meals", label: "Comidas", labelEn: "Meals" },
-  { value: "transport", label: "Transporte", labelEn: "Transport" },
-  { value: "supplies", label: "Suministros", labelEn: "Supplies" },
-  { value: "client_entertainment", label: "Entretenimiento cliente", labelEn: "Client Entertainment" },
-  { value: "equipment", label: "Equipo", labelEn: "Equipment" },
-  { value: "per_diem", label: "Per Diem / Viáticos", labelEn: "Per Diem" }, // Per Diem category is still valid for display if old expenses have it
-  { value: "other", label: "Otro", labelEn: "Other" },
+  { value: 'travel', label: 'Viajes', labelEn: 'Travel' },
+  { value: 'meals', label: 'Comidas', labelEn: 'Meals' },
+  { value: 'transport', label: 'Transporte', labelEn: 'Transport' },
+  { value: 'fuel', label: 'Combustible', labelEn: 'Fuel' },
+  { value: 'client_entertainment', label: 'Entretenimiento Cliente', labelEn: 'Client Entertainment' },
+  { value: 'equipment', label: 'Equipo', labelEn: 'Equipment' },
+  { value: 'warehouse', label: 'Bodega / Almacén', labelEn: 'Warehouse' },
+  { value: 'office', label: 'Oficina', labelEn: 'Office' },
+  { value: 'supplies', label: 'Suministros', labelEn: 'Supplies' },
+  { value: 'other', label: 'Otro', labelEn: 'Other' },
 ];
 
 export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing }) {
@@ -53,8 +70,8 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
   const [formData, setFormData] = useState(() => {
     return {
       amount: String(expense?.amount || ''), // Ensure amount is a string for input
-      category: expense?.category || 'supplies', // Default to 'supplies'
-      account_category: expense?.account_category || 'expense_other', // NEW: Prompt #59
+      category: expense?.category || 'supplies',
+      account_category: expense?.account_category || CATEGORY_TO_ACCOUNT['supplies'] || 'expense_other',
       description: expense?.description || '',
       date: expense?.date ? expense.date.split('T')[0] : new Date().toISOString().split('T')[0], // Default to today's date
       receipt_url: expense?.receipt_url || '',
@@ -223,14 +240,7 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
     }
   };
 
-  // NEW: Account category options (Prompt #59)
-  const accountCategories = [
-    { value: 'expense_labor_cost', label: language === 'es' ? 'Gasto: Costo Laboral' : 'Expense: Labor Cost' },
-    { value: 'expense_travel_per_diem', label: language === 'es' ? 'Gasto: Viaje y Per Diem' : 'Expense: Travel & Per Diem' },
-    { value: 'expense_materials', label: language === 'es' ? 'Gasto: Materiales' : 'Expense: Materials' },
-    { value: 'expense_equipment', label: language === 'es' ? 'Gasto: Equipo' : 'Expense: Equipment' },
-    { value: 'expense_other', label: language === 'es' ? 'Gasto: Otro' : 'Expense: Other' }
-  ];
+
   
   return (
     <Card className="bg-white shadow-xl border-slate-200">
@@ -323,49 +333,27 @@ export default function ExpenseForm({ expense, onSubmit, onCancel, isProcessing 
               </Label>
               <Select 
                 value={formData.category} 
-                onValueChange={(value) => setFormData({...formData, category: value})} // Changed from handleManualCategoryChange
+                onValueChange={(value) => setFormData(prev => ({
+                  ...prev,
+                  category: value,
+                  account_category: CATEGORY_TO_ACCOUNT[value] || 'expense_other'
+                }))}
                 required
               >
                 <SelectTrigger className="bg-slate-50 border-slate-200 text-slate-900">
                   <SelectValue placeholder={t('category')} />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-slate-200">
-                  {categories.filter(c => c.value !== 'per_diem').map(cat => ( // Still filter per_diem from regular expenses
+                  {categories.map(cat => (
                     <SelectItem key={cat.value} value={cat.value} className="text-slate-900 hover:bg-slate-100">
-                      {t(cat.value)}
+                      {language === 'es' ? cat.label : cat.labelEn}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
 
-            {/* NEW: Account Category Field (Prompt #59) */}
-            <div>
-              <Label className="text-slate-700">
-                {language === 'es' ? 'Categoría Contable *' : 'Account Category *'}
-              </Label>
-              <Select 
-                value={formData.account_category} 
-                onValueChange={(value) => setFormData({...formData, account_category: value})}
-                required
-              >
-                <SelectTrigger className="bg-white border-slate-300 text-slate-900">
-                  <SelectValue placeholder={language === 'es' ? 'Seleccionar categoría contable...' : 'Select account category...'}/>
-                </SelectTrigger>
-                <SelectContent className="bg-white border-slate-200">
-                  {accountCategories.map(cat => (
-                    <SelectItem key={cat.value} value={cat.value} className="text-slate-900">
-                      {cat.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-slate-500 mt-1">
-                {language === 'es' 
-                  ? 'Para reportes contables y análisis financiero' 
-                  : 'For accounting reports and financial analysis'}
-              </p>
-            </div>
+
 
             <div className="space-y-2">
               <Label>{language === 'es' ? 'Método de Pago' : 'Payment Method'} *</Label>
