@@ -114,8 +114,25 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
      }
    });
 
+  const handleSave = (e) => {
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+    
+    // Validate required fields
+    const firstName = formData.first_name?.trim();
+    const lastName = formData.last_name?.trim();
+    
+    if (!firstName || !lastName) {
+      toast.error('First name and last name are required');
+      return;
+    }
+    
+    console.log('Saving employee data:', formData);
+    mutation.mutate(formData);
+  };
+
   return (
-    <div className="space-y-4 max-h-[85vh] overflow-y-auto p-4">
+    <form onSubmit={handleSave} className="space-y-4 max-h-[85vh] overflow-y-auto p-4">
       <EditEmployeeForm 
         employee={employee}
         currentUser={currentUser}
@@ -123,21 +140,16 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       />
 
       <div className="flex gap-2 justify-end pt-4">
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
+        <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
         <Button 
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Save button clicked, formData:', formData);
-            mutation.mutate(formData);
-          }} 
+          onClick={handleSave}
           disabled={mutation.isPending}
-          type="button"
+          type="submit"
         >
           {mutation.isPending ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
-    </div>
+    </form>
   );
 };
 
