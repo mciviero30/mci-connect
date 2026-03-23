@@ -1514,6 +1514,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
+                      <ActiveSessionBanner />
                       <NotificationBell user={user} />
                     </div>
               </div>
@@ -1537,7 +1538,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             </div>
           </div>
 
-          <ActiveSessionBanner />
           <AIAssistant currentPage={currentPageName} />
           <EnhancedOfflineSync />
 
