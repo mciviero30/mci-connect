@@ -155,12 +155,12 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
   };
 
   return (
-    <form onSubmit={handleSave} className="space-y-4 max-h-[85vh] overflow-y-auto p-4">
-      <EditEmployeeForm 
-        employee={employee}
-        currentUser={currentUser}
-        onFormChange={setFormData}
-      />
+   <form onSubmit={handleSave} className="space-y-4 max-h-[85vh] overflow-y-auto p-4">
+     <EditEmployeeForm 
+       employee={employee}
+       currentUser={currentUser}
+       onFormChange={(newData) => setFormData(prev => ({ ...prev, ...newData }))}
+     />
 
       <div className="flex gap-2 justify-end pt-4">
         <Button variant="outline" onClick={onClose} type="button">Cancel</Button>
