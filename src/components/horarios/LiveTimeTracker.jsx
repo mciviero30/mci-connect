@@ -789,7 +789,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       
       const endTime = clockOutTime.getTime();
       // MIDNIGHT CROSS FIX: Use actual timestamps (ms), not time strings — always correct
-      const rawHours = (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60);
+      // NOTE: activeSession here reflects closed break (done above) so breakDuration is accurate
+      const rawHours = (endTime - activeSession.startTime - (activeSession.breakDuration || 0)) / (1000 * 60 * 60);
       const totalHours = Math.max(0, rawHours);
       
       // Validate against max daily hours if shift enforces it
