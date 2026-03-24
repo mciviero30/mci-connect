@@ -1182,8 +1182,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
           elapsed={elapsed}
           onBreakToggle={handleToggleBreak}
           onClockOut={handleClockOut}
-          onBack={() => {
-            window.history.back();
+          onBack={() => window.history.back()}
+          onSwitchJob={() => {
+            // Clock out current session then open job selector for new one
+            handleClockOut().then ? handleClockOut().then(() => setShowJobSelector(true)) : (handleClockOut(), setTimeout(() => setShowJobSelector(true), 500));
           }}
           language={language}
           geofencePaused={geofencePaused}
