@@ -977,11 +977,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       setActiveSession(null);
       setElapsed(0);
       setLocationError(null);
-    } catch (error) {
-      setLocationError(error);
-      setGpsProgress(null);
-    }
-  };
+      // CRITICAL: Reset work type state to prevent stale state on next session
+      setWorkType('normal');
+      setTaskDetails('');
+      setSelectedJobForStart(null);
 
   const handleToggleBreak = async () => {
     // PASO 3: Pre-check GPS for breaks (non-blocking, just inform)
