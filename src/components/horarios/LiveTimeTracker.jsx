@@ -1295,36 +1295,58 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       
       {/* Job Selection Dialog */}
       <Dialog open={showJobSelector} onOpenChange={setShowJobSelector}>
-        <DialogContent className="bg-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{language === 'es' ? 'Selecciona un Trabajo' : 'Select a Job'}</DialogTitle>
-            {jobOptions.length === 0 && (
-              <p className="text-xs text-red-600 mt-2">⚠️ No jobs found ({jobs.length} active jobs in DB)</p>
-            )}
-          </DialogHeader>
-          <div className="py-4">
+        <DialogContent className="sm:max-w-md overflow-hidden p-0 border-0">
+          {/* Colorful Header */}
+          <div className="bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <Briefcase className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white">{language === 'es' ? 'Selecciona un Trabajo' : 'Select a Job'}</h2>
+                <p className="text-blue-100 text-xs">{language === 'es' ? 'Elige el proyecto de hoy' : 'Choose today\'s project'}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Body */}
+          <div className="bg-white px-6 py-5">
             {jobOptions.length > 0 ? (
-              <Select onValueChange={handleJobSelected}>
-                <SelectTrigger className="bg-white border-slate-300">
-                  <SelectValue placeholder={t('search') + '...'} />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  {jobOptions.map(opt => (
-                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  {language === 'es' ? 'Trabajos Activos' : 'Active Jobs'}
+                </label>
+                <Select onValueChange={handleJobSelected}>
+                  <SelectTrigger className="bg-slate-50 border-slate-200 h-12 text-slate-800 font-medium">
+                    <SelectValue placeholder={language === 'es' ? 'Buscar trabajo...' : 'Search job...'} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white">
+                    {jobOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value} className="py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                          {opt.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             ) : (
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800">
-                {language === 'es' 
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+                {language === 'es'
                   ? '⚠️ No hay trabajos disponibles. Verifica que existan trabajos activos.'
                   : '⚠️ No jobs available. Check that there are active jobs.'}
               </div>
             )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowJobSelector(false)}>{t('cancel')}</Button>
-          </DialogFooter>
+
+          {/* Footer */}
+          <div className="bg-slate-50 px-6 py-4 border-t border-slate-100">
+            <Button variant="outline" onClick={() => setShowJobSelector(false)} className="w-full h-11 border-slate-300 text-slate-600">
+              {t('cancel')}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
