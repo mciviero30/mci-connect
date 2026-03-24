@@ -463,15 +463,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     if (!jobId) return;
     setSelectedJobForStart(jobId);
     setShowJobSelector(false);
+    // CRITICAL: Reset workType to base state if NOT a pre-selected type
+    // This prevents stale state when switching between work types
+    if (!preselectedWorkType) {
+      setWorkType('normal');
+    }
     // If work type already pre-selected from BottomNav, skip the dialog and start immediately
     if (preselectedWorkType) {
-      // Trigger start session directly via a flag
-      setShowWorkTypeDialog(false);
-      setTimeout(() => handleStartSessionWithJob(jobId, preselectedWorkType), 50);
-    } else {
-      setShowWorkTypeDialog(true);
-    }
-  };
 
   // GEOFENCING - Strict enforcement with 100m radius (EXCEPT for driving hours)
   // Called directly (skipping dialog) when workType is pre-selected from BottomNav
