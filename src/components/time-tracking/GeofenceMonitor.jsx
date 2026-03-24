@@ -1,66 +1,31 @@
 import { useEffect, useRef, useState } from 'react';
-import { base44 } from '@/api/base44Client';
-import { useQuery } from '@tanstack/react-query';
-import { sendNotification } from '../notifications/PushNotificationService';
-import { useLanguage } from '@/components/i18n/LanguageContext';
-import { AlertTriangle, MapPinOff } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { calculateDistance } from '@/components/utils/geolocation';
+import { MapPinOff, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { calculateDistance } from '@/components/utils/geolocation'; // SSOT for distance calculation
-import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
+import { useLanguage } from '@/components/i18n/LanguageContext';
 
-const GRACE_PERIOD_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_DAILY_ADMIN_ALERTS = 4;
+const CHECK_INTERVAL_MS = 15000; // Check every 15 seconds
 
-// Track how many times we've alerted admin today for this employee+job
-function getAdminAlertCount(userId, jobId) {
-  const today = new Date().toISOString().slice(0, 10);
-  const key = `geofence_alerts_${userId}_${jobId}_${today}`;
-  return parseInt(localStorage.getItem(key) || '0', 10);
-}
-
-function incrementAdminAlertCount(userId, jobId) {
-  const today = new Date().toISOString().slice(0, 10);
-  const key = `geofence_alerts_${userId}_${jobId}_${today}`;
-  const newCount = getAdminAlertCount(userId, jobId) + 1;
-  localStorage.setItem(key, String(newCount));
-  return newCount;
-}
-
-export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
+export default function GeofenceMonitor({ activeSession, job, onGeofenceExit, onGeofenceReturn }) {
   const { language } = useLanguage();
   const [outOfRange, setOutOfRange] = useState(false);
   const [distanceFromSite, setDistanceFromSite] = useState(0);
-  const [countdown, setCountdown] = useState(null); // seconds remaining
-  const alertSentRef = useRef(false);
   const checkIntervalRef = useRef(null);
-  const autoClockOutTimerRef = useRef(null);
-  const countdownIntervalRef = useRef(null);
-
-  const { data: user } = useQuery({
-    queryKey: CURRENT_USER_QUERY_KEY,
-    queryFn: () => base44.auth.me(),
-    staleTime: Infinity
-  });
-
-  const { data: job } = useQuery({
-    queryKey: ['job', activeSession?.jobId],
-    queryFn: () => base44.entities.Job.filter({ id: activeSession.jobId }).then(jobs => jobs[0]),
-    enabled: !!activeSession?.jobId,
-  });
+  const exitFiredRef = useRef(false); // Prevent multiple exit callbacks per exit event
 
   useEffect(() => {
-    if (!activeSession || !job || !job.latitude || !job.longitude || !user) {
-      return;
-    }
-
+    // Don't monitor driving sessions or sessions without job GPS
+    if (!activeSession || !job?.latitude || !job?.longitude) return;
+    if (activeSession.workType === 'driving') return;
+    // Don't monitor if already geofence-paused (avoid double-triggering)
+    
     const checkGeofence = async () => {
       try {
         const position = await new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, {
             enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0
+            timeout: 8000,
+            maximumAge: 10000
           });
         });
 
@@ -76,86 +41,44 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
 
         if (distance > maxRadius) {
           setOutOfRange(true);
-
-          // Start grace period timer only once per exit event
-          if (!alertSentRef.current) {
-            alertSentRef.current = true;
-
-            // Notify employee
-            sendNotification({
-              userEmail: user.email,
-              type: 'geofence_exit',
-              title: language === 'es' ? '⚠️ Saliste del Área de Trabajo' : '⚠️ You Left Work Area',
-              body: language === 'es'
-                ? `Has salido del área permitida (${Math.round(distance)}m). Tienes 15 minutos para regresar o se cerrará tu sesión.`
-                : `You've left the allowed area (${Math.round(distance)}m). You have 15 minutes to return or your session will auto clock-out.`,
-              url: '/TimeTracking',
-              priority: 'urgent'
+          // Fire exit callback only once per exit event
+          if (!exitFiredRef.current) {
+            exitFiredRef.current = true;
+            onGeofenceExit?.({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+              distance: Math.round(distance)
             });
-
-            // Notify admins with daily limit of 4 times
-            const alertCount = incrementAdminAlertCount(user.id, job.id);
-            if (alertCount <= MAX_DAILY_ADMIN_ALERTS) {
-              const admins = await base44.entities.User.filter({ role: 'admin' });
-              const isLastAlert = alertCount === MAX_DAILY_ADMIN_ALERTS;
-              await Promise.all(admins.map(admin => sendNotification({
-                userEmail: admin.email,
-                type: 'security_alert',
-                title: language === 'es' ? '🚨 Empleado Salió del Geofence' : '🚨 Employee Left Geofence',
-                body: isLastAlert
-                  ? (language === 'es'
-                      ? `⚠️ ${user.full_name} ha salido del área 4 veces hoy en ${job.name}. Considera llamarle para verificar qué está pasando.`
-                      : `⚠️ ${user.full_name} has left ${job.name} area 4 times today. Consider calling them to check what's going on.`)
-                  : (language === 'es'
-                      ? `${user.full_name} salió del área de ${job.name} (${Math.round(distance)}m). Salida #${alertCount} hoy.`
-                      : `${user.full_name} left ${job.name} area (${Math.round(distance)}m). Exit #${alertCount} today.`),
-                url: '/Horarios',
-                priority: isLastAlert ? 'urgent' : 'high'
-              })));
-            }
-
-            // Start countdown display
-            setCountdown(GRACE_PERIOD_MS / 1000);
-            countdownIntervalRef.current = setInterval(() => {
-              setCountdown(prev => (prev > 0 ? prev - 1 : 0));
-            }, 1000);
-
-            // Auto clock-out after 15 minutes grace period
-            autoClockOutTimerRef.current = setTimeout(() => {
-              onAutoClockOut();
-            }, GRACE_PERIOD_MS);
           }
         } else {
-          // Employee returned to geofence — cancel auto clock-out
-          if (autoClockOutTimerRef.current) {
-            clearTimeout(autoClockOutTimerRef.current);
-            autoClockOutTimerRef.current = null;
+          // Employee is back in range
+          if (exitFiredRef.current) {
+            // Was out of range, now returned
+            exitFiredRef.current = false;
+            setOutOfRange(false);
+            onGeofenceReturn?.({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            });
+          } else {
+            setOutOfRange(false);
           }
-          if (countdownIntervalRef.current) {
-            clearInterval(countdownIntervalRef.current);
-            countdownIntervalRef.current = null;
-          }
-          setOutOfRange(false);
-          setCountdown(null);
-          alertSentRef.current = false;
         }
       } catch (error) {
-        console.error('Geofence check error:', error);
+        // GPS unavailable — don't trigger pause, just log
+        console.warn('[GeofenceMonitor] GPS check failed:', error.message);
       }
     };
 
-    // Check every 15 seconds
     checkGeofence();
-    checkIntervalRef.current = setInterval(checkGeofence, 15000);
+    checkIntervalRef.current = setInterval(checkGeofence, CHECK_INTERVAL_MS);
 
     return () => {
       if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
-      if (autoClockOutTimerRef.current) clearTimeout(autoClockOutTimerRef.current);
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
-  }, [activeSession, job, user, language, onAutoClockOut]);
+  }, [activeSession?.jobId, job?.id, job?.latitude, job?.longitude, activeSession?.workType]);
 
-  if (!activeSession || !outOfRange) return null;
+  if (!activeSession || !outOfRange || activeSession.workType === 'driving') return null;
 
   return (
     <AnimatePresence>
@@ -163,28 +86,26 @@ export default function GeofenceMonitor({ activeSession, onAutoClockOut }) {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        className="fixed top-20 left-1/2 -translate-x-1/2 z-50 max-w-md"
+        className="fixed top-20 left-1/2 -translate-x-1/2 z-[10001] w-[90%] max-w-md"
       >
-        <div className="bg-red-600 text-white p-4 rounded-2xl shadow-2xl border-2 border-red-400 flex items-center gap-3 animate-pulse">
-          <div className="w-12 h-12 bg-red-700 rounded-xl flex items-center justify-center shadow-lg">
+        <div className="bg-red-600 text-white p-4 rounded-2xl shadow-2xl border-2 border-red-400 flex items-center gap-3">
+          <div className="w-12 h-12 bg-red-700 rounded-xl flex items-center justify-center shadow-lg flex-shrink-0 animate-bounce">
             <MapPinOff className="w-6 h-6" />
           </div>
           <div className="flex-1">
             <p className="font-black text-base">
-              {language === 'es' ? '⚠️ FUERA DEL ÁREA' : '⚠️ OUT OF RANGE'}
+              {language === 'es' ? '⚠️ TIEMPO PAUSADO' : '⚠️ TIME PAUSED'}
             </p>
             <p className="text-sm font-semibold">
-              {language === 'es' 
-                ? `${distanceFromSite}m del proyecto.`
-                : `${distanceFromSite}m from project.`}
+              {language === 'es'
+                ? `Estás a ${distanceFromSite}m del proyecto.`
+                : `You are ${distanceFromSite}m from the project.`}
             </p>
-            {countdown !== null && (
-              <p className="text-xs font-bold mt-1 opacity-90">
-                {language === 'es'
-                  ? `Auto cierre en ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')} — ¡Regresa al sitio!`
-                  : `Auto clock-out in ${Math.floor(countdown / 60)}:${String(countdown % 60).padStart(2, '0')} — Return to site!`}
-              </p>
-            )}
+            <p className="text-xs mt-1 opacity-90 font-bold">
+              {language === 'es'
+                ? '↩ Regresa al sitio para reanudar'
+                : '↩ Return to site to resume'}
+            </p>
           </div>
         </div>
       </motion.div>
