@@ -1449,7 +1449,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                   src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
                   alt="MCI Connect"
                   className="w-auto object-contain"
-                  style={{ height: '120%' }}
+                  style={{ height: '120%', mixBlendMode: 'multiply' }}
                 />
               </div>
               <div className="absolute inset-0 flex items-center justify-between px-1.5 z-10">
