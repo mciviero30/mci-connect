@@ -1516,7 +1516,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                      <ActiveSessionBanner />
                       <NotificationBell user={user} />
                     </div>
               </div>
