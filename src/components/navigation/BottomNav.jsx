@@ -127,8 +127,10 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
 
   const [moreExpanded, setMoreExpanded] = useState(false);
 
-  // Don't render nav while a session is active — avoids covering clock-out buttons
-  if (sessionActive) return <div className="md:hidden h-16" />;
+  // Only hide BottomNav on the TimeTracking page itself (to avoid covering clock-out buttons)
+  // Never hide it globally — other pages need navigation
+  const isTimeTrackingPage = location.pathname.includes('TimeTracking');
+  if (sessionActive && isTimeTrackingPage) return <div className="md:hidden h-16" />;
 
   return (
     <>
