@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Square, Coffee, ArrowLeft, MapPinOff } from 'lucide-react';
+import ReturnFromBreakModal from './ReturnFromBreakModal';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -16,10 +17,12 @@ export default function CleanTimeTrackerUI({
   onBreakToggle,
   onClockOut,
   onBack,
+  onSwitchJob,
   language = 'en',
   geofencePaused = false
 }) {
   const [breakElapsed, setBreakElapsed] = React.useState(0);
+  const [showReturnModal, setShowReturnModal] = React.useState(false);
 
   // Count up break timer when on break
   React.useEffect(() => {
@@ -147,17 +150,26 @@ export default function CleanTimeTrackerUI({
       <div className="px-6 pt-4 pb-20 bg-gradient-to-t from-slate-900 to-transparent border-t border-white/10">
         <div className="flex gap-3">
           <Button
-            onClick={onBreakToggle}
+            onClick={() => {
+              if (activeSession.onBreak && !geofencePaused) {
+                // Show return modal instead of directly resuming
+                setShowReturnModal(true);
+              } else {
+                onBreakToggle();
+              }
+            }}
             disabled={geofencePaused}
             className={`flex-1 h-14 rounded-2xl font-bold text-base text-white ${
               geofencePaused
                 ? 'bg-gray-600 cursor-not-allowed opacity-50'
+                : activeSession.onBreak
+                ? 'bg-green-600 hover:bg-green-700'
                 : 'bg-amber-600 hover:bg-amber-700'
             }`}
           >
             <Coffee className="w-5 h-5 mr-2" />
             {activeSession.onBreak && !geofencePaused
-              ? (language === 'es' ? 'Reanudar' : 'Resume')
+              ? (language === 'es' ? 'Volver' : 'End Break')
               : (language === 'es' ? 'Pausa' : 'Break')
             }
           </Button>
