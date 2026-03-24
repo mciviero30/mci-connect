@@ -51,8 +51,8 @@ const AuthenticatedApp = () => {
         {Object.entries(Pages).map(([path, Page]) => (
           <Route key={path} path={`/${path}`} element={<Page />} />
         ))}
-        <Route path="/SupervisorDashboard" element={<LayoutWrapper currentPageName="SupervisorDashboard"><SupervisorDashboard /></LayoutWrapper>} />
-        <Route path="/ForemanDashboard" element={<LayoutWrapper currentPageName="ForemanDashboard"><ForemanDashboard /></LayoutWrapper>} />
+        <Route path="/SupervisorDashboard" element={<SupervisorDashboard />} />
+        <Route path="/ForemanDashboard" element={<ForemanDashboard />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </LayoutWrapper>

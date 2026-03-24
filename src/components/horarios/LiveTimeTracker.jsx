@@ -1159,47 +1159,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     setActiveSession(updatedSession);
   };
   
-  if (activeSession) {
-    // DEBUG: Verify session is set
-    console.log('🎯 [LiveTimeTracker] Rendering active session:', {
-      jobName: activeSession.jobName,
-      elapsed,
-      hasLocation: !!activeSession.location
-    });
-    
-    // Find job for geofence monitor
-    const activeJob = jobs.find(j => j.id === activeSession.jobId);
-    
-    // Use clean UI with map background
-    return (
-      <>
-        <GeofenceMonitor
-          activeSession={activeSession}
-          job={activeJob}
-          onGeofenceExit={handleGeofenceExit}
-          onGeofenceReturn={handleGeofenceReturn}
-        />
-        <CleanTimeTrackerUI
-          activeSession={activeSession}
-          elapsed={elapsed}
-          onBreakToggle={handleToggleBreak}
-          onClockOut={handleClockOut}
-          onBack={() => window.history.back()}
-          onSwitchJob={() => {
-            // Clock out current session then open job selector for new one
-            handleClockOut().then ? handleClockOut().then(() => setShowJobSelector(true)) : (handleClockOut(), setTimeout(() => setShowJobSelector(true), 500));
-          }}
-          language={language}
-          geofencePaused={geofencePaused}
-        />
-      </>
-    );
-  }
-
   const handleAutoClockOut = async () => {
     if (!activeSession || !user) return;
 
-    // PASO 4: Log auto clock-out event
     telemetry.log({
       event_type: 'auto_clock_out_triggered',
       user_email: user.email,
@@ -1214,10 +1176,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     try {
       const location = await getLocation();
       const endTime = Date.now();
-      // MIDNIGHT CROSS FIX: Use actual timestamps (ms) — always correct across midnight
       const totalHours = Math.max(0, (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60));
 
-      // WRITE GUARD — STRICT MODE for TimeEntry (blocks without user_id)
       const autoClockOutData = {
         user_id: user?.id,
         employee_email: user.email,
@@ -1241,18 +1201,12 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         exceeds_max_hours: false,
       };
 
-      // STRICT MODE: Block if user_id missing (silent failure for auto clock-out)
       if (!user?.id) {
-        console.error('[WRITE GUARD] 🚫 STRICT MODE: Auto clock-out blocked without user_id', {
-          email: user?.email,
-          job: activeSession.jobName
-        });
-        // Don't throw - just fail silently and keep session active
+        console.error('[WRITE GUARD] 🚫 STRICT MODE: Auto clock-out blocked without user_id');
         return;
       }
 
       onSave(autoClockOutData);
-
       localStorage.removeItem(storageKey);
       setActiveSession(null);
       setElapsed(0);
@@ -1262,7 +1216,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     }
   };
 
-  return (
+  if (activeSession) {
+    // DEBUG: Verify session is set
+    console.log('🎯 [LiveTimeTracker] Rendering active session:', {
     <>
       {/* PASO 3: Location Permission Prompt */}
       {showLocationDenied && (

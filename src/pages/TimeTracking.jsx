@@ -231,7 +231,7 @@ export default function TimeTracking() {
 
   // Monitor active session and elapsed time
   useEffect(() => {
-    const savedSession = sessionStorage.getItem('liveTimeTracker_work');
+    const savedSession = localStorage.getItem('liveTimeTracker_work');
     if (savedSession) {
       try {
         const session = JSON.parse(savedSession);

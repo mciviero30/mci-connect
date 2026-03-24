@@ -150,12 +150,6 @@ export default function MisHoras() {
             <Activity className="w-4 h-4 mr-2" />
             {language === 'es' ? 'Diagnóstico GPS' : 'GPS Diagnostic'}
           </Button>
-          <Link to={createPageUrl('ClockInTests')}>
-            <Button variant="outline" size="sm">
-              <Clock className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Suite de Pruebas' : 'Test Suite'}
-            </Button>
-          </Link>
         </div>
       }
     >
