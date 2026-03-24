@@ -1279,20 +1279,22 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
               </p>
             </>
           ) : (
-            <>
-              <div className="relative inline-block mb-6">
-                <ClockInButton
-                  onClick={handleStartSession}
-                  disabled={isLoading}
-                  isLoading={isLoading}
-                  language={language}
-                />
-              </div>
-              <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
-                {workType === 'driving'
-                  ? (language === 'es' ? 'Iniciar Manejo' : 'Start Driving Time')
-                  : (language === 'es' ? 'Iniciar Trabajo' : 'Start Work Time')}
-              </p>
+           <>
+             <div className="relative inline-block mb-6">
+               <ClockInButton
+                 onClick={handleStartSession}
+                 disabled={isLoading || !workType}
+                 isLoading={isLoading}
+                 language={language}
+               />
+             </div>
+             <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
+               {workType
+                 ? (workType === 'driving'
+                   ? (language === 'es' ? 'Iniciar Manejo' : 'Start Driving Time')
+                   : (language === 'es' ? 'Iniciar Trabajo' : 'Start Work Time'))
+                 : (language === 'es' ? 'Selecciona tipo de trabajo' : 'Select work type')}
+             </p>
               
               <div className="mt-8 space-y-4">
                 <p className="text-lg font-bold text-slate-900 dark:text-white">
