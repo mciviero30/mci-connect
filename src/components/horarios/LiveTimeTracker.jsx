@@ -73,6 +73,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   const [nearestJob, setNearestJob] = useState(null);
   const [geofencePaused, setGeofencePaused] = useState(false); // paused due to geofence exit
   const geofencePauseRef = useRef(null); // stores exit coords
+  const [showLocationDenied, setShowLocationDenied] = useState(false);
+  const [isBreakAction, setIsBreakAction] = useState(false);
   
   // Check if pending sync from session storage
   const [pendingSync, setPendingSync] = useState(false);
