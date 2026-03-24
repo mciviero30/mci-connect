@@ -679,6 +679,12 @@ export default function CrearEstimado() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // 🚫 GUARD: Prevent double-submit while saving
+    if (createMutation.isPending || updateMutation.isPending) {
+      console.warn('🚫 Save already in progress, ignoring duplicate submit');
+      return;
+    }
+    
     if (!formData.customer_name || !formData.job_name) {
       toast({
         title: 'Error',
@@ -697,16 +703,13 @@ export default function CrearEstimado() {
       return;
     }
 
-    // formData.items is the single source of truth — never re-derive quantity on save
     const enrichedItems = formData.items.map(item => ({
       ...item,
       total: (item.quantity || 0) * (item.unit_price || 0)
     }));
 
-    // Unified validation using isValidLineItem
     const invalid = enrichedItems.filter(i => !isValidLineItem(i));
     if (invalid.length > 0) {
-      // Find first invalid item and get missing fields
       const firstInvalid = invalid[0];
       const missing = [];
       if (!firstInvalid.item_name) missing.push(language === 'es' ? 'Nombre del Item' : 'Item Name');
@@ -724,29 +727,23 @@ export default function CrearEstimado() {
       return;
     }
 
-    // Calculate estimated hours from items
     const estimated_hours = enrichedItems.reduce((sum, item) => {
       const hours = (item.installation_time || 0) * (item.quantity || 0);
       return sum + hours;
     }, 0);
 
-    // Calculate estimated cost (internal cost from catalog)
     const estimated_cost = enrichedItems.reduce((sum, item) => {
-      // Find matching catalog item to get internal cost
       const catalogItem = quoteItems.find(qi => qi.name === item.item_name);
       if (!catalogItem) return sum;
-      
       const costPerUnit = catalogItem.cost_per_unit || 0;
       const materialCost = catalogItem.material_cost || 0;
       const totalCost = (costPerUnit + materialCost) * (item.quantity || 0);
       return sum + totalCost;
     }, 0);
 
-    // Calculate profit margin
-    const revenue = subtotal; // Use subtotal (without tax) for profit margin
+    const revenue = subtotal;
     const profit_margin = revenue > 0 ? ((revenue - estimated_cost) / revenue) * 100 : 0;
 
-    // Save with enriched items (derived quantities applied)
     const dataToSave = {
       ...formData,
       items: enrichedItems,
