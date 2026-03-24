@@ -318,6 +318,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
 
   // Auto clock-out ref to prevent multiple triggers
   const autoClockOutFiredRef = useRef(false);
+  
+  // CRITICAL: Debounce refs to prevent duplicate entries from double-taps
+  const clockInProgressRef = useRef(false);
+  const clockOutProgressRef = useRef(false);
 
   useEffect(() => {
     let interval;
@@ -420,8 +424,12 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   }, [language]);
 
   const handleClockIn = async () => {
-    // BLOCK DUPLICATE: check all storage keys for any active session
-    const allKeys = ['liveTimeTracker_work', 'liveTimeTracker_driving'];
+    // ANTI-DOUBLE-TAP: Prevent rapid successive calls
+    if (clockInProgressRef.current) return;
+    clockInProgressRef.current = true;
+    try {
+      // BLOCK DUPLICATE: check all storage keys for any active session
+      const allKeys = ['liveTimeTracker_work', 'liveTimeTracker_driving'];
     for (const k of allKeys) {
       try {
         const existing = JSON.parse(localStorage.getItem(k));
@@ -457,6 +465,9 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     
     // Permission granted or prompt → continue normal flow
     setShowJobSelector(true);
+    } finally {
+      clockInProgressRef.current = false;
+    }
   };
   
   const handleJobSelected = async (jobId) => {
@@ -675,8 +686,12 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   };
 
   const handleClockOut = async () => {
-    // If currently on break (manual or geofence), close the break first before calculating hours
-    if (activeSession?.onBreak && activeSession?.breakStartTime) {
+    // ANTI-DOUBLE-TAP: Prevent rapid successive calls
+    if (clockOutProgressRef.current) return;
+    clockOutProgressRef.current = true;
+    try {
+      // If currently on break (manual or geofence), close the break first before calculating hours
+      if (activeSession?.onBreak && activeSession?.breakStartTime) {
       const now = Date.now();
       const breakTime = now - activeSession.breakStartTime;
       const breaks = [...(activeSession.breaks || [])];
@@ -982,8 +997,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       setTaskDetails('');
       setSelectedJobForStart(null);
       } catch (error) {
-      setLocationError(error);
-      setGpsProgress(null);
+       setLocationError(error);
+       setGpsProgress(null);
+      } finally {
+       clockOutProgressRef.current = false;
       }
       };
 
