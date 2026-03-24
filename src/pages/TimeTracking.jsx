@@ -243,8 +243,24 @@ export default function TimeTracking() {
     }
   }, []);
 
-  // Timer that respects break state — pauses when onBreak is true
+  // Restore CleanUI when todayEntry changes (user clicks green button)
   useEffect(() => {
+    if (todayEntry && !showCleanUI && !sessionData) {
+      const savedSession = localStorage.getItem('liveTimeTracker_work');
+      if (savedSession) {
+        try {
+          const session = JSON.parse(savedSession);
+          setSessionData(session);
+          setShowCleanUI(true);
+        } catch (e) {
+          localStorage.removeItem('liveTimeTracker_work');
+        }
+      }
+    }
+  }, [todayEntry, showCleanUI, sessionData]);
+
+  // Timer that respects break state — pauses when onBreak is true
+  useEffect(() {
     if (!showCleanUI || !sessionData) return;
 
     const interval = setInterval(() => {
