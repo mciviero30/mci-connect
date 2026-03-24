@@ -37,17 +37,7 @@ const formatTime = (seconds) => {
 };
 
 export default function LiveTimeTracker({ trackingType, onSave, isLoading, preselectedWorkType }) {
-  let language = 'en';
-  let t = (key) => key;
-  try {
-    const langCtx = useLanguage();
-    if (langCtx) {
-      language = langCtx.language || 'en';
-      t = langCtx.t || ((key) => key);
-    }
-  } catch (e) {
-    // Fallback if useLanguage fails
-  }
+  const { language = 'en', t = (key) => key } = useLanguage() || {};
   
   const queryClient = useQueryClient();
   
