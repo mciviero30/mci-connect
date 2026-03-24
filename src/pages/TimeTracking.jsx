@@ -284,11 +284,15 @@ export default function TimeTracking() {
           if (activeBreak) {
             // End break
             await endBreakMutation.mutateAsync();
-            setSessionData(prev => ({ ...prev, onBreak: false, breakStartTime: null }));
+            const updated = { ...sessionData, onBreak: false, breakStartTime: null };
+            setSessionData(updated);
+            localStorage.setItem('liveTimeTracker_work', JSON.stringify(updated));
           } else {
             // Start break
             await startBreakMutation.mutateAsync('lunch');
-            setSessionData(prev => ({ ...prev, onBreak: true, breakStartTime: Date.now() }));
+            const updated = { ...sessionData, onBreak: true, breakStartTime: Date.now() };
+            setSessionData(updated);
+            localStorage.setItem('liveTimeTracker_work', JSON.stringify(updated));
           }
         }}
         onClockOut={async () => {
