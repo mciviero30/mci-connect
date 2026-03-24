@@ -506,12 +506,24 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         setGpsProgress(message);
       });
       setGpsProgress(null);
-      
+
       let job = jobs.find(j => j.id === selectedJob);
-      
+
+      // VALIDATION: Check if this job is assigned to the employee TODAY
+      const todayAssignment = todayAssignments.find(a => a.job_id === selectedJob);
+      if (!todayAssignment) {
+        setLocationError(
+          language === 'es'
+            ? `❌ Este trabajo no está asignado para ti hoy. Verifica con tu supervisor.`
+            : `❌ This job is not assigned to you today. Check with your supervisor.`
+        );
+        setShowWorkTypeDialog(false);
+        return;
+      }
+
       // Find scheduled shift for this job today
       const todayShift = todayAssignments.find(a => a.job_id === selectedJob && a.enforce_scheduled_hours);
-      
+
       // SCHEDULED HOURS CONTROL: Adjust clock-in time if shift enforces hours
       let adjustedCheckIn = new Date();
       if (todayShift && todayShift.scheduled_start_time) {
