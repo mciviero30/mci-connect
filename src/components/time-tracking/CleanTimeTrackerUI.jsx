@@ -43,7 +43,7 @@ export default function CleanTimeTrackerUI({
   const exceedsMaxHours = sessionHours >= maxHours;
 
   return (
-    <div className="fixed inset-0 z-[10000] flex flex-col bg-gradient-to-b from-[#F1F5F9] via-[#E8F1FA] to-[#F0F6FD] dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pt-14 pb-20">
+    <div className="w-full h-full flex flex-col bg-gradient-to-b from-[#F1F5F9] via-[#E8F1FA] to-[#F0F6FD] dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       {showReturnModal && (
         <ReturnFromBreakModal
           jobName={activeSession.jobName}
@@ -53,21 +53,9 @@ export default function CleanTimeTrackerUI({
           onEndShift={() => { setShowReturnModal(false); onClockOut(); }}
         />
       )}
-      {/* Top Bar */}
-      <div className="p-4 flex items-center justify-between bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200/50 dark:border-slate-700/50">
-        <Button
-          onClick={onBack}
-          variant="ghost"
-          size="icon"
-          className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-        <div className="flex-1 text-center">
-          <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
-            {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
-          </p>
-        </div>
+      {/* Top Bar - Hidden in full-screen tracker */}
+      <div className="hidden p-4 flex items-center justify-between bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200/50 dark:border-slate-700/50">
+      </div>
         <div className="w-10" />
       </div>
 
