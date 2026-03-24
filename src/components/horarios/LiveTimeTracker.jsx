@@ -248,10 +248,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     } catch (e) { /* non-blocking */ }
   };
 
-  // CRITICAL: Only show jobs assigned to the employee TODAY (not all active jobs)
-  const jobOptions = jobs
-    .filter(j => todayAssignments.some(a => a.job_id === j.id))
-    .map(j => ({ value: j.id, label: j.name }));
+  const jobOptions = jobs.map(j => ({ value: j.id, label: j.name }));
 
   // Find nearest job for GPS health monitor
   useEffect(() => {
@@ -512,19 +509,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
 
       let job = jobs.find(j => j.id === selectedJob);
 
-      // VALIDATION: Check if this job is assigned to the employee TODAY
-      const todayAssignment = todayAssignments.find(a => a.job_id === selectedJob);
-      if (!todayAssignment) {
-        setLocationError(
-          language === 'es'
-            ? `❌ Este trabajo no está asignado para ti hoy. Verifica con tu supervisor.`
-            : `❌ This job is not assigned to you today. Check with your supervisor.`
-        );
-        setShowWorkTypeDialog(false);
-        return;
-      }
-
-      // Find scheduled shift for this job today
+      // Find scheduled shift for this job today (if assigned)
       const todayShift = todayAssignments.find(a => a.job_id === selectedJob && a.enforce_scheduled_hours);
 
       // SCHEDULED HOURS CONTROL: Adjust clock-in time if shift enforces hours
