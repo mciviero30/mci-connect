@@ -53,29 +53,7 @@ export default function CleanTimeTrackerUI({
           onEndShift={() => { setShowReturnModal(false); onClockOut(); }}
         />
       )}
-      {/* Top Bar - Hidden in full-screen tracker */}
-      <div className="hidden p-4 flex items-center justify-between bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200/50 dark:border-slate-700/50">
-      </div>
-        <div className="w-10" />
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 space-y-6 pb-4">
-        {/* Job Info */}
-        <div className="text-center">
-          <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">
-            {language === 'es' ? 'Proyecto' : 'Project'}
-          </p>
-          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{activeSession.jobName}</h2>
-          <Badge className="bg-[#507DB4] text-white">
-            {Math.round(activeSession.distanceMeters || 0)}m {language === 'es' ? 'del sitio' : 'from site'}
-          </Badge>
-          {activeSession.onBreak && !geofencePaused && (
-            <Badge className="ml-2 bg-amber-500 text-white">
-              {language === 'es' ? 'Pausa:' : 'Break:'} {formatTime(breakElapsed)}
-            </Badge>
-          )}
-        </div>
+      {/* Top Bar - Hidden */}
 
         {/* Time Display */}
         <div className="text-center">
