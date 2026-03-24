@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Square, Coffee, ArrowLeft, MapPinOff } from 'lucide-react';
+import { Clock, Square, Coffee, ArrowLeft, MapPinOff, UtensilsCrossed } from 'lucide-react';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
@@ -20,6 +20,7 @@ export default function CleanTimeTrackerUI({
   geofencePaused = false
 }) {
   const [breakElapsed, setBreakElapsed] = React.useState(0);
+  const [showBreakPicker, setShowBreakPicker] = React.useState(false);
 
   // Count up break timer when on break
   React.useEffect(() => {
@@ -143,11 +144,52 @@ export default function CleanTimeTrackerUI({
         </div>
       </div>
 
+      {/* Break Type Picker */}
+      {showBreakPicker && (
+        <div className="fixed inset-0 z-[10001] flex items-end justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowBreakPicker(false)} />
+          <div className="relative bg-white rounded-t-3xl w-full max-w-md p-6 space-y-4">
+            <h3 className="text-xl font-bold text-slate-900 text-center">
+              {language === 'es' ? 'Tipo de Pausa' : 'Select Break Type'}
+            </h3>
+            <button
+              onClick={() => { setShowBreakPicker(false); onBreakToggle('lunch'); }}
+              className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-slate-200 hover:border-pink-400 hover:bg-pink-50 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <UtensilsCrossed className="w-6 h-6 text-pink-500" />
+                <div className="text-left">
+                  <p className="font-bold text-slate-900">{language === 'es' ? 'Almuerzo' : 'Lunch Break'}</p>
+                  <p className="text-sm text-slate-500">{language === 'es' ? 'No pagado' : 'Unpaid'}</p>
+                </div>
+              </div>
+              <span className="text-pink-500 font-bold text-sm">{language === 'es' ? 'No Pagado' : 'Unpaid'}</span>
+            </button>
+            <button
+              onClick={() => { setShowBreakPicker(false); onBreakToggle('break'); }}
+              className="w-full flex items-center justify-between p-4 rounded-2xl border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <Coffee className="w-6 h-6 text-blue-500" />
+                <div className="text-left">
+                  <p className="font-bold text-slate-900">{language === 'es' ? 'Descanso' : 'Rest Break'}</p>
+                  <p className="text-sm text-slate-500">{language === 'es' ? 'Pagado' : 'Paid'}</p>
+                </div>
+              </div>
+              <span className="text-blue-500 font-bold text-sm">{language === 'es' ? 'Pagado' : 'Paid'}</span>
+            </button>
+            <button onClick={() => setShowBreakPicker(false)} className="w-full py-3 text-slate-500 font-semibold">
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Action Bar */}
       <div className="px-6 pt-4 pb-20 bg-gradient-to-t from-slate-900 to-transparent border-t border-white/10">
         <div className="flex gap-3">
           <Button
-            onClick={onBreakToggle}
+            onClick={activeSession.onBreak && !geofencePaused ? () => onBreakToggle(null) : () => setShowBreakPicker(true)}
             disabled={geofencePaused}
             className={`flex-1 h-14 rounded-2xl font-bold text-base text-white ${
               geofencePaused
