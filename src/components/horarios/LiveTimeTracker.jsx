@@ -506,12 +506,12 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         setGpsProgress(message);
       });
       setGpsProgress(null);
-
+      
       let job = jobs.find(j => j.id === selectedJob);
-
-      // Find scheduled shift for this job today (if assigned)
+      
+      // Find scheduled shift for this job today
       const todayShift = todayAssignments.find(a => a.job_id === selectedJob && a.enforce_scheduled_hours);
-
+      
       // SCHEDULED HOURS CONTROL: Adjust clock-in time if shift enforces hours
       let adjustedCheckIn = new Date();
       if (todayShift && todayShift.scheduled_start_time) {
