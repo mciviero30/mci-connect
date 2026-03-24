@@ -997,12 +997,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       setTaskDetails('');
       setSelectedJobForStart(null);
       } catch (error) {
-       setLocationError(error);
+       setLocationError(error?.message || error);
        setGpsProgress(null);
       } finally {
        clockOutProgressRef.current = false;
       }
       };
+
 
 
       const handleToggleBreak = async () => {
