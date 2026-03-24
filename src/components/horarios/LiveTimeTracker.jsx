@@ -71,10 +71,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   const [locationError, setLocationError] = useState(null);
   const [gpsProgress, setGpsProgress] = useState(null);
   const [nearestJob, setNearestJob] = useState(null);
-  
-  // PASO 3: GPS Permission state
-  const [showLocationDenied, setShowLocationDenied] = useState(false);
-  const [isBreakAction, setIsBreakAction] = useState(false);
+  const [geofencePaused, setGeofencePaused] = useState(false); // paused due to geofence exit
+  const geofencePauseRef = useRef(null); // stores exit coords
   
   // Check if pending sync from session storage
   const [pendingSync, setPendingSync] = useState(false);
@@ -133,6 +131,130 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
 
   // NEW: Notification service
   const { sendNotification } = useNotificationService(user);
+
+  // GEOFENCE AUTO-PAUSE: Called by GeofenceMonitor when employee exits the area
+  const handleGeofenceExit = async ({ lat, lng, distance }) => {
+    if (!activeSession || geofencePaused) return;
+    
+    // Vibrate device
+    if ('vibrate' in navigator) {
+      navigator.vibrate([300, 100, 300, 100, 300]);
+    }
+    
+    // Pause the session — store exit coords
+    geofencePauseRef.current = { lat, lng, distance, exitTime: Date.now() };
+    setGeofencePaused(true);
+    
+    // Update session in localStorage to reflect pause
+    const updatedSession = {
+      ...activeSession,
+      onBreak: true,
+      breakStartTime: Date.now(),
+      geofencePausedAt: { lat, lng, distance, time: new Date().toISOString() },
+      breaks: [
+        ...(activeSession.breaks || []),
+        {
+          type: 'break',
+          start_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          end_time: null,
+          duration_minutes: 0,
+          start_latitude: lat,
+          start_longitude: lng,
+          start_distance_meters: distance,
+          start_outside_geofence: true,
+          geofence_auto_pause: true,
+        }
+      ]
+    };
+    localStorage.setItem(storageKey, JSON.stringify(updatedSession));
+    setActiveSession(updatedSession);
+    
+    // In-app notification to employee (via Notification entity)
+    try {
+      await base44.entities.Notification.create({
+        recipient_email: user.email,
+        type: 'geofence_exit',
+        title: language === 'es' ? '⚠️ Tiempo pausado automáticamente' : '⚠️ Time paused automatically',
+        message: language === 'es'
+          ? `Saliste del área de ${activeSession.jobName} (${distance}m). Regresa al sitio para reanudar.`
+          : `You left the work area of ${activeSession.jobName} (${distance}m). Return to site to resume.`,
+        priority: 'urgent',
+        status: 'unread',
+        related_entity_type: 'timeentry',
+      });
+    } catch (e) { /* non-blocking */ }
+    
+    // In-app notification to admin(s)
+    try {
+      const admins = await base44.entities.User.filter({ role: 'admin' });
+      await Promise.all(admins.map(admin =>
+        base44.entities.Notification.create({
+          recipient_email: admin.email,
+          type: 'geofence_exit',
+          title: language === 'es' ? '🚨 Empleado Salió del Área' : '🚨 Employee Left Work Area',
+          message: language === 'es'
+            ? `${user.full_name} salió del área de ${activeSession.jobName} (${distance}m). Tiempo pausado. Coordenadas: ${lat.toFixed(5)}, ${lng.toFixed(5)}`
+            : `${user.full_name} left the work area of ${activeSession.jobName} (${distance}m). Time paused. Coords: ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+          priority: 'urgent',
+          status: 'unread',
+          related_entity_type: 'timeentry',
+        })
+      ));
+    } catch (e) { /* non-blocking */ }
+  };
+
+  // GEOFENCE RETURN: Called by GeofenceMonitor when employee returns to area
+  const handleGeofenceReturn = async ({ lat, lng }) => {
+    if (!activeSession || !geofencePaused) return;
+    
+    // Vibrate gently to confirm return
+    if ('vibrate' in navigator) {
+      navigator.vibrate([100, 50, 100]);
+    }
+    
+    setGeofencePaused(false);
+    
+    // End the auto-paused break
+    const now = Date.now();
+    const breakTime = now - (activeSession.breakStartTime || now);
+    const durationMinutes = Math.floor(breakTime / (1000 * 60));
+    
+    const breaks = [...(activeSession.breaks || [])];
+    const lastBreak = breaks[breaks.length - 1];
+    if (lastBreak && !lastBreak.end_time && lastBreak.geofence_auto_pause) {
+      lastBreak.end_time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      lastBreak.duration_minutes = durationMinutes;
+      lastBreak.end_latitude = lat;
+      lastBreak.end_longitude = lng;
+      lastBreak.end_outside_geofence = false;
+    }
+    
+    const updatedSession = {
+      ...activeSession,
+      onBreak: false,
+      breakDuration: (activeSession.breakDuration || 0) + breakTime,
+      breakStartTime: null,
+      breaks,
+      geofencePausedAt: null,
+    };
+    localStorage.setItem(storageKey, JSON.stringify(updatedSession));
+    setActiveSession(updatedSession);
+    
+    // In-app notification to employee
+    try {
+      await base44.entities.Notification.create({
+        recipient_email: user.email,
+        type: 'geofence_return',
+        title: language === 'es' ? '✅ Tiempo reanudado' : '✅ Time resumed',
+        message: language === 'es'
+          ? `Regresaste al área de ${activeSession.jobName}. El tiempo se reanuda automáticamente.`
+          : `You returned to the work area of ${activeSession.jobName}. Time is resuming automatically.`,
+        priority: 'normal',
+        status: 'unread',
+        related_entity_type: 'timeentry',
+      });
+    } catch (e) { /* non-blocking */ }
+  };
 
   const jobOptions = jobs.map(j => ({ value: j.id, label: j.name }));
 
@@ -1009,19 +1131,30 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       hasLocation: !!activeSession.location
     });
     
+    // Find job for geofence monitor
+    const activeJob = jobs.find(j => j.id === activeSession.jobId);
+    
     // Use clean UI with map background
     return (
-      <CleanTimeTrackerUI
-        activeSession={activeSession}
-        elapsed={elapsed}
-        onBreakToggle={handleToggleBreak}
-        onClockOut={handleClockOut}
-        onBack={() => {
-          // Do NOT delete session — just navigate away. Banner keeps tracking.
-          window.history.back();
-        }}
-        language={language}
-      />
+      <>
+        <GeofenceMonitor
+          activeSession={activeSession}
+          job={activeJob}
+          onGeofenceExit={handleGeofenceExit}
+          onGeofenceReturn={handleGeofenceReturn}
+        />
+        <CleanTimeTrackerUI
+          activeSession={activeSession}
+          elapsed={elapsed}
+          onBreakToggle={handleToggleBreak}
+          onClockOut={handleClockOut}
+          onBack={() => {
+            window.history.back();
+          }}
+          language={language}
+          geofencePaused={geofencePaused}
+        />
+      </>
     );
   }
 
@@ -1111,11 +1244,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         </div>
       )}
 
-      {/* Real-time Geofence Monitor */}
-      <GeofenceMonitor 
-        activeSession={activeSession} 
-        onAutoClockOut={handleAutoClockOut}
-      />
+      {/* GeofenceMonitor is only shown during active session (above) */}
 
       <Card className="border-0 shadow-2xl mb-8 bg-gradient-to-br from-slate-100 to-white dark:from-slate-900 dark:to-slate-800">
         <CardContent className="p-8 text-center">
