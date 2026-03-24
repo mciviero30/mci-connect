@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Square, Coffee, ArrowLeft, MapPinOff } from 'lucide-react';
@@ -53,72 +53,70 @@ export default function CleanTimeTrackerUI({
           onEndShift={() => { setShowReturnModal(false); onClockOut(); }}
         />
       )}
-      {/* Top Bar - Hidden */}
 
-        {/* Time Display */}
-        <div className="text-center">
-          <div className={`text-8xl font-black font-mono tracking-tighter mb-4 ${
-            geofencePaused
-              ? 'text-red-400 opacity-60'
-              : exceedsMaxHours
-              ? 'text-red-600 dark:text-red-400 animate-pulse'
-              : 'text-slate-900 dark:text-white drop-shadow-lg'
-          }`}>
-            {formatTime(elapsed)}
-          </div>
-
-          {exceedsMaxHours && !geofencePaused && (
-            <Badge className="bg-red-600 text-white px-4 py-2 text-base font-bold">
-              {language === 'es'
-                ? `¡LÍMITE DE ${maxHours}H ALCANZADO!`
-                : `${maxHours}H LIMIT REACHED!`}
-            </Badge>
-          )}
+      {/* Time Display */}
+      <div className="flex-1 flex flex-col justify-center items-center px-6 gap-4">
+        <div className={`text-8xl font-black font-mono tracking-tighter ${
+          geofencePaused
+            ? 'text-red-400 opacity-60'
+            : exceedsMaxHours
+            ? 'text-red-600 dark:text-red-400 animate-pulse'
+            : 'text-slate-900 dark:text-white drop-shadow-lg'
+        }`}>
+          {formatTime(elapsed)}
         </div>
 
-        {/* Geofence Paused Banner */}
+        {exceedsMaxHours && !geofencePaused && (
+          <Badge className="bg-red-600 text-white px-4 py-2 text-base font-bold">
+            {language === 'es'
+              ? `¡LÍMITE DE ${maxHours}H ALCANZADO!`
+              : `${maxHours}H LIMIT REACHED!`}
+          </Badge>
+        )}
+      </div>
+
+      {/* Geofence Paused Banner */}
+      {geofencePaused && (
+        <div className="w-full bg-red-600/90 border-2 border-red-400 rounded-2xl p-4 text-center mx-6 mb-4">
+          <MapPinOff className="w-8 h-8 text-white mx-auto mb-2 animate-bounce" />
+          <p className="text-white font-black text-base">
+            {language === 'es' ? '⏸ TIEMPO PAUSADO' : '⏸ TIME PAUSED'}
+          </p>
+          <p className="text-white/90 text-sm font-semibold">
+            {language === 'es'
+              ? 'Saliste del área de trabajo'
+              : 'You left the work area'}
+          </p>
+          <p className="text-white/80 text-xs mt-1 font-bold">
+            {language === 'es'
+              ? '↩ Regresa al sitio para reanudar automáticamente'
+              : '↩ Return to site to resume automatically'}
+          </p>
+        </div>
+      )}
+
+      {/* Status Badges */}
+      <div className="flex gap-2 px-6 mb-4">
+        {activeSession.onBreak && !geofencePaused && (
+          <Badge className="bg-amber-600 text-white px-3 py-1 font-bold">
+            <Coffee className="w-3 h-3 mr-1" />
+            {language === 'es' ? 'EN PAUSA' : 'ON BREAK'}
+          </Badge>
+        )}
         {geofencePaused && (
-          <div className="w-full bg-red-600/90 border-2 border-red-400 rounded-2xl p-4 text-center">
-            <MapPinOff className="w-8 h-8 text-white mx-auto mb-2 animate-bounce" />
-            <p className="text-white font-black text-base">
-              {language === 'es' ? '⏸ TIEMPO PAUSADO' : '⏸ TIME PAUSED'}
-            </p>
-            <p className="text-white/90 text-sm font-semibold">
-              {language === 'es'
-                ? 'Saliste del área de trabajo'
-                : 'You left the work area'}
-            </p>
-            <p className="text-white/80 text-xs mt-1 font-bold">
-              {language === 'es'
-                ? '↩ Regresa al sitio para reanudar automáticamente'
-                : '↩ Return to site to resume automatically'}
-            </p>
-          </div>
+          <Badge className="bg-red-600 text-white px-3 py-1 font-bold">
+            <MapPinOff className="w-3 h-3 mr-1" />
+            {language === 'es' ? 'FUERA DEL ÁREA' : 'OUT OF AREA'}
+          </Badge>
         )}
 
-        {/* Status Badges */}
-        <div className="flex gap-2">
-          {activeSession.onBreak && !geofencePaused && (
-            <Badge className="bg-amber-600 text-white px-3 py-1 font-bold">
-              <Coffee className="w-3 h-3 mr-1" />
-              {language === 'es' ? 'EN PAUSA' : 'ON BREAK'}
-            </Badge>
-          )}
-          {geofencePaused && (
-            <Badge className="bg-red-600 text-white px-3 py-1 font-bold">
-              <MapPinOff className="w-3 h-3 mr-1" />
-              {language === 'es' ? 'FUERA DEL ÁREA' : 'OUT OF AREA'}
-            </Badge>
-          )}
-
-          {activeSession.workType !== 'normal' && (
-            <Badge className="bg-blue-500 text-white px-3 py-1 font-bold">
-              {activeSession.workType === 'driving'
-                ? (language === 'es' ? 'Manejo' : 'Driving')
-                : (language === 'es' ? 'Setup' : 'Setup')}
-            </Badge>
-          )}
-        </div>
+        {activeSession.workType !== 'normal' && (
+          <Badge className="bg-blue-500 text-white px-3 py-1 font-bold">
+            {activeSession.workType === 'driving'
+              ? (language === 'es' ? 'Manejo' : 'Driving')
+              : (language === 'es' ? 'Setup' : 'Setup')}
+          </Badge>
+        )}
       </div>
 
       {/* Bottom Action Bar */}
@@ -127,7 +125,6 @@ export default function CleanTimeTrackerUI({
           <Button
             onClick={() => {
               if (activeSession.onBreak && !geofencePaused) {
-                // Show return modal instead of directly resuming
                 setShowReturnModal(true);
               } else {
                 onBreakToggle();
@@ -154,7 +151,7 @@ export default function CleanTimeTrackerUI({
             className="flex-1 h-14 rounded-2xl font-bold text-base bg-red-600 hover:bg-red-700 text-white"
           >
             <Square className="w-5 h-5 mr-2" />
-            {language === 'es' ? 'Clock Out' : 'Clock Out'}
+            {language === 'es' ? 'Salida' : 'Clock Out'}
           </Button>
         </div>
 
