@@ -19,6 +19,20 @@ export default function CleanTimeTrackerUI({
   language = 'en',
   geofencePaused = false
 }) {
+  const [breakElapsed, setBreakElapsed] = React.useState(0);
+
+  // Count up break timer when on break
+  React.useEffect(() => {
+    if (!activeSession?.onBreak || !activeSession?.breakStartTime) {
+      setBreakElapsed(0);
+      return;
+    }
+    const update = () => setBreakElapsed(Math.floor((Date.now() - activeSession.breakStartTime) / 1000));
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [activeSession?.onBreak, activeSession?.breakStartTime]);
+
   if (!activeSession) return null;
 
   const sessionHours = elapsed / 3600;
@@ -56,6 +70,11 @@ export default function CleanTimeTrackerUI({
           <Badge className="bg-blue-600 text-white">
             {Math.round(activeSession.distanceMeters || 0)}m {language === 'es' ? 'del sitio' : 'from site'}
           </Badge>
+          {activeSession.onBreak && !geofencePaused && (
+            <Badge className="ml-2 bg-amber-500 text-white">
+              {language === 'es' ? 'Pausa:' : 'Break:'} {formatTime(breakElapsed)}
+            </Badge>
+          )}
         </div>
 
         {/* Time Display */}
