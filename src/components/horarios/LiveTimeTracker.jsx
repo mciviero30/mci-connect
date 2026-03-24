@@ -313,6 +313,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     const savedSession = JSON.parse(localStorage.getItem(storageKey));
     if (savedSession) {
       setActiveSession(savedSession);
+      // Restore geofencePaused state if session was auto-paused by geofence
+      if (savedSession.onBreak) {
+        const breaks = savedSession.breaks || [];
+        const lastBreak = breaks[breaks.length - 1];
+        if (lastBreak?.geofence_auto_pause && !lastBreak.end_time) {
+          setGeofencePaused(true);
+        }
+      }
     }
   }, [storageKey]);
 
@@ -323,7 +331,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     let interval;
     if (activeSession && !activeSession.onBreak) {
       interval = setInterval(() => {
-        const secs = Math.floor((Date.now() - activeSession.startTime) / 1000);
+        // Deduct accumulated break time so display is accurate
+        const secs = Math.floor((Date.now() - activeSession.startTime - (activeSession.breakDuration || 0)) / 1000);
         setElapsed(secs);
 
         // AUTO CLOCK-OUT when limit is reached — use shift limit if set
@@ -694,6 +703,30 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   };
 
   const handleClockOut = async () => {
+    // If currently on break (manual or geofence), close the break first before calculating hours
+    if (activeSession?.onBreak && activeSession?.breakStartTime) {
+      const now = Date.now();
+      const breakTime = now - activeSession.breakStartTime;
+      const breaks = [...(activeSession.breaks || [])];
+      const lastBreak = breaks[breaks.length - 1];
+      if (lastBreak && !lastBreak.end_time) {
+        lastBreak.end_time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        lastBreak.duration_minutes = Math.floor(breakTime / (1000 * 60));
+      }
+      const closedSession = {
+        ...activeSession,
+        onBreak: false,
+        breakDuration: (activeSession.breakDuration || 0) + breakTime,
+        breakStartTime: null,
+        breaks,
+      };
+      localStorage.setItem(storageKey, JSON.stringify(closedSession));
+      setActiveSession(closedSession);
+      setGeofencePaused(false);
+      // Small delay so state settles before saving
+      await new Promise(r => setTimeout(r, 50));
+    }
+
     if (!user) {
       setLocationError(language === 'es' ? 'Error: Usuario no cargado. Intenta de nuevo.' : 'Error: User not loaded. Please try again.');
       return;
