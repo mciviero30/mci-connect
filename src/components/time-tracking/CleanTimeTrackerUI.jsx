@@ -43,7 +43,7 @@ export default function CleanTimeTrackerUI({
   const exceedsMaxHours = sessionHours >= maxHours;
 
   return (
-    <div className="fixed inset-0 z-[10000] flex flex-col bg-gradient-to-b from-[#1E3A5F] via-[#2A5080] to-[#1a3a5c]">
+    <div className="fixed inset-0 z-[10000] flex flex-col bg-gradient-to-b from-[#F1F5F9] via-[#E8F1FA] to-[#F0F6FD] dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 pt-14 pb-20">
       {showReturnModal && (
         <ReturnFromBreakModal
           jobName={activeSession.jobName}
@@ -54,17 +54,17 @@ export default function CleanTimeTrackerUI({
         />
       )}
       {/* Top Bar */}
-      <div className="p-4 pt-16 flex items-center justify-between">
+      <div className="p-4 flex items-center justify-between bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-slate-200/50 dark:border-slate-700/50">
         <Button
           onClick={onBack}
           variant="ghost"
           size="icon"
-          className="text-white hover:bg-white/20"
+          className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
         >
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="flex-1 text-center">
-          <p className="text-xs font-bold text-white/70 uppercase tracking-widest">
+          <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">
             {language === 'es' ? 'Control de Tiempo' : 'Time Tracking'}
           </p>
         </div>
@@ -75,11 +75,11 @@ export default function CleanTimeTrackerUI({
       <div className="flex-1 flex flex-col items-center justify-center px-4 space-y-6 pb-4">
         {/* Job Info */}
         <div className="text-center">
-          <p className="text-white/60 text-sm mb-2">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mb-2">
             {language === 'es' ? 'Proyecto' : 'Project'}
           </p>
-          <h2 className="text-2xl font-bold text-white mb-2">{activeSession.jobName}</h2>
-          <Badge className="bg-blue-600 text-white">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">{activeSession.jobName}</h2>
+          <Badge className="bg-[#507DB4] text-white">
             {Math.round(activeSession.distanceMeters || 0)}m {language === 'es' ? 'del sitio' : 'from site'}
           </Badge>
           {activeSession.onBreak && !geofencePaused && (
@@ -95,8 +95,8 @@ export default function CleanTimeTrackerUI({
             geofencePaused
               ? 'text-red-400 opacity-60'
               : exceedsMaxHours
-              ? 'text-red-500 animate-pulse'
-              : 'text-white drop-shadow-lg'
+              ? 'text-red-600 dark:text-red-400 animate-pulse'
+              : 'text-slate-900 dark:text-white drop-shadow-lg'
           }`}>
             {formatTime(elapsed)}
           </div>
@@ -156,7 +156,7 @@ export default function CleanTimeTrackerUI({
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="px-6 pt-4 pb-20 bg-gradient-to-t from-slate-900 to-transparent border-t border-white/10">
+      <div className="px-6 pt-4 pb-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur border-t border-slate-200/50 dark:border-slate-700/50">
         <div className="flex gap-3">
           <Button
             onClick={() => {
