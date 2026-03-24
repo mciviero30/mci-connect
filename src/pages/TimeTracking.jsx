@@ -243,7 +243,7 @@ export default function TimeTracking() {
     }
   }, []);
 
-  // Restore CleanUI when todayEntry changes (user clicks green button)
+  // Restore session when user reopens tracker (click green button in BottomNav)
   useEffect(() => {
     if (todayEntry && !showCleanUI && !sessionData) {
       const savedSession = localStorage.getItem('liveTimeTracker_work');
