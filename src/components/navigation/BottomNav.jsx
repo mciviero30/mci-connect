@@ -45,15 +45,28 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   }, []);
 
   // Re-check on every render tick so nav hides/shows as session changes
-  const [sessionActive, setSessionActive] = useState(hasActiveSession);
+  const [sessionActive, setSessionActive] = useState(false);
   React.useEffect(() => {
-    const interval = setInterval(() => {
+    const checkSession = () => {
       try {
+        const MAX_SESSION_AGE = 24 * 60 * 60 * 1000; // 24 hours
+        const now = Date.now();
+        const workSession = JSON.parse(localStorage.getItem('liveTimeTracker_work'));
+        const drivingSession = JSON.parse(localStorage.getItem('liveTimeTracker_driving'));
+        // Auto-clear stale sessions older than 24h
+        if (workSession?.startTime && (now - workSession.startTime) > MAX_SESSION_AGE) {
+          localStorage.removeItem('liveTimeTracker_work');
+        }
+        if (drivingSession?.startTime && (now - drivingSession.startTime) > MAX_SESSION_AGE) {
+          localStorage.removeItem('liveTimeTracker_driving');
+        }
         const active = !!JSON.parse(localStorage.getItem('liveTimeTracker_work'))?.startTime ||
                        !!JSON.parse(localStorage.getItem('liveTimeTracker_driving'))?.startTime;
         setSessionActive(active);
       } catch { setSessionActive(false); }
-    }, 1000);
+    };
+    checkSession();
+    const interval = setInterval(checkSession, 2000);
     return () => clearInterval(interval);
   }, []);
 
