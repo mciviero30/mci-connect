@@ -248,7 +248,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     } catch (e) { /* non-blocking */ }
   };
 
-  const jobOptions = jobs.map(j => ({ value: j.id, label: j.name }));
+  // CRITICAL: Only show jobs assigned to the employee TODAY (not all active jobs)
+  const jobOptions = jobs
+    .filter(j => todayAssignments.some(a => a.job_id === j.id))
+    .map(j => ({ value: j.id, label: j.name }));
 
   // Find nearest job for GPS health monitor
   useEffect(() => {
