@@ -546,19 +546,21 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
           requiresReview: false,
           scheduledShift: todayShift || null, // Store shift rules
         };
-        
+
         localStorage.setItem(storageKey, JSON.stringify(session));
         setActiveSession(session);
         setLocationError(null);
         setShowWorkTypeDialog(false);
         autoCreateCalendarShift(selectedJob, job.name, 'driving', adjustedCheckIn.getTime());
-        
+
         // Reset form
         if (!preselectedWorkType) setWorkType('normal');
         setTaskDetails('');
         return;
       }
-      
+
+      // MANDATORY GEOFENCE VALIDATION for normal work (STRICT ENFORCEMENT)
+      // CRITICAL: This MUST execute before session is created
       if (!job.latitude || !job.longitude) {
         // Auto-geocode the job address on the fly
         if (job.address) {
