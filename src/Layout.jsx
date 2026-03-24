@@ -1342,6 +1342,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               alt="MCI Connect"
               className="w-full h-full object-contain"
               style={{ 
+                mixBlendMode: 'multiply',
                 imageRendering: '-webkit-optimize-contrast'
               }}
             />
