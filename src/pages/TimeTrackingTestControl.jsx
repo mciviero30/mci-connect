@@ -256,7 +256,7 @@ export default function TimeTrackingTestControl() {
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="c3" className="rounded" />
-              <label htmlFor="c3">Total hours > 40h (overtime calculation)</label>
+              <label htmlFor="c3">Total hours &gt; 40h (overtime calculation)</label>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="c4" className="rounded" />
