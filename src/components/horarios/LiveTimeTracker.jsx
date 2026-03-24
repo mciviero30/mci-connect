@@ -1217,8 +1217,32 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   };
 
   if (activeSession) {
-    // DEBUG: Verify session is set
-    console.log('🎯 [LiveTimeTracker] Rendering active session:', {
+    const activeJob = jobs.find(j => j.id === activeSession.jobId);
+    return (
+      <>
+        <GeofenceMonitor
+          activeSession={activeSession}
+          job={activeJob}
+          onGeofenceExit={handleGeofenceExit}
+          onGeofenceReturn={handleGeofenceReturn}
+        />
+        <CleanTimeTrackerUI
+          activeSession={activeSession}
+          elapsed={elapsed}
+          onBreakToggle={handleToggleBreak}
+          onClockOut={handleClockOut}
+          onBack={() => window.history.back()}
+          onSwitchJob={() => {
+            handleClockOut().then ? handleClockOut().then(() => setShowJobSelector(true)) : (handleClockOut(), setTimeout(() => setShowJobSelector(true), 500));
+          }}
+          language={language}
+          geofencePaused={geofencePaused}
+        />
+      </>
+    );
+  }
+
+  return (
     <>
       {/* PASO 3: Location Permission Prompt */}
       {showLocationDenied && (
@@ -1237,8 +1261,6 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
           <GPSSignalBadge nearestJob={nearestJob} />
         </div>
       )}
-
-      {/* GeofenceMonitor is only shown during active session (above) */}
 
       <Card className="border-0 shadow-2xl mb-8 bg-gradient-to-br from-slate-100 to-white dark:from-slate-900 dark:to-slate-800">
         <CardContent className="p-8 text-center">
@@ -1316,7 +1338,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         </DialogContent>
       </Dialog>
 
-      {/* NEW: Prompt #52 - Work Type and Task Details Dialog */}
+      {/* Work Type and Task Details Dialog */}
       <Dialog open={showWorkTypeDialog} onOpenChange={setShowWorkTypeDialog}>
         <DialogContent className="bg-white sm:max-w-md">
           <DialogHeader>
@@ -1335,7 +1357,6 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
                  </SelectContent>
               </Select>
             </div>
-
             <div>
               <Label className="text-slate-700 mb-2">
                 {language === 'es' ? 'Detalles de Tarea (Opcional)' : 'Task Details (Optional)'}
