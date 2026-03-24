@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import ReactDOM from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
@@ -348,6 +349,109 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
       </div>
 
       {/* Spacer to prevent content from being hidden behind bottom nav */}
+      <div className="md:hidden h-16" />
+    </>
+  );
+
+  // Render the fixed bar as a portal to document.body to escape any CSS transform containers
+  return (
+    <>
+      {ReactDOM.createPortal(
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-white dark:bg-slate-900 border-t-2 border-slate-200 dark:border-slate-700 shadow-2xl" style={{paddingBottom: 'env(safe-area-inset-bottom)'}}>
+          <div className="grid grid-cols-5 h-16 px-1 relative">
+            {mainNavItems.map((item) => {
+              const active = isActive(item.url);
+              if (item.isTimeMenu) {
+                return (
+                  <button key={item.title} onClick={handleTimeClick}
+                    className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
+                      active || timeExpanded ? 'text-[#507DB4]' : 'text-slate-500'
+                    }`}>
+                    <item.icon className="w-5 h-5" strokeWidth={active || timeExpanded ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium">{item.title}</span>
+                  </button>
+                );
+              }
+              if (item.isTravelMenu) {
+                return (
+                  <button key={item.title} onClick={handleTravelClick}
+                    className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
+                      travelExpanded ? 'text-[#507DB4]' : 'text-slate-500'
+                    }`}>
+                    <item.icon className="w-5 h-5" strokeWidth={travelExpanded ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium">{item.title}</span>
+                  </button>
+                );
+              }
+              return (
+                <Link key={item.title} to={item.url}
+                  className={`flex flex-col items-center justify-center gap-0.5 relative transition-all active:scale-95 ${
+                    active ? 'text-[#507DB4]' : 'text-slate-500'
+                  }`}>
+                  <div className="relative">
+                    <item.icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} />
+                    {item.badge && (
+                      <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px] bg-red-600 text-white border-0">
+                        {item.badge > 9 ? '9+' : item.badge}
+                      </Badge>
+                    )}
+                  </div>
+                  <span className="text-[10px] font-medium">{item.title}</span>
+                </Link>
+              );
+            })}
+            <button onClick={() => setMoreExpanded(!moreExpanded)}
+              className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
+                moreExpanded ? 'text-[#507DB4]' : 'text-slate-500'
+              }`}>
+              <Menu className="w-5 h-5" strokeWidth={moreExpanded ? 2.5 : 2} />
+              <span className="text-[10px] font-medium">More</span>
+            </button>
+          </div>
+
+          {timeExpanded && (
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 p-2 flex flex-col gap-2">
+                <button onClick={() => handleTimeSubSelect('work')} className="px-4 py-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white font-semibold rounded-xl text-sm flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Work Time
+                </button>
+                <button onClick={() => handleTimeSubSelect('driving')} className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-xl text-sm flex items-center gap-2">
+                  <Zap className="w-4 h-4" /> Driving Time
+                </button>
+              </div>
+            </div>
+          )}
+
+          {travelExpanded && (
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 p-2 flex flex-col gap-2">
+                <button onClick={() => handleTravelSubSelect('PerDiem')} className="px-4 py-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white font-semibold rounded-xl text-sm flex items-center gap-2">
+                  <Banknote className="w-4 h-4" /> Per Diem
+                </button>
+                <button onClick={() => handleTravelSubSelect('Manejo')} className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl text-sm flex items-center gap-2">
+                  <Zap className="w-4 h-4" /> Mileage
+                </button>
+              </div>
+            </div>
+          )}
+
+          {moreExpanded && (
+            <div className="absolute bottom-20 right-2 z-50">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 p-2 grid grid-cols-2 gap-2 w-64">
+                {quickAccessItems.map((item) => (
+                  <Link key={item.title} to={item.url} onClick={() => setMoreExpanded(false)}
+                    className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <item.icon className="w-5 h-5 text-[#507DB4]" strokeWidth={2.5} />
+                    <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 leading-tight text-center">{item.title}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
+      {/* Spacer so content doesn't hide behind nav */}
       <div className="md:hidden h-16" />
     </>
   );
