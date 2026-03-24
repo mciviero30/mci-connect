@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import SupervisorDashboard from '@/pages/SupervisorDashboard';
 import ForemanDashboard from '@/pages/ForemanDashboard';
+import TimeTrackingTestControl from '@/pages/TimeTrackingTestControl';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -53,6 +54,7 @@ const AuthenticatedApp = () => {
         ))}
         <Route path="/SupervisorDashboard" element={<SupervisorDashboard />} />
         <Route path="/ForemanDashboard" element={<ForemanDashboard />} />
+        <Route path="/TimeTrackingTestControl" element={<TimeTrackingTestControl />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </LayoutWrapper>
