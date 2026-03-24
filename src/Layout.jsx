@@ -116,7 +116,7 @@ import { Hammer } from "lucide-react";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
 import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
 import GlobalSearch from "@/components/search/GlobalSearch";
-import ActiveSessionBanner from "@/components/time-tracking/ActiveSessionBanner";
+
 import KeyboardShortcuts from "@/components/navigation/KeyboardShortcuts";
 
 const ThemeToggle = () => {
