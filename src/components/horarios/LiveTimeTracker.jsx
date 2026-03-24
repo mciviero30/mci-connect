@@ -981,8 +981,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       setWorkType('normal');
       setTaskDetails('');
       setSelectedJobForStart(null);
+      } catch (error) {
+      setLocationError(error);
+      setGpsProgress(null);
+      }
+      };
 
-  const handleToggleBreak = async () => {
+      const handleToggleBreak = async () => {
     // PASO 3: Pre-check GPS for breaks (non-blocking, just inform)
     const permission = await checkGeolocationPermission();
     
