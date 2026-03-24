@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Users } from "lucide-react";
+import { CheckCircle, XCircle, Users, Map } from "lucide-react";
+import GeolocationAuditMap from "@/components/time-tracking/GeolocationAuditMap";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
@@ -14,6 +15,7 @@ export default function ManagerApprovalView() {
   const toast = useToast();
   const queryClient = useQueryClient();
   const [selectedFilter, setSelectedFilter] = useState('pending');
+  const [mapEntry, setMapEntry] = useState(null);
 
   const { data: pendingEntries = [], isLoading } = useQuery({
     queryKey: ['managerPendingEntries', selectedFilter],
@@ -59,6 +61,13 @@ export default function ManagerApprovalView() {
 
   return (
     <div className="space-y-6">
+      {mapEntry && (
+        <GeolocationAuditMap
+          entry={mapEntry}
+          language={language}
+          onClose={() => setMapEntry(null)}
+        />
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -137,6 +146,18 @@ export default function ManagerApprovalView() {
                           </p>
                           {entry.job_name && (
                             <p className="text-sm text-slate-500">{entry.job_name}</p>
+                          )}
+                          {(entry.check_in_latitude || entry.check_out_latitude) && (
+                            <button
+                              onClick={() => setMapEntry(entry)}
+                              className="mt-1.5 flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
+                            >
+                              <Map className="w-3 h-3" />
+                              {language === 'es' ? 'Ver ubicación' : 'View location'}
+                              {entry.requires_location_review && (
+                                <span className="ml-1 text-amber-500 text-[10px] font-bold">⚠️ Review needed</span>
+                              )}
+                            </button>
                           )}
                         </div>
 
