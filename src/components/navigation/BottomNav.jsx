@@ -37,7 +37,45 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   const [timeExpanded, setTimeExpanded] = useState(false);
   const [travelExpanded, setTravelExpanded] = useState(false);
 
-  // Session state kept for potential future use but no longer hides the nav
+  // Active session tracking for live timer in bottom nav
+  const [activeSession, setActiveSession] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const checkSession = () => {
+      try {
+        const work = localStorage.getItem('liveTimeTracker_work');
+        const driving = localStorage.getItem('liveTimeTracker_driving');
+        const raw = work || driving;
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s?.startTime) { setActiveSession(s); return; }
+        }
+        setActiveSession(null);
+      } catch (e) { setActiveSession(null); }
+    };
+    checkSession();
+    const interval = setInterval(checkSession, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (!activeSession?.startTime) { setElapsed(0); return; }
+    const update = () => {
+      const secs = Math.floor((Date.now() - activeSession.startTime - (activeSession.breakDuration || 0)) / 1000);
+      setElapsed(Math.max(0, secs));
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [activeSession?.startTime, activeSession?.breakDuration]);
+
+  const formatElapsed = (seconds) => {
+    const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+    const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  };
 
   // STEP 2: Track pending sync operations count
   const { pendingCount } = useSyncQueue();
