@@ -160,7 +160,10 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
                   return (
                     <button
                       key={item.title}
-                      onClick={() => navigate(createPageUrl('TimeTracking'))}
+                      onClick={() => {
+                        const baseUrl = createPageUrl('TimeTracking');
+                        navigate(baseUrl, { state: { timeType: activeSession?.workType === 'driving' ? 'driving' : 'work', showCleanUI: true } });
+                      }}
                       className="flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 relative"
                     >
                       <div className="relative flex items-center justify-center">
