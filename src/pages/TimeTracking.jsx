@@ -237,36 +237,53 @@ export default function TimeTracking() {
         const session = JSON.parse(savedSession);
         setSessionData(session);
         setShowCleanUI(true);
-        
-        // Update elapsed time
-        const interval = setInterval(() => {
-          const elapsed = Math.floor((Date.now() - session.startTime) / 1000);
-          setElapsedTime(elapsed);
-        }, 1000);
-        
-        return () => clearInterval(interval);
       } catch (e) {
         setShowCleanUI(false);
       }
     }
   }, []);
 
+  // Timer that respects break state — pauses when onBreak is true
+  useEffect(() => {
+    if (!showCleanUI || !sessionData) return;
+
+    const interval = setInterval(() => {
+      // 🚨 Timer paused while on break
+      if (sessionData.onBreak) return;
+
+      const elapsed = Math.floor((Date.now() - sessionData.startTime) / 1000);
+      setElapsedTime(elapsed);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [showCleanUI, sessionData]);
+
   // Show clean UI if session is active
-  if (showCleanUI && sessionData) {
+  if (showCleanUI && sessionData && todayEntry) {
     return (
       <CleanTimeTrackerUI
         activeSession={sessionData}
         elapsed={elapsedTime}
         onBreakToggle={async () => {
-          // This would be handled by LiveTimeTracker logic
-          window.location.reload();
+          if (activeBreak) {
+            // End break
+            await endBreakMutation.mutateAsync();
+            setSessionData(prev => ({ ...prev, onBreak: false, breakStartTime: null }));
+          } else {
+            // Start break
+            await startBreakMutation.mutateAsync('lunch');
+            setSessionData(prev => ({ ...prev, onBreak: true, breakStartTime: Date.now() }));
+          }
         }}
         onClockOut={async () => {
-          window.location.reload();
+          await clockOutMutation.mutateAsync();
+          setShowCleanUI(false);
+          setSessionData(null);
+          localStorage.removeItem('liveTimeTracker_work');
         }}
         onBack={() => {
           setShowCleanUI(false);
-          window.location.reload();
+          setSessionData(null);
         }}
         language={language}
       />
