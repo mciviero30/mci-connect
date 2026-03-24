@@ -36,39 +36,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   const [timeExpanded, setTimeExpanded] = useState(false);
   const [travelExpanded, setTravelExpanded] = useState(false);
 
-  // Hide BottomNav when a time tracking session is active (buttons must not be covered)
-  const hasActiveSession = React.useMemo(() => {
-    try {
-      return !!JSON.parse(localStorage.getItem('liveTimeTracker_work'))?.startTime ||
-             !!JSON.parse(localStorage.getItem('liveTimeTracker_driving'))?.startTime;
-    } catch { return false; }
-  }, []);
-
-  // Re-check on every render tick so nav hides/shows as session changes
-  const [sessionActive, setSessionActive] = useState(false);
-  React.useEffect(() => {
-    const checkSession = () => {
-      try {
-        const MAX_SESSION_AGE = 24 * 60 * 60 * 1000; // 24 hours
-        const now = Date.now();
-        const workSession = JSON.parse(localStorage.getItem('liveTimeTracker_work'));
-        const drivingSession = JSON.parse(localStorage.getItem('liveTimeTracker_driving'));
-        // Auto-clear stale sessions older than 24h
-        if (workSession?.startTime && (now - workSession.startTime) > MAX_SESSION_AGE) {
-          localStorage.removeItem('liveTimeTracker_work');
-        }
-        if (drivingSession?.startTime && (now - drivingSession.startTime) > MAX_SESSION_AGE) {
-          localStorage.removeItem('liveTimeTracker_driving');
-        }
-        const active = !!JSON.parse(localStorage.getItem('liveTimeTracker_work'))?.startTime ||
-                       !!JSON.parse(localStorage.getItem('liveTimeTracker_driving'))?.startTime;
-        setSessionActive(active);
-      } catch { setSessionActive(false); }
-    };
-    checkSession();
-    const interval = setInterval(checkSession, 2000);
-    return () => clearInterval(interval);
-  }, []);
+  // Session state kept for potential future use but no longer hides the nav
 
   // STEP 2: Track pending sync operations count
   const { pendingCount } = useSyncQueue();
@@ -140,10 +108,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
 
   const [moreExpanded, setMoreExpanded] = useState(false);
 
-  // Only hide BottomNav on the TimeTracking page itself (to avoid covering clock-out buttons)
-  // Never hide it globally — other pages need navigation
-  const isTimeTrackingPage = location.pathname.includes('TimeTracking');
-  if (sessionActive && isTimeTrackingPage) return <div className="md:hidden h-16" />;
+  // BottomNav always visible — never hide it
 
   return (
     <>
