@@ -474,16 +474,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     if (!jobId) return;
     setSelectedJobForStart(jobId);
     setShowJobSelector(false);
-    // CRITICAL: Reset workType to base state if NOT a pre-selected type
-    // This prevents stale state when switching between work types
-    if (!preselectedWorkType) {
-      setWorkType('normal');
-    }
-    // If work type already pre-selected from BottomNav, skip the dialog and start immediately
-    if (preselectedWorkType) {
-
-  // GEOFENCING - Strict enforcement with 100m radius (EXCEPT for driving hours)
-  // Called directly (skipping dialog) when workType is pre-selected from BottomNav
+    // Show work type selector after job is selected
+    setShowWorkTypeSelector(true);
   const handleStartSessionWithJob = async (jobId, wType) => {
     setSelectedJobForStart(jobId);
     setWorkType(wType);
@@ -559,7 +551,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         localStorage.setItem(storageKey, JSON.stringify(session));
         setActiveSession(session);
         setLocationError(null);
-        setShowWorkTypeDialog(false);
+        setShowWorkTypeSelector(false);
         autoCreateCalendarShift(selectedJob, job.name, 'driving', adjustedCheckIn.getTime());
 
         // Reset form
@@ -623,7 +615,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
             accuracy={location.accuracy}
             onRetry={() => {
               setLocationError(null);
-              setShowWorkTypeDialog(true);
+              setShowWorkTypeSelector(true);
             }}
             language={language}
           />
@@ -644,8 +636,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
             relatedEntityType: 'timeentry',
             sendEmail: true
           })));
-        
-        setShowWorkTypeDialog(false);
+
+        setShowWorkTypeSelector(false);
         return;
       }
 
@@ -672,16 +664,16 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       localStorage.setItem(storageKey, JSON.stringify(session));
       setActiveSession(session);
       setLocationError(null);
-      setShowWorkTypeDialog(false);
+      setShowWorkTypeSelector(false);
       autoCreateCalendarShift(selectedJob, job.name, effectiveWorkType, adjustedCheckIn.getTime());
       
       // Reset form
       if (!preselectedWorkType) setWorkType('normal');
       setTaskDetails('');
     } catch (error) {
-      setLocationError(error);
-      setShowWorkTypeDialog(false);
-      setGpsProgress(null);
+     setLocationError(error);
+     setShowWorkTypeSelector(false);
+     setGpsProgress(null);
     }
   };
 
@@ -1001,12 +993,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
        setGpsProgress(null);
       } finally {
        clockOutProgressRef.current = false;
-      }
-      };
+       }
+       } catch (error) {
+       setLocationError(error?.message || error);
+       setGpsProgress(null);
+       }
+       };
 
-
-
-      const handleToggleBreak = async () => {
+       const handleToggleBreak = async () => {
     // PASO 3: Pre-check GPS for breaks (non-blocking, just inform)
     const permission = await checkGeolocationPermission();
     
@@ -1262,24 +1256,84 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
               <SyncStatusBadge status="pending" />
             </div>
           )}
-          <div className="relative inline-block">
-            <ClockInButton
-              onClick={(progressCallback) => {
-                setGpsProgress('starting');
-                return new Promise((resolve, reject) => {
-                  handleClockIn()
-                    .then(resolve)
-                    .catch(reject);
-                });
-              }}
-              disabled={isLoading}
-              isLoading={isLoading}
-              language={language}
-            />
-          </div>
-          <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
-            {language === 'es' ? 'Iniciar Jornada' : 'Start Work Day'}
-          </p>
+          
+          {!showWorkTypeSelector ? (
+            <>
+              <div className="relative inline-block">
+                <ClockInButton
+                  onClick={(progressCallback) => {
+                    setGpsProgress('starting');
+                    return new Promise((resolve, reject) => {
+                      handleClockIn()
+                        .then(resolve)
+                        .catch(reject);
+                    });
+                  }}
+                  disabled={isLoading}
+                  isLoading={isLoading}
+                  language={language}
+                />
+              </div>
+              <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
+                {language === 'es' ? 'Iniciar Jornada' : 'Start Work Day'}
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="relative inline-block mb-6">
+                <ClockInButton
+                  onClick={handleStartSession}
+                  disabled={isLoading}
+                  isLoading={isLoading}
+                  language={language}
+                />
+              </div>
+              <p className="mt-6 font-black text-2xl text-slate-900 dark:text-white tracking-tight">
+                {workType === 'driving'
+                  ? (language === 'es' ? 'Iniciar Manejo' : 'Start Driving Time')
+                  : (language === 'es' ? 'Iniciar Trabajo' : 'Start Work Time')}
+              </p>
+              
+              <div className="mt-8 space-y-4">
+                <p className="text-lg font-bold text-slate-900 dark:text-white">
+                  {language === 'es' ? '¿Tipo de Trabajo?' : 'Type of Work?'}
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => setWorkType('normal')}
+                    className={`flex-1 py-4 px-4 rounded-2xl font-bold text-white transition-all ${
+                      workType === 'normal'
+                        ? 'bg-blue-600 shadow-lg scale-105'
+                        : 'bg-slate-300 hover:bg-slate-400'
+                    }`}
+                  >
+                    {language === 'es' ? 'Trabajo Normal' : 'Work Time'}
+                  </button>
+                  <button
+                    onClick={() => setWorkType('driving')}
+                    className={`flex-1 py-4 px-4 rounded-2xl font-bold text-white transition-all ${
+                      workType === 'driving'
+                        ? 'bg-orange-500 shadow-lg scale-105'
+                        : 'bg-slate-300 hover:bg-slate-400'
+                    }`}
+                  >
+                    {language === 'es' ? 'Manejo' : 'Driving Time'}
+                  </button>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowWorkTypeSelector(false);
+                    setWorkType('normal');
+                  }}
+                  className="w-full mt-2"
+                >
+                  {language === 'es' ? 'Atrás' : 'Back'}
+                </Button>
+              </div>
+            </>
+          )}
+          
           <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-2">
             {language === 'es' 
               ? 'Geofencing activo - Debes estar en el sitio del proyecto' 
@@ -1353,50 +1407,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         </DialogContent>
       </Dialog>
 
-      {/* Work Type and Task Details Dialog */}
-      <Dialog open={showWorkTypeDialog} onOpenChange={setShowWorkTypeDialog}>
-        <DialogContent className="bg-white sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>{language === 'es' ? 'Tipo de Trabajo' : 'Type of Work'}</DialogTitle>
-          </DialogHeader>
-          <div className="py-4 space-y-4">
-            <div>
-              <Label className="text-slate-700 mb-2">{language === 'es' ? 'Tipo de Trabajo' : 'Work Type'}</Label>
-              <Select value={workType} onValueChange={setWorkType}>
-                <SelectTrigger className="bg-white border-slate-300">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                   <SelectItem value="normal">{language === 'es' ? 'Normal' : 'Normal'}</SelectItem>
-                   <SelectItem value="driving">{language === 'es' ? 'Manejo' : 'Driving'}</SelectItem>
-                 </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-slate-700 mb-2">
-                {language === 'es' ? 'Detalles de Tarea (Opcional)' : 'Task Details (Optional)'}
-              </Label>
-              <Textarea
-                value={taskDetails}
-                onChange={(e) => setTaskDetails(e.target.value)}
-                placeholder={language === 'es' 
-                  ? 'Ej: Instalación de gabinetes, Esperando inspección...' 
-                  : 'Ex: Cabinet installation, Waiting for inspection...'}
-                className="h-24 bg-white border-slate-300"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowWorkTypeDialog(false)}>
-              {t('cancel')}
-            </Button>
-            <Button onClick={handleStartSession} className="bg-blue-600 hover:bg-blue-700 text-white">
-              <Play className="w-4 h-4 mr-2" />
-              {language === 'es' ? 'Iniciar' : 'Start'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
       </>
       );
       }
