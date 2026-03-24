@@ -1004,6 +1004,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       }
       };
 
+
       const handleToggleBreak = async () => {
     // PASO 3: Pre-check GPS for breaks (non-blocking, just inform)
     const permission = await checkGeolocationPermission();
