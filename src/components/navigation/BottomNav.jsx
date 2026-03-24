@@ -400,6 +400,25 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             {mainNavItems.map((item) => {
               const active = isActive(item.url);
               if (item.isTimeMenu) {
+                if (activeSession) {
+                  return (
+                    <button
+                      key={item.title}
+                      onClick={() => navigate(createPageUrl('TimeTracking'))}
+                      className="flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 relative"
+                    >
+                      <div className="relative flex items-center justify-center">
+                        <div className="absolute w-9 h-9 rounded-full bg-green-500/30 animate-ping" />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/40">
+                          <Clock className="w-4 h-4 text-white" strokeWidth={2.5} />
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-bold text-green-600 font-mono">
+                        {formatElapsed(elapsed)}
+                      </span>
+                    </button>
+                  );
+                }
                 return (
                   <button key={item.title} onClick={handleTimeClick}
                     className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
