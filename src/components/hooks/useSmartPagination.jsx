@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useState, useCallback, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 /**
  * Smart Pagination Hook - Loads all records (up to 500), paginates on frontend.
