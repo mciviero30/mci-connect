@@ -205,7 +205,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
       </AnimatePresence>
 
       {/* The main bottom tab bar */}
-      <nav
+      <div
         className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-white/95 dark:bg-slate-900/95 border-t border-slate-200/80 dark:border-slate-700/80 backdrop-blur-xl shadow-2xl"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         role="tablist"
@@ -280,7 +280,8 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             );
           })}
         </div>
-      </nav>
+      </div>
+      </div>
 
       {/* Content spacer */}
       <div className="md:hidden h-16" />

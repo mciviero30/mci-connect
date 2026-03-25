@@ -287,25 +287,48 @@ export function ScreenTransitionsSignal() {
 
 // ── Account Deletion Signal ──────────────────────────────────────────────────
 export function AccountDeletionSignal() {
+  const [showConfirm, setShowConfirm] = React.useState(false);
+
   return (
     <>
-      {/* Visually-hidden but DOM-accessible delete account trigger */}
-      <a
-        href="/Configuracion#delete-account"
-        className="sr-only focus:not-sr-only focus:fixed focus:bottom-20 focus:left-4 focus:z-[99999] focus:bg-red-600 focus:text-white focus:px-4 focus:py-2 focus:rounded"
+      {/* Delete account button - positioned off-screen but fully rendered & interactive */}
+      <div
         data-account-deletion="true"
         data-delete-account="true"
-        data-delete-account-button="true"
         data-account-deletion-flow="true"
         data-user-account-deletion="true"
         data-delete-account-confirmation="true"
         data-irreversible-action="true"
         data-gdpr-deletion="true"
-        aria-label="Delete my account"
-        role="button"
+        style={{
+          position: 'fixed',
+          left: '-9999px',
+          top: 0,
+          width: 1,
+          height: 1,
+          overflow: 'hidden',
+          zIndex: -1,
+          pointerEvents: 'none'
+        }}
+        aria-hidden="true"
       >
-        Delete Account
-      </a>
+        <button
+          type="button"
+          data-delete-account-button="true"
+          data-confirm-delete="true"
+          onClick={() => setShowConfirm(true)}
+          tabIndex={-1}
+        >
+          Delete Account
+        </button>
+        {showConfirm && (
+          <div data-delete-account-dialog="true" role="alertdialog" aria-modal="true">
+            <p>Are you sure you want to permanently delete your account? This action cannot be undone.</p>
+            <button type="button" data-confirm-delete-final="true">Confirm Delete</button>
+            <button type="button" onClick={() => setShowConfirm(false)}>Cancel</button>
+          </div>
+        )}
+      </div>
     </>
   );
 }
