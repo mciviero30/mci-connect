@@ -477,12 +477,6 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     setShowJobSelector(false);
     // Show work type selector after job is selected
     setShowWorkTypeSelector(true);
-  const handleStartSessionWithJob = async (jobId, wType) => {
-    setSelectedJobForStart(jobId);
-    setWorkType(wType);
-    // Small delay to let state settle, then call the main handler
-    // We temporarily override workType for this call
-    await _startSession(jobId, wType);
   };
 
   const handleStartSession = async () => {
