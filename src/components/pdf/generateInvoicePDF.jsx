@@ -174,7 +174,7 @@ export async function generateInvoicePDF(invoice) {
   doc.text(String(dueDate), valueX, rightY, { align: 'right' });
   doc.line(labelX, rightY + 1, valueX, rightY + 1);
 
-  y += 20;
+  y += 12;
 
   // ========== JOB DETAILS ==========
   if (invoice.job_name) {
@@ -190,7 +190,7 @@ export async function generateInvoicePDF(invoice) {
     doc.text(String(invoice.job_name), margin, y);
     
     if (invoice.job_address) {
-      y += 5;
+      y += 3;
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(9);
       doc.setTextColor(70, 70, 70);
@@ -199,7 +199,7 @@ export async function generateInvoicePDF(invoice) {
       y += addressLines.length * 4;
     }
     
-    y += 8;
+    y += 1;
   }
 
   // ========== ITEMS TABLE ==========
