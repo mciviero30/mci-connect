@@ -1195,10 +1195,12 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
       {user && user.employment_status !== 'deleted' && !shouldBlockForOnboarding && (
         <ErrorBoundary fallback={<div />}>
-          <NotificationEngine user={user} />
-          <UniversalNotificationEngine user={user} />
-          <CustomerNotificationEngine user={user} />
-          <UniversalPushManager user={user} />
+          <React.Suspense fallback={null}>
+            <NotificationEngine user={user} />
+            <UniversalNotificationEngine user={user} />
+            <CustomerNotificationEngine user={user} />
+            <UniversalPushManager user={user} />
+          </React.Suspense>
           <SessionTimeoutManager />
         </ErrorBoundary>
       )}
