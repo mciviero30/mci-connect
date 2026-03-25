@@ -19,6 +19,13 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
 
 
+const LayoutWrapper = ({ children }) => {
+  const location = useLocation();
+  const pathSegments = location.pathname.split('/').filter(Boolean);
+  const currentPageName = pathSegments[0] || mainPageKey;
+  return Layout ? <Layout currentPageName={currentPageName}>{children}</Layout> : children;
+};
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
 
@@ -42,18 +49,20 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app
+  // Render the main app with Layout wrapping all routes
   return (
-    <Routes>
-      <Route path="/" element={<MainPage />} />
-      {Object.entries(Pages).map(([path, Page]) => (
-        <Route key={path} path={`/${path.toLowerCase()}`} element={Layout ? <Layout currentPageName={path}><Page /></Layout> : <Page />} />
-      ))}
-      <Route path="/SupervisorDashboard" element={Layout ? <Layout currentPageName="SupervisorDashboard"><SupervisorDashboard /></Layout> : <SupervisorDashboard />} />
-      <Route path="/ForemanDashboard" element={Layout ? <Layout currentPageName="ForemanDashboard"><ForemanDashboard /></Layout> : <ForemanDashboard />} />
-      <Route path="/TimeTrackingTestControl" element={Layout ? <Layout currentPageName="TimeTrackingTestControl"><TimeTrackingTestControl /></Layout> : <TimeTrackingTestControl />} />
-      <Route path="*" element={<PageNotFound />} />
-    </Routes>
+    <LayoutWrapper>
+      <Routes>
+        <Route path="/" element={<MainPage />} />
+        {Object.entries(Pages).map(([path, Page]) => (
+          <Route key={path} path={`/${path.toLowerCase()}`} element={<Page />} />
+        ))}
+        <Route path="/SupervisorDashboard" element={<SupervisorDashboard />} />
+        <Route path="/ForemanDashboard" element={<ForemanDashboard />} />
+        <Route path="/TimeTrackingTestControl" element={<TimeTrackingTestControl />} />
+        <Route path="*" element={<PageNotFound />} />
+      </Routes>
+    </LayoutWrapper>
   );
 };
 
