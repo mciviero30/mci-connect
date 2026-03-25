@@ -21,7 +21,8 @@ const LayoutWrapper = ({ children }) => {
   const location = useLocation();
   const pathSegments = location.pathname.split('/').filter(Boolean);
   const currentPageName = pathSegments[0] || mainPageKey;
-  return Layout ? <Layout currentPageName={currentPageName}>{children}</Layout> : <>{children}</>;
+  if (!Layout) return <>{children}</>;
+  return <Layout currentPageName={currentPageName}>{children}</Layout>;
 };
 
 const AuthenticatedApp = () => {
