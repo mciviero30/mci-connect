@@ -1403,8 +1403,8 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
           <SidebarFooter className="p-2 flex-shrink-0 border-t border-[#E0E7FF] dark:border-slate-700/50 bg-gradient-to-br from-[#F8FAFF] to-[#F0F4FF] dark:from-slate-900 dark:to-slate-800/50">
             <div className="mb-1.5 px-1 flex items-center gap-1.5">
-              <Select value={language} onValueChange={changeLanguage}>
-                <SelectTrigger className="h-6 flex-1 bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 rounded">
+              <Select value={language} onValueChange={changeLanguage} data-native-select="true" data-dropdown-native="true">
+                <SelectTrigger className="h-6 flex-1 bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 rounded" data-native-select="true" role="combobox" aria-haspopup="listbox">
                   <Languages className="w-3 h-3 mr-1" />
                   <SelectValue />
                 </SelectTrigger>
