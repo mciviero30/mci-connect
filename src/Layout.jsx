@@ -518,7 +518,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
     !isClientOnly && 
     !isAdminOrCEO &&
     user.employment_status !== 'deleted' &&
-    user.onboarding_completed === false;  // Strict false check - undefined/null users pass through
+    user.onboarding_completed === false;
 
   // CEO Setup Gate: If CEO hasn't completed setup, show CEOSetup page
   const ceoSetupIncomplete = user?.role === 'ceo' && user?.ceo_setup_completed !== true;
