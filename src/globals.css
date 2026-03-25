@@ -21,6 +21,16 @@
   /* Normal app theme */
 }
 
+/* Overscroll & Pull-to-Refresh support */
+html, body {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-main-content] {
+  overscroll-behavior-y: contain;
+}
+
 /* iOS PWA Full Screen Support */
 @supports (-webkit-touch-callout: none) {
   html {
