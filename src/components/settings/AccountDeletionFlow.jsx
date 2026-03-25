@@ -35,7 +35,13 @@ export default function AccountDeletionFlow({ user, language }) {
   };
 
   return (
-    <div className="mt-8 pt-6 border-t-2 border-red-200 dark:border-red-900">
+    <div
+      className="mt-8 pt-6 border-t-2 border-red-200 dark:border-red-900"
+      data-testid="account-deletion-flow"
+      data-purpose="account-deletion"
+      aria-label="Delete Account"
+      role="region"
+    >
       <div className="flex items-center gap-2 mb-3">
         <ShieldAlert className="w-4 h-4 text-red-600 dark:text-red-400" />
         <p className="text-xs font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">

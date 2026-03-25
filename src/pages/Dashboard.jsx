@@ -61,6 +61,7 @@ import { AIPredictor } from "@/components/advanced/AIPredictor";
 import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
 import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/advanced/MicroInteractions";
 import { hasFullAccess } from "@/components/core/roleRules";
+import PullToRefresh from "@/components/mobile/PullToRefresh";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -790,11 +791,16 @@ export default function Dashboard() {
     );
   }
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries();
+  }, [queryClient]);
+
   return (
-    <SectionErrorBoundary 
+    <SectionErrorBoundary
       section={language === 'es' ? 'Dashboard' : 'Dashboard'} 
       language={language}
     >
+    <PullToRefresh onRefresh={handleRefresh}>
       <div className="min-h-screen pb-20 md:pb-0 relative overflow-hidden" style={{
         background: 'linear-gradient(135deg, #E8F4FD 0%, #D9E9F4 50%, #F1F5F9 100%)'
       }}>
@@ -1085,6 +1091,7 @@ export default function Dashboard() {
       </div>
       </div>
     </div>
+    </PullToRefresh>
     </SectionErrorBoundary>
   );
 }
