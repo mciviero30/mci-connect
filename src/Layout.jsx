@@ -1172,7 +1172,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const shouldShowWelcome = user && 
     !isClientOnly && 
     user.employment_status !== 'deleted' &&
-    user.welcome_screen_shown !== true;
+    user.welcome_screen_shown === false;
 
   if (shouldShowWelcome) {
     return (
@@ -1574,10 +1574,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                 }
               },
               retry: false,
-              staleTime: Infinity, // STABLE - never auto-refetch
-              gcTime: Infinity,
-              refetchOnMount: false, // NEVER auto-refetch
-              refetchOnWindowFocus: false, // NEVER auto-refetch
+              staleTime: 300000,
+              gcTime: 600000,
+              refetchOnMount: true,
               refetchInterval: false,
             });
 
