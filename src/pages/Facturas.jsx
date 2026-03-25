@@ -48,12 +48,12 @@ export default function Facturas() {
   const [selectedInvoiceForJob, setSelectedInvoiceForJob] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
 
-  const { data: user } = useQuery({ 
+  const { data: user, isLoading: userLoading } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
     staleTime: Infinity,
     gcTime: Infinity,
-    refetchOnMount: false,
+    refetchOnMount: 'stale',
     refetchOnWindowFocus: false
   });
 
@@ -435,7 +435,7 @@ export default function Facturas() {
         </div>
 
         {/* Invoices Grid/List */}
-        {isLoading ? (
+        {userLoading || isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             <SkeletonDocumentList count={6} />
           </div>
