@@ -36,6 +36,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
 import CameraCapture from "@/components/shared/CameraCapture";
+import AccountDeletionFlow from "@/components/settings/AccountDeletionFlow";
 import SystemHealthDashboard from "@/components/admin/SystemHealthDashboard";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
@@ -839,6 +840,8 @@ export default function Configuracion() {
                       {updateProfileMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}
                     </Button>
                   )}
+
+                  <AccountDeletionFlow user={user} language={language} />
                 </div>
               </CardContent>
             </Card>
