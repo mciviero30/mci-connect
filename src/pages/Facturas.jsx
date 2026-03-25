@@ -125,7 +125,7 @@ export default function Facturas() {
   if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
 
   const {
-    items: invoices,
+    items: invoices = [],
     isLoading,
     page,
     hasMore,
@@ -138,7 +138,7 @@ export default function Facturas() {
     filters: paginationFilters,
     sortBy: '-created_date',
     pageSize: 18,
-    enabled: !!user
+    enabled: !!user?.id
   });
 
   const { data: teams = [] } = useQuery({
@@ -303,6 +303,7 @@ export default function Facturas() {
 
   // Log bad invoices in DEV
   if (import.meta.env.DEV) {
+    console.log('[Facturas] Query state:', { userLoaded: !!user?.id, invoicesCount: invoices?.length || 0, isLoading });
     safeInvoices.forEach(inv => {
       const bad = !inv.invoice_number || !Array.isArray(inv.items);
       if (bad) console.warn("[Bad invoice record]", inv?.id, inv);
