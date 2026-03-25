@@ -33,11 +33,22 @@ export default function TimeOffRequests() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = user?.role === 'admin' || user?.role === 'ceo';
 
   const { data: requests, isLoading } = useQuery({
-    queryKey: ['timeOffRequests'],
-    queryFn: () => base44.entities.TimeOffRequest.list('-created_date'),
+    queryKey: ['timeOffRequests', user?.id, user?.role],
+    queryFn: () => {
+      if (!user) return [];
+      // SECURITY: Non-admin/ceo employees only fetch their own requests
+      if (user.role !== 'admin' && user.role !== 'ceo') {
+        const query = user.id
+          ? { user_id: user.id }
+          : { employee_email: user.email };
+        return base44.entities.TimeOffRequest.filter(query, '-created_date');
+      }
+      return base44.entities.TimeOffRequest.list('-created_date');
+    },
+    enabled: !!user,
     initialData: [],
     staleTime: 300000,
     refetchOnMount: false,
