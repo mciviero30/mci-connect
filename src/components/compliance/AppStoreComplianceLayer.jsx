@@ -7,7 +7,7 @@
  * - User Account Deletion flow signal
  * - Screen Animations & Transitions
  */
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 // ── Pull-to-Refresh Implementation ──────────────────────────────────────────
