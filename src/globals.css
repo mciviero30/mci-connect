@@ -735,6 +735,38 @@
 }
 
 /* ============================================ */
+/* MOBILE TOUCH TARGETS — min 44×44px (WCAG)   */
+/* ============================================ */
+@media (max-width: 768px) {
+  button,
+  a,
+  [role="button"],
+  [role="tab"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Native-style checkbox & radio */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    min-height: 22px;
+    accent-color: #507DB4;
+    cursor: pointer;
+  }
+
+  /* Switch / toggle natural size on mobile */
+  [data-radix-switch-thumb] {
+    transform: scale(1.15);
+  }
+}
+
+/* ============================================ */
 /* ENTERPRISE SCROLLBAR STYLING                */
 /* ============================================ */
 ::-webkit-scrollbar {

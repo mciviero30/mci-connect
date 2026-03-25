@@ -71,6 +71,15 @@ export default function EmployeePageLayout({
       </div>
     </div>
   );
+
+  if (onRefresh) {
+    return (
+      <PullToRefresh onRefresh={onRefresh}>
+        {content}
+      </PullToRefresh>
+    );
+  }
+  return content;
 }
 
 /**
