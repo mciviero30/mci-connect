@@ -152,44 +152,57 @@ export async function generateInvoicePDF(invoice) {
   invoice.items.forEach((item, index) => {
     const nameLines = item.item_name ? doc.splitTextToSize(String(item.item_name), contentWidth - 75) : [];
     const descLines = item.description ? doc.splitTextToSize(String(item.description), contentWidth - 75) : [];
+    const qty = `${item.quantity || 0} ${item.unit || ''}`;
+    const rate = `$${Number(item.unit_price || 0).toFixed(2)}`;
+    const total = `$${Number(item.total || 0).toFixed(2)}`;
+
+    const rowStartY = y;
     const rowHeight = Math.max(10, (nameLines.length * 4) + (descLines.length * 3.5) + 8);
-
-    const isFirstItemOnPage = (y <= margin + tableHeaderHeight + 15);
-    if (!isFirstItemOnPage && y + rowHeight > 270) {
-      doc.addPage();
-      y = margin;
-      drawTableHeader(y);
-      y += tableHeaderHeight + 2;
-    }
-
-    if (index % 2 === 0) {
-      doc.setFillColor(250,250,250);
+    const fitsOnPage = y + rowHeight <= 270;
+    if (fitsOnPage && index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
       doc.rect(Number(margin), Number(y), Number(contentWidth), Number(rowHeight), 'F');
     }
 
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(180,180,180);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(180, 180, 180);
     doc.text(String(index + 1), numCol, y + 4);
 
     let textY = y + 5;
-    if (nameLines.length > 0) {
-      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(0,0,0);
-      doc.text(nameLines, itemCol, textY);
-      textY += nameLines.length * 4;
-    }
-    if (descLines.length > 0) {
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(80,80,80);
-      doc.text(descLines, itemCol, textY);
-    }
+    nameLines.forEach((line) => {
+      if (textY > 270) {
+        doc.addPage();
+        y = margin;
+        drawTableHeader(y);
+        y += tableHeaderHeight + 2;
+        textY = y + 5;
+      }
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(0, 0, 0);
+      doc.text(line, itemCol, textY);
+      textY += 4;
+    });
 
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(0,0,0);
-    doc.text(`${item.quantity || 0} ${item.unit || ''}`, qtyCol, y + 4, { align: 'right' });
-    doc.text(`$${Number(item.unit_price || 0).toFixed(2)}`, rateCol, y + 4, { align: 'right' });
+    descLines.forEach((line) => {
+      if (textY > 270) {
+        doc.addPage();
+        y = margin;
+        drawTableHeader(y);
+        y += tableHeaderHeight + 2;
+        textY = y + 5;
+      }
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(7.5); doc.setTextColor(80, 80, 80);
+      doc.text(line, itemCol, textY);
+      textY += 3.5;
+    });
+
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(0, 0, 0);
+    doc.text(qty, qtyCol, rowStartY + 4, { align: 'right' });
+    doc.text(rate, rateCol, rowStartY + 4, { align: 'right' });
     doc.setFont('helvetica', 'bold');
-    doc.text(`$${Number(item.total || 0).toFixed(2)}`, amountCol, y + 4, { align: 'right' });
+    doc.text(total, amountCol, rowStartY + 4, { align: 'right' });
 
-    doc.setDrawColor(230,230,230);
-    doc.line(margin, y + rowHeight, pageWidth - margin, y + rowHeight);
-    y += rowHeight;
+    y = textY + 3;
+    doc.setDrawColor(230, 230, 230);
+    doc.line(margin, y, pageWidth - margin, y);
   });
 
   // ========== TOTALS ==========
