@@ -467,17 +467,8 @@ export async function downloadInvoicePDF(invoice) {
   const invoiceNumber = (invoice.invoice_number || 'DRAFT').replace(/[^a-zA-Z0-9]/g, '-');
   const filename = `Invoice-${invoiceNumber}-${customerName}.pdf`;
   
-  const blob = doc.output('blob');
-  const url = URL.createObjectURL(blob);
-  
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  // Use jsPDF's built-in save() — works in Safari without blob URL issues
+  doc.save(filename);
 }
 
 /**
