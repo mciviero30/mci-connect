@@ -50,7 +50,7 @@ const AuthenticatedApp = () => {
     <Routes>
       <Route path="/" element={<MainPage />} />
       {Object.entries(Pages).map(([path, Page]) => (
-        <Route key={path} path={`/${path}`} element={<Page />} />
+        <Route key={path} path={`/${path.toLowerCase()}`} element={<Page />} />
       ))}
       <Route path="/SupervisorDashboard" element={<SupervisorDashboard />} />
       <Route path="/ForemanDashboard" element={<ForemanDashboard />} />
