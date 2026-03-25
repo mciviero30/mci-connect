@@ -224,6 +224,60 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
         data-bottom-navigation="true"
       >
         <div className="grid grid-cols-5 h-16 px-1">
+          {mainTabs.map((tab) => {
+            const active = isActive(tab.url);
+            const isActiveMore = tab.isMore && moreOpen;
+            const isActiveTime = tab.isTimeMenu && timeExpanded;
+            const isActiveTravel = tab.isTravelMenu && travelExpanded;
+            const highlighted = active || isActiveMore || isActiveTime || isActiveTravel;
+
+            // Live session indicator for time tab
+            if (tab.isTimeMenu && activeSession && !activeSession.onBreak) {
+              return (
+                <button key={tab.key} onClick={() => handleTabPress(tab)}
+                  role="tab"
+                  aria-selected={highlighted}
+                  data-tab-key={tab.key}
+                  className="flex flex-col items-center justify-center gap-0.5 min-h-[44px] active:scale-95 transition-transform">
+                  <div className="relative flex items-center justify-center">
+                    <div className="absolute w-9 h-9 rounded-full bg-green-500/25 animate-ping" />
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+                      <Clock className="w-4 h-4 text-white" strokeWidth={2.5} />
+                    </div>
+                  </div>
+                  <span className="text-[9px] font-bold text-green-600 font-mono tabular-nums">{fmt(elapsed)}</span>
+                </button>
+              );
+            }
+
+            return (
+              <button key={tab.key} onClick={() => handleTabPress(tab)}
+                role="tab"
+                aria-selected={highlighted}
+                data-tab-key={tab.key}
+                className={`flex flex-col items-center justify-center gap-0.5 min-h-[44px] active:scale-95 transition-all relative ${
+                  highlighted ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-400 dark:text-slate-500'
+                }`}
+              >
+                {highlighted && (
+                  <motion.div
+                    layoutId="activeTabDot"
+                    className="absolute top-1 w-1 h-1 rounded-full bg-[#507DB4] dark:bg-[#6B9DD8]"
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+                <div className="relative">
+                  <tab.icon className="w-5 h-5" strokeWidth={highlighted ? 2.5 : 1.8} />
+                  {tab.badge && (
+                    <Badge className="absolute -top-1.5 -right-2 h-4 min-w-4 px-1 text-[9px] bg-red-500 text-white border-0 leading-none">
+                      {tab.badge > 9 ? '9+' : tab.badge}
+                    </Badge>
+                  )}
+                </div>
+                <span className={`text-[10px] font-medium leading-none ${highlighted ? 'font-semibold' : ''}`}>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
