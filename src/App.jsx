@@ -22,7 +22,9 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 const LayoutWrapper = ({ children }) => {
   const location = useLocation();
   const pathSegments = location.pathname.split('/').filter(Boolean);
-  const currentPageName = pathSegments[0] || mainPageKey;
+  const currentPageName = pathSegments[0] 
+    ? pathSegments[0].split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')
+    : mainPageKey;
   return Layout ? <Layout currentPageName={currentPageName}>{children}</Layout> : children;
 };
 
