@@ -57,6 +57,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   const [activeSession, setActiveSession] = useState(null);
   const [elapsed, setElapsed] = useState(0);
   const [showJobSelector, setShowJobSelector] = useState(false);
+  const [showWorkTypeSelector, setShowWorkTypeSelector] = useState(false);
   const [showWorkTypeDialog, setShowWorkTypeDialog] = useState(false);
   const [locationError, setLocationError] = useState(null);
   const [gpsProgress, setGpsProgress] = useState(null);
