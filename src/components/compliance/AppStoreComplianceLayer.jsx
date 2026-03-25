@@ -21,21 +21,35 @@ function InjectTransitionStyles() {
       @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
       @keyframes ptrSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       .ptr-spinning { animation: ptrSpin 0.8s linear infinite; }
-      .screen-slide-in { animation: slideInRight 0.17s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-      .screen-slide-out { animation: slideOutLeft 0.17s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-      .modal-slide-in { animation: slideInUp 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-      .modal-slide-out { animation: slideOutDown 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-      /* Pull-to-refresh overscroll */
+      .screen-slide-in { animation: slideInRight 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+      .screen-slide-out { animation: slideOutLeft 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+      .modal-slide-in { animation: slideInUp 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+      .modal-slide-out { animation: slideOutDown 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+      /* Pull-to-refresh */
       [data-pull-to-refresh="true"] { overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; }
-      /* Skip nav link - visually hidden but accessible */
-      .skip-nav-link { position: absolute; top: -40px; left: 0; background: #507DB4; color: #fff; padding: 8px; z-index: 100; border-radius: 0 0 4px 0; }
+      /* Skip nav */
+      .skip-nav-link { position: absolute; top: -40px; left: 0; background: #507DB4; color: #fff; padding: 8px 12px; z-index: 100; border-radius: 0 0 4px 4px; font-weight: 600; }
       .skip-nav-link:focus { top: 0; }
-      /* Focus ring */
-      :focus-visible { outline: 2px solid #507DB4; outline-offset: 2px; border-radius: 3px; }
-      /* Touch target min size */
-      [data-touch-target="true"] { min-height: 44px; min-width: 44px; }
-      /* Native dropdown styling */
+      /* Focus ring - WCAG AA */
+      :focus-visible { outline: 2px solid #507DB4 !important; outline-offset: 2px; border-radius: 3px; }
+      /* 44px touch targets - WCAG SC 2.5.5 */
+      @media (max-width: 768px) {
+        button:not([data-no-touch-target]),
+        a:not([data-no-touch-target]),
+        [role="tab"]:not([data-no-touch-target]),
+        [role="button"]:not([data-no-touch-target]) {
+          min-height: 44px;
+          min-width: 44px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+      /* Native select */
       [data-native-select="true"] select { -webkit-appearance: auto; appearance: auto; }
+      /* Smooth momentum scrolling everywhere */
+      * { -webkit-overflow-scrolling: touch; }
+      [data-main-content] { scroll-behavior: smooth; }
     `;
     document.head.appendChild(style);
     return () => { const el = document.getElementById(id); if (el) el.remove(); };
