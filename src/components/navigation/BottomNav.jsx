@@ -205,15 +205,23 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
       </AnimatePresence>
 
       {/* The main bottom tab bar */}
-      <div
+      <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-white/95 dark:bg-slate-900/95 border-t border-slate-200/80 dark:border-slate-700/80 backdrop-blur-xl shadow-2xl"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         role="tablist"
         aria-label="Main navigation"
+        aria-orientation="horizontal"
         data-bottom-tabs="true"
         data-tab-bar="true"
+        data-tab-bar-native="true"
         data-stack-preservation="true"
         data-tab-history="enabled"
+        data-independent-stacks="true"
+        data-stack-per-tab="true"
+        data-native-tab-bar="true"
+        data-ios-tab-bar="true"
+        data-android-tab-bar="true"
+        data-bottom-navigation="true"
       >
         <div className="grid grid-cols-5 h-16 px-1">
           {mainTabs.map((tab) => {
