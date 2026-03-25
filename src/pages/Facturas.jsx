@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useMemo } from "react";
 import { useSmartPagination, PaginationControls } from "@/components/hooks/useSmartPagination";
-import React, { useState, useMemo } from "react";
 import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
