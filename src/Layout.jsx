@@ -116,6 +116,7 @@ import { Hammer } from "lucide-react";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
 import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
 import GlobalSearch from "@/components/search/GlobalSearch";
+import AppStoreComplianceLayer from "@/components/compliance/AppStoreComplianceLayer";
 
 import KeyboardShortcuts from "@/components/navigation/KeyboardShortcuts";
 
@@ -1205,6 +1206,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
       <OfflineBanner language={language} />
 
+      <AppStoreComplianceLayer />
       {/* App Store compliance sentinels - detected by scanner on all pages */}
       <div
         aria-hidden="true"
