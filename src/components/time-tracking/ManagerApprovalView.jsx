@@ -4,7 +4,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Users, Map } from "lucide-react";
+import { CheckCircle, XCircle, Users, Map, ShieldX } from "lucide-react";
+import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import GeolocationAuditMap from "@/components/time-tracking/GeolocationAuditMap";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
@@ -17,6 +18,15 @@ export default function ManagerApprovalView() {
   const [selectedFilter, setSelectedFilter] = useState('pending');
   const [mapEntry, setMapEntry] = useState(null);
 
+  const { data: currentUser } = useQuery({
+    queryKey: CURRENT_USER_QUERY_KEY,
+    queryFn: () => base44.auth.me(),
+    staleTime: Infinity,
+  });
+
+  // STRICT: Only admin and manager roles can approve/reject
+  const canApprove = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+
   const { data: pendingEntries = [], isLoading } = useQuery({
     queryKey: ['managerPendingEntries', selectedFilter],
     queryFn: async () => {
@@ -28,7 +38,10 @@ export default function ManagerApprovalView() {
   });
 
   const approveMutation = useMutation({
-    mutationFn: (entryId) => base44.entities.TimeEntry.update(entryId, { status: 'approved' }),
+    mutationFn: (entryId) => {
+      if (!canApprove) throw new Error('Unauthorized');
+      return base44.entities.TimeEntry.update(entryId, { status: 'approved' });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['managerPendingEntries'] });
       toast.success(language === 'es' ? 'Registro aprobado' : 'Entry approved');
@@ -36,7 +49,10 @@ export default function ManagerApprovalView() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (entryId) => base44.entities.TimeEntry.update(entryId, { status: 'rejected' }),
+    mutationFn: (entryId) => {
+      if (!canApprove) throw new Error('Unauthorized');
+      return base44.entities.TimeEntry.update(entryId, { status: 'rejected' });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['managerPendingEntries'] });
       toast.success(language === 'es' ? 'Registro rechazado' : 'Entry rejected');
@@ -58,6 +74,25 @@ export default function ManagerApprovalView() {
     acc[key].entries.push(entry);
     return acc;
   }, {});
+
+  // Block non-admins/managers entirely
+  if (currentUser && !canApprove) {
+    return (
+      <Card>
+        <CardContent className="py-12 text-center">
+          <ShieldX className="w-12 h-12 text-red-400 mx-auto mb-3" />
+          <p className="font-bold text-slate-700 dark:text-slate-300">
+            {language === 'es' ? 'Acceso Restringido' : 'Access Restricted'}
+          </p>
+          <p className="text-sm text-slate-500 mt-1">
+            {language === 'es'
+              ? 'Solo administradores y managers pueden aprobar horas.'
+              : 'Only admins and managers can approve time entries.'}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
