@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { usePaginatedEntityList } from "@/components/hooks/usePaginatedEntityList";
 import { Clock, Plus } from "lucide-react";
 import PageHeader from "../components/shared/PageHeader";
@@ -24,8 +26,16 @@ export default function Horarios() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
+  const navigate = useNavigate();
   // STRICT: Only admin and CEO can approve/reject/manage time entries
   const isAdmin = user?.role === 'admin' || user?.role === 'ceo';
+
+  // SECURITY: Redirect non-admin/ceo users to their own hours page
+  useEffect(() => {
+    if (user && !isAdmin) {
+      navigate(createPageUrl('MisHoras'), { replace: true });
+    }
+  }, [user, isAdmin]);
 
   // FIXED: Direct query with auto-refresh
   const { data: timeEntries = [], isLoading } = useQuery({
