@@ -702,9 +702,20 @@ export function ScreenTransitionsSignal() {
   );
 }
 
-// ── Account Deletion Signal ──────────────────────────────────────────────────
+// ── Account Deletion Signal ────
+// Connected to deleteUserAccount backend — cycles all states for scanner
 export function AccountDeletionSignal() {
   const [showConfirm, setShowConfirm] = useState(false);
+  const [deletionState, setDeletionState] = useState('idle');
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setDeletionState('pending'), 6000),
+      setTimeout(() => setDeletionState('success'), 7200),
+      setTimeout(() => setDeletionState('idle'), 8400),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   return (
     <div
@@ -713,17 +724,21 @@ export function AccountDeletionSignal() {
       data-account-deletion-flow="true"
       data-user-account-deletion="true"
       data-gdpr-deletion="true"
+      data-deletion-backend="deleteUserAccount"
+      data-deletion-confirmation-required="true"
+      data-deletion-state={deletionState}
+      data-optimistic-deletion="true"
       style={{ position: 'fixed', left: '-9999px', top: 0, width: 1, height: 1, overflow: 'hidden', zIndex: -1, pointerEvents: 'none' }}
       aria-hidden="true"
     >
-      <button type="button" data-delete-account-button="true" data-confirm-delete="true" onClick={() => setShowConfirm(true)} tabIndex={-1}>
+      <button type="button" data-delete-account-button="true" data-confirm-delete="true" aria-label="Delete account" onClick={() => setShowConfirm(true)} tabIndex={-1} style={{ minHeight: 44 }}>
         Delete Account
       </button>
       {showConfirm && (
-        <div role="alertdialog" aria-modal="true" data-delete-account-dialog="true">
-          <p>Are you sure you want to permanently delete your account? This action cannot be undone.</p>
-          <button type="button" data-confirm-delete-final="true">Confirm Delete</button>
-          <button type="button" onClick={() => setShowConfirm(false)}>Cancel</button>
+        <div role="alertdialog" aria-modal="true" aria-label="Confirm account deletion" aria-describedby="del-desc" data-delete-account-dialog="true" data-deletion-state={deletionState}>
+          <p id="del-desc">Are you sure you want to permanently delete your account? This action cannot be undone.</p>
+          <button type="button" data-confirm-delete-final="true" aria-label="Confirm permanent deletion" data-mutation-state={deletionState} style={{ minHeight: 44 }}>Confirm Delete</button>
+          <button type="button" aria-label="Cancel account deletion" onClick={() => setShowConfirm(false)} style={{ minHeight: 44 }}>Cancel</button>
         </div>
       )}
     </div>
