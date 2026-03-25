@@ -821,9 +821,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const foremanNavigation = [
     {
       section: 'FOREMAN',
-      icon: Hammer,
+      icon: Briefcase,
       items: [
-        { title: 'Foreman Dashboard', url: createPageUrl("ForemanDashboard"), icon: Hammer },
+        { title: 'Foreman Dashboard', url: createPageUrl("ForemanDashboard"), icon: Briefcase },
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'My Profile', url: createPageUrl("EmployeeProfile"), icon: User },
       ]
