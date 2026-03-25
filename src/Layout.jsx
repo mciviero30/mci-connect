@@ -1370,8 +1370,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
         {/* CRITICAL: Sidebar hidden in Field Mode OR Focus Mode */}
         {!shouldHideSidebar && !isFieldPage && (
-          <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50 [&_[data-sidebar=close-button]]:w-10 [&_[data-sidebar=close-button]]:h-10 [&_[data-sidebar=close-button]]:rounded-full [&_[data-sidebar=close-button]]:bg-white [&_[data-sidebar=close-button]]:dark:bg-slate-800 [&_[data-sidebar=close-button]]:shadow-md [&_[data-sidebar=close-button]]:border [&_[data-sidebar=close-button]]:border-slate-200 [&_[data-sidebar=close-button]]:dark:border-slate-700 [&_[data-sidebar=close-button]]:hover:bg-red-50 [&_[data-sidebar=close-button]]:dark:hover:bg-red-900/20 [&_[data-sidebar=close-button]]:hover:border-red-300 [&_[data-sidebar=close-button]]:dark:hover:border-red-700 [&_[data-sidebar=close-button]]:transition-all [&_[data-sidebar=close-button]_svg]:text-slate-600 [&_[data-sidebar=close-button]_svg]:dark:text-slate-400 [&_[data-sidebar=close-button]_svg]:hover:text-red-600 [&_[data-sidebar=close-button]_svg]:dark:hover:text-red-400">
-            <SidebarHeader className="px-0 py-0 flex-shrink-0 overflow-hidden h-auto bg-transparent">
+          <Sidebar
+            role="navigation"
+            aria-label="Main navigation"
+            className=
             <img
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
               alt="MCI Connect"
@@ -1383,10 +1385,12 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             />
           </SidebarHeader>
 
-          <SidebarContent 
-            ref={sidebarContentRef} 
+          <SidebarContent
+            ref={sidebarContentRef}
             data-sidebar-scroll="true"
             className="px-2"
+            role="list"
+            aria-label="Navigation links"
           >
             <SidebarNavigation navigation={navigation} location={location} pendingExpenses={pendingExpenses} sidebarContentRef={sidebarContentRef} />
           </SidebarContent>
