@@ -31,6 +31,122 @@ html, body {
   overscroll-behavior-y: contain;
 }
 
+/* ============================================ */
+/* MOBILE NATIVE STANDARDS — GLOBAL RULES      */
+/* ============================================ */
+
+/* 1. user-select: none on all interactive & structural elements */
+button,
+a,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+nav,
+header,
+footer,
+label,
+.card-enterprise,
+.card-enterprise-hover,
+[class*="sidebar"],
+[data-bottom-tabs],
+[data-tab-bar] {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Preserve text selection in reading/input areas */
+p, span, h1, h2, h3, h4, h5, h6,
+input, textarea, [contenteditable],
+[data-selectable],
+.prose,
+article,
+.text-body,
+.text-body-lg {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* 2. 44px minimum touch targets (WCAG 2.5.5) — all breakpoints, not just mobile */
+button:not([data-no-touch-target]),
+a:not([data-no-touch-target]),
+[role="tab"]:not([data-no-touch-target]),
+[role="button"]:not([data-no-touch-target]),
+[role="menuitem"]:not([data-no-touch-target]),
+[role="option"]:not([data-no-touch-target]),
+input[type="checkbox"],
+input[type="radio"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* 3. Responsive card-over-table: hide tables on mobile, show card list */
+@media (max-width: 768px) {
+  /* Hide native table structure */
+  table.responsive-table,
+  .table-responsive table {
+    display: block;
+  }
+  table.responsive-table thead,
+  .table-responsive thead {
+    display: none;
+  }
+  table.responsive-table tbody,
+  .table-responsive tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  table.responsive-table tr,
+  .table-responsive tr {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 8px;
+    padding: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .dark table.responsive-table tr,
+  .dark .table-responsive tr {
+    background: rgb(30, 41, 59);
+    border-color: rgba(255,255,255,0.08);
+  }
+  table.responsive-table td,
+  .table-responsive td {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    border: none;
+    font-size: 13px;
+  }
+  table.responsive-table td[data-label]::before,
+  .table-responsive td[data-label]::before {
+    content: attr(data-label) ': ';
+    font-weight: 600;
+    color: #64748b;
+    font-size: 11px;
+    min-width: 80px;
+    flex-shrink: 0;
+  }
+}
+
+/* 4. Radix UI Select — native-like sizing on mobile */
+@media (max-width: 768px) {
+  [data-radix-select-trigger],
+  [data-radix-select-item] {
+    min-height: 44px;
+    font-size: 16px; /* prevents iOS zoom */
+  }
+  /* Native <select> fallback sizing */
+  select {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+}
+
 /* iOS PWA Full Screen Support */
 @supports (-webkit-touch-callout: none) {
   html {
