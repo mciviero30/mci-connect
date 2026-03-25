@@ -224,6 +224,10 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
         data-bottom-navigation="true"
       >
         <div className="grid grid-cols-5 h-16 px-1">
+        </div>
+      </div>
+
+      {/* Content spacer */}
       <div className="md:hidden h-16" />
     </>,
     document.body
