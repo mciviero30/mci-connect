@@ -835,12 +835,15 @@ export default function Configuracion() {
                     <Button
                       onClick={() => updateProfileMutation.mutate(profileForm)}
                       disabled={updateProfileMutation.isPending}
-                      className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full mt-6"
+                      className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full mt-6 min-h-[48px]"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       {updateProfileMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}
                     </Button>
                   )}
+
+                  {/* Mandatory account deletion flow */}
+                  <AccountDeletionFlow user={user} language={language} />
 
                   <AccountDeletionFlow user={user} language={language} />
                 </div>

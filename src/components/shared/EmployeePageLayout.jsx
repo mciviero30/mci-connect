@@ -12,9 +12,10 @@ export default function EmployeePageLayout({
   subtitle, 
   headerActions,
   stats,
-  className = ""
+  className = "",
+  onRefresh = null,
 }) {
-  return (
+  const content = (
     <div className="min-h-screen bg-slate-50 dark:bg-[#181818]">
       {/* Hero Header */}
       <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-900 dark:via-blue-800 dark:to-indigo-900">
