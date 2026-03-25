@@ -17,13 +17,7 @@ const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
 const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
-const LayoutWrapper = ({ children }) => {
-  const location = useLocation();
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  const currentPageName = pathSegments[0] || mainPageKey;
-  if (!Layout) return <>{children}</>;
-  return <Layout currentPageName={currentPageName}>{children}</Layout>;
-};
+
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
