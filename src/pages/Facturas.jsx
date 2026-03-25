@@ -51,10 +51,10 @@ export default function Facturas() {
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
-    staleTime: 300000,
+    staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    gcTime: Infinity
+    refetchOnWindowFocus: false
   });
 
   const { handleError } = useErrorHandler();
@@ -127,6 +127,7 @@ export default function Facturas() {
   const {
     items: invoices = [],
     isLoading,
+    error: paginationError,
     page,
     hasMore,
     hasPrevious,
@@ -138,7 +139,7 @@ export default function Facturas() {
     filters: paginationFilters,
     sortBy: '-created_date',
     pageSize: 18,
-    enabled: !!user?.id
+    enabled: !!user
   });
 
   const { data: teams = [] } = useQuery({
@@ -303,7 +304,7 @@ export default function Facturas() {
 
   // Log bad invoices in DEV
   if (import.meta.env.DEV) {
-    console.log('[Facturas] Query state:', { userLoaded: !!user?.id, invoicesCount: invoices?.length || 0, isLoading });
+    console.log('[Facturas] Query state:', { userLoaded: !!user, invoicesCount: invoices?.length || 0, isLoading, error: paginationError });
     safeInvoices.forEach(inv => {
       const bad = !inv.invoice_number || !Array.isArray(inv.items);
       if (bad) console.warn("[Bad invoice record]", inv?.id, inv);
