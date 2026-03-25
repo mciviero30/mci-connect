@@ -105,6 +105,18 @@ import BottomNav from "@/components/navigation/BottomNav";
 import MobileHeader from "@/components/navigation/MobileHeader";
 import AppStoreComplianceLayer from "@/components/compliance/AppStoreComplianceLayer";
 import { PullToRefreshLayer } from "@/components/compliance/AppStoreComplianceLayer";
+import InvitationGate from "@/components/security/InvitationGate";
+import TwoFactorGate from "@/components/security/TwoFactorGate";
+import AgreementGate from "@/components/agreements/AgreementGate";
+import TaxProfileGate from "@/components/tax/TaxProfileGate";
+import EmployeeDirectoryGuard from "@/components/security/EmployeeDirectoryGuard";
+import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
+import { hasFullAccess } from "@/components/core/roleRules";
+import GlobalSearch from "@/components/search/GlobalSearch";
+import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
+import SessionTimeoutManager from "@/components/security/SessionTimeoutManager";
+import OfflineBanner from "@/components/resilience/OfflineBanner";
+import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
 
 import KeyboardShortcuts from "@/components/navigation/KeyboardShortcuts";
 
