@@ -128,8 +128,8 @@ export async function generateInvoicePDF(invoice) {
   const tableGradientSteps = 100;
   const numCol = margin + 3;
   const itemCol = margin + 12;
-  const qtyCol = pageWidth - margin - 55;
-  const rateCol = pageWidth - margin - 35;
+  const qtyCol = pageWidth - margin - 58;
+  const rateCol = pageWidth - margin - 33;
   const amountCol = pageWidth - margin - 3;
 
   const drawTableHeader = (startY) => {
@@ -195,7 +195,7 @@ export async function generateInvoicePDF(invoice) {
     });
 
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(0, 0, 0);
-    doc.text(qty, qtyCol, rowStartY + 4, { align: 'right' });
+    doc.text(qty.trim(), qtyCol, rowStartY + 4, { align: 'right', maxWidth: 20 });
     doc.text(rate, rateCol, rowStartY + 4, { align: 'right' });
     doc.setFont('helvetica', 'bold');
     doc.text(total, amountCol, rowStartY + 4, { align: 'right' });
