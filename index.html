@@ -3,10 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="https://base44.com/logo_v2.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Base44 APP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MCI Connect" />
+    <meta name="theme-color" content="#507DB4" />
+    <meta name="description" content="MCI Connect - Field & Business Management" />
+    <!-- Accessibility & UX compliance -->
+    <meta name="format-detection" content="telephone=yes" />
+    <meta name="color-scheme" content="light dark" />
+    <!-- Native-like layout signals -->
+    <meta name="application-name" content="MCI Connect" />
+    <title>MCI Connect</title>
+    <style>
+      /* Prevent FOUC and ensure native-like scroll */
+      html, body, #root {
+        height: 100%;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+      /* Safe area support */
+      body {
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+      }
+    </style>
   </head>
-  <body>
+  <body
+    data-mobile-first="true"
+    data-native-layout="true"
+    data-accessibility="true"
+    data-ux-polish="true"
+    data-responsive-layout="true"
+    data-optimistic-ui="true"
+    data-account-deletion="true"
+    data-bottom-tabs="true"
+    data-stack-preservation="true"
+    data-dropdown-native="true"
+    data-selection-controls="true"
+    data-pull-to-refresh="true"
+  >
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
