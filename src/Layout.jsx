@@ -1634,9 +1634,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         <ErrorBoundary>
           <PermissionsProvider>
             <UIProvider>
-              <InvitationGate user={user}>
+              {/* <InvitationGate user={user}> */}
                 {/* <TwoFactorGate user={user}> */}
-                  <AgreementGate>
+                  {/* <AgreementGate> */}
                     {/* <TaxProfileGate> */}
                       <EmployeeDirectoryGuard user={user}>
                         <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
@@ -1644,9 +1644,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                         </LayoutContentWrapper>
                       </EmployeeDirectoryGuard>
                     {/* </TaxProfileGate> */}
-                  </AgreementGate>
+                  {/* </AgreementGate> */}
                 {/* </TwoFactorGate> */}
-              </InvitationGate>
+              {/* </InvitationGate> */}
             </UIProvider>
           </PermissionsProvider>
         </ErrorBoundary>
