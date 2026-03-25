@@ -423,7 +423,6 @@ const LayoutContentWrapper = ({ children, currentPageName, user, isLoading, erro
 };
 
 const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar }) => {
-
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
