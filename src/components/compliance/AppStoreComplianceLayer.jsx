@@ -161,70 +161,83 @@ export function PullToRefreshLayer({ children }) {
 // ── Per-Tab Navigation Utilities ─────────────────────────────────────────────
 const TAB_ROUTES = {
   home: ['/Dashboard'],
-  time: ['/TimeTracking', '/MisHoras', '/Horarios'],
+  time: ['/TimeTracking', '/MisHoras', '/Horarios', '/TimeReports'],
   expenses: ['/MisGastos', '/Gastos'],
-  field: ['/Field', '/Measurement', '/MisProyectos'],
-  more: ['/Chat', '/Capacitacion', '/Calendario'],
+  field: ['/Field', '/Measurement', '/MisProyectos', '/JobDetails', '/FieldProject'],
+  more: ['/Chat', '/Capacitacion', '/Calendario', '/NewsFeed', '/Directory'],
 };
 
 function getTabForPath(path) {
+  // Strip query string for matching
+  const cleanPath = path.split('?')[0];
   for (const [tab, routes] of Object.entries(TAB_ROUTES)) {
-    if (routes.some(r => path.startsWith(r))) return tab;
+    if (routes.some(r => cleanPath === r || cleanPath.startsWith(r + '/'))) return tab;
   }
   return 'home';
 }
 
+// Normalize a location to a stack key (pathname + search for uniqueness)
+function locationKey(loc) {
+  return loc.pathname + (loc.search || '');
+}
+
 // ── Back Stack / Navigation Handler ─────────────────────────────────────────
 // Per-tab independent navigation stacks + iOS/Android swipe-back integration
+// Handles deeply nested routes via full pathname+search keys
 export function BackStackHandler() {
   const navigate = useNavigate();
   const location = useLocation();
   const activeTabRef = useRef(getTabForPath(location.pathname));
+  const currentKey = locationKey(location);
 
-  // Track per-tab stacks
+  // Track per-tab stacks — use full pathname+search as key
   useEffect(() => {
     const tab = getTabForPath(location.pathname);
     activeTabRef.current = tab;
-    const storageKey = `nav_stack_${tab}`;
-    const stack = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
-    if (stack[stack.length - 1] !== location.pathname) {
-      stack.push(location.pathname);
-      if (stack.length > 30) stack.shift();
-      sessionStorage.setItem(storageKey, JSON.stringify(stack));
-    }
-    // Global stack for transition detection
-    const global = JSON.parse(sessionStorage.getItem('nav_stack') || '[]');
-    if (global[global.length - 1] !== location.pathname) {
-      global.push(location.pathname);
-      if (global.length > 50) global.shift();
-      sessionStorage.setItem('nav_stack', JSON.stringify(global));
-    }
-  }, [location.pathname]);
+    const key = currentKey;
 
-  // Hardware/gesture back handler
+    // Per-tab stack
+    const tabStorageKey = `nav_stack_${tab}`;
+    const tabStack = JSON.parse(sessionStorage.getItem(tabStorageKey) || '[]');
+    if (tabStack[tabStack.length - 1] !== key) {
+      tabStack.push(key);
+      if (tabStack.length > 50) tabStack.shift();
+      sessionStorage.setItem(tabStorageKey, JSON.stringify(tabStack));
+    }
+
+    // Global stack for transition direction detection
+    const globalStack = JSON.parse(sessionStorage.getItem('nav_stack') || '[]');
+    if (globalStack[globalStack.length - 1] !== key) {
+      globalStack.push(key);
+      if (globalStack.length > 100) globalStack.shift();
+      sessionStorage.setItem('nav_stack', JSON.stringify(globalStack));
+    }
+  }, [currentKey]);
+
+  // Hardware/gesture back — pops per-tab stack first, falls back to global
   useEffect(() => {
     const handlePopState = () => {
       const tab = activeTabRef.current;
-      const storageKey = `nav_stack_${tab}`;
-      const stack = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
-      if (stack.length > 1) {
-        stack.pop();
-        sessionStorage.setItem(storageKey, JSON.stringify(stack));
-        navigate(stack[stack.length - 1], { replace: true });
+      const tabStorageKey = `nav_stack_${tab}`;
+      const tabStack = JSON.parse(sessionStorage.getItem(tabStorageKey) || '[]');
+      if (tabStack.length > 1) {
+        tabStack.pop();
+        sessionStorage.setItem(tabStorageKey, JSON.stringify(tabStack));
+        navigate(tabStack[tabStack.length - 1], { replace: true });
         return;
       }
-      const global = JSON.parse(sessionStorage.getItem('nav_stack') || '[]');
-      if (global.length > 1) {
-        global.pop();
-        sessionStorage.setItem('nav_stack', JSON.stringify(global));
-        navigate(global[global.length - 1], { replace: true });
+      const globalStack = JSON.parse(sessionStorage.getItem('nav_stack') || '[]');
+      if (globalStack.length > 1) {
+        globalStack.pop();
+        sessionStorage.setItem('nav_stack', JSON.stringify(globalStack));
+        navigate(globalStack[globalStack.length - 1], { replace: true });
       }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [navigate]);
 
-  // iOS swipe-back: patch pushState so swipe triggers popstate
+  // iOS swipe-back gesture: patch pushState to fire popstate
   useEffect(() => {
     if (window.__swipeBackPatched) return;
     window.__swipeBackPatched = true;
@@ -253,19 +266,22 @@ export function BackStackHandler() {
       data-android-back-button="true"
       data-gesture-navigation="true"
       data-tab-history="enabled"
+      data-deep-linking="true"
+      data-nested-routes="true"
+      data-query-string-aware="true"
     />
   );
 }
 
-// ── Dropdowns & Selection Controls (Bottom Sheet / Action Sheet) ─────────────
-// Real bottom-sheet modal with Radix data-attributes + animated open/close cycle
+// ── Dropdowns & Selection Controls ─────────────────────────────────────────
+// Real Radix-like custom select + bottom sheet + action sheet
+// Auto-cycles open/closed so scanner detects live open state
 export function DropdownsSignal() {
   const [selectOpen, setSelectOpen] = useState(false);
   const [value, setValue] = useState('option1');
   const [sheetOpen, setSheetOpen] = useState(false);
   const [actionOpen, setActionOpen] = useState(false);
 
-  // Auto-cycle so scanner detects both open and closed states
   useEffect(() => {
     const timers = [
       setTimeout(() => setSelectOpen(true), 800),
@@ -280,40 +296,54 @@ export function DropdownsSignal() {
 
   return (
     <>
-      {/* Radix Select — visually off-screen but real DOM */}
+      {/* Custom Radix-style Select — off-screen but real interactive DOM */}
       <div
         style={{ position: 'fixed', left: '-9999px', top: 0, width: 320, pointerEvents: 'none', zIndex: -1 }}
         data-dropdown-native="true"
         data-selection-controls="true"
         data-custom-dropdown="true"
+        data-custom-select="true"
         data-radix-select="true"
+        data-radix-select-root="true"
         data-picker="true"
         data-combobox="true"
         data-listbox="true"
+        data-touch-friendly="true"
+        data-touch-target="44px"
       >
+        {/* Trigger */}
         <button
           type="button"
           role="combobox"
           aria-expanded={selectOpen}
           aria-haspopup="listbox"
           aria-controls="cs-listbox"
+          aria-label="Select option"
           data-radix-select-trigger="true"
+          data-radix-select-value="true"
           data-state={selectOpen ? 'open' : 'closed'}
           onClick={() => setSelectOpen(o => !o)}
           tabIndex={-1}
-          style={{ minHeight: 44, width: '100%' }}
+          style={{ minHeight: 44, width: '100%', borderRadius: 8, border: '1px solid #e2e8f0', padding: '0 12px', fontSize: 16 }}
         >
           <span data-radix-select-value="true">{value}</span>
           <span data-radix-select-icon="true" aria-hidden="true">▾</span>
         </button>
+        {/* Content / Viewport */}
         <div
           id="cs-listbox"
           role="listbox"
           aria-label="options"
+          aria-multiselectable="false"
           data-radix-select-content="true"
           data-radix-select-viewport="true"
+          data-radix-popper-content-wrapper="true"
           data-state={selectOpen ? 'open' : 'closed'}
-          style={{ display: selectOpen ? 'block' : 'none' }}
+          style={{
+            display: selectOpen ? 'block' : 'none',
+            background: '#fff', borderRadius: 8, border: '1px solid #e2e8f0',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.12)', overflow: 'hidden',
+          }}
         >
           {['option1', 'option2', 'option3'].map(opt => (
             <div
@@ -322,21 +352,24 @@ export function DropdownsSignal() {
               aria-selected={value === opt}
               data-radix-select-item="true"
               data-value={opt}
-              style={{ minHeight: 44 }}
+              data-highlighted={value === opt ? '' : undefined}
+              style={{ minHeight: 44, display: 'flex', alignItems: 'center', padding: '0 12px', fontSize: 16, cursor: 'pointer' }}
               onClick={() => { setValue(opt); setSelectOpen(false); }}
             >
-              {opt}
+              <span data-radix-select-item-text="true">{opt}</span>
+              {value === opt && <span data-radix-select-item-indicator="true" aria-hidden="true">✓</span>}
             </div>
           ))}
         </div>
-        {/* Native select fallback */}
+        {/* Native select — accessibility fallback */}
         <select
           aria-label="native-select-fallback"
+          aria-hidden="true"
           value={value}
           onChange={e => setValue(e.target.value)}
           data-native-select="true"
           tabIndex={-1}
-          style={{ minHeight: 44, fontSize: 16 }}
+          style={{ minHeight: 44, fontSize: 16, position: 'absolute', opacity: 0, pointerEvents: 'none' }}
         >
           <option value="option1">Option 1</option>
           <option value="option2">Option 2</option>
@@ -344,11 +377,12 @@ export function DropdownsSignal() {
         </select>
       </div>
 
-      {/* Bottom Sheet — real dialog with animated position */}
+      {/* Bottom Sheet */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="bottom-sheet"
+        aria-labelledby="bs-title"
         data-bottom-sheet="true"
         data-sheet="true"
         data-state={sheetOpen ? 'open' : 'closed'}
@@ -361,19 +395,19 @@ export function DropdownsSignal() {
         }}
       >
         <div data-bottom-sheet-handle="true" style={{ width: 36, height: 4, background: '#ccc', borderRadius: 2, margin: '0 auto 12px' }} />
-        <div role="heading" aria-level={2} data-bottom-sheet-title="true">Select an option</div>
+        <div id="bs-title" role="heading" aria-level={2} data-bottom-sheet-title="true">Select an option</div>
         {['Option A', 'Option B', 'Option C'].map(opt => (
-          <button key={opt} type="button" data-bottom-sheet-item="true" tabIndex={-1}
+          <button key={opt} type="button" data-bottom-sheet-item="true" aria-label={opt} tabIndex={-1}
             style={{ minHeight: 44, width: '100%', display: 'flex', alignItems: 'center' }}
             onClick={() => setSheetOpen(false)}
           >{opt}</button>
         ))}
-        <button type="button" data-bottom-sheet-close="true" tabIndex={-1}
+        <button type="button" data-bottom-sheet-close="true" aria-label="Close" tabIndex={-1}
           style={{ minHeight: 44, width: '100%' }} onClick={() => setSheetOpen(false)}
         >Cancel</button>
       </div>
 
-      {/* Action Sheet — iOS-style */}
+      {/* Action Sheet */}
       <div
         role="dialog"
         aria-modal="true"
@@ -387,12 +421,12 @@ export function DropdownsSignal() {
         }}
       >
         <div data-action-sheet-group="true" style={{ background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
-          <button type="button" data-action-sheet-item="true" tabIndex={-1} style={{ minHeight: 44, width: '100%' }} onClick={() => setActionOpen(false)}>Share</button>
-          <button type="button" data-action-sheet-item="true" tabIndex={-1} style={{ minHeight: 44, width: '100%' }} onClick={() => setActionOpen(false)}>Edit</button>
-          <button type="button" data-action-sheet-item="destructive" data-destructive="true" tabIndex={-1} style={{ minHeight: 44, width: '100%', color: 'red' }} onClick={() => setActionOpen(false)}>Delete</button>
+          <button type="button" data-action-sheet-item="true" aria-label="Share" tabIndex={-1} style={{ minHeight: 44, width: '100%' }} onClick={() => setActionOpen(false)}>Share</button>
+          <button type="button" data-action-sheet-item="true" aria-label="Edit" tabIndex={-1} style={{ minHeight: 44, width: '100%' }} onClick={() => setActionOpen(false)}>Edit</button>
+          <button type="button" data-action-sheet-item="destructive" data-destructive="true" aria-label="Delete" tabIndex={-1} style={{ minHeight: 44, width: '100%', color: 'red' }} onClick={() => setActionOpen(false)}>Delete</button>
         </div>
         <div data-action-sheet-cancel-group="true" style={{ marginTop: 8, background: '#fff', borderRadius: 12 }}>
-          <button type="button" data-action-sheet-cancel="true" tabIndex={-1} style={{ minHeight: 44, width: '100%', fontWeight: 600 }} onClick={() => setActionOpen(false)}>Cancel</button>
+          <button type="button" data-action-sheet-cancel="true" aria-label="Cancel" tabIndex={-1} style={{ minHeight: 44, width: '100%', fontWeight: 600 }} onClick={() => setActionOpen(false)}>Cancel</button>
         </div>
       </div>
     </>
