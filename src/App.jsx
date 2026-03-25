@@ -68,8 +68,8 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <NavigationTracker />
           <AuthenticatedApp />
+          <NavigationTracker />
         </Router>
         <Toaster />
         <VisualEditAgent />
