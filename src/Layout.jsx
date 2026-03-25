@@ -97,6 +97,7 @@ const NotificationEngine = React.lazy(() => import('@/components/notifications/N
 const UniversalNotificationEngine = React.lazy(() => import('@/components/notifications/UniversalNotificationEngine'));
 const CustomerNotificationEngine = React.lazy(() => import('@/components/notifications/CustomerNotificationEngine'));
 const UniversalPushManager = React.lazy(() => import('@/components/notifications/IOSPushManager'));
+import NotificationBell from "@/components/notifications/NotificationBell";
 import RecentlyViewed from "@/components/shared/RecentlyViewed";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
 import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
