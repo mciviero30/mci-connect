@@ -203,8 +203,22 @@ export async function generateInvoicePDF(invoice) {
   }
 
   // ========== ITEMS TABLE ==========
-  const tableHeaderY = y;
   const tableHeaderHeight = 7;
+
+  // Pre-check: avoid orphaned table header on page 1 when the first row
+  // is too tall to fit on the current page alongside the header.
+  if (invoice.items.length > 0) {
+    const fItem = invoice.items[0];
+    const fNameLines = fItem.item_name ? doc.splitTextToSize(String(fItem.item_name), contentWidth - 75) : [];
+    const fDescLines = fItem.description ? doc.splitTextToSize(String(fItem.description), contentWidth - 75) : [];
+    const fRowHeight = Math.max(10, (fNameLines.length * 4) + (fDescLines.length * 3.5) + 8);
+    if (y + tableHeaderHeight + fRowHeight > 270) {
+      doc.addPage();
+      y = margin;
+    }
+  }
+
+  const tableHeaderY = y;
   const tableGradientSteps = 100;
   for (let i = 0; i < tableGradientSteps; i++) {
     const gray = Math.floor((i / tableGradientSteps) * 120);
