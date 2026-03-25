@@ -278,10 +278,11 @@ export function isSupervisor(user) {
 }
 
 /**
- * Check if user can approve (manager, supervisor, or admin)
+ * Check if user can approve — STRICT: only admin and CEO
  */
 export function canApprove(user) {
-  return hasFullAccess(user);
+  const role = getUserRole(user);
+  return role === ROLES.ADMIN || role === ROLES.CEO;
 }
 
 /**

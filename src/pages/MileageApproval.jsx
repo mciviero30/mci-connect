@@ -361,7 +361,7 @@ export default function MileageApproval() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right">
-                            {log.status === 'pending' && user?.role === 'admin' && (
+                            {log.status === 'pending' && (user?.role === 'admin' || user?.role === 'ceo') && (
                               <div className="flex justify-end gap-2">
                                 <Button
                                   variant="ghost"

@@ -22,7 +22,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import { updateExpenseSafely } from "@/functions/updateExpenseSafely";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
-import { hasFullAccess } from "@/components/core/roleRules";
+import { hasFullAccess, isCEOOrAdmin } from "@/components/core/roleRules";
 import { useEffect, useState, useMemo } from "react";
 
 export default function Gastos() {
@@ -119,6 +119,7 @@ export default function Gastos() {
   });
 
   const handleApprove = async (expense) => {
+    if (!isCEOOrAdmin(user)) return;
     updateStatusMutation.mutate({ id: expense.id, status: 'approved', notes: '' });
     
     // Send notification to employee
@@ -141,6 +142,7 @@ export default function Gastos() {
   };
 
   const handleReject = async (expense, notes) => {
+    if (!isCEOOrAdmin(user)) return;
     updateStatusMutation.mutate({ id: expense.id, status: 'rejected', notes });
     
     // Send notification to employee
@@ -201,7 +203,7 @@ export default function Gastos() {
 
         <ExpenseList 
           expenses={expenses} 
-          isAdmin={user?.role === 'admin'} 
+          isAdmin={isCEOOrAdmin(user)} 
           loading={isLoading}
           showActions={true}
           onApprove={handleApprove}
