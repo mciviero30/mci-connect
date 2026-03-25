@@ -117,6 +117,7 @@ import OfflineBanner from "@/components/resilience/OfflineBanner";
 import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
 import GlobalSearch from "@/components/search/GlobalSearch";
 import AppStoreComplianceLayer from "@/components/compliance/AppStoreComplianceLayer";
+import { PullToRefreshLayer } from "@/components/compliance/AppStoreComplianceLayer";
 
 import KeyboardShortcuts from "@/components/navigation/KeyboardShortcuts";
 
@@ -1574,6 +1575,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             <FocusModeIndicator isActive={true} onExit={toggleFocusMode} />
           )}
 
+          <PullToRefreshLayer>
           <div
             data-main-content
             data-native-layout="true"
@@ -1584,7 +1586,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             style={{ 
               WebkitOverflowScrolling: 'touch', 
               touchAction: 'auto',
-              overscrollBehavior: 'auto'
+              overscrollBehavior: 'contain'
             }}
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -1601,6 +1603,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               </motion.div>
             </AnimatePresence>
           </div>
+          </PullToRefreshLayer>
 
           <AIAssistant currentPage={currentPageName} />
           <EnhancedOfflineSync />

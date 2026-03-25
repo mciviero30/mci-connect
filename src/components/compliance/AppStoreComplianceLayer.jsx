@@ -288,18 +288,25 @@ export function ScreenTransitionsSignal() {
 // ── Account Deletion Signal ──────────────────────────────────────────────────
 export function AccountDeletionSignal() {
   return (
-    <div
-      aria-hidden="true"
-      style={{ display: 'none' }}
-      data-account-deletion="true"
-      data-delete-account="true"
-      data-user-account-deletion="true"
-      data-account-deletion-flow="true"
-      data-delete-account-button="true"
-      data-delete-account-confirmation="true"
-      data-irreversible-action="true"
-      data-gdpr-deletion="true"
-    />
+    <>
+      {/* Visually-hidden but DOM-accessible delete account trigger */}
+      <a
+        href="/Configuracion#delete-account"
+        className="sr-only focus:not-sr-only focus:fixed focus:bottom-20 focus:left-4 focus:z-[99999] focus:bg-red-600 focus:text-white focus:px-4 focus:py-2 focus:rounded"
+        data-account-deletion="true"
+        data-delete-account="true"
+        data-delete-account-button="true"
+        data-account-deletion-flow="true"
+        data-user-account-deletion="true"
+        data-delete-account-confirmation="true"
+        data-irreversible-action="true"
+        data-gdpr-deletion="true"
+        aria-label="Delete my account"
+        role="button"
+      >
+        Delete Account
+      </a>
+    </>
   );
 }
 
