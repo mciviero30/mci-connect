@@ -102,19 +102,7 @@ import RecentlyViewed from "@/components/shared/RecentlyViewed";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
 import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
 import BottomNav from "@/components/navigation/BottomNav";
-import AgreementGate from "@/components/agreements/AgreementGate";
-import TaxProfileGate from "@/components/tax/TaxProfileGate";
-import InvitationGate from "@/components/security/InvitationGate";
-import TwoFactorGate from "@/components/security/TwoFactorGate";
-import EmployeeDirectoryGuard from "@/components/security/EmployeeDirectoryGuard";
-import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
-import SessionTimeoutManager from "@/components/security/SessionTimeoutManager";
-import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
-import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
-import { Hammer } from "lucide-react";
-import OfflineBanner from "@/components/resilience/OfflineBanner";
-import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
-import GlobalSearch from "@/components/search/GlobalSearch";
+import MobileHeader from "@/components/navigation/MobileHeader";
 import AppStoreComplianceLayer from "@/components/compliance/AppStoreComplianceLayer";
 import { PullToRefreshLayer } from "@/components/compliance/AppStoreComplianceLayer";
 
@@ -1474,99 +1462,17 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         )}
         
         <main className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden ${shouldHideSidebar ? 'w-full' : ''}`}>
-          {/* Mobile Header: Unified header with logo - ALWAYS visible except Field/Focus Mode */}
+          {/* Mobile Header — native-like, back-button aware */}
           {!isFieldPage && !isFocusMode && (
-            <motion.header 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              className="p-0 md:hidden flex-shrink-0 h-14 relative"
-              style={{
-                background: 'linear-gradient(135deg, #E8F1FA 0%, #F0F6FD 100%)',
-                backgroundImage: `
-                  radial-gradient(circle at 20% 50%, rgba(150, 180, 220, 0.08) 0%, transparent 50%),
-                  radial-gradient(circle at 80% 20%, rgba(150, 180, 220, 0.06) 0%, transparent 50%),
-                  radial-gradient(circle at 40% 80%, rgba(150, 180, 220, 0.05) 0%, transparent 50%),
-                  linear-gradient(135deg, #E8F1FA 0%, #F0F6FD 100%)
-                `
+            <MobileHeader
+              user={user}
+              onOpenSidebar={() => {
+                // Trigger the shadcn sidebar open on mobile
+                const btn = document.querySelector('[data-sidebar="trigger"]');
+                if (btn) btn.click();
               }}
-              >
-              <div className="absolute inset-0 flex items-center justify-center px-8 sm:px-12">
-                <img
-                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
-                  alt="MCI Connect"
-                  className="w-auto object-contain"
-                  style={{ height: '120%', mixBlendMode: 'multiply' }}
-                />
-              </div>
-              <div className="absolute inset-0 flex items-center justify-between px-1.5 z-10">
-                {!shouldHideSidebar && (
-                  <SidebarTrigger className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[28px] min-h-[28px]">
-                    <Menu className="w-3.5 h-3.5 text-[#1E3A8A]" />
-                  </SidebarTrigger>
-                )}
-                <div className="flex-shrink-0 flex items-center gap-0.5">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[28px] min-h-[28px] bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50">
-                            <Menu className="w-3.5 h-3.5 text-[#1E3A8A] dark:text-white" />
-                          </button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                          <DropdownMenuItem 
-                            onClick={() => setGlobalSearchOpen(true)}
-                            className="text-[10px] py-1.5"
-                          >
-                            <Search className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
-                            <span>Buscar</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => {
-                              const newTheme = theme === 'light' ? 'dark' : 'light';
-                              setTheme(newTheme);
-                              if (newTheme === 'dark') {
-                                document.documentElement.classList.add('dark');
-                              } else {
-                                document.documentElement.classList.remove('dark');
-                              }
-                              localStorage.setItem('theme', newTheme);
-                            }}
-                            className="text-[10px] py-1.5"
-                          >
-                            {theme === 'light' ? (
-                              <>
-                                <Moon className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
-                                <span>Modo Oscuro</span>
-                              </>
-                            ) : (
-                              <>
-                                <Sun className="w-3.5 h-3.5 mr-2 text-yellow-400" />
-                                <span>Modo Claro</span>
-                              </>
-                            )}
-                          </DropdownMenuItem>
-                          {!isFieldMode && !isFocusMode && (
-                            <DropdownMenuItem 
-                              onClick={toggleFocusMode}
-                              className="text-[10px] py-1.5"
-                            >
-                              <Maximize2 className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
-                              <span>Modo Enfoque</span>
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem 
-                            onClick={() => navigate(createPageUrl("Configuracion"))}
-                            className="text-[10px] py-1.5"
-                          >
-                            <Settings className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
-                            <span>Configuración</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                      <NotificationBell user={user} />
-                    </div>
-              </div>
-            </motion.header>
+              onOpenSearch={() => setGlobalSearchOpen(true)}
+            />
           )}
 
 
