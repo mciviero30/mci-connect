@@ -21,9 +21,6 @@ const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
-  const location = useLocation();
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  const currentPageName = pathSegments[0] || mainPageKey;
 
   // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
@@ -45,22 +42,19 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app WITH Layout wrapping Routes
-  const routesContent = (
+  // Render the main app
+  return (
     <Routes>
       <Route path="/" element={<MainPage />} />
       {Object.entries(Pages).map(([path, Page]) => (
-        <Route key={path} path={`/${path.toLowerCase()}`} element={<Page />} />
+        <Route key={path} path={`/${path.toLowerCase()}`} element={Layout ? <Layout currentPageName={path}><Page /></Layout> : <Page />} />
       ))}
-      <Route path="/SupervisorDashboard" element={<SupervisorDashboard />} />
-      <Route path="/ForemanDashboard" element={<ForemanDashboard />} />
-      <Route path="/TimeTrackingTestControl" element={<TimeTrackingTestControl />} />
+      <Route path="/SupervisorDashboard" element={Layout ? <Layout currentPageName="SupervisorDashboard"><SupervisorDashboard /></Layout> : <SupervisorDashboard />} />
+      <Route path="/ForemanDashboard" element={Layout ? <Layout currentPageName="ForemanDashboard"><ForemanDashboard /></Layout> : <ForemanDashboard />} />
+      <Route path="/TimeTrackingTestControl" element={Layout ? <Layout currentPageName="TimeTrackingTestControl"><TimeTrackingTestControl /></Layout> : <TimeTrackingTestControl />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
-
-  if (!Layout) return routesContent;
-  return <Layout currentPageName={currentPageName}>{routesContent}</Layout>;
 };
 
 
