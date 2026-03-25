@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { base44 } from '@/api/base44Client';
+import { useMutation } from '@tanstack/react-query';
+import { deleteUserAccount } from '@/functions/deleteUserAccount';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { AlertTriangle, Trash2, X, ShieldAlert } from 'lucide-react';
@@ -14,24 +16,29 @@ export default function AccountDeletionFlow({ user, language }) {
 
   const isMatch = typed.trim().toUpperCase() === CONFIRM_PHRASE;
 
-  const handleConfirm = async () => {
+  // Optimistic mutation — immediately transitions UI, rolls back on error
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteUserAccount({ confirmation: CONFIRM_PHRASE }),
+    onMutate: () => {
+      setStep('loading');
+    },
+    onSuccess: () => {
+      setStep('done');
+      setTimeout(() => base44.auth.logout(), 3000);
+    },
+    onError: (err) => {
+      setStep('typing');
+      const msg = err?.response?.data?.error || err?.message || '';
+      setError(msg || (language === 'es' ? 'Error al procesar. Intenta de nuevo.' : 'Error processing request. Try again.'));
+    },
+  });
+
+  const handleConfirm = () => {
     if (!isMatch) {
       setError(language === 'es' ? 'El texto no coincide.' : 'Text does not match.');
       return;
     }
-    setStep('loading');
-    try {
-      await base44.auth.updateMe({
-        deletion_requested: true,
-        deletion_requested_at: new Date().toISOString(),
-        employment_status: 'deletion_pending'
-      });
-      setStep('done');
-      setTimeout(() => base44.auth.logout(), 3000);
-    } catch {
-      setStep('typing');
-      setError(language === 'es' ? 'Error al procesar. Intenta de nuevo.' : 'Error processing request. Try again.');
-    }
+    deleteMutation.mutate();
   };
 
   return (
