@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { isCEOOrAdmin } from "@/components/core/roleRules";
 import { Banknote, Download, Search, Edit, User, FileText, Briefcase, Car, DollarSign, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +39,8 @@ export default function Nomina() {
   const weekStart = dateRange.start;
   const weekEnd = dateRange.end;
 
+  const navigate = useNavigate();
+
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
@@ -44,6 +48,12 @@ export default function Nomina() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
+
+  useEffect(() => {
+    if (user && !isCEOOrAdmin(user)) {
+      navigate('/MyPayroll', { replace: true });
+    }
+  }, [user]);
 
   // PERFORMANCE: Single aggregated query instead of 7 separate entities
   const { data: aggregatedPayroll, isLoading: payrollLoading } = useQuery({
