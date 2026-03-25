@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
+import PullToRefresh from '@/components/mobile/PullToRefresh';
 
 /**
  * Modern employee page layout with hero header

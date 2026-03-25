@@ -41,8 +41,9 @@ import SystemHealthDashboard from "@/components/admin/SystemHealthDashboard";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { format } from 'date-fns';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // New imports
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import AccountDeletionFlow from "@/components/settings/AccountDeletionFlow";
 
 export default function Configuracion() {
   const { language } = useLanguage();
