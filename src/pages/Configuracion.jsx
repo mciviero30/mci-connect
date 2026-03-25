@@ -43,7 +43,6 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@
 import { format } from 'date-fns';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import AccountDeletionFlow from "@/components/settings/AccountDeletionFlow";
 
 export default function Configuracion() {
   const { language } = useLanguage();
@@ -843,8 +842,6 @@ export default function Configuracion() {
                   )}
 
                   {/* Mandatory account deletion flow */}
-                  <AccountDeletionFlow user={user} language={language} />
-
                   <AccountDeletionFlow user={user} language={language} />
                 </div>
               </CardContent>
