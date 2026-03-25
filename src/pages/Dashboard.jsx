@@ -786,8 +786,14 @@ export default function Dashboard() {
   if (userLoading || prefsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
-    await queryClient.invalidateQueries();
-  }, [queryClient]);
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-[#507DB4] dark:text-[#6B9DD8] mx-auto mb-4" />
+          <p className="text-slate-900 dark:text-slate-100 font-semibold">Loading dashboard...</p>
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-2">Preparing your personalized widgets</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <SectionErrorBoundary
