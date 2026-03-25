@@ -117,6 +117,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
   const approveMutation = useMutation({
     mutationFn: async (entry) => {
+      if (!isAdmin) throw new Error('Unauthorized: only admin or CEO can approve');
       const response = await updateTimeEntrySafely({ 
         entity_id: entry.id, 
         update_data: { 
@@ -214,6 +215,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
 
   const rejectMutation = useMutation({
     mutationFn: async (entry) => {
+      if (!isAdmin) throw new Error('Unauthorized: only admin or CEO can reject');
       const response = await updateTimeEntrySafely({ 
         entity_id: entry.id, 
         update_data: { status: 'rejected' }
@@ -323,6 +325,10 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   };
 
   const handleApproveAll = async () => {
+    if (!isAdmin) {
+      toast.error(language === 'es' ? 'Sin permisos para aprobar' : 'No permission to approve');
+      return;
+    }
     const pendingEntries = filteredEntries.filter(e => e.status === 'pending');
     
     if (pendingEntries.length === 0) {

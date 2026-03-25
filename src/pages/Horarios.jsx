@@ -24,9 +24,8 @@ export default function Horarios() {
     refetchOnMount: false,
     refetchOnWindowFocus: false
   });
-  const isAdmin = user?.role === 'admin' || 
-    ['CEO', 'administrator', 'manager'].includes(user?.position) ||
-    user?.department === 'HR';
+  // STRICT: Only admin and CEO can approve/reject/manage time entries
+  const isAdmin = user?.role === 'admin' || user?.role === 'ceo';
 
   // FIXED: Direct query with auto-refresh
   const { data: timeEntries = [], isLoading } = useQuery({
