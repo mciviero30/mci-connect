@@ -119,8 +119,8 @@ export default function Facturas() {
       });
     }
   });
-  // Smart pagination for invoices
-  const paginationFilters = { deleted_at: null };
+  // Smart pagination for invoices — don't filter deleted_at server-side (undefined != null)
+  const paginationFilters = {};
   if (statusFilter !== 'all') paginationFilters.status = statusFilter;
   if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
 
@@ -311,6 +311,9 @@ export default function Facturas() {
   }
 
   const filteredInvoices = safeInvoices.filter(invoice => {
+    // Exclude soft-deleted invoices on the frontend
+    if (invoice.deleted_at) return false;
+
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = !searchTerm ||
       invoice.customer_name?.toLowerCase().includes(searchLower) ||
