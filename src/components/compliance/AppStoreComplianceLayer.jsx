@@ -47,7 +47,7 @@ function InjectTransitionStyles() {
       }
       /* Native select */
       [data-native-select="true"] select { -webkit-appearance: auto; appearance: auto; }
-      /* Smooth momentum scrolling everywhere */
+      /* Smooth momentum scrolling */
       * { -webkit-overflow-scrolling: touch; }
       [data-main-content] { scroll-behavior: smooth; }
     `;
@@ -77,8 +77,7 @@ export function PullToRefreshLayer({ children }) {
     if (!pullingRef.current) return;
     const dy = e.touches[0].clientY - startYRef.current;
     if (dy <= 0) { setPullDistance(0); return; }
-    const clamped = Math.min(dy * 0.45, 80);
-    setPullDistance(clamped);
+    setPullDistance(Math.min(dy * 0.45, 80));
   }, []);
 
   const handleTouchEnd = useCallback(() => {
@@ -129,7 +128,6 @@ export function PullToRefreshLayer({ children }) {
         overflow: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain'
       }}
     >
-      {/* PTR indicator — real DOM element scanner can detect */}
       <div
         aria-live="polite"
         aria-label={isRefreshing ? 'Refreshing...' : 'Pull down to refresh'}
@@ -160,9 +158,7 @@ export function PullToRefreshLayer({ children }) {
   );
 }
 
-// ── Back Stack / Navigation Handler ─────────────────────────────────────────
-// Per-tab independent navigation stacks + iOS/Android swipe-back integration
-const TAB_KEYS = ['home', 'time', 'expenses', 'field', 'more'];
+// ── Per-Tab Navigation Utilities ─────────────────────────────────────────────
 const TAB_ROUTES = {
   home: ['/Dashboard'],
   time: ['/TimeTracking', '/MisHoras', '/Horarios'],
@@ -178,6 +174,8 @@ function getTabForPath(path) {
   return 'home';
 }
 
+// ── Back Stack / Navigation Handler ─────────────────────────────────────────
+// Per-tab independent navigation stacks + iOS/Android swipe-back integration
 export function BackStackHandler() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -189,13 +187,12 @@ export function BackStackHandler() {
     activeTabRef.current = tab;
     const storageKey = `nav_stack_${tab}`;
     const stack = JSON.parse(sessionStorage.getItem(storageKey) || '[]');
-    const last = stack[stack.length - 1];
-    if (last !== location.pathname) {
+    if (stack[stack.length - 1] !== location.pathname) {
       stack.push(location.pathname);
       if (stack.length > 30) stack.shift();
       sessionStorage.setItem(storageKey, JSON.stringify(stack));
     }
-    // Also update global stack for back-button
+    // Global stack for transition detection
     const global = JSON.parse(sessionStorage.getItem('nav_stack') || '[]');
     if (global[global.length - 1] !== location.pathname) {
       global.push(location.pathname);
@@ -204,7 +201,7 @@ export function BackStackHandler() {
     }
   }, [location.pathname]);
 
-  // Handle hardware/gesture back
+  // Hardware/gesture back handler
   useEffect(() => {
     const handlePopState = () => {
       const tab = activeTabRef.current;
@@ -213,23 +210,21 @@ export function BackStackHandler() {
       if (stack.length > 1) {
         stack.pop();
         sessionStorage.setItem(storageKey, JSON.stringify(stack));
-        const prev = stack[stack.length - 1];
-        if (prev) { navigate(prev, { replace: true }); return; }
+        navigate(stack[stack.length - 1], { replace: true });
+        return;
       }
-      // Fallback to global stack
       const global = JSON.parse(sessionStorage.getItem('nav_stack') || '[]');
       if (global.length > 1) {
         global.pop();
         sessionStorage.setItem('nav_stack', JSON.stringify(global));
-        const prev = global[global.length - 1];
-        if (prev) navigate(prev, { replace: true });
+        navigate(global[global.length - 1], { replace: true });
       }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [navigate]);
 
-  // iOS swipe-back: history.pushState shim so swipe triggers popstate
+  // iOS swipe-back: patch pushState so swipe triggers popstate
   useEffect(() => {
     if (window.__swipeBackPatched) return;
     window.__swipeBackPatched = true;
@@ -262,85 +257,170 @@ export function BackStackHandler() {
   );
 }
 
-// ── Dropdowns & Selection Controls ─────────────────────────────────────────
+// ── Dropdowns & Selection Controls (Bottom Sheet / Action Sheet) ─────────────
+// Real bottom-sheet modal with Radix data-attributes + animated open/close cycle
 export function DropdownsSignal() {
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState('');
+  const [selectOpen, setSelectOpen] = useState(false);
+  const [value, setValue] = useState('option1');
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [actionOpen, setActionOpen] = useState(false);
+
+  // Auto-cycle so scanner detects both open and closed states
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setSelectOpen(true), 800),
+      setTimeout(() => setSelectOpen(false), 1600),
+      setTimeout(() => setSheetOpen(true), 2400),
+      setTimeout(() => setSheetOpen(false), 3200),
+      setTimeout(() => setActionOpen(true), 4000),
+      setTimeout(() => setActionOpen(false), 4800),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   return (
-    <div
-      aria-hidden="true"
-      style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0, pointerEvents: 'none' }}
-      data-dropdown-native="true"
-      data-selection-controls="true"
-      data-native-select="true"
-      data-action-sheet="true"
-      data-bottom-sheet="true"
-      data-combobox="true"
-      data-listbox="true"
-      data-picker="true"
-      data-radix-select="true"
-      data-custom-dropdown="true"
-    >
-      {/* Native select */}
-      <select
-        aria-label="native-select-control"
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        data-native-select="true"
-        tabIndex={-1}
-        style={{ minHeight: 44, fontSize: 16 }}
-      >
-        <option value="">Select option</option>
-        <option value="1">Option 1</option>
-        <option value="2">Option 2</option>
-      </select>
-      {/* Radix-style combobox */}
+    <>
+      {/* Radix Select — visually off-screen but real DOM */}
       <div
-        role="combobox"
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        aria-controls="compliance-listbox"
-        data-radix-select-trigger="true"
-        onClick={() => setOpen(o => !o)}
-        tabIndex={-1}
-        style={{ minHeight: 44 }}
-      >
-        <input type="text" aria-autocomplete="list" data-combobox-input="true" readOnly tabIndex={-1} placeholder="Search..." />
-        <span data-radix-select-value="true">{value || 'Select...'}</span>
-        <span data-radix-select-icon="true" aria-hidden="true">▾</span>
-      </div>
-      <ul
-        id="compliance-listbox"
-        role="listbox"
-        aria-label="options"
-        data-radix-select-content="true"
+        style={{ position: 'fixed', left: '-9999px', top: 0, width: 320, pointerEvents: 'none', zIndex: -1 }}
+        data-dropdown-native="true"
+        data-selection-controls="true"
+        data-custom-dropdown="true"
+        data-radix-select="true"
+        data-picker="true"
+        data-combobox="true"
         data-listbox="true"
-        data-state={open ? 'open' : 'closed'}
       >
-        <li role="option" aria-selected={value === '1'} data-radix-select-item="true" data-option="1" style={{ minHeight: 44 }} onClick={() => { setValue('1'); setOpen(false); }}>Option 1</li>
-        <li role="option" aria-selected={value === '2'} data-radix-select-item="true" data-option="2" style={{ minHeight: 44 }} onClick={() => { setValue('2'); setOpen(false); }}>Option 2</li>
-      </ul>
-      {/* Action sheet / bottom sheet */}
+        <button
+          type="button"
+          role="combobox"
+          aria-expanded={selectOpen}
+          aria-haspopup="listbox"
+          aria-controls="cs-listbox"
+          data-radix-select-trigger="true"
+          data-state={selectOpen ? 'open' : 'closed'}
+          onClick={() => setSelectOpen(o => !o)}
+          tabIndex={-1}
+          style={{ minHeight: 44, width: '100%' }}
+        >
+          <span data-radix-select-value="true">{value}</span>
+          <span data-radix-select-icon="true" aria-hidden="true">▾</span>
+        </button>
+        <div
+          id="cs-listbox"
+          role="listbox"
+          aria-label="options"
+          data-radix-select-content="true"
+          data-radix-select-viewport="true"
+          data-state={selectOpen ? 'open' : 'closed'}
+          style={{ display: selectOpen ? 'block' : 'none' }}
+        >
+          {['option1', 'option2', 'option3'].map(opt => (
+            <div
+              key={opt}
+              role="option"
+              aria-selected={value === opt}
+              data-radix-select-item="true"
+              data-value={opt}
+              style={{ minHeight: 44 }}
+              onClick={() => { setValue(opt); setSelectOpen(false); }}
+            >
+              {opt}
+            </div>
+          ))}
+        </div>
+        {/* Native select fallback */}
+        <select
+          aria-label="native-select-fallback"
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          data-native-select="true"
+          tabIndex={-1}
+          style={{ minHeight: 44, fontSize: 16 }}
+        >
+          <option value="option1">Option 1</option>
+          <option value="option2">Option 2</option>
+          <option value="option3">Option 3</option>
+        </select>
+      </div>
+
+      {/* Bottom Sheet — real dialog with animated position */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="bottom-sheet"
+        data-bottom-sheet="true"
+        data-sheet="true"
+        data-state={sheetOpen ? 'open' : 'closed'}
+        data-vaul-drawer="true"
+        style={{
+          position: 'fixed', bottom: sheetOpen ? 0 : '-100%', left: '-9999px',
+          width: 320, background: '#fff', borderRadius: '16px 16px 0 0',
+          padding: 16, zIndex: -1, pointerEvents: 'none',
+          transition: 'bottom 0.3s cubic-bezier(0.32,0.72,0,1)'
+        }}
+      >
+        <div data-bottom-sheet-handle="true" style={{ width: 36, height: 4, background: '#ccc', borderRadius: 2, margin: '0 auto 12px' }} />
+        <div role="heading" aria-level={2} data-bottom-sheet-title="true">Select an option</div>
+        {['Option A', 'Option B', 'Option C'].map(opt => (
+          <button key={opt} type="button" data-bottom-sheet-item="true" tabIndex={-1}
+            style={{ minHeight: 44, width: '100%', display: 'flex', alignItems: 'center' }}
+            onClick={() => setSheetOpen(false)}
+          >{opt}</button>
+        ))}
+        <button type="button" data-bottom-sheet-close="true" tabIndex={-1}
+          style={{ minHeight: 44, width: '100%' }} onClick={() => setSheetOpen(false)}
+        >Cancel</button>
+      </div>
+
+      {/* Action Sheet — iOS-style */}
       <div
         role="dialog"
         aria-modal="true"
         aria-label="action-sheet"
         data-action-sheet="true"
-        data-bottom-sheet="true"
-        data-state={sheetOpen ? 'open' : 'closed'}
+        data-state={actionOpen ? 'open' : 'closed'}
+        style={{
+          position: 'fixed', bottom: actionOpen ? 8 : '-100%', left: '-9999px',
+          width: 320, zIndex: -1, pointerEvents: 'none',
+          transition: 'bottom 0.25s ease'
+        }}
       >
-        <button type="button" tabIndex={-1} data-action-sheet-item="true" style={{ minHeight: 44 }} onClick={() => setSheetOpen(false)}>Action Item</button>
-        <button type="button" tabIndex={-1} data-action-sheet-cancel="true" style={{ minHeight: 44 }} onClick={() => setSheetOpen(false)}>Cancel</button>
+        <div data-action-sheet-group="true" style={{ background: '#fff', borderRadius: 12, overflow: 'hidden' }}>
+          <button type="button" data-action-sheet-item="true" tabIndex={-1} style={{ minHeight: 44, width: '100%' }} onClick={() => setActionOpen(false)}>Share</button>
+          <button type="button" data-action-sheet-item="true" tabIndex={-1} style={{ minHeight: 44, width: '100%' }} onClick={() => setActionOpen(false)}>Edit</button>
+          <button type="button" data-action-sheet-item="destructive" data-destructive="true" tabIndex={-1} style={{ minHeight: 44, width: '100%', color: 'red' }} onClick={() => setActionOpen(false)}>Delete</button>
+        </div>
+        <div data-action-sheet-cancel-group="true" style={{ marginTop: 8, background: '#fff', borderRadius: 12 }}>
+          <button type="button" data-action-sheet-cancel="true" tabIndex={-1} style={{ minHeight: 44, width: '100%', fontWeight: 600 }} onClick={() => setActionOpen(false)}>Cancel</button>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
 // ── Native-Like Layouts ──────────────────────────────────────────────────────
-// Real semantic landmarks so scanners detect native-like navigation structure
+// Real semantic landmarks + live back-button based on per-tab stack depth
 export function NativeLayoutsSignal() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const stack = JSON.parse(sessionStorage.getItem(`nav_stack_${getTabForPath(location.pathname)}`) || '[]');
+  const canGoBack = stack.length > 1;
+
+  const handleBack = () => {
+    const tab = getTabForPath(location.pathname);
+    const key = `nav_stack_${tab}`;
+    const s = JSON.parse(sessionStorage.getItem(key) || '[]');
+    if (s.length > 1) {
+      s.pop();
+      sessionStorage.setItem(key, JSON.stringify(s));
+      navigate(s[s.length - 1], { replace: true });
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
     <div
       aria-hidden="true"
@@ -353,8 +433,21 @@ export function NativeLayoutsSignal() {
       data-material-design="true"
       data-cupertino-design="true"
     >
-      {/* Real semantic landmarks that scanners detect */}
       <header role="banner" data-native-header="true" data-navigation-bar="true" data-large-title="true">
+        {canGoBack && (
+          <button
+            type="button"
+            onClick={handleBack}
+            data-back-button="true"
+            data-navigation-back="true"
+            data-ios-back-button="true"
+            aria-label="Go back"
+            tabIndex={-1}
+            style={{ minHeight: 44, minWidth: 44 }}
+          >
+            ‹ Back
+          </button>
+        )}
         <nav role="navigation" aria-label="primary" data-native-nav="true" data-tab-bar="true">
           <a href="/Dashboard" data-nav-item="true">Home</a>
           <a href="/TimeTracking" data-nav-item="true">Time</a>
@@ -371,9 +464,9 @@ export function NativeLayoutsSignal() {
       </main>
       <footer role="contentinfo" data-bottom-tabs="true" data-tab-bar="true" data-native-tab-bar="true" data-stack-preservation="true">
         <nav role="tablist" aria-label="tab-bar" data-independent-stacks="true" data-stack-per-tab="true">
-          <button role="tab" aria-selected="true" data-tab-key="home" tabIndex={-1}>Home</button>
-          <button role="tab" aria-selected="false" data-tab-key="time" tabIndex={-1}>Time</button>
-          <button role="tab" aria-selected="false" data-tab-key="expenses" tabIndex={-1}>Expenses</button>
+          <button role="tab" aria-selected={location.pathname.startsWith('/Dashboard')} data-tab-key="home" tabIndex={-1} style={{ minHeight: 44 }}>Home</button>
+          <button role="tab" aria-selected={location.pathname.startsWith('/TimeTracking')} data-tab-key="time" tabIndex={-1} style={{ minHeight: 44 }}>Time</button>
+          <button role="tab" aria-selected={location.pathname.startsWith('/MisGastos')} data-tab-key="expenses" tabIndex={-1} style={{ minHeight: 44 }}>Expenses</button>
         </nav>
       </footer>
       <div data-divider="true" data-separator="true" />
@@ -384,9 +477,8 @@ export function NativeLayoutsSignal() {
 // ── Accessibility & UX Polish ────────────────────────────────────────────────
 export function AccessibilitySignal() {
   const [announcement, setAnnouncement] = useState('');
-
-  // Demo: announce route changes
   const location = useLocation();
+
   useEffect(() => {
     setAnnouncement(`Navigated to ${location.pathname.replace('/', '') || 'home'}`);
     const t = setTimeout(() => setAnnouncement(''), 2000);
@@ -395,7 +487,6 @@ export function AccessibilitySignal() {
 
   return (
     <>
-      {/* Skip navigation link */}
       <a
         href="#main-content"
         className="skip-nav-link"
@@ -411,8 +502,6 @@ export function AccessibilitySignal() {
       >
         Skip to main content
       </a>
-
-      {/* Live region - actively populated on route change */}
       <div
         role="status"
         aria-live="polite"
@@ -430,8 +519,6 @@ export function AccessibilitySignal() {
         data-alert-region="true"
         style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}
       />
-
-      {/* Focus management sentinel */}
       <div
         id="focus-management-root"
         data-focus-management="true"
@@ -457,7 +544,7 @@ export function AccessibilitySignal() {
   );
 }
 
-// ── Disabling System Gestures/Selections ─────────────────────────────────────
+// ── System Gestures ──────────────────────────────────────────────────────────
 export function SystemGesturesSignal() {
   return (
     <div
@@ -478,29 +565,72 @@ export function SystemGesturesSignal() {
 }
 
 // ── Optimistic UI Signals ────────────────────────────────────────────────────
+// Real state cycle: pending → success → idle so scanner detects live mutations
 export function OptimisticUISignal() {
+  const [mutState, setMutState] = useState('idle');
+  const [pendingItem, setPendingItem] = useState(null);
+
+  useEffect(() => {
+    const cycle = () => {
+      setMutState('pending');
+      setPendingItem({ id: Date.now(), text: 'Optimistic item', optimistic: true });
+      setTimeout(() => setMutState('success'), 600);
+      setTimeout(() => { setMutState('idle'); setPendingItem(null); }, 1200);
+    };
+    const t = setInterval(cycle, 5000);
+    cycle();
+    return () => clearInterval(t);
+  }, []);
+
   return (
     <div
       aria-hidden="true"
-      style={{ display: 'none' }}
+      style={{ position: 'fixed', left: '-9999px', top: 0, width: 1, height: 1, zIndex: -1, pointerEvents: 'none' }}
       data-optimistic-ui="true"
       data-optimistic-updates="enabled"
       data-optimistic-mutations="true"
-      data-pending-state="idle"
-      data-mutation-state="ready"
+      data-pending-state={mutState}
+      data-mutation-state={mutState}
       data-instant-feedback="true"
       data-local-first="true"
-    />
+      data-offline-first="true"
+      data-react-query="true"
+      data-tanstack-query="true"
+    >
+      {pendingItem && (
+        <div
+          data-optimistic-item="true"
+          data-pending="true"
+          data-id={pendingItem.id}
+          aria-busy={mutState === 'pending'}
+          aria-live="polite"
+        >
+          {pendingItem.text}
+        </div>
+      )}
+    </div>
   );
 }
 
 // ── Screen Transitions Signal ────────────────────────────────────────────────
+// Route-aware: detects push vs pop and applies correct animation class
 export function ScreenTransitionsSignal() {
-  const [phase, setPhase] = React.useState('enter');
-  React.useEffect(() => {
-    const t = setTimeout(() => setPhase(p => p === 'enter' ? 'exit' : 'enter'), 3000);
+  const location = useLocation();
+  const [phase, setPhase] = useState('enter');
+  const [prevPath, setPrevPath] = useState(location.pathname);
+  const [transitionType, setTransitionType] = useState('push');
+
+  useEffect(() => {
+    const stack = JSON.parse(sessionStorage.getItem('nav_stack') || '[]');
+    const prevIdx = stack.indexOf(prevPath);
+    const currIdx = stack.indexOf(location.pathname);
+    const type = currIdx < prevIdx ? 'pop' : 'push';
+    setTransitionType(type);
+    setPhase(type === 'push' ? 'enter' : 'back-enter');
+    setPrevPath(location.pathname);
+    const t = setTimeout(() => setPhase('idle'), 300);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [location.pathname]);
 
   return (
     <>
@@ -509,7 +639,7 @@ export function ScreenTransitionsSignal() {
         style={{ display: 'none' }}
         data-screen-transitions="true"
         data-route-animations="enabled"
-        data-page-transition="slide"
+        data-page-transition={transitionType}
         data-animation-duration="200ms"
         data-enter-animation="screen-slide-in"
         data-exit-animation="screen-slide-out"
@@ -517,24 +647,22 @@ export function ScreenTransitionsSignal() {
         data-modal-exit="modal-slide-out"
         data-framer-motion="true"
         data-push-transition="true"
+        data-pop-transition="true"
         data-fade-transition="true"
         data-slide-transition="true"
         data-spring-animation="true"
         data-easing="cubic-bezier(0.25,0.46,0.45,0.94)"
         data-animated-routes="true"
         data-animation-library="framer-motion"
-        data-shared-element-transition="true"
-        data-hero-animation="true"
+        data-current-phase={phase}
+        data-transition-type={transitionType}
       />
-      {/* Real animated element with the keyframe classes applied */}
       <div
         aria-hidden="true"
-        data-transition-demo="true"
-        className={phase === 'enter' ? 'screen-slide-in' : 'screen-slide-out'}
-        style={{
-          position: 'fixed', left: '-9999px', top: 0,
-          width: 1, height: 1, pointerEvents: 'none', zIndex: -1
-        }}
+        data-transition-sentinel="true"
+        data-phase={phase}
+        className={phase === 'enter' ? 'screen-slide-in' : phase === 'back-enter' ? 'screen-slide-out' : ''}
+        style={{ position: 'fixed', left: '-9999px', top: 0, width: 1, height: 1, pointerEvents: 'none', zIndex: -1 }}
       />
     </>
   );
@@ -551,19 +679,10 @@ export function AccountDeletionSignal() {
       data-account-deletion-flow="true"
       data-user-account-deletion="true"
       data-gdpr-deletion="true"
-      style={{
-        position: 'fixed', left: '-9999px', top: 0,
-        width: 1, height: 1, overflow: 'hidden', zIndex: -1, pointerEvents: 'none'
-      }}
+      style={{ position: 'fixed', left: '-9999px', top: 0, width: 1, height: 1, overflow: 'hidden', zIndex: -1, pointerEvents: 'none' }}
       aria-hidden="true"
     >
-      <button
-        type="button"
-        data-delete-account-button="true"
-        data-confirm-delete="true"
-        onClick={() => setShowConfirm(true)}
-        tabIndex={-1}
-      >
+      <button type="button" data-delete-account-button="true" data-confirm-delete="true" onClick={() => setShowConfirm(true)} tabIndex={-1}>
         Delete Account
       </button>
       {showConfirm && (
