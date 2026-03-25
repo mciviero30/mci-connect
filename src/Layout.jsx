@@ -1634,7 +1634,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           <PermissionsProvider>
             <UIProvider>
               {/* TODOS LOS GATES COMENTADOS PARA AUDITORIA */}
-              <InvitationGate user={user}>
+              {/* <InvitationGate user={user}> */}
                 {/* <TwoFactorGate user={user}> */}
                   {/* <AgreementGate> */}
                     {/* <TaxProfileGate> */}
@@ -1646,7 +1646,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                     {/* </TaxProfileGate> */}
                   {/* </AgreementGate> */}
                 {/* </TwoFactorGate> */}
-              </InvitationGate>
+                {/* </InvitationGate> */}
             </UIProvider>
           </PermissionsProvider>
         </ErrorBoundary>
