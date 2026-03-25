@@ -154,7 +154,8 @@ export async function generateInvoicePDF(invoice) {
     const descLines = item.description ? doc.splitTextToSize(String(item.description), contentWidth - 75) : [];
     const rowHeight = Math.max(10, (nameLines.length * 4) + (descLines.length * 3.5) + 8);
 
-    if (y + rowHeight > 270) {
+    const isFirstItemOnPage = (y <= margin + tableHeaderHeight + 15);
+    if (!isFirstItemOnPage && y + rowHeight > 270) {
       doc.addPage();
       y = margin;
       drawTableHeader(y);
