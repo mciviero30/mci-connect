@@ -24,8 +24,8 @@ export default function ManagerApprovalView() {
     staleTime: Infinity,
   });
 
-  // STRICT: Only admin and manager roles can approve/reject
-  const canApprove = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+  // STRICT: Only admin and CEO can approve/reject
+  const canApprove = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
 
   const { data: pendingEntries = [], isLoading } = useQuery({
     queryKey: ['managerPendingEntries', selectedFilter],
