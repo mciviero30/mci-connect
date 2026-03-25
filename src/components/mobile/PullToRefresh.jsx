@@ -62,6 +62,10 @@ export default function PullToRefresh({ onRefresh, children, disabled = false })
     <div
       ref={containerRef}
       className="relative overflow-auto h-full"
+      data-pull-to-refresh="true"
+      data-refreshing={isRefreshing ? 'true' : 'false'}
+      aria-live="polite"
+      aria-label="Pull to refresh"
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}

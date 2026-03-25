@@ -39,6 +39,8 @@ export default function AccountDeletionFlow({ user, language }) {
       className="mt-8 pt-6 border-t-2 border-red-200 dark:border-red-900"
       data-testid="account-deletion-flow"
       data-purpose="account-deletion"
+      data-account-deletion="true"
+      data-feature="user-account-deletion"
       aria-label="Delete Account"
       role="region"
     >
