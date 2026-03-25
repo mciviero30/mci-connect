@@ -1545,7 +1545,15 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           );
 };
 
-          export default function Layout({ children, currentPageName }) {
+          export default function Layout({ children, currentPageName: propPageName }) {
+          const location = useLocation();
+
+          // Dynamically detect currentPageName from pathname to fix navigation issues
+          const currentPageName = React.useMemo(() => {
+            const pathname = location.pathname.replace(/^\//, '');
+            return pathname.charAt(0).toUpperCase() + pathname.slice(1) || propPageName;
+          }, [location.pathname, propPageName]);
+
           const { data: user, isLoading, error } = useQuery({
             queryKey: CURRENT_USER_QUERY_KEY,
             queryFn: async () => {
