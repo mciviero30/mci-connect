@@ -15,7 +15,7 @@ import TimeTrackingTestControl from '@/pages/TimeTrackingTestControl';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
-const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
+const MainPage = mainPageKey ? Pages[mainPageKey] : </>; 
 
 
 
