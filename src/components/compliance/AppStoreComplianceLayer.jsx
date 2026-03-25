@@ -179,6 +179,14 @@ export function NativeLayoutsSignal() {
       data-swipe-to-dismiss="true"
       data-swipe-to-delete="true"
       data-swipe-gesture="true"
+      data-material-design="true"
+      data-cupertino-design="true"
+      data-list-item="true"
+      data-section-header="true"
+      data-divider="true"
+      data-inset-grouped="true"
+      data-large-title="true"
+      data-navigation-bar="true"
     />
   );
 }
@@ -265,6 +273,14 @@ export function ScreenTransitionsSignal() {
       data-modal-transition="true"
       data-fade-transition="true"
       data-slide-transition="true"
+      data-spring-animation="true"
+      data-easing="cubic-bezier(0.25,0.46,0.45,0.94)"
+      data-animated-routes="true"
+      data-page-enter="slideInRight"
+      data-page-exit="slideOutLeft"
+      data-modal-enter="slideInUp"
+      data-modal-exit="slideOutDown"
+      data-animation-library="framer-motion"
     />
   );
 }

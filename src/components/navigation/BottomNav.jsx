@@ -280,7 +280,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             );
           })}
         </div>
-      </div>
+      </nav>
 
       {/* Content spacer */}
       <div className="md:hidden h-16" />
