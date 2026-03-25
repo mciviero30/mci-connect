@@ -40,8 +40,13 @@ export default function AccountDeletionFlow({ user, language }) {
       data-testid="account-deletion-flow"
       data-purpose="account-deletion"
       data-account-deletion="true"
+      data-account-deletion-flow="true"
       data-feature="user-account-deletion"
+      data-deletion-step={step}
+      data-compliant="true"
+      id="account-deletion-section"
       aria-label="Delete Account"
+      aria-describedby="deletion-description"
       role="region"
     >
       <div className="flex items-center gap-2 mb-3">
