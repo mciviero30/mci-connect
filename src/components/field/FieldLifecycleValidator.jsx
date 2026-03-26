@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { mobileLifecycle } from './services/MobileLifecycleManager';
 import { useFieldDebugMode } from './hooks/useFieldDebugMode';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +35,7 @@ export default function FieldLifecycleValidator({ jobId, user }) {
       const event = {
         type,
         timestamp: new Date().toISOString(),
-        time: new Date().toLocaleTimeString(),
+        time: format(new Date(), 'HH:mm:ss'),
         ...data,
       };
       

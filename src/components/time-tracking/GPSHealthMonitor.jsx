@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Wifi, WifiOff, Zap, AlertTriangle } from 'lucide-react';
@@ -193,7 +194,7 @@ export default function GPSHealthMonitor({ nearestJob, language = 'en' }) {
               {/* Last Update */}
               {lastUpdate && (
                 <p className="text-xs text-slate-500 mt-1">
-                  {language === 'es' ? 'Actualizado' : 'Updated'}: {lastUpdate.toLocaleTimeString()}
+                  {language === 'es' ? 'Actualizado' : 'Updated'}: {format(lastUpdate, 'HH:mm:ss')}
                 </p>
               )}
             </div>

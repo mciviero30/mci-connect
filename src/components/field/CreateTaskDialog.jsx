@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { format } from 'date-fns';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -962,11 +963,7 @@ export default function CreateTaskDialog({ open, onOpenChange, jobId, blueprintI
                               {comment.author_name || 'Unknown'}
                             </span>
                             <span className="text-xs text-slate-400 dark:text-slate-500">
-                              {new Date(comment.created_date).toLocaleTimeString('en-US', { 
-                                hour: 'numeric', 
-                                minute: '2-digit',
-                                hour12: true 
-                              })}
+                              {format(new Date(comment.created_date), 'h:mm a')}
                             </span>
                           </div>
                           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { getQueueStats, getPendingOperations, getFailedOperations } from './FieldOperationQueue';
 import { getConflictHistory } from './FieldConflictResolver';
 import { getOnlineStatus, subscribeToConnectivity } from './FieldConnectivityMonitor';
@@ -219,7 +220,7 @@ export default function OfflineSyncValidator({ user }) {
           </div>
           <div className="text-[9px] text-yellow-400/70">
             Last: {conflicts[conflicts.length - 1]?.timestamp 
-              ? new Date(conflicts[conflicts.length - 1].timestamp).toLocaleTimeString()
+              ? format(new Date(conflicts[conflicts.length - 1].timestamp), 'HH:mm:ss')
               : 'N/A'}
           </div>
         </div>

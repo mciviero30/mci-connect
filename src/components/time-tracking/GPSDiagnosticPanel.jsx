@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -197,7 +198,7 @@ export default function GPSDiagnosticPanel({ language = 'en' }) {
           <div className="text-center pt-2 border-t border-slate-200 dark:border-slate-700">
             <p className="text-xs text-slate-500">
               {language === 'es' ? 'Última actualización' : 'Last updated'}: {' '}
-              {new Date(diagnostics.timestamp).toLocaleTimeString()}
+              {format(new Date(diagnostics.timestamp), 'HH:mm:ss')}
             </p>
           </div>
         )}

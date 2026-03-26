@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -101,7 +102,7 @@ export default function TelemetryDebugPanel() {
                   <div className="flex items-center justify-between mb-1">
                     <Badge variant="outline" className="text-xs">{log.data.type}</Badge>
                     <span className="text-xs text-slate-500">
-                      {new Date(log.timestamp).toLocaleTimeString()}
+                      {format(new Date(log.timestamp), 'HH:mm:ss')}
                     </span>
                   </div>
                   <p className="text-xs text-red-800 dark:text-red-300 truncate">{log.data.error}</p>

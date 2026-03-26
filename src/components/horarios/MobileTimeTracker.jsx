@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Clock, MapPin, Play, Square, Coffee, CheckCircle2 } from 'lucide-react';
@@ -49,7 +50,7 @@ export default function MobileTimeTracker({
         <div className="text-center">
           <p className="text-sm opacity-90 mb-1">Current Time</p>
           <p className="text-4xl font-bold tabular-nums">
-            {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {format(currentTime, 'HH:mm')}
           </p>
         </div>
 

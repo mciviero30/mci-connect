@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { format } from 'date-fns';
 import { fieldPersistence } from './services/FieldStatePersistence';
 import { fieldStorage } from './services/FieldStorageService';
 import { useFieldDebugMode } from './hooks/useFieldDebugMode';
@@ -277,7 +278,7 @@ export default function FieldDataLossValidator({ jobId, user }) {
       {/* Last Check */}
       {stats.lastCheck && (
         <div className="mt-2 pt-2 border-t border-slate-700 text-[9px] text-slate-500">
-          Last check: {new Date(stats.lastCheck).toLocaleTimeString()}
+          Last check: {format(new Date(stats.lastCheck), 'HH:mm:ss')}
         </div>
       )}
     </div>
