@@ -192,8 +192,8 @@ Deno.serve(async (req) => {
         
         const numCol = margin + 3;
         const itemCol = margin + 12;
-        const qtyCol = 190 - 55;
-        const rateCol = 190 - 35;
+        const qtyCol = 190 - 58;
+        const rateCol = 190 - 33;
         const amountCol = 190 - 3;
         
         doc.setTextColor(255, 255, 255);
@@ -223,11 +223,10 @@ Deno.serve(async (req) => {
             const descLines = itemDesc ? doc.splitTextToSize(itemDesc, contentWidth - 75) : [];
             const rowHeight = Math.max(10, (nameLines.length * 4) + (descLines.length * 3.5) + 8);
 
-            // Page break check
+            // Page break check (whole row)
             if (currentY + rowHeight > 270) {
                 doc.addPage();
                 currentY = margin;
-                // Re-render header
                 for (let j = 0; j < headerSteps; j++) {
                     const x = margin + (contentWidth / headerSteps) * j;
                     const width = (contentWidth / headerSteps) + 0.5;
@@ -246,8 +245,8 @@ Deno.serve(async (req) => {
                 currentY += 9;
             }
 
-            // Zebra striping
-            if (i % 2 === 0) {
+            // Zebra striping — only if fits on page
+            if (i % 2 === 0 && currentY + rowHeight <= 270) {
                 doc.setFillColor(250, 250, 250);
                 doc.rect(margin, currentY, contentWidth, rowHeight, 'F');
             }
@@ -259,22 +258,65 @@ Deno.serve(async (req) => {
             doc.text((i + 1).toString(), numCol, currentY + 4);
 
             let textY = currentY + 5;
-            
-            // Item Name (bold)
-            if (nameLines.length > 0) {
+
+            // Name lines — per-line page break
+            for (const line of nameLines) {
+                if (textY > 270) {
+                    doc.addPage();
+                    currentY = margin;
+                    for (let j = 0; j < headerSteps; j++) {
+                        const x = margin + (contentWidth / headerSteps) * j;
+                        const width = (contentWidth / headerSteps) + 0.5;
+                        const gray = Math.floor(j * (120 / headerSteps));
+                        doc.setFillColor(gray, gray, gray);
+                        doc.rect(x, currentY, width, 7, 'F');
+                    }
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(7);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('#', numCol, currentY + 4.5);
+                    doc.text('ITEM & DESCRIPTION', itemCol, currentY + 4.5);
+                    doc.text('QTY', qtyCol, currentY + 4.5, { align: 'right' });
+                    doc.text('RATE', rateCol, currentY + 4.5, { align: 'right' });
+                    doc.text('AMOUNT', amountCol, currentY + 4.5, { align: 'right' });
+                    currentY += 9;
+                    textY = currentY + 5;
+                }
                 doc.setFont(undefined, 'bold');
                 doc.setFontSize(9);
                 doc.setTextColor(0, 0, 0);
-                doc.text(nameLines, itemCol, textY);
-                textY += nameLines.length * 4;
+                doc.text(line, itemCol, textY);
+                textY += 4;
             }
-            
-            // Description (normal, smaller) - mostrar todas las descripciones
-            if (descLines.length > 0) {
+
+            // Desc lines — per-line page break
+            for (const line of descLines) {
+                if (textY > 270) {
+                    doc.addPage();
+                    currentY = margin;
+                    for (let j = 0; j < headerSteps; j++) {
+                        const x = margin + (contentWidth / headerSteps) * j;
+                        const width = (contentWidth / headerSteps) + 0.5;
+                        const gray = Math.floor(j * (120 / headerSteps));
+                        doc.setFillColor(gray, gray, gray);
+                        doc.rect(x, currentY, width, 7, 'F');
+                    }
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(7);
+                    doc.setFont(undefined, 'bold');
+                    doc.text('#', numCol, currentY + 4.5);
+                    doc.text('ITEM & DESCRIPTION', itemCol, currentY + 4.5);
+                    doc.text('QTY', qtyCol, currentY + 4.5, { align: 'right' });
+                    doc.text('RATE', rateCol, currentY + 4.5, { align: 'right' });
+                    doc.text('AMOUNT', amountCol, currentY + 4.5, { align: 'right' });
+                    currentY += 9;
+                    textY = currentY + 5;
+                }
                 doc.setFont(undefined, 'normal');
                 doc.setFontSize(7.5);
                 doc.setTextColor(80, 80, 80);
-                doc.text(descLines, itemCol, textY);
+                doc.text(line, itemCol, textY);
+                textY += 3.5;
             }
 
             // Qty, Rate, Amount
@@ -287,10 +329,9 @@ Deno.serve(async (req) => {
             doc.setFont(undefined, 'bold');
             doc.text(total, amountCol, currentY + 4, { align: 'right' });
 
-            // Row border
+            currentY = textY + 3;
             doc.setDrawColor(230, 230, 230);
-            doc.line(margin, currentY + rowHeight, 190, currentY + rowHeight);
-            currentY += rowHeight;
+            doc.line(margin, currentY, 190, currentY);
         }
 
         // TOTALS
