@@ -1,271 +1,288 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
 import {
-  LayoutDashboard, Briefcase, Clock, Receipt,
-  MapPin, Banknote, Zap, MessageSquare, BookOpen,
-  Menu, X, User
+  LayoutDashboard,
+  Briefcase,
+  Clock,
+  Receipt,
+  Users,
+  Menu,
+  Cloud,
+  MapPin,
+  Banknote,
+  ChevronUp,
+  Zap,
+  MessageSquare,
+  BookOpen
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useSyncQueue } from '@/components/pwa/SyncQueueManager';
 import { hasFullAccess } from '@/components/core/roleRules';
-
-const TAB_HISTORY_KEY = 'bottomNavTabHistory';
 
 const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigation }) {
   const location = useLocation();
   const navigate = useNavigate();
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [timeExpanded, setTimeExpanded] = useState(false);
   const [travelExpanded, setTravelExpanded] = useState(false);
+
+  // Active session tracking for live timer in bottom nav
   const [activeSession, setActiveSession] = useState(null);
   const [elapsed, setElapsed] = useState(0);
-  const { pendingCount } = useSyncQueue();
 
-  // ── Per-tab navigation stack (independent history per tab) ──
-  const tabHistoryRef = useRef(() => {
-    try { return JSON.parse(sessionStorage.getItem(TAB_HISTORY_KEY) || '{}'); }
-    catch { return {}; }
-  });
-
-  const saveTabHistory = (tabKey, path) => {
-    try {
-      const h = JSON.parse(sessionStorage.getItem(TAB_HISTORY_KEY) || '{}');
-      h[tabKey] = path;
-      sessionStorage.setItem(TAB_HISTORY_KEY, JSON.stringify(h));
-    } catch {}
-  };
-
-  const getTabLastPath = (tabKey, fallback) => {
-    try {
-      const h = JSON.parse(sessionStorage.getItem(TAB_HISTORY_KEY) || '{}');
-      return h[tabKey] || fallback;
-    } catch { return fallback; }
-  };
-
-  // Primary tabs for bottom nav
-  const mainTabs = React.useMemo(() => [
-    { key: 'home',     label: 'Home',     url: createPageUrl('Dashboard'),    icon: LayoutDashboard },
-    { key: 'time',     label: 'Time',     url: createPageUrl('TimeTracking'),  icon: Clock, isTimeMenu: true },
-    { key: 'travel',   label: 'Travel',   url: createPageUrl('PerDiem'),       icon: Banknote, isTravelMenu: true },
-    { key: 'expenses', label: 'Expenses', url: createPageUrl('MisGastos'),     icon: Receipt,
-      badge: pendingExpenses > 0 ? pendingExpenses : null },
-    { key: 'more',     label: 'More',     url: null,                           icon: Menu, isMore: true },
-  ], [pendingExpenses]);
-
-  // More-sheet items (quick access grid)
-  const moreItems = [
-    { label: 'Field',    url: createPageUrl('Field'),           icon: MapPin },
-    { label: 'My Jobs',  url: createPageUrl('MisProyectos'),    icon: Briefcase },
-    { label: 'Chat',     url: createPageUrl('Chat'),            icon: MessageSquare },
-    { label: 'Payroll',  url: createPageUrl('MyPayroll'),       icon: Banknote },
-    { label: 'Library',  url: createPageUrl('KnowledgeLibrary'),icon: BookOpen },
-    { label: 'Profile',  url: createPageUrl('Configuracion'),   icon: User },
-  ];
-
-  // Active session tracking
   useEffect(() => {
-    const check = () => {
+    const checkSession = () => {
       try {
-        const raw = localStorage.getItem('liveTimeTracker_work') || localStorage.getItem('liveTimeTracker_driving');
-        if (raw) { const s = JSON.parse(raw); if (s?.startTime) { setActiveSession(s); return; } }
+        const work = localStorage.getItem('liveTimeTracker_work');
+        const driving = localStorage.getItem('liveTimeTracker_driving');
+        const raw = work || driving;
+        if (raw) {
+          const s = JSON.parse(raw);
+          if (s?.startTime) { setActiveSession(s); return; }
+        }
         setActiveSession(null);
-      } catch { setActiveSession(null); }
+      } catch (e) { setActiveSession(null); }
     };
-    check();
-    const id = setInterval(check, 2000);
-    return () => clearInterval(id);
+    checkSession();
+    const interval = setInterval(checkSession, 2000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
     if (!activeSession?.startTime) { setElapsed(0); return; }
-    const update = () => setElapsed(Math.max(0, Math.floor((Date.now() - activeSession.startTime - (activeSession.breakDuration || 0)) / 1000)));
+    const update = () => {
+      const secs = Math.floor((Date.now() - activeSession.startTime - (activeSession.breakDuration || 0)) / 1000);
+      setElapsed(Math.max(0, secs));
+    };
     update();
-    const id = setInterval(update, 1000);
-    return () => clearInterval(id);
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
   }, [activeSession?.startTime, activeSession?.breakDuration]);
 
-  const fmt = (s) => `${String(Math.floor(s / 3600)).padStart(2,'0')}:${String(Math.floor((s % 3600) / 60)).padStart(2,'0')}:${String(s % 60).padStart(2,'0')}`;
-
-  const isActive = (url) => url && location.pathname === url;
-
-  const handleTabPress = (tab) => {
-    if (tab.isMore) { setMoreOpen(o => !o); setTimeExpanded(false); setTravelExpanded(false); return; }
-    if (tab.isTimeMenu) { setTimeExpanded(o => !o); setTravelExpanded(false); setMoreOpen(false); return; }
-    if (tab.isTravelMenu) { setTravelExpanded(o => !o); setTimeExpanded(false); setMoreOpen(false); return; }
-    setMoreOpen(false); setTimeExpanded(false); setTravelExpanded(false);
-    const dest = getTabLastPath(tab.key, tab.url);
-    saveTabHistory(tab.key, dest);
-    navigate(dest);
+  const formatElapsed = (seconds) => {
+    const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+    const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+    const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
   };
 
-  // Save current path to active tab's history on navigation
-  useEffect(() => {
-    const activeTab = mainTabs.find(t => !t.isMore && !t.isTimeMenu && !t.isTravelMenu && t.url === location.pathname);
-    if (activeTab) saveTabHistory(activeTab.key, location.pathname);
-  }, [location.pathname]);
+  // STEP 2: Track pending sync operations count
+  const { pendingCount } = useSyncQueue();
 
-  const closeAll = () => { setMoreOpen(false); setTimeExpanded(false); setTravelExpanded(false); };
+  // Memoize navigation items - consolidated: My Expenses, Travel (Per Diem + Mileage), Time, Field, More
+  const mainNavItems = React.useMemo(() => {
+    const items = [
+      { 
+        title: 'My Expenses', 
+        url: createPageUrl("MisGastos"), 
+        icon: Receipt,
+        badge: pendingExpenses > 0 ? pendingExpenses : null,
+      },
+      { 
+        title: 'Travel', 
+        url: createPageUrl("PerDiem"), 
+        icon: Banknote,
+        isTravelMenu: true,
+      },
+      { 
+        title: 'Time', 
+        url: createPageUrl("TimeTracking"), 
+        icon: Clock,
+        isTimeMenu: true,
+      },
+      { 
+        title: 'Field', 
+        url: createPageUrl("Field"), 
+        icon: MapPin,
+      },
+    ];
+    return items;
+  }, [pendingExpenses]);
 
-  return ReactDOM.createPortal(
+  // Memoize isActive to prevent recreation
+  const isActive = React.useCallback((url) => location.pathname === url, [location.pathname]);
+
+  const handleTimeClick = (e) => {
+    e.preventDefault();
+    setTimeExpanded(!timeExpanded);
+  };
+
+  const handleTimeSubSelect = (type) => {
+    // type can be 'work' or 'driving'
+    const baseUrl = createPageUrl("TimeTracking");
+    navigate(baseUrl, { state: { timeType: type } });
+    setTimeExpanded(false);
+  };
+
+  const handleTravelClick = (e) => {
+    e.preventDefault();
+    setTravelExpanded(!travelExpanded);
+  };
+
+  const handleTravelSubSelect = (page) => {
+    navigate(createPageUrl(page));
+    setTravelExpanded(false);
+  };
+
+  // More menu with 6 quick access items
+  const quickAccessItems = [
+    { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
+    { title: 'Chat', url: createPageUrl("Chat"), icon: MessageSquare },
+    { title: 'Calendar', url: createPageUrl("Calendario"), icon: Clock },
+    { title: 'My Jobs', url: createPageUrl("MisProyectos"), icon: Briefcase },
+    { title: 'My Payroll', url: createPageUrl("MyPayroll"), icon: Banknote },
+    { title: 'Installation Library', url: createPageUrl("KnowledgeLibrary"), icon: BookOpen },
+  ];
+
+  const [moreExpanded, setMoreExpanded] = useState(false);
+
+  // Render the fixed bar as a portal to document.body to escape any CSS transform containers
+  return (
     <>
-      {/* Backdrop for expanded panels */}
-      <AnimatePresence>
-        {(moreOpen || timeExpanded || travelExpanded) && (
-          <motion.div
-            key="backdrop"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="md:hidden fixed inset-0 z-[9990] bg-black/30 backdrop-blur-sm"
-            onClick={closeAll}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Time sub-menu */}
-      <AnimatePresence>
-        {timeExpanded && (
-          <motion.div
-            key="time-menu"
-            initial={{ opacity: 0, y: 12, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.95 }}
-            transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="md:hidden fixed bottom-[76px] left-1/2 -translate-x-1/2 z-[9995] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-2 flex flex-col gap-2 min-w-[180px]"
-          >
-            <button onClick={() => { navigate(createPageUrl('TimeTracking'), { state: { timeType: 'work' } }); closeAll(); }}
-              className="min-h-[48px] px-4 py-3 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white font-semibold rounded-xl text-sm flex items-center gap-2 active:scale-95 transition-transform">
-              <Clock className="w-4 h-4" /> Work Time
-            </button>
-            <button onClick={() => { navigate(createPageUrl('TimeTracking'), { state: { timeType: 'driving' } }); closeAll(); }}
-              className="min-h-[48px] px-4 py-3 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-xl text-sm flex items-center gap-2 active:scale-95 transition-transform">
-              <Zap className="w-4 h-4" /> Driving Time
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Travel sub-menu */}
-      <AnimatePresence>
-        {travelExpanded && (
-          <motion.div
-            key="travel-menu"
-            initial={{ opacity: 0, y: 12, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 12, scale: 0.95 }}
-            transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="md:hidden fixed bottom-[76px] left-1/2 -translate-x-1/2 z-[9995] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-2 flex flex-col gap-2 min-w-[180px]"
-          >
-            <button onClick={() => { navigate(createPageUrl('PerDiem')); closeAll(); }}
-              className="min-h-[48px] px-4 py-3 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white font-semibold rounded-xl text-sm flex items-center gap-2 active:scale-95 transition-transform">
-              <Banknote className="w-4 h-4" /> Per Diem
-            </button>
-            <button onClick={() => { navigate(createPageUrl('Manejo')); closeAll(); }}
-              className="min-h-[48px] px-4 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl text-sm flex items-center gap-2 active:scale-95 transition-transform">
-              <Zap className="w-4 h-4" /> Mileage
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* More sheet — bottom drawer */}
-      <AnimatePresence>
-        {moreOpen && (
-          <motion.div
-            key="more-sheet"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ duration: 0.28, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="md:hidden fixed bottom-[64px] left-0 right-0 z-[9995] bg-white dark:bg-slate-900 rounded-t-3xl shadow-2xl border-t border-slate-200 dark:border-slate-700"
-            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-          >
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-600" />
-            </div>
-            <div className="flex items-center justify-between px-5 py-2">
-              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quick Access</p>
-              <button onClick={closeAll} className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-                <X className="w-4 h-4 text-slate-500" />
-              </button>
-            </div>
-            <div className="grid grid-cols-3 gap-2 px-4 pb-6">
-              {moreItems.map((item) => (
-                <Link key={item.label} to={item.url}
-                  onClick={closeAll}
-                  className="flex flex-col items-center justify-center gap-1.5 p-4 min-h-[80px] rounded-2xl bg-slate-50 dark:bg-slate-800 active:scale-95 transition-transform hover:bg-slate-100 dark:hover:bg-slate-700">
-                  <item.icon className="w-6 h-6 text-[#507DB4] dark:text-[#6B9DD8]" strokeWidth={2} />
-                  <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight">{item.label}</span>
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* The main bottom tab bar */}
-      <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-white/95 dark:bg-slate-900/95 border-t border-slate-200/80 dark:border-slate-700/80 backdrop-blur-xl shadow-2xl"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-      >
-        <div className="grid grid-cols-5 h-16 px-1">
-          {mainTabs.map((tab) => {
-            const active = isActive(tab.url);
-            const isActiveMore = tab.isMore && moreOpen;
-            const isActiveTime = tab.isTimeMenu && timeExpanded;
-            const isActiveTravel = tab.isTravelMenu && travelExpanded;
-            const highlighted = active || isActiveMore || isActiveTime || isActiveTravel;
-
-            // Live session indicator for time tab
-            if (tab.isTimeMenu && activeSession && !activeSession.onBreak) {
+      {ReactDOM.createPortal(
+        <div className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-white dark:bg-slate-900 border-t-2 border-slate-200 dark:border-slate-700 shadow-2xl" style={{paddingBottom: 'env(safe-area-inset-bottom)'}}>
+          <div className="grid grid-cols-5 h-16 px-1 relative">
+            {mainNavItems.map((item) => {
+              const active = isActive(item.url);
+              if (item.isTimeMenu) {
+                if (activeSession && !activeSession.onBreak) {
+                  return (
+                    <button
+                      key={item.title}
+                      onClick={() => {
+                        const baseUrl = createPageUrl('TimeTracking');
+                        navigate(baseUrl, { state: { timeType: activeSession?.workType === 'driving' ? 'driving' : 'work', showCleanUI: true } });
+                      }}
+                      className="flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 relative"
+                    >
+                      <div className="relative flex items-center justify-center">
+                        <div className="absolute w-9 h-9 rounded-full bg-green-500/30 animate-ping" />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/40">
+                          <Clock className="w-4 h-4 text-white" strokeWidth={2.5} />
+                        </div>
+                      </div>
+                      <span className="text-[9px] font-bold text-green-600 font-mono">
+                        {formatElapsed(elapsed)}
+                      </span>
+                    </button>
+                  );
+                }
+                if (activeSession?.onBreak) {
+                  return (
+                    <button key={item.title} onClick={handleTimeClick}
+                      className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
+                        active || timeExpanded ? 'text-[#507DB4]' : 'text-slate-500'
+                      }`}>
+                      <item.icon className="w-5 h-5" strokeWidth={active || timeExpanded ? 2.5 : 2} />
+                      <span className="text-[9px] font-bold text-amber-600 font-mono">
+                        {formatElapsed(elapsed)}
+                      </span>
+                    </button>
+                  );
+                }
+                return (
+                  <button key={item.title} onClick={handleTimeClick}
+                    className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
+                      active || timeExpanded ? 'text-[#507DB4]' : 'text-slate-500'
+                    }`}>
+                    <item.icon className="w-5 h-5" strokeWidth={active || timeExpanded ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium">{item.title}</span>
+                  </button>
+                );
+              }
+              if (item.isTravelMenu) {
+                return (
+                  <button key={item.title} onClick={handleTravelClick}
+                    className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
+                      travelExpanded ? 'text-[#507DB4]' : 'text-slate-500'
+                    }`}>
+                    <item.icon className="w-5 h-5" strokeWidth={travelExpanded ? 2.5 : 2} />
+                    <span className="text-[10px] font-medium">{item.title}</span>
+                  </button>
+                );
+              }
               return (
-                <button key={tab.key} onClick={() => handleTabPress(tab)}
-                  className="flex flex-col items-center justify-center gap-0.5 min-h-[44px] active:scale-95 transition-transform">
-                  <div className="relative flex items-center justify-center">
-                    <div className="absolute w-9 h-9 rounded-full bg-green-500/25 animate-ping" />
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
-                      <Clock className="w-4 h-4 text-white" strokeWidth={2.5} />
-                    </div>
+                <Link key={item.title} to={item.url}
+                  className={`flex flex-col items-center justify-center gap-0.5 relative transition-all active:scale-95 ${
+                    active ? 'text-[#507DB4]' : 'text-slate-500'
+                  }`}>
+                  <div className="relative">
+                    <item.icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} />
+                    {item.badge && (
+                      <Badge className="absolute -top-1.5 -right-1.5 h-4 min-w-4 px-1 text-[9px] bg-red-600 text-white border-0">
+                        {item.badge > 9 ? '9+' : item.badge}
+                      </Badge>
+                    )}
                   </div>
-                  <span className="text-[9px] font-bold text-green-600 font-mono tabular-nums">{fmt(elapsed)}</span>
-                </button>
+                  <span className="text-[10px] font-medium">{item.title}</span>
+                </Link>
               );
-            }
+            })}
+            <button onClick={() => setMoreExpanded(!moreExpanded)}
+              className={`flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 ${
+                moreExpanded ? 'text-[#507DB4]' : 'text-slate-500'
+              }`}>
+              <Menu className="w-5 h-5" strokeWidth={moreExpanded ? 2.5 : 2} />
+              <span className="text-[10px] font-medium">More</span>
+            </button>
+          </div>
 
-            return (
-              <button key={tab.key} onClick={() => handleTabPress(tab)}
-                className={`flex flex-col items-center justify-center gap-0.5 min-h-[44px] active:scale-95 transition-all relative ${
-                  highlighted ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-400 dark:text-slate-500'
-                }`}
-              >
-                {/* Active indicator dot */}
-                {highlighted && (
-                  <motion.div
-                    layoutId="activeTabDot"
-                    className="absolute top-1 w-1 h-1 rounded-full bg-[#507DB4] dark:bg-[#6B9DD8]"
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                )}
-                <div className="relative">
-                  <tab.icon className="w-5 h-5" strokeWidth={highlighted ? 2.5 : 1.8} />
-                  {tab.badge && (
-                    <Badge className="absolute -top-1.5 -right-2 h-4 min-w-4 px-1 text-[9px] bg-red-500 text-white border-0 leading-none">
-                      {tab.badge > 9 ? '9+' : tab.badge}
-                    </Badge>
-                  )}
-                </div>
-                <span className={`text-[10px] font-medium leading-none ${highlighted ? 'font-semibold' : ''}`}>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
+          {timeExpanded && (
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 p-2 flex flex-col gap-2">
+                <button onClick={() => handleTimeSubSelect('work')} className="px-4 py-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white font-semibold rounded-xl text-sm flex items-center gap-2">
+                  <Clock className="w-4 h-4" /> Work Time
+                </button>
+                <button onClick={() => handleTimeSubSelect('driving')} className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 text-white font-semibold rounded-xl text-sm flex items-center gap-2">
+                  <Zap className="w-4 h-4" /> Driving Time
+                </button>
+              </div>
+            </div>
+          )}
 
-      {/* Content spacer */}
+          {travelExpanded && (
+            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-50">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 p-2 flex flex-col gap-2">
+                <button onClick={() => handleTravelSubSelect('PerDiem')} className="px-4 py-2.5 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white font-semibold rounded-xl text-sm flex items-center gap-2">
+                  <Banknote className="w-4 h-4" /> Per Diem
+                </button>
+                <button onClick={() => handleTravelSubSelect('Manejo')} className="px-4 py-2.5 bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold rounded-xl text-sm flex items-center gap-2">
+                  <Zap className="w-4 h-4" /> Mileage
+                </button>
+              </div>
+            </div>
+          )}
+
+          {moreExpanded && (
+            <div className="absolute bottom-20 right-2 z-50">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 p-2 grid grid-cols-2 gap-2 w-64">
+                {quickAccessItems.map((item) => (
+                  <Link key={item.title} to={item.url} onClick={() => setMoreExpanded(false)}
+                    className="flex flex-col items-center justify-center gap-1 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <item.icon className="w-5 h-5 text-[#507DB4]" strokeWidth={2.5} />
+                    <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 leading-tight text-center">{item.title}</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>,
+        document.body
+      )}
+      {/* Spacer so content doesn't hide behind nav */}
       <div className="md:hidden h-16" />
-    </>,
-    document.body
+    </>
   );
 });
 

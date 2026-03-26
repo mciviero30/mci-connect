@@ -36,12 +36,11 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
 import NotificationSettings from "@/components/notifications/NotificationSettings";
 import CameraCapture from "@/components/shared/CameraCapture";
-import AccountDeletionFlow from "@/components/settings/AccountDeletionFlow";
 import SystemHealthDashboard from "@/components/admin/SystemHealthDashboard";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { format } from 'date-fns';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // New imports
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Configuracion() {
@@ -834,15 +833,12 @@ export default function Configuracion() {
                     <Button
                       onClick={() => updateProfileMutation.mutate(profileForm)}
                       disabled={updateProfileMutation.isPending}
-                      className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full mt-6 min-h-[48px]"
+                      className="bg-gradient-to-r from-orange-600 to-yellow-500 hover:from-orange-700 hover:to-yellow-600 text-white shadow-md w-full mt-6"
                     >
                       <Save className="w-4 h-4 mr-2" />
                       {updateProfileMutation.isPending ? (language === 'es' ? 'Guardando...' : 'Saving...') : (language === 'es' ? 'Guardar Cambios' : 'Save Changes')}
                     </Button>
                   )}
-
-                  {/* Mandatory account deletion flow */}
-                  <AccountDeletionFlow user={user} language={language} />
                 </div>
               </CardContent>
             </Card>

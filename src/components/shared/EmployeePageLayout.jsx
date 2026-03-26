@@ -1,6 +1,5 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import PullToRefresh from '@/components/mobile/PullToRefresh';
 
 /**
  * Modern employee page layout with hero header
@@ -12,10 +11,9 @@ export default function EmployeePageLayout({
   subtitle, 
   headerActions,
   stats,
-  className = "",
-  onRefresh = null,
+  className = ""
 }) {
-  const content = (
+  return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#181818]">
       {/* Hero Header */}
       <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 dark:from-blue-900 dark:via-blue-800 dark:to-indigo-900">
@@ -71,15 +69,6 @@ export default function EmployeePageLayout({
       </div>
     </div>
   );
-
-  if (onRefresh) {
-    return (
-      <PullToRefresh onRefresh={onRefresh}>
-        {content}
-      </PullToRefresh>
-    );
-  }
-  return content;
 }
 
 /**

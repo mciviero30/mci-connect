@@ -1534,19 +1534,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             touchAction: 'auto',
             overscrollBehavior: 'auto'
           }}>
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={location.pathname}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -16 }}
-                transition={{ duration: 0.17, ease: [0.25, 0.46, 0.45, 0.94] }}
-                style={{ willChange: 'transform, opacity' }}
-                className="min-h-full w-full max-w-screen-2xl mx-auto px-1 md:px-0 py-1 md:py-0 pb-16 md:pb-0"
-              >
-                {children}
-              </motion.div>
-            </AnimatePresence>
+            <div className="min-h-full w-full max-w-screen-2xl mx-auto px-1 md:px-0 py-1 md:py-0 pb-16 md:pb-0">
+              {children}
+            </div>
           </div>
 
           <AIAssistant currentPage={currentPageName} />
