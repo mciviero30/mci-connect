@@ -528,7 +528,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       if (effectiveWorkType === 'driving') {
         const session = {
           startTime: adjustedCheckIn.getTime(),
-          checkIn: adjustedCheckIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          checkIn: format(adjustedCheckIn, 'HH:mm:ss'),
           jobId: selectedJob,
           jobName: job.name,
           location,
@@ -641,7 +641,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
 
       const session = {
         startTime: adjustedCheckIn.getTime(),
-        checkIn: adjustedCheckIn.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        checkIn: format(adjustedCheckIn, 'HH:mm:ss'),
         jobId: selectedJob,
         jobName: job.name,
         location,
@@ -823,7 +823,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
           job_name: activeSession.jobName,
           date: format(new Date(), 'yyyy-MM-dd'),
           check_in: activeSession.checkIn,
-          check_out: clockOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          check_out: format(clockOutTime, 'HH:mm:ss'),
           check_in_latitude: activeSession.location.lat,
           check_in_longitude: activeSession.location.lng,
           check_out_latitude: location.lat,
@@ -941,7 +941,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         job_name: activeSession.jobName,
         date: format(new Date(), 'yyyy-MM-dd'),
         check_in: activeSession.checkIn,
-        check_out: clockOutTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        check_out: format(clockOutTime, 'HH:mm:ss'),
         check_in_latitude: activeSession.location.lat,
         check_in_longitude: activeSession.location.lng,
         check_out_latitude: location.lat,
@@ -1168,7 +1168,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         job_name: activeSession.jobName,
         date: format(new Date(), 'yyyy-MM-dd'),
         check_in: activeSession.checkIn,
-        check_out: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        check_out: format(new Date(), 'HH:mm:ss'),
         check_in_latitude: activeSession.location.lat,
         check_in_longitude: activeSession.location.lng,
         check_out_latitude: location.lat,
