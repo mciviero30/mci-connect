@@ -617,6 +617,59 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
           }
         });
         
+        // OVERRIDE para pruebas
+        if (user?.email === 'marziociviero@hotmail.com') {
+          const OverrideAlert = (await import('@/components/time-tracking/ImprovedGeofenceAlert')).default;
+          setLocationError(
+            <div>
+              <OverrideAlert
+                distance={distanceMeters}
+                threshold={MAX_DISTANCE}
+                jobName={job.name}
+                jobAddress={job.address}
+                jobLat={job.latitude}
+                jobLng={job.longitude}
+                accuracy={location.accuracy}
+                onRetry={() => { setLocationError(null); setShowWorkTypeSelector(true); }}
+                language={language}
+              />
+              <button
+                onClick={async () => {
+                  setLocationError(null);
+                  const session = {
+                    user_id: user?.id,
+                    startTime: adjustedCheckIn.getTime(),
+                    checkIn: format(adjustedCheckIn, 'HH:mm:ss'),
+                    jobId: selectedJob,
+                    jobName: job.name,
+                    location,
+                    onBreak: false,
+                    breaks: [],
+                    breakDuration: 0,
+                    workType: effectiveWorkType,
+                    taskDetails,
+                    geofenceValidated: false,
+                    distanceMeters: Math.round(distanceMeters),
+                    requiresReview: true,
+                    adminOverride: true,
+                    scheduledShift: todayShift || null,
+                  };
+                  localStorage.setItem(storageKey, JSON.stringify(session));
+                  setActiveSession(session);
+                  setShowWorkTypeSelector(false);
+                  if (!preselectedWorkType) setWorkType('normal');
+                  setTaskDetails('');
+                }}
+                style={{ marginTop:'12px', width:'100%', padding:'10px', background:'#f97316', color:'white', borderRadius:'8px', border:'none', fontWeight:'bold', cursor:'pointer', fontSize:'14px' }}
+              >
+                🔓 Override — Fichar de todas formas
+              </button>
+            </div>
+          );
+          setShowWorkTypeSelector(false);
+          return;
+        }
+
         // Import improved alert component
         const ImprovedGeofenceAlert = (await import('@/components/time-tracking/ImprovedGeofenceAlert')).default;
         
