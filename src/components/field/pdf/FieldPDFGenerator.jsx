@@ -5,6 +5,8 @@
  */
 
 import { jsPDF } from 'jspdf';
+import { groupDimensionsForProduction, calculateWallSequences, formatDimensionRow, enrichBenchmarksWithUsage, formatBenchmarkRow } from './FieldPDFLayoutEngine';
+import { generateLegendFromData, generateProductionNotes } from './FieldPDFLegendGenerator';
 
 /**
  * Generate PDF from normalized dataset
@@ -169,8 +171,6 @@ function renderCoverPage(doc, data) {
  * Render dimension pages
  */
 function renderDimensionPages(doc, data) {
-  const { groupDimensionsForProduction, calculateWallSequences, formatDimensionRow } = require('./FieldPDFLayoutEngine');
-  
   let pagesAdded = 0;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -304,8 +304,6 @@ function renderDimensionPages(doc, data) {
  * Render benchmarks page
  */
 function renderBenchmarksPage(doc, data, pageNum) {
-  const { enrichBenchmarksWithUsage, formatBenchmarkRow } = require('./FieldPDFLayoutEngine');
-  
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   let y = 100;
@@ -427,8 +425,6 @@ function hexToRgb(hex) {
  * Render legend page
  */
 function renderLegendPage(doc, data, pageNum) {
-  const { generateLegendFromData, generateProductionNotes } = require('./FieldPDFLegendGenerator');
-  
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = 80;
   
