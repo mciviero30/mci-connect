@@ -37,8 +37,12 @@ export default function AgreementGate({ children }) {
   const userPosition = user?.position;
   const userRole = user?.role;
 
-  // CRITICAL: Exempt admins/CEOs from agreement gate
-  const isExempt = userRole === 'admin' || userRole === 'ceo' || userPosition === 'CEO';
+  // CRITICAL: Exempt admins/CEOs/owners from agreement gate
+  const isExempt =
+    userRole === 'admin' ||
+    userRole === 'ceo' ||
+    userPosition === 'CEO' ||
+    user?.is_owner === true;
 
   // CRITICAL: Check for Field route - skip gate for Field (sandboxed)
   const isFieldRoute = typeof window !== 'undefined' && window.location.pathname.includes('/Field');
@@ -148,7 +152,7 @@ export default function AgreementGate({ children }) {
     return <>{children}</>;
   }
 
-  // CRITICAL: Exempt admins/CEOs from agreement signing
+  // CRITICAL: Exempt admins/CEOs/owners from agreement signing
   if (isExempt) {
     console.log('[AgreementGate] User exempt (admin/CEO) - passing through', { userEmail, userRole, userPosition });
     return <>{children}</>;
