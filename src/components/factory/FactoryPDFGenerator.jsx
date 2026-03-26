@@ -4,7 +4,7 @@
  * Generates production-grade PDFs for fabrication
  */
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 
 export async function generateFactoryPDF(factoryData, options = {}) {
   const pdf = new jsPDF({
