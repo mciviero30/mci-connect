@@ -93,30 +93,29 @@ import BackgroundSyncManager from "@/components/mobile/BackgroundSyncManager";
 import InstallPrompt from "@/components/mobile/InstallPrompt";
 import NetworkSpeedIndicator from "@/components/mobile/NetworkSpeedIndicator";
 import AIAssistant from "@/components/ai/AIAssistant";
-const NotificationEngine = React.lazy(() => import('@/components/notifications/NotificationEngine'));
-const UniversalNotificationEngine = React.lazy(() => import('@/components/notifications/UniversalNotificationEngine'));
-const CustomerNotificationEngine = React.lazy(() => import('@/components/notifications/CustomerNotificationEngine'));
-const UniversalPushManager = React.lazy(() => import('@/components/notifications/IOSPushManager'));
+import NotificationService from "@/components/notifications/NotificationService";
+import NotificationEngine from "@/components/notifications/NotificationEngine";
+import UniversalNotificationEngine from "@/components/notifications/UniversalNotificationEngine";
+import CustomerNotificationEngine from "@/components/notifications/CustomerNotificationEngine";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import UniversalPushManager from "@/components/notifications/IOSPushManager";
 import RecentlyViewed from "@/components/shared/RecentlyViewed";
 import ProfileSyncManager from "@/components/sync/ProfileSyncManager";
 import { migratePendingToUser, normalizeEmail } from "@/components/utils/profileMerge";
 import BottomNav from "@/components/navigation/BottomNav";
-import MobileHeader from "@/components/navigation/MobileHeader";
-import AppStoreComplianceLayer from "@/components/compliance/AppStoreComplianceLayer";
-import { PullToRefreshLayer } from "@/components/compliance/AppStoreComplianceLayer";
-import InvitationGate from "@/components/security/InvitationGate";
-import TwoFactorGate from "@/components/security/TwoFactorGate";
 import AgreementGate from "@/components/agreements/AgreementGate";
 import TaxProfileGate from "@/components/tax/TaxProfileGate";
+import InvitationGate from "@/components/security/InvitationGate";
+import TwoFactorGate from "@/components/security/TwoFactorGate";
 import EmployeeDirectoryGuard from "@/components/security/EmployeeDirectoryGuard";
-import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
-import { hasFullAccess } from "@/components/core/roleRules";
-import GlobalSearch from "@/components/search/GlobalSearch";
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import SessionTimeoutManager from "@/components/security/SessionTimeoutManager";
+import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
+import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
+import { Hammer } from "lucide-react";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
 import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
+import GlobalSearch from "@/components/search/GlobalSearch";
 
 import KeyboardShortcuts from "@/components/navigation/KeyboardShortcuts";
 
@@ -423,6 +422,7 @@ const LayoutContentWrapper = ({ children, currentPageName, user, isLoading, erro
 };
 
 const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFieldMode, isFocusMode, toggleFocusMode, shouldHideSidebar }) => {
+
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -517,7 +517,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
     !isClientOnly && 
     !isAdminOrCEO &&
     user.employment_status !== 'deleted' &&
-    user.onboarding_completed === false;
+    user.onboarding_completed === false;  // Strict false check - undefined/null users pass through
 
   // CEO Setup Gate: If CEO hasn't completed setup, show CEOSetup page
   const ceoSetupIncomplete = user?.role === 'ceo' && user?.ceo_setup_completed !== true;
@@ -820,9 +820,9 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const foremanNavigation = [
     {
       section: 'FOREMAN',
-      icon: Briefcase,
+      icon: Hammer,
       items: [
-        { title: 'Foreman Dashboard', url: createPageUrl("ForemanDashboard"), icon: Briefcase },
+        { title: 'Foreman Dashboard', url: createPageUrl("ForemanDashboard"), icon: Hammer },
         { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'My Profile', url: createPageUrl("EmployeeProfile"), icon: User },
       ]
@@ -1171,7 +1171,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
   const shouldShowWelcome = user && 
     !isClientOnly && 
     user.employment_status !== 'deleted' &&
-    user.welcome_screen_shown === false;
+    user.welcome_screen_shown !== true;
 
   if (shouldShowWelcome) {
     return (
@@ -1195,61 +1195,15 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
       {user && user.employment_status !== 'deleted' && !shouldBlockForOnboarding && (
         <ErrorBoundary fallback={<div />}>
-          <React.Suspense fallback={null}>
-            <NotificationEngine user={user} />
-            <UniversalNotificationEngine user={user} />
-            <CustomerNotificationEngine user={user} />
-            <UniversalPushManager user={user} />
-          </React.Suspense>
+          <NotificationEngine user={user} />
+          <UniversalNotificationEngine user={user} />
+          <CustomerNotificationEngine user={user} />
+          <UniversalPushManager user={user} />
           <SessionTimeoutManager />
         </ErrorBoundary>
       )}
 
       <OfflineBanner language={language} />
-
-      <AppStoreComplianceLayer />
-      {/* App Store compliance sentinels - detected by scanner on all pages */}
-      <div
-        aria-hidden="true"
-        style={{ display: 'none' }}
-        data-pull-to-refresh="true"
-        data-feature="pull-to-refresh"
-        data-overscroll-behavior="contain"
-        data-account-deletion="true"
-        data-feature-account-deletion="true"
-        data-delete-account="true"
-        data-user-account-deletion="true"
-        data-account-deletion-flow="true"
-        data-delete-account-button="true"
-        data-delete-account-confirmation="true"
-        data-optimistic-ui="true"
-        data-optimistic-updates="enabled"
-        data-optimistic-mutations="true"
-        data-tab-bar="true"
-        data-stack-preservation="true"
-        data-bottom-tabs="true"
-        data-tab-history="enabled"
-        data-native-layout="true"
-        data-native-like-layout="true"
-        data-momentum-scrolling="true"
-        data-navigation-stack="true"
-        data-back-stack="true"
-        data-unified-navigation="true"
-        data-back-button="true"
-        data-mobile-first="true"
-        data-responsive-layout="true"
-        data-fluid-layout="true"
-        data-accessibility="true"
-        data-aria-labels="true"
-        data-keyboard-navigation="true"
-        data-focus-management="true"
-        data-dropdown-native="true"
-        data-selection-controls="true"
-        data-native-select="true"
-        data-touch-targets="44px"
-        data-haptic-feedback="true"
-        data-ux-polish="true"
-      />
       
       <div className="min-h-screen flex w-full bg-[#F8FAFC] dark:bg-[#181818]">
         <style>{`
@@ -1381,112 +1335,191 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
         {/* CRITICAL: Sidebar hidden in Field Mode OR Focus Mode */}
         {!shouldHideSidebar && !isFieldPage && (
-          <Sidebar
-            role="navigation"
-            aria-label="Main navigation"
-            className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50 [&_[data-sidebar=close-button]]:w-10 [&_[data-sidebar=close-button]]:h-10 [&_[data-sidebar=close-button]]:rounded-full [&_[data-sidebar=close-button]]:bg-white [&_[data-sidebar=close-button]]:dark:bg-slate-800 [&_[data-sidebar=close-button]]:shadow-md [&_[data-sidebar=close-button]]:border [&_[data-sidebar=close-button]]:border-slate-200 [&_[data-sidebar=close-button]]:dark:border-slate-700 [&_[data-sidebar=close-button]]:hover:bg-red-50 [&_[data-sidebar=close-button]]:dark:hover:bg-red-900/20 [&_[data-sidebar=close-button]]:hover:border-red-300 [&_[data-sidebar=close-button]]:dark:hover:border-red-700 [&_[data-sidebar=close-button]]:transition-all [&_[data-sidebar=close-button]_svg]:text-slate-600 [&_[data-sidebar=close-button]_svg]:dark:text-slate-400 [&_[data-sidebar=close-button]_svg]:hover:text-red-600 [&_[data-sidebar=close-button]_svg]:dark:hover:text-red-400"
-          >
+          <Sidebar className="border-r border-[#E0E7FF] dark:border-slate-800 shadow-lg bg-gradient-to-b from-[#F0F4FF] to-[#EBF2FF] dark:from-slate-900 dark:to-slate-900/50 [&_[data-sidebar=close-button]]:w-10 [&_[data-sidebar=close-button]]:h-10 [&_[data-sidebar=close-button]]:rounded-full [&_[data-sidebar=close-button]]:bg-white [&_[data-sidebar=close-button]]:dark:bg-slate-800 [&_[data-sidebar=close-button]]:shadow-md [&_[data-sidebar=close-button]]:border [&_[data-sidebar=close-button]]:border-slate-200 [&_[data-sidebar=close-button]]:dark:border-slate-700 [&_[data-sidebar=close-button]]:hover:bg-red-50 [&_[data-sidebar=close-button]]:dark:hover:bg-red-900/20 [&_[data-sidebar=close-button]]:hover:border-red-300 [&_[data-sidebar=close-button]]:dark:hover:border-red-700 [&_[data-sidebar=close-button]]:transition-all [&_[data-sidebar=close-button]_svg]:text-slate-600 [&_[data-sidebar=close-button]_svg]:dark:text-slate-400 [&_[data-sidebar=close-button]_svg]:hover:text-red-600 [&_[data-sidebar=close-button]_svg]:dark:hover:text-red-400">
             <SidebarHeader className="px-0 py-0 flex-shrink-0 overflow-hidden h-auto bg-transparent">
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
-                alt="MCI Connect"
-                className="w-full h-full object-contain"
-                style={{ mixBlendMode: 'multiply', imageRendering: '-webkit-optimize-contrast' }}
-              />
-            </SidebarHeader>
+            <img
+              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
+              alt="MCI Connect"
+              className="w-full h-full object-contain"
+              style={{ 
+                mixBlendMode: 'multiply',
+                imageRendering: '-webkit-optimize-contrast'
+              }}
+            />
+          </SidebarHeader>
 
-            <SidebarContent
-              ref={sidebarContentRef}
-              data-sidebar-scroll="true"
-              className="px-2"
-              role="list"
-              aria-label="Navigation links"
-            >
-              <SidebarNavigation navigation={navigation} location={location} pendingExpenses={pendingExpenses} sidebarContentRef={sidebarContentRef} />
-            </SidebarContent>
+          <SidebarContent 
+            ref={sidebarContentRef} 
+            data-sidebar-scroll="true"
+            className="px-2"
+          >
+            <SidebarNavigation navigation={navigation} location={location} pendingExpenses={pendingExpenses} sidebarContentRef={sidebarContentRef} />
+          </SidebarContent>
 
-            <SidebarFooter className="p-2 flex-shrink-0 border-t border-[#E0E7FF] dark:border-slate-700/50 bg-gradient-to-br from-[#F8FAFF] to-[#F0F4FF] dark:from-slate-900 dark:to-slate-800/50">
-              <div className="mb-1.5 px-1 flex items-center gap-1.5">
-                <Select value={language} onValueChange={changeLanguage} data-native-select="true" data-dropdown-native="true">
-                  <SelectTrigger className="h-6 flex-1 bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 rounded" data-native-select="true" role="combobox" aria-haspopup="listbox" aria-label="Select language">
-                    <Languages className="w-3 h-3 mr-1" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded">
-                    <SelectItem value="en" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
-                      <div className="flex items-center gap-1">
-                        <Globe className="w-2.5 h-2.5 text-blue-600" />
-                        <span className="text-[9px]">English</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="es" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
-                      <div className="flex items-center gap-1">
-                        <Globe className="w-2.5 h-2.5 text-blue-600" />
-                        <span className="text-[9px]">Español</span>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <ThemeToggle />
-              </div>
-
-              <div className="flex items-center justify-between rounded p-1.5 border bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 shadow-sm">
-                <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                  {profileImage ? (
-                    <img
-                      src={`${profileImage}?v=${imageKey}`}
-                      alt={(displayUser || user)?.full_name}
-                      className="w-7 h-7 rounded-full object-cover ring-1 ring-[#1E3A8A]/30 shadow-sm"
-                    />
-                  ) : (
-                    <div className="w-7 h-7 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center ring-1 ring-[#507DB4]/30 shadow-sm">
-                      <span className="text-white font-bold text-[10px]">
-                        {(displayUser || user)?.full_name?.[0]?.toUpperCase() || 'U'}
-                      </span>
+          <SidebarFooter className="p-2 flex-shrink-0 border-t border-[#E0E7FF] dark:border-slate-700/50 bg-gradient-to-br from-[#F8FAFF] to-[#F0F4FF] dark:from-slate-900 dark:to-slate-800/50">
+            <div className="mb-1.5 px-1 flex items-center gap-1.5">
+              <Select value={language} onValueChange={changeLanguage}>
+                <SelectTrigger className="h-6 flex-1 bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 text-slate-900 dark:text-slate-100 hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 rounded">
+                  <Languages className="w-3 h-3 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded">
+                  <SelectItem value="en" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <div className="flex items-center gap-1">
+                      <Globe className="w-2.5 h-2.5 text-blue-600" />
+                      <span className="text-[9px]">English</span>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[10px] truncate text-slate-900 dark:text-slate-100">
-                      {(displayUser || user)?.full_name || (displayUser || user)?.email || 'User'}
-                    </p>
-                    <p className="text-[8px] truncate text-[#507DB4] dark:text-[#6B9DD8] font-medium">
-                      {(displayUser || user)?.position || (user?.role === 'admin' ? t('admin') : t('user'))}
-                    </p>
+                  </SelectItem>
+                  <SelectItem value="es" className="text-slate-900 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <div className="flex items-center gap-1">
+                      <Globe className="w-2.5 h-2.5 text-blue-600" />
+                      <span className="text-[9px]">Español</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <ThemeToggle />
+            </div>
+
+            <div className="flex items-center justify-between rounded p-1.5 border bg-white dark:bg-slate-800 border-[#1E3A8A]/20 dark:border-slate-700 shadow-sm">
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                {profileImage ? (
+                  <img
+                    src={`${profileImage}?v=${imageKey}`}
+                    alt={(displayUser || user)?.full_name}
+                    className="w-7 h-7 rounded-full object-cover ring-1 ring-[#1E3A8A]/30 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-7 h-7 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] rounded-full flex items-center justify-center ring-1 ring-[#507DB4]/30 shadow-sm">
+                    <span className="text-white font-bold text-[10px]">
+                      {(displayUser || user)?.full_name?.[0]?.toUpperCase() || 'U'}
+                    </span>
                   </div>
-                </div>
-                <div className="flex items-center gap-0.5">
-                  <Link to={createPageUrl("Configuracion")} className="p-1 rounded transition-all hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 hover:scale-110" title={t('settings')} aria-label={t('settings')}>
-                    <Settings className="w-3 h-3 text-[#507DB4] dark:text-[#6B9DD8]" />
-                  </Link>
-                  <button
-                    onClick={async () => {
-                      await clearAllFieldData();
-                      base44.auth.logout();
-                    }}
-                    className="p-1 rounded transition-all hover:bg-red-50 dark:hover:bg-red-900/20 hover:scale-110"
-                    title={t('logout')}
-                    aria-label={t('logout')}
-                  >
-                    <LogOut className="w-3 h-3 text-red-600 dark:text-red-400" />
-                  </button>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-[10px] truncate text-slate-900 dark:text-slate-100">
+                    {(displayUser || user)?.full_name || (displayUser || user)?.email || 'User'}
+                  </p>
+                  <p className="text-[8px] truncate text-[#507DB4] dark:text-[#6B9DD8] font-medium">
+                    {(displayUser || user)?.position || (user?.role === 'admin' ? t('admin') : t('user'))}
+                  </p>
                 </div>
               </div>
+              <div className="flex items-center gap-0.5">
+                <Link to={createPageUrl("Configuracion")} className="p-1 rounded transition-all hover:bg-[#EBF2FF] dark:hover:bg-slate-700/50 hover:scale-110" title={t('settings')}>
+                  <Settings className="w-3 h-3 text-[#507DB4] dark:text-[#6B9DD8]" />
+                </Link>
+                <button
+                  onClick={async () => {
+                    // B1 FIX: Clear all Field data before logout (user isolation)
+                    await clearAllFieldData();
+                    base44.auth.logout();
+                  }}
+                  className="p-1 rounded transition-all hover:bg-red-50 dark:hover:bg-red-900/20 hover:scale-110"
+                  title={t('logout')}
+                >
+                  <LogOut className="w-3 h-3 text-red-600 dark:text-red-400" />
+                </button>
+              </div>
+            </div>
             </SidebarFooter>
           </Sidebar>
         )}
         
         <main className={`flex-1 flex flex-col min-w-0 h-screen overflow-hidden ${shouldHideSidebar ? 'w-full' : ''}`}>
-          {/* Mobile Header — native-like, back-button aware */}
+          {/* Mobile Header: Unified header with logo - ALWAYS visible except Field/Focus Mode */}
           {!isFieldPage && !isFocusMode && (
-            <MobileHeader
-              user={user}
-              onOpenSidebar={() => {
-                // Trigger the shadcn sidebar open on mobile
-                const btn = document.querySelector('[data-sidebar="trigger"]');
-                if (btn) btn.click();
+            <motion.header 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="p-0 md:hidden flex-shrink-0 h-14 relative"
+              style={{
+                background: 'linear-gradient(135deg, #E8F1FA 0%, #F0F6FD 100%)',
+                backgroundImage: `
+                  radial-gradient(circle at 20% 50%, rgba(150, 180, 220, 0.08) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 20%, rgba(150, 180, 220, 0.06) 0%, transparent 50%),
+                  radial-gradient(circle at 40% 80%, rgba(150, 180, 220, 0.05) 0%, transparent 50%),
+                  linear-gradient(135deg, #E8F1FA 0%, #F0F6FD 100%)
+                `
               }}
-              onOpenSearch={() => setGlobalSearchOpen(true)}
-            />
+              >
+              <div className="absolute inset-0 flex items-center justify-center px-8 sm:px-12">
+                <img
+                  src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68ee5191fb756d843d0561d3/2372f6478_Screenshot2025-12-24at13539AM.png"
+                  alt="MCI Connect"
+                  className="w-auto object-contain"
+                  style={{ height: '120%', mixBlendMode: 'multiply' }}
+                />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-between px-1.5 z-10">
+                {!shouldHideSidebar && (
+                  <SidebarTrigger className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 flex-shrink-0 min-w-[28px] min-h-[28px]">
+                    <Menu className="w-3.5 h-3.5 text-[#1E3A8A]" />
+                  </SidebarTrigger>
+                )}
+                <div className="flex-shrink-0 flex items-center gap-0.5">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <button className="p-1 rounded-lg transition-all hover:bg-white/40 dark:hover:bg-slate-800/40 min-w-[28px] min-h-[28px] bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50">
+                            <Menu className="w-3.5 h-3.5 text-[#1E3A8A] dark:text-white" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                          <DropdownMenuItem 
+                            onClick={() => setGlobalSearchOpen(true)}
+                            className="text-[10px] py-1.5"
+                          >
+                            <Search className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
+                            <span>Buscar</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => {
+                              const newTheme = theme === 'light' ? 'dark' : 'light';
+                              setTheme(newTheme);
+                              if (newTheme === 'dark') {
+                                document.documentElement.classList.add('dark');
+                              } else {
+                                document.documentElement.classList.remove('dark');
+                              }
+                              localStorage.setItem('theme', newTheme);
+                            }}
+                            className="text-[10px] py-1.5"
+                          >
+                            {theme === 'light' ? (
+                              <>
+                                <Moon className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
+                                <span>Modo Oscuro</span>
+                              </>
+                            ) : (
+                              <>
+                                <Sun className="w-3.5 h-3.5 mr-2 text-yellow-400" />
+                                <span>Modo Claro</span>
+                              </>
+                            )}
+                          </DropdownMenuItem>
+                          {!isFieldMode && !isFocusMode && (
+                            <DropdownMenuItem 
+                              onClick={toggleFocusMode}
+                              className="text-[10px] py-1.5"
+                            >
+                              <Maximize2 className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
+                              <span>Modo Enfoque</span>
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem 
+                            onClick={() => navigate(createPageUrl("Configuracion"))}
+                            className="text-[10px] py-1.5"
+                          >
+                            <Settings className="w-3.5 h-3.5 mr-2 text-slate-600 dark:text-slate-400" />
+                            <span>Configuración</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                      <NotificationBell user={user} />
+                    </div>
+              </div>
+            </motion.header>
           )}
 
 
@@ -1496,20 +1529,11 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             <FocusModeIndicator isActive={true} onExit={toggleFocusMode} />
           )}
 
-          <PullToRefreshLayer>
-          <div
-            data-main-content
-            data-native-layout="true"
-            data-momentum-scrolling="true"
-            data-mobile-first="true"
-            data-responsive="true"
-            className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]"
-            style={{ 
-              WebkitOverflowScrolling: 'touch', 
-              touchAction: 'auto',
-              overscrollBehavior: 'contain'
-            }}
-          >
+          <div data-main-content className="flex-1 overflow-y-auto overflow-x-hidden bg-[#F1F5F9] dark:bg-[#181818]" style={{ 
+            WebkitOverflowScrolling: 'touch', 
+            touchAction: 'auto',
+            overscrollBehavior: 'auto'
+          }}>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={location.pathname}
@@ -1524,7 +1548,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
               </motion.div>
             </AnimatePresence>
           </div>
-          </PullToRefreshLayer>
 
           <AIAssistant currentPage={currentPageName} />
           <EnhancedOfflineSync />
@@ -1544,15 +1567,7 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
           );
 };
 
-          export default function Layout({ children, currentPageName: propPageName }) {
-          const location = useLocation();
-
-          // Dynamically detect currentPageName from pathname to fix navigation issues
-          const currentPageName = React.useMemo(() => {
-            const pathname = location.pathname.replace(/^\//, '');
-            return pathname.charAt(0).toUpperCase() + pathname.slice(1) || propPageName;
-          }, [location.pathname, propPageName]);
-
+          export default function Layout({ children, currentPageName }) {
           const { data: user, isLoading, error } = useQuery({
             queryKey: CURRENT_USER_QUERY_KEY,
             queryFn: async () => {
@@ -1573,9 +1588,10 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
                 }
               },
               retry: false,
-              staleTime: 300000,
-              gcTime: 600000,
-              refetchOnMount: true,
+              staleTime: Infinity, // STABLE - never auto-refetch
+              gcTime: Infinity,
+              refetchOnMount: false, // NEVER auto-refetch
+              refetchOnWindowFocus: false, // NEVER auto-refetch
               refetchInterval: false,
             });
 
@@ -1633,20 +1649,19 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         <ErrorBoundary>
           <PermissionsProvider>
             <UIProvider>
-              {/* TODOS LOS GATES COMENTADOS PARA AUDITORIA */}
-              {/* <InvitationGate user={user}> */}
-                {/* <TwoFactorGate user={user}> */}
-                  {/* <AgreementGate> */}
-                    {/* <TaxProfileGate> */}
-                      {/* <EmployeeDirectoryGuard user={user}> */}
+              <InvitationGate user={user}>
+                <TwoFactorGate user={user}>
+                  <AgreementGate>
+                    <TaxProfileGate>
+                      <EmployeeDirectoryGuard user={user}>
                         <LayoutContentWrapper currentPageName={currentPageName} user={user} isLoading={isLoading} error={error}>
                           {children}
                         </LayoutContentWrapper>
-                      {/* </EmployeeDirectoryGuard> */}
-                    {/* </TaxProfileGate> */}
-                  {/* </AgreementGate> */}
-                {/* </TwoFactorGate> */}
-                {/* </InvitationGate> */}
+                      </EmployeeDirectoryGuard>
+                    </TaxProfileGate>
+                  </AgreementGate>
+                </TwoFactorGate>
+              </InvitationGate>
             </UIProvider>
           </PermissionsProvider>
         </ErrorBoundary>

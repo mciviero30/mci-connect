@@ -208,20 +208,6 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
       <div
         className="md:hidden fixed bottom-0 left-0 right-0 z-[9999] bg-white/95 dark:bg-slate-900/95 border-t border-slate-200/80 dark:border-slate-700/80 backdrop-blur-xl shadow-2xl"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-        role="tablist"
-        aria-label="Main navigation"
-        aria-orientation="horizontal"
-        data-bottom-tabs="true"
-        data-tab-bar="true"
-        data-tab-bar-native="true"
-        data-stack-preservation="true"
-        data-tab-history="enabled"
-        data-independent-stacks="true"
-        data-stack-per-tab="true"
-        data-native-tab-bar="true"
-        data-ios-tab-bar="true"
-        data-android-tab-bar="true"
-        data-bottom-navigation="true"
       >
         <div className="grid grid-cols-5 h-16 px-1">
           {mainTabs.map((tab) => {
@@ -235,9 +221,6 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             if (tab.isTimeMenu && activeSession && !activeSession.onBreak) {
               return (
                 <button key={tab.key} onClick={() => handleTabPress(tab)}
-                  role="tab"
-                  aria-selected={highlighted}
-                  data-tab-key={tab.key}
                   className="flex flex-col items-center justify-center gap-0.5 min-h-[44px] active:scale-95 transition-transform">
                   <div className="relative flex items-center justify-center">
                     <div className="absolute w-9 h-9 rounded-full bg-green-500/25 animate-ping" />
@@ -252,13 +235,11 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
 
             return (
               <button key={tab.key} onClick={() => handleTabPress(tab)}
-                role="tab"
-                aria-selected={highlighted}
-                data-tab-key={tab.key}
                 className={`flex flex-col items-center justify-center gap-0.5 min-h-[44px] active:scale-95 transition-all relative ${
                   highlighted ? 'text-[#507DB4] dark:text-[#6B9DD8]' : 'text-slate-400 dark:text-slate-500'
                 }`}
               >
+                {/* Active indicator dot */}
                 {highlighted && (
                   <motion.div
                     layoutId="activeTabDot"

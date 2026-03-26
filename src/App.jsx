@@ -5,7 +5,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import VisualEditAgent from '@/lib/VisualEditAgent'
 import NavigationTracker from '@/lib/NavigationTracker'
 import { pagesConfig } from './pages.config'
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -15,23 +15,11 @@ import TimeTrackingTestControl from '@/pages/TimeTrackingTestControl';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
-const MainPage = mainPageKey ? Pages[mainPageKey] : () => null;
+const MainPage = mainPageKey ? Pages[mainPageKey] : <></>;
 
-
-
-const LayoutWrapper = ({ children }) => {
-  const location = useLocation();
-  const pathSegments = location.pathname.split('/').filter(Boolean);
-  
-  // Convert /lowercase-kebab to CamelCase (e.g., /contabilidad → Contabilidad, /mis-gastos → MisGastos)
-  const currentPageName = pathSegments[0]
-    ? pathSegments[0]
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join('')
-    : mainPageKey;
-  return Layout ? <Layout currentPageName={currentPageName}>{children}</Layout> : children;
-};
+const LayoutWrapper = ({ children, currentPageName }) => Layout ?
+  <Layout currentPageName={currentPageName}>{children}</Layout>
+  : <>{children}</>;
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, isAuthenticated, navigateToLogin } = useAuth();
@@ -56,13 +44,13 @@ const AuthenticatedApp = () => {
     }
   }
 
-  // Render the main app with Layout wrapping all routes
+  // Render the main app
   return (
-    <LayoutWrapper>
+    <LayoutWrapper currentPageName={mainPageKey}>
       <Routes>
         <Route path="/" element={<MainPage />} />
         {Object.entries(Pages).map(([path, Page]) => (
-          <Route key={path} path={`/${path.toLowerCase()}`} element={<Page />} />
+          <Route key={path} path={`/${path}`} element={<Page />} />
         ))}
         <Route path="/SupervisorDashboard" element={<SupervisorDashboard />} />
         <Route path="/ForemanDashboard" element={<ForemanDashboard />} />
@@ -80,8 +68,8 @@ function App() {
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
         <Router>
-          <AuthenticatedApp />
           <NavigationTracker />
+          <AuthenticatedApp />
         </Router>
         <Toaster />
         <VisualEditAgent />

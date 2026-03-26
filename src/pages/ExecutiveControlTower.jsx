@@ -291,9 +291,9 @@ export default function ExecutiveControlTower() {
                   />
                   
                   {/* Team location markers */}
-                  {teamLocations.map((team, idx) => (
+                  {teamLocations.map((team) => (
                     <Marker
-                      key={`team-${idx}`}
+                      key={team.name}
                       position={team.coordinates}
                       icon={createTeamIcon(team.color)}
                     >

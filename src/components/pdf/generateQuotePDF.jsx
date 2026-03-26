@@ -243,8 +243,8 @@ export async function generateQuotePDF(quote) {
   
   const numCol = margin + 3;
   const itemCol = margin + 12;
-  const qtyCol = pageWidth - margin - 58;
-  const rateCol = pageWidth - margin - 33;
+  const qtyCol = pageWidth - margin - 55;
+  const rateCol = pageWidth - margin - 35;
   const amountCol = pageWidth - margin - 3;
   
   doc.text('#', numCol, tableHeaderY + 4.5);
@@ -278,21 +278,11 @@ export async function generateQuotePDF(quote) {
     const descLines = itemDesc ? doc.splitTextToSize(String(itemDesc), contentWidth - 75) : [];
     const rowHeight = Math.max(10, (nameLines.length * 4) + (descLines.length * 3.5) + 8);
 
-    const rowStartY = y;
-    const fitsOnPage = y + rowHeight <= 270;
-    if (fitsOnPage && index % 2 === 0) {
-      doc.setFillColor(250, 250, 250);
-      doc.rect(Number(margin), Number(y), Number(contentWidth), Number(rowHeight), 'F');
-    }
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(180, 180, 180);
-    doc.text(itemNum, numCol, y + 4);
-
-    let textY = y + 5;
-    
-    const drawPageHeader = () => {
+    // Check page break
+    if (y + rowHeight > 270) {
+      doc.addPage();
+      y = margin;
+      // Re-render header with gradient
       for (let i = 0; i < tableGradientSteps; i++) {
         const gray = Math.floor((i / tableGradientSteps) * 120);
         doc.setFillColor(gray, gray, gray);
@@ -309,47 +299,55 @@ export async function generateQuotePDF(quote) {
       doc.text('RATE', rateCol, y + 4.5, { align: 'right' });
       doc.text('AMOUNT', amountCol, y + 4.5, { align: 'right' });
       y += 9;
-    };
+    }
 
-    nameLines.forEach((line) => {
-      if (textY > 270) {
-        doc.addPage();
-        y = margin;
-        drawPageHeader();
-        textY = y + 5;
-      }
+    // Zebra striping (light gray for even rows)
+    if (index % 2 === 0) {
+      doc.setFillColor(250, 250, 250);
+      doc.rect(Number(margin), Number(y), Number(contentWidth), Number(rowHeight), 'F');
+    }
+
+    // Item number (light gray)
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
+    doc.text(itemNum, numCol, y + 4);
+
+    let textY = y + 5;
+    
+    // Item Name (bold, black) - solo si existe
+    if (nameLines.length > 0) {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
       doc.setTextColor(0, 0, 0);
-      doc.text(line, itemCol, textY);
-      textY += 4;
-    });
-
-    descLines.forEach((line) => {
-      if (textY > 270) {
-        doc.addPage();
-        y = margin;
-        drawPageHeader();
-        textY = y + 5;
-      }
+      doc.text(nameLines, itemCol, textY);
+      textY += nameLines.length * 4;
+    }
+    
+    // Description below (normal, dark gray) - solo si existe y tiene contenido real
+    if (descLines.length > 0) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7.5);
       doc.setTextColor(80, 80, 80);
-      doc.text(line, itemCol, textY);
-      textY += 3.5;
-    });
+      doc.text(descLines, itemCol, textY);
+    }
 
+    // Qty, Rate, Amount (top-aligned)
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
-    doc.text(qty.trim(), qtyCol, rowStartY + 4, { align: 'right', maxWidth: 20 });
-    doc.text(rate, rateCol, rowStartY + 4, { align: 'right' });
+    doc.text(qty, qtyCol, y + 4, { align: 'right' });
+    doc.text(rate, rateCol, y + 4, { align: 'right' });
+    
     doc.setFont('helvetica', 'bold');
-    doc.text(total, amountCol, rowStartY + 4, { align: 'right' });
+    doc.setTextColor(0, 0, 0);
+    doc.text(total, amountCol, y + 4, { align: 'right' });
 
-    y = textY + 3;
+    // Row border
     doc.setDrawColor(230, 230, 230);
-    doc.line(margin, y, pageWidth - margin, y);
+    doc.line(margin, y + rowHeight, pageWidth - margin, y + rowHeight);
+
+    y += rowHeight;
   });
 
   // ========== TOTALS ==========
@@ -467,7 +465,19 @@ export async function downloadQuotePDF(quote) {
   const doc = await generateQuotePDF(quote);
   const customerName = (quote.customer_name || 'Customer').replace(/[^a-zA-Z0-9]/g, '-');
   const quoteNumber = (quote.quote_number || 'DRAFT').replace(/[^a-zA-Z0-9]/g, '-');
-  doc.save(`Quote-${quoteNumber}-${customerName}.pdf`);
+  const filename = `Quote-${quoteNumber}-${customerName}.pdf`;
+  
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 /**

@@ -48,13 +48,13 @@ export default function Facturas() {
   const [selectedInvoiceForJob, setSelectedInvoiceForJob] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
 
-  const { data: user, isLoading: userLoading } = useQuery({ 
+  const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
     queryFn: () => base44.auth.me(),
-    staleTime: Infinity,
-    gcTime: Infinity,
-    refetchOnMount: 'stale',
-    refetchOnWindowFocus: false
+    staleTime: 300000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    gcTime: Infinity
   });
 
   const { handleError } = useErrorHandler();
@@ -119,15 +119,14 @@ export default function Facturas() {
       });
     }
   });
-  // Smart pagination for invoices — don't filter deleted_at server-side (undefined != null)
-  const paginationFilters = {};
+  // Smart pagination for invoices
+  const paginationFilters = { deleted_at: null };
   if (statusFilter !== 'all') paginationFilters.status = statusFilter;
   if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
 
   const {
-    items: invoices = [],
+    items: invoices,
     isLoading,
-    error: paginationError,
     page,
     hasMore,
     hasPrevious,
@@ -304,7 +303,6 @@ export default function Facturas() {
 
   // Log bad invoices in DEV
   if (import.meta.env.DEV) {
-    console.log('[Facturas] Query state:', { userLoaded: !!user, invoicesCount: invoices?.length || 0, isLoading, error: paginationError });
     safeInvoices.forEach(inv => {
       const bad = !inv.invoice_number || !Array.isArray(inv.items);
       if (bad) console.warn("[Bad invoice record]", inv?.id, inv);
@@ -312,9 +310,6 @@ export default function Facturas() {
   }
 
   const filteredInvoices = safeInvoices.filter(invoice => {
-    // Exclude soft-deleted invoices on the frontend
-    if (invoice.deleted_at) return false;
-
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch = !searchTerm ||
       invoice.customer_name?.toLowerCase().includes(searchLower) ||
@@ -435,7 +430,7 @@ export default function Facturas() {
         </div>
 
         {/* Invoices Grid/List */}
-        {userLoading || isLoading ? (
+        {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
             <SkeletonDocumentList count={6} />
           </div>
