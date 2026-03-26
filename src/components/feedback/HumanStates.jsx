@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDate } from '@/lib/utils';
 import { CheckCircle2, Clock, Wifi, WifiOff, AlertCircle, Info, Lock, Inbox } from 'lucide-react';
 
 /**
@@ -207,7 +208,7 @@ export const humanize = {
     if (hours < 24) return `${hours}h ago`;
     if (days === 1) return 'Yesterday';
     if (days < 7) return `${days} days ago`;
-    return new Date(date).toLocaleDateString();
+    return formatDate(date);
   },
   
   error: (technicalError) => {

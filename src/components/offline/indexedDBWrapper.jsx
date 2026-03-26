@@ -26,7 +26,6 @@ export const initDB = () => {
     };
 
     request.onsuccess = () => {
-      console.log('✅ IndexedDB initialized successfully');
       resolve(request.result);
     };
 
@@ -42,7 +41,6 @@ export const initDB = () => {
         mutationStore.createIndex('timestamp', 'timestamp', { unique: false });
         mutationStore.createIndex('entityType', 'entityType', { unique: false });
         mutationStore.createIndex('status', 'status', { unique: false });
-        console.log('Created mutations store');
       }
 
       // Cached data store - for offline reads
@@ -52,7 +50,6 @@ export const initDB = () => {
         });
         cacheStore.createIndex('entityType', 'entityType', { unique: false });
         cacheStore.createIndex('timestamp', 'timestamp', { unique: false });
-        console.log('Created cached_data store');
       }
 
       // Sync log store - for tracking sync history
@@ -63,7 +60,6 @@ export const initDB = () => {
         });
         syncStore.createIndex('timestamp', 'timestamp', { unique: false });
         syncStore.createIndex('success', 'success', { unique: false });
-        console.log('Created sync_log store');
       }
     };
   });

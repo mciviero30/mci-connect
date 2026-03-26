@@ -5,6 +5,7 @@
  */
 
 import { jsPDF } from 'jspdf';
+import { formatDate } from '@/lib/utils';
 
 export async function generateFactoryPDF(factoryData, options = {}) {
   const pdf = new jsPDF({
@@ -270,7 +271,7 @@ function renderBenchmarks(pdf, benchmarks, pageWidth, pageHeight, margin) {
     pdf.text(`${bm.elevation}" ${bm.unit || ''}`, margin + 40, y);
     pdf.setFont('helvetica', 'normal');
     pdf.text(bm.area || 'N/A', margin + 80, y);
-    pdf.text(bm.established_date ? new Date(bm.established_date).toLocaleDateString() : 'N/A', margin + 120, y);
+    pdf.text(bm.established_date ? formatDate(bm.established_date) : 'N/A', margin + 120, y);
     y += 6;
   });
 }

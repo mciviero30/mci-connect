@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -143,7 +144,7 @@ export default function PTOTracker({ user }) {
           <p className="font-semibold mb-1">Accrual Rate:</p>
           <p>{balance.accrual_rate_per_month} days per month ({balance.accrual_rate_per_month * 12} days/year)</p>
           {balance.last_accrual_date && (
-            <p className="mt-1 text-[10px]">Last accrued: {new Date(balance.last_accrual_date).toLocaleDateString()}</p>
+            <p className="mt-1 text-[10px]">Last accrued: {formatDate(balance.last_accrual_date)}</p>
           )}
         </div>
       </CardContent>

@@ -348,10 +348,6 @@ function CreateSubmittalDialog({ open, onClose, jobs, user }) {
     };
 
     if (!user?.id) {
-      console.warn('[WRITE GUARD] ⚠️ Creating Submittal without user_id', {
-        email: user?.email,
-        job: selectedJob?.name
-      });
     }
 
     createMutation.mutate(writeData);

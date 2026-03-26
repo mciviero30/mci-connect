@@ -16,6 +16,9 @@ import { AlertCircle } from "lucide-react";
 import { buildUserQuery } from "@/components/utils/userResolution";
 import { useMemo, useCallback } from 'react';
 
+const n = (v, d = 2) => (Number(v) || 0).toFixed(d);
+
+
 // NOTE: WeeklyPayroll write guards applied in SubmitPayrollButton component
 
 export default function EmployeePayrollDetail({ employee, initialWeekStart, initialWeekEnd, onClose }) {
@@ -40,6 +43,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: timeEntries } = useQuery({
     queryKey: ['timeEntries', employee.id, employee.email],
+    enabled: !!(employee?.id || employee?.email),
     queryFn: () => {
       const query = buildUserQuery(employee, 'user_id', 'employee_email');
       return base44.entities.TimeEntry.filter(query);
@@ -51,6 +55,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: drivingLogs } = useQuery({
     queryKey: ['drivingLogs', employee.id, employee.email],
+    enabled: !!(employee?.id || employee?.email),
     queryFn: () => {
       const query = buildUserQuery(employee, 'user_id', 'employee_email');
       return base44.entities.DrivingLog.filter(query);
@@ -62,6 +67,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
   // Dual-Key Read via userResolution — user_id preferred, email fallback (legacy)
   const { data: expenses } = useQuery({
     queryKey: ['expenses', employee.id, employee.email],
+    enabled: !!(employee?.id || employee?.email),
     queryFn: () => {
       const query = buildUserQuery(employee, 'user_id', 'employee_email');
       return base44.entities.Expense.filter(query);
@@ -368,41 +374,41 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4 text-center">
             <div>
               <p className="text-sm text-slate-400">{t('regularHours')}</p>
-              <p className="text-2xl font-bold text-emerald-400">{payCalculations.regularHours.toFixed(2)}h</p>
-              <p className="text-xs text-slate-500 mt-1">${payCalculations.regularPay.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-emerald-400">{n(payCalculations.regularHours, 2)}h</p>
+              <p className="text-xs text-slate-500 mt-1">${n(payCalculations.regularPay, 2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">{t('overtimeHours')}</p>
-              <p className="text-2xl font-bold text-amber-400">{payCalculations.overtimeHours.toFixed(2)}h</p>
-              <p className="text-xs text-slate-500 mt-1">${payCalculations.overtimePay.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-amber-400">{n(payCalculations.overtimeHours, 2)}h</p>
+              <p className="text-xs text-slate-500 mt-1">${n(payCalculations.overtimePay, 2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">{t('drivingHours')}</p>
-              <p className="text-2xl font-bold text-blue-400">{weekTotals.drivingHours.toFixed(2)}h</p>
-              <p className="text-xs text-slate-500 mt-1">${payCalculations.drivingHoursPay.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-blue-400">{n(weekTotals.drivingHours, 2)}h</p>
+              <p className="text-xs text-slate-500 mt-1">${n(payCalculations.drivingHoursPay, 2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">Millas</p>
-              <p className="text-2xl font-bold text-cyan-400">{weekTotals.drivingMiles.toFixed(0)} mi</p>
-              <p className="text-xs text-slate-500 mt-1">${payCalculations.mileagePay.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-cyan-400">{n(weekTotals.drivingMiles, 0)} mi</p>
+              <p className="text-xs text-slate-500 mt-1">${n(payCalculations.mileagePay, 2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">{t('perDiem')}</p>
-              <p className="text-2xl font-bold text-purple-400">${weekTotals.perDiem.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-purple-400">${n(weekTotals.perDiem, 2)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-400">Recibos</p>
-              <p className="text-2xl font-bold text-pink-400">${weekTotals.reimbursements.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-pink-400">${n(weekTotals.reimbursements, 2)}</p>
             </div>
             {payCalculations.totalCommission > 0 && (
               <div>
                 <p className="text-sm text-slate-400">Comisiones</p>
-                <p className="text-2xl font-bold text-green-400">${payCalculations.totalCommission.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-green-400">${n(payCalculations.totalCommission, 2)}</p>
               </div>
             )}
             <div className={payCalculations.totalCommission > 0 ? 'col-span-1' : 'col-span-2'}>
               <p className="text-sm text-slate-400">{t('totalPay')}</p>
-              <p className="text-3xl font-bold text-emerald-400">${payCalculations.totalPay.toFixed(2)}</p>
+              <p className="text-3xl font-bold text-emerald-400">${n(payCalculations.totalPay, 2)}</p>
             </div>
           </div>
         </CardContent>
@@ -413,7 +419,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
         <Card className="bg-gradient-to-br from-green-900/30 to-emerald-900/30 border-green-500/20 shadow-xl">
           <CardContent className="p-4">
             <h3 className="font-bold text-lg text-green-400 mb-3">
-              ✅ Approved Commissions (${payCalculations.totalCommission.toFixed(2)})
+              ✅ Approved Commissions (${n(payCalculations.totalCommission, 2)})
             </h3>
             <div className="space-y-2">
               {weekCommissions.map(comm => (
@@ -431,7 +437,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
                       </span>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-green-400">${comm.commission_amount.toFixed(2)}</p>
+                      <p className="font-bold text-green-400">${n(comm.commission_amount, 2)}</p>
                       <p className="text-xs text-slate-500">{comm.calculation_inputs?.model_used}</p>
                     </div>
                   </div>
@@ -458,27 +464,27 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
                   <div className="flex gap-4 text-sm flex-wrap">
                     {dayData.totalWorkHours > 0 && (
                       <span className="text-emerald-400 font-semibold">
-                        {dayData.totalWorkHours.toFixed(2)}h work
+                        {n(dayData.totalWorkHours, 2)}h work
                       </span>
                     )}
                     {dayData.drivingHours > 0 && (
                       <span className="text-blue-400 font-semibold">
-                        {dayData.drivingHours.toFixed(2)}h driving
+                        {n(dayData.drivingHours, 2)}h driving
                       </span>
                     )}
                     {dayData.drivingMiles > 0 && (
                       <span className="text-cyan-400 font-semibold">
-                        {dayData.drivingMiles.toFixed(0)} mi
+                        {n(dayData.drivingMiles, 0)} mi
                       </span>
                     )}
                     {dayData.perDiemAmount > 0 && (
                       <span className="text-purple-400 font-semibold">
-                        ${dayData.perDiemAmount.toFixed(2)} per diem
+                        ${n(dayData.perDiemAmount, 2)} per diem
                       </span>
                     )}
                     {dayData.reimbursementsAmount > 0 && (
                       <span className="text-pink-400 font-semibold">
-                        ${dayData.reimbursementsAmount.toFixed(2)} recibos
+                        ${n(dayData.reimbursementsAmount, 2)} recibos
                       </span>
                     )}
                   </div>
@@ -527,7 +533,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
                           <div className="flex gap-4 items-center flex-1">
                             <span className="text-sm font-medium text-white">{entry.job_name}</span>
                             <span className="text-sm text-slate-400">{entry.check_in?.substring(0, 5)} - {entry.check_out?.substring(0, 5)}</span>
-                            <span className="text-sm font-bold text-emerald-400">{entry.hours_worked?.toFixed(2)}h</span>
+                            <span className="text-sm font-bold text-emerald-400">{n(entry.hours_worked, 2)}h</span>
                             {entry.notes && <span className="text-xs text-slate-500">{entry.notes}</span>}
                           </div>
                           <Button size="sm" variant="ghost" onClick={() => handleEdit(entry, 'work')} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10">
@@ -564,9 +570,9 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
                         <div className="flex items-center justify-between">
                           <div className="flex gap-4 items-center flex-1">
                             <span className="text-sm font-medium text-blue-300">🚗 {t('driving')}</span>
-                            <span className="text-sm text-blue-400">{dayData.drivingHours.toFixed(1)}h</span>
+                            <span className="text-sm text-blue-400">{n(dayData.drivingHours, 1)}h</span>
                             <span className="text-sm text-blue-400">{dayData.drivingEntry.miles} mi</span>
-                            <span className="text-sm font-bold text-blue-300">${dayData.drivingEntry.total_amount?.toFixed(2)}</span>
+                            <span className="text-sm font-bold text-blue-300">${n(dayData.drivingEntry.total_amount, 2)}</span>
                           </div>
                           <Button size="sm" variant="ghost" onClick={() => handleEdit(dayData.drivingEntry, 'driving')} className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10">
                             {t('edit')}
@@ -582,7 +588,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
                       <div className="flex items-center justify-between">
                         <div className="flex gap-4 items-center">
                           <span className="text-sm font-medium text-purple-300">💵 {t('perDiem')}</span>
-                          <span className="text-sm font-bold text-purple-300">${perDiem.amount.toFixed(2)}</span>
+                          <span className="text-sm font-bold text-purple-300">${n(perDiem.amount, 2)}</span>
                         </div>
                       </div>
                     </div>
@@ -598,7 +604,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
                           <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30 text-xs">
                             Personal
                           </Badge>
-                          <span className="text-sm font-bold text-pink-300">${expense.amount.toFixed(2)}</span>
+                          <span className="text-sm font-bold text-pink-300">${n(expense.amount, 2)}</span>
                         </div>
                       </div>
                     </div>

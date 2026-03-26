@@ -50,7 +50,6 @@ export default function FieldPerformanceMonitor({ componentName = 'Field' }) {
       if (renderTime > 16) {
         longTasksRef.current++;
         if (import.meta.env?.DEV && renderTime > 50) {
-          console.warn(`[Performance] ⚠️ Long render: ${renderTime.toFixed(1)}ms in ${componentName}`);
         }
       }
     };

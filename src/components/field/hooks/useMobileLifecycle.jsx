@@ -26,7 +26,6 @@ export function useMobileLifecycle(callbacks = {}) {
       backgroundTimeRef.current = Date.now();
       
       if (import.meta.env?.DEV) {
-        console.log('[Field] Background detected', data);
       }
       
       if (onBackground) {
@@ -42,10 +41,6 @@ export function useMobileLifecycle(callbacks = {}) {
       const { duration, wasLongBackground } = data;
       
       if (import.meta.env?.DEV) {
-        console.log('[Field] Foreground detected', { 
-          duration: `${Math.round(duration/1000)}s`,
-          wasLongBackground 
-        });
       }
       
       if (onForeground) {
@@ -70,7 +65,6 @@ export function useMobileLifecycle(callbacks = {}) {
 
     const unsubscribeOnline = mobileLifecycle.on('online', (data) => {
       if (import.meta.env?.DEV) {
-        console.log('[Field] Network online', data);
       }
       
       if (onOnline) {
@@ -84,7 +78,6 @@ export function useMobileLifecycle(callbacks = {}) {
 
     const unsubscribeOffline = mobileLifecycle.on('offline', (data) => {
       if (import.meta.env?.DEV) {
-        console.log('[Field] Network offline', data);
       }
       
       if (onOffline) {

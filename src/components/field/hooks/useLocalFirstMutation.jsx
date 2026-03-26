@@ -178,7 +178,6 @@ export const startBackgroundSync = () => {
         try {
           // Retry sync for each pending item
           // This would need proper mutation logic per entity
-          console.log('Retrying sync for:', item);
         } catch (error) {
           console.error('Sync retry failed:', error);
         }

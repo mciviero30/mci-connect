@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useSearchParams, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
@@ -170,7 +171,7 @@ export default function FactoryView() {
             <div>
               <span className="text-slate-500 dark:text-slate-400">Captured:</span>
               <span className="ml-2 font-semibold text-slate-900 dark:text-slate-100">
-                {dimensionSet?.capture_date ? new Date(dimensionSet.capture_date).toLocaleDateString() : 'N/A'}
+                {dimensionSet?.capture_date ? formatDate(dimensionSet.capture_date) : 'N/A'}
               </span>
             </div>
             <div>
@@ -401,7 +402,6 @@ function ProductionGroups({ groups, job, dimensionSet }) {
     const packet = prepareGroupForExport(group, job, dimensionSet);
     
     // TODO: Generate PDF for this specific group
-    console.log('Export packet:', packet);
     alert(`Preparing ${packet.packet_name} for export`);
   };
   
@@ -445,7 +445,7 @@ function ProductionGroups({ groups, job, dimensionSet }) {
             <div className="mb-4 flex items-center gap-4 text-sm text-slate-600">
               <span>Type: <strong>{group.unit_type}</strong></span>
               <span>•</span>
-              <span>Captured: <strong>{new Date(group.metadata.field_capture_date).toLocaleDateString()}</strong></span>
+              <span>Captured: <strong>{formatDate(group.metadata.field_capture_date)}</strong></span>
               <span>•</span>
               <span>By: <strong>{group.metadata.captured_by.join(', ')}</strong></span>
             </div>
@@ -640,7 +640,7 @@ function BenchmarksTable({ benchmarks }) {
                   <td className="px-4 py-3 text-xs text-slate-500">
                     {bm.established_by_name || bm.established_by}
                     <br />
-                    {bm.established_date ? new Date(bm.established_date).toLocaleDateString() : 'N/A'}
+                    {bm.established_date ? formatDate(bm.established_date) : 'N/A'}
                   </td>
                 </tr>
               ))}

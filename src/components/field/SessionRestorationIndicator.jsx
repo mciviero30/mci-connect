@@ -10,12 +10,14 @@ export default function SessionRestorationIndicator({ isRestoring, restoredConte
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    let hideTimer = null;
     if (isRestoring) {
       setShow(true);
     } else if (restoredContext) {
       // Show "restored" state briefly, then fade
-      setTimeout(() => setShow(false), 2000);
+      hideTimer = setTimeout(() => setShow(false), 2000);
     }
+    return () => { if (hideTimer) clearTimeout(hideTimer); };
   }, [isRestoring, restoredContext]);
 
   if (!show) return null;

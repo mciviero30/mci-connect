@@ -14,12 +14,10 @@ let syncListeners = [];
  */
 export async function syncOfflinePDFs(base44Client) {
   if (syncInProgress) {
-    console.log('PDF sync already in progress');
     return { already_syncing: true };
   }
   
   if (!navigator.onLine) {
-    console.log('Cannot sync PDFs - offline');
     return { offline: true };
   }
   
@@ -30,13 +28,11 @@ export async function syncOfflinePDFs(base44Client) {
     const pendingJobs = await getPendingPDFJobs();
     
     if (pendingJobs.length === 0) {
-      console.log('No pending PDFs to sync');
       syncInProgress = false;
       notifySyncListeners('idle');
       return { synced: 0, failed: 0 };
     }
     
-    console.log(`Syncing ${pendingJobs.length} offline PDF(s)`);
     
     const results = {
       synced: 0,
@@ -53,7 +49,6 @@ export async function syncOfflinePDFs(base44Client) {
         });
         
         results.synced++;
-        console.log(`✓ Synced PDF: ${job.dimension_set_id}`);
         
       } catch (error) {
         console.error(`✗ Failed to sync PDF ${job.dimension_set_id}:`, error);
@@ -92,7 +87,6 @@ async function syncPDFJob(job, base44Client) {
   
   const { file_url } = await base44Client.integrations.Core.UploadFile({ file });
   
-  console.log('PDF uploaded:', file_url);
   
   // Create DimensionSetExport record or similar tracking entity
   // This links the PDF to the dimension set for future access
@@ -134,13 +128,11 @@ export function getPDFSyncStatus() {
  */
 export function initPDFAutoSync(base44Client) {
   window.addEventListener('online', async () => {
-    console.log('Network restored - syncing offline PDFs');
     
     try {
       const result = await syncOfflinePDFs(base44Client);
       
       if (result.synced > 0) {
-        console.log(`✓ Auto-synced ${result.synced} PDF(s)`);
       }
       
       if (result.failed > 0) {

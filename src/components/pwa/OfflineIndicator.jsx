@@ -158,7 +158,6 @@ export default function OfflineIndicator() {
         open={showConflicts}
         onOpenChange={setShowConflicts}
         onResolve={(resolutions) => {
-          console.log('Manual conflict resolution:', resolutions);
           clearConflicts();
         }}
       />

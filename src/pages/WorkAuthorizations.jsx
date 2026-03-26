@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -326,7 +327,7 @@ export default function WorkAuthorizations() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3 h-3" />
-                    {new Date(auth.approved_at).toLocaleDateString()}
+                    {formatDate(auth.approved_at)}
                   </div>
                 </div>
 

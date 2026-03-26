@@ -12,6 +12,9 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import ExportButtons from '../components/reportes/ExportButtons';
 import { exportToCSV } from '../components/reportes/ExportButtons';
 
+const n = (v, d = 2) => (Number(v) || 0).toFixed(d);
+
+
 export default function TimeReports() {
   const { language } = useLanguage();
   const [dateRange, setDateRange] = useState('month');
@@ -176,7 +179,7 @@ export default function TimeReports() {
       .filter(([_, hours]) => hours > 0)
       .map(([type, hours]) => ({
         name: type.charAt(0).toUpperCase() + type.slice(1),
-        value: parseFloat(hours.toFixed(1))
+        value: parseFloat(n(hours, 1))
       }));
   }, [filteredEntries]);
 
@@ -185,13 +188,13 @@ export default function TimeReports() {
   const exportData = useMemo(() => {
     return projectCosts.map(cost => ({
       'Job': cost.jobName,
-      'Total Hours': cost.totalHours.toFixed(2),
-      'Normal Hours': cost.normalHours.toFixed(2),
-      'Overtime Hours': cost.overtimeHours.toFixed(2),
-      'Labor Cost': `$${cost.laborCost.toFixed(2)}`,
-      'Contract Amount': `$${cost.contractAmount.toFixed(2)}`,
-      'Profit': `$${cost.profit.toFixed(2)}`,
-      'Profit Margin': `${cost.profitMargin.toFixed(1)}%`,
+      'Total Hours': n(cost.totalHours, 2),
+      'Normal Hours': n(cost.normalHours, 2),
+      'Overtime Hours': n(cost.overtimeHours, 2),
+      'Labor Cost': `$${n(cost.laborCost, 2)}`,
+      'Contract Amount': `$${n(cost.contractAmount, 2)}`,
+      'Profit': `$${n(cost.profit, 2)}`,
+      'Profit Margin': `${n(cost.profitMargin, 1)}%`,
       'Employees': cost.employees
     }));
   }, [projectCosts]);
@@ -206,11 +209,11 @@ export default function TimeReports() {
     const totalProfit = projectCosts.reduce((sum, c) => sum + c.profit, 0);
 
     return {
-      totalHours: total.hours.toFixed(1),
-      totalCost: total.cost.toFixed(2),
-      totalRevenue: totalRevenue.toFixed(2),
-      totalProfit: totalProfit.toFixed(2),
-      avgProfitMargin: totalRevenue > 0 ? ((totalProfit / totalRevenue) * 100).toFixed(1) : 0
+      totalHours: n(total.hours, 1),
+      totalCost: n(total.cost, 2),
+      totalRevenue: n(totalRevenue, 2),
+      totalProfit: n(totalProfit, 2),
+      avgProfitMargin: totalRevenue > 0 ? n((totalProfit / totalRevenue) * 100, 1) : 0
     };
   }, [filteredEntries, projectCosts, employees]);
 
@@ -355,7 +358,7 @@ export default function TimeReports() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name}: ${n(percent * 100, 0)}%`}
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
@@ -428,14 +431,14 @@ export default function TimeReports() {
                   {projectCosts.map(cost => (
                     <tr key={cost.jobId} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50">
                       <td className="p-3 text-slate-900 dark:text-white font-medium">{cost.jobName}</td>
-                      <td className="p-3 text-right text-slate-900 dark:text-white">{cost.totalHours.toFixed(1)}h</td>
-                      <td className="p-3 text-right text-red-600 dark:text-red-400">${cost.laborCost.toFixed(2)}</td>
-                      <td className="p-3 text-right text-slate-900 dark:text-white">${cost.contractAmount.toFixed(2)}</td>
+                      <td className="p-3 text-right text-slate-900 dark:text-white">{n(cost.totalHours, 1)}h</td>
+                      <td className="p-3 text-right text-red-600 dark:text-red-400">${n(cost.laborCost, 2)}</td>
+                      <td className="p-3 text-right text-slate-900 dark:text-white">${n(cost.contractAmount, 2)}</td>
                       <td className={`p-3 text-right font-bold ${cost.profit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        ${cost.profit.toFixed(2)}
+                        ${n(cost.profit, 2)}
                       </td>
                       <td className={`p-3 text-right font-bold ${cost.profitMargin >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {cost.profitMargin.toFixed(1)}%
+                        {n(cost.profitMargin, 1)}%
                       </td>
                     </tr>
                   ))}

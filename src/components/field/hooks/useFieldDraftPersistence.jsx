@@ -39,7 +39,6 @@ export function useFieldDraftPersistence(draftKey, draftData, setDraftData, opti
         // Only restore if data is fresh (< 24 hours old)
         if (parsed.timestamp && Date.now() - parsed.timestamp < 86400000) {
           setDraftData(parsed.data);
-          console.log(`[Draft Recovery] ✅ Restored ${draftKey}`);
         } else {
           // Clean up stale draft
           sessionStorage.removeItem(storageKey);

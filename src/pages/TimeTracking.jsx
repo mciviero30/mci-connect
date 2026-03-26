@@ -21,8 +21,19 @@ import { buildUserQuery } from "@/components/utils/userResolution";
 import PageHeader from "@/components/shared/PageHeader";
 import CleanTimeTrackerUI from "@/components/time-tracking/CleanTimeTrackerUI";
 
+/**
+ * FIX LOG:
+ * 1. Removed clockOutMutation — clock out is handled exclusively by LiveTimeTracker
+ *    to avoid double-system desync. TimeTracking.jsx now only creates the final TimeEntry.
+ * 2. Removed startBreakMutation / endBreakMutation from this page — also owned by LiveTimeTracker.
+ * 3. CleanTimeTrackerUI onClockOut now delegates to LiveTimeTracker (via localStorage session)
+ *    instead of calling a separate mutation here.
+ * 4. clockInMutation renamed to saveTimeEntryMutation — it receives the COMPLETE entry
+ *    from LiveTimeTracker.onSave (which already computed hours, breaks, geofence).
+ */
+
 export default function TimeTracking() {
-  const toast = useToast();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('daily');
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -30,6 +41,7 @@ export default function TimeTracking() {
   const [sessionData, setSessionData] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
 
+  // Read timeType passed from BottomNav (work or driving)
   const locationState = typeof window !== 'undefined' ? (window.history.state?.usr || {}) : {};
   const preselectedTimeType = locationState.timeType || null;
 
@@ -44,6 +56,7 @@ export default function TimeTracking() {
     ['manager', 'CEO', 'supervisor', 'administrator'].includes(user?.position) ||
     user?.department === 'HR';
 
+  // Get today's active time entry (no check_out yet)
   const { data: todayEntry } = useQuery({
     queryKey: ['todayTimeEntry', user?.id, user?.email],
     queryFn: async () => {
@@ -56,6 +69,7 @@ export default function TimeTracking() {
     enabled: !!user,
   });
 
+  // Get this week's entries for summary
   const { data: weekEntries = [] } = useQuery({
     queryKey: ['weekTimeEntries', user?.id, user?.email, selectedDate],
     queryFn: async () => {
@@ -72,6 +86,7 @@ export default function TimeTracking() {
   });
 
   // Save the final TimeEntry — receives complete data from LiveTimeTracker.onSave
+  // Hours, breaks, geofence validation are already computed by LiveTimeTracker.
   const saveTimeEntryMutation = useMutation({
     mutationFn: async (timeEntryData) => {
       if (!user?.email || !user?.full_name) {
@@ -84,7 +99,30 @@ export default function TimeTracking() {
         ...timeEntryData,
         status: timeEntryData.status || 'pending',
       };
-      return await base44.entities.TimeEntry.create(completeData);
+
+      // 1. Create the TimeEntry
+      const createdEntry = await base44.entities.TimeEntry.create(completeData);
+
+      // 2. Write individual BreakLog records for each completed break
+      const breaks = timeEntryData.breaks || [];
+      const completedBreaks = breaks.filter(b => b.start_time && b.end_time);
+      if (completedBreaks.length > 0) {
+        await Promise.allSettled(
+          completedBreaks.map(b =>
+            base44.entities.BreakLog.create({
+              time_entry_id: createdEntry.id,
+              employee_email: user.email,
+              break_type: b.type || 'break',
+              start_time: b.start_time,
+              end_time: b.end_time,
+              duration_minutes: b.duration_minutes || 0,
+              date: timeEntryData.date || completeData.date,
+            })
+          )
+        );
+      }
+
+      return createdEntry;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
@@ -104,6 +142,7 @@ export default function TimeTracking() {
   }, [weekEntries]);
 
   // Restore active session from localStorage on mount
+  // NEW FORMAT: liveTimeTracker_{userId}_{trackingType} — scan all matching keys
   useEffect(() => {
     try {
       const allKeys = Object.keys(localStorage);
@@ -118,7 +157,7 @@ export default function TimeTracking() {
             setShowCleanUI(true);
             break;
           }
-        } catch (e) {}
+        } catch (e) { /* intentionally silenced */ }
       }
     } catch (e) {
       setShowCleanUI(false);
@@ -126,6 +165,7 @@ export default function TimeTracking() {
   }, []);
 
   // Sync session state when todayEntry changes
+  // NEW FORMAT: scan all liveTimeTracker_ keys
   useEffect(() => {
     if (todayEntry && !showCleanUI && !sessionData) {
       try {
@@ -145,7 +185,7 @@ export default function TimeTracking() {
             localStorage.removeItem(key);
           }
         }
-      } catch (e) {}
+      } catch (e) { /* intentionally silenced */ }
     }
   }, [todayEntry, showCleanUI, sessionData]);
 
@@ -159,22 +199,40 @@ export default function TimeTracking() {
     return () => clearInterval(interval);
   }, [showCleanUI, sessionData]);
 
+  // If there's an active session, show the CleanTimeTrackerUI overlay.
+  // Break and ClockOut are handled internally by LiveTimeTracker — when the user
+  // taps ClockOut from here, we just clear state so LiveTimeTracker takes over.
   if (showCleanUI && sessionData && todayEntry) {
     return (
       <CleanTimeTrackerUI
         activeSession={sessionData}
         elapsed={elapsedTime}
         onBreakToggle={() => {
+          // FIX: Use the same session key that LiveTimeTracker uses (user-scoped + trackingType)
+          // Detect the actual key from localStorage (handles both work and driving types)
           const updated = sessionData.onBreak
             ? { ...sessionData, onBreak: false, breakStartTime: null }
             : { ...sessionData, onBreak: true, breakStartTime: Date.now() };
           setSessionData(updated);
-          const storageKey = user?.id ? `liveTimeTracker_${user.id}_work` : 'liveTimeTracker_work';
-          localStorage.setItem(storageKey, JSON.stringify(updated));
+          // Find the correct user-scoped key
+          if (user?.id) {
+            const allKeys = Object.keys(localStorage).filter(k => k.startsWith(`liveTimeTracker_${user.id}_`));
+            const activeKey = allKeys[0] || `liveTimeTracker_${user.id}_work`;
+            localStorage.setItem(activeKey, JSON.stringify(updated));
+          }
         }}
         onClockOut={() => {
+          // FIX: Clear localStorage session to prevent ghost re-restore
+          // The user tapped clock-out from the overlay — clean up all session keys for this user
+          try {
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('liveTimeTracker_'));
+            keys.forEach(k => localStorage.removeItem(k));
+          } catch (e) { /* intentionally silenced */ }
           setShowCleanUI(false);
           setSessionData(null);
+          // Invalidate today's entry so the page refreshes correctly
+          queryClient.invalidateQueries({ queryKey: ['todayTimeEntry'] });
+          queryClient.invalidateQueries({ queryKey: ['weekTimeEntries'] });
         }}
         onBack={() => {
           setShowCleanUI(false);
@@ -241,6 +299,7 @@ export default function TimeTracking() {
             }
           />
 
+          {/* LiveTimeTracker is the single source of truth for clock in/out/breaks/geofence */}
           <LiveTimeTracker
             trackingType={preselectedTimeType === 'driving' ? 'driving' : 'work'}
             preselectedWorkType={
@@ -254,6 +313,7 @@ export default function TimeTracking() {
             isLoading={saveTimeEntryMutation.isPending}
           />
 
+          {/* Week Summary */}
           <Card className="bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-800/50 border-slate-200/60 dark:border-slate-700/60 shadow-xl">
             <CardHeader className="pb-3 md:pb-4">
               <CardTitle className="text-base md:text-xl font-black tracking-tight">
@@ -289,6 +349,7 @@ export default function TimeTracking() {
             </CardContent>
           </Card>
 
+          {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className={`grid w-full ${isManager ? 'grid-cols-4' : 'grid-cols-3'} gap-1`}>
               <TabsTrigger value="daily" className="text-xs md:text-sm min-h-[40px]">

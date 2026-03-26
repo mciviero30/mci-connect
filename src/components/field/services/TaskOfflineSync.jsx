@@ -52,13 +52,11 @@ class TaskOfflineSync {
    */
   monitorConnectivity() {
     window.addEventListener('online', () => {
-      console.log('🌐 Network restored - starting task sync');
       this.isOnline = true;
       this.processSyncQueue();
     });
     
     window.addEventListener('offline', () => {
-      console.log('📵 Network lost - queuing tasks offline');
       this.isOnline = false;
       this.notifyListeners();
     });
@@ -100,7 +98,6 @@ class TaskOfflineSync {
       
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
-        console.log(`✅ Task ${task.temp_id} saved to queue`);
         this.notifyListeners();
         resolve();
       };
@@ -183,7 +180,6 @@ class TaskOfflineSync {
       // Step 5: Replace temp task with server task
       await this.removeFromQueue(task.temp_id);
       
-      console.log(`✨ Task ${task.temp_id} synced successfully (server ID: ${response.id})`);
       this.notifyListeners();
       
       return response;
@@ -252,7 +248,6 @@ class TaskOfflineSync {
     } else {
       // Schedule retry
       await this.updateRetryCount(task.temp_id, newRetryCount);
-      console.warn(`⚠️ Retrying task ${task.temp_id} (attempt ${newRetryCount}/${MAX_RETRIES})`);
       
       setTimeout(() => {
         if (this.isOnline) {
@@ -278,7 +273,6 @@ class TaskOfflineSync {
           const putRequest = store.put(task);
           putRequest.onerror = () => reject(putRequest.error);
           putRequest.onsuccess = () => {
-            console.log(`📝 Task ${temp_id} status → ${status}`);
             this.notifyListeners();
             resolve();
           };
@@ -325,7 +319,6 @@ class TaskOfflineSync {
       
       request.onerror = () => reject(request.error);
       request.onsuccess = () => {
-        console.log(`🗑️ Task ${temp_id} removed from queue`);
         this.notifyListeners();
         resolve();
       };

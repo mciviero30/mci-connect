@@ -29,7 +29,6 @@ export async function createNotification({
     const pushEnabled = settings[`${typeBase}_push`] === true && settings.push_enabled;
 
     if (!inAppEnabled && !emailEnabled && !pushEnabled) {
-      console.log(`User ${recipientEmail} has disabled all notifications for ${type}`);
       return null;
     }
 
@@ -192,7 +191,6 @@ export async function sendPushNotification(notification) {
     }).catch(() => []);
 
     if (subscriptions.length === 0) {
-      console.log(`No active push subscriptions for ${notification.recipient_email}`);
       return; // No active push subscriptions
     }
 
@@ -202,25 +200,17 @@ export async function sendPushNotification(notification) {
     const pushEnabled = settings[`${typeBase}_push`] !== false && settings.push_enabled;
 
     if (!pushEnabled) {
-      console.log(`Push disabled for ${notification.recipient_email} for type ${notification.type}`);
       return; // Push disabled for this type
     }
 
     // Check quiet hours
     if (settings.quiet_hours_enabled && isQuietHours(settings)) {
-      console.log(`In quiet hours for ${notification.recipient_email}, skipping push notification.`);
       return; // In quiet hours
     }
 
     // Send push to all active subscriptions
     // Note: In a real implementation, you would send this to your backend
     // which would use web-push library to send the actual push notification
-    console.log('Push notification would be sent:', {
-      subscriptions: subscriptions.length,
-      title: notification.title,
-      message: notification.message,
-      type: notification.type
-    });
 
     // For browser testing - send local notification if permission granted
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {

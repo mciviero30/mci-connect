@@ -72,9 +72,8 @@ export default function CrearIncidentePage() {
           });
           latitude = position.coords.latitude;
           longitude = position.coords.longitude;
-        } catch (err) {
-          console.log('Location not available');
-        }
+        } catch (err) { /* intentionally silenced */ }
+
       }
 
       // WRITE GUARD — user_id required for new records (legacy tolerated)
@@ -91,10 +90,6 @@ export default function CrearIncidentePage() {
       };
 
       if (!user?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Creating SafetyIncident without user_id', {
-          email: user?.email,
-          incident_number
-        });
       }
 
       return base44.entities.SafetyIncident.create(writeData);

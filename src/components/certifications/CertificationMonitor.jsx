@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { formatDate } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { differenceInDays } from 'date-fns';
@@ -115,7 +116,7 @@ export default function CertificationMonitor({ userEmail }) {
             const emailBody = `Hello ${cert.employee_name},\n\n` +
               `This is a proactive reminder that your certification is expiring soon:\n\n` +
               `📋 Certification: ${cert.certification_name}\n` +
-              `📅 Expiration Date: ${new Date(cert.expiration_date).toLocaleDateString()}\n` +
+              `📅 Expiration Date: ${formatDate(cert.expiration_date)}\n` +
               `⏰ Days Remaining: ${daysUntilExpiry}\n\n` +
               `Please renew this certification before it expires to maintain compliance.\n\n` +
               `Thank you,\nMCI Connect - Compliance Team`;

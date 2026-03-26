@@ -115,7 +115,6 @@ export default function EmployeeProfile() {
   };
 
   const handleSave = () => {
-    console.log('[EmployeeProfile] Saving changes:', editForm);
     updateMutation.mutate(editForm);
   };
 

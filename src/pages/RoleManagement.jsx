@@ -252,11 +252,13 @@ export default function RoleManagement() {
 
   const { data: roles = [] } = useQuery({
     queryKey: ['roles'],
+    enabled: !!user,
     queryFn: () => base44.entities.Role.list()
   });
 
   const { data: usersWithRoles = [] } = useQuery({
     queryKey: ['users-with-custom-roles'],
+    enabled: !!user,
     queryFn: async () => {
       const users = await base44.entities.User.list();
       return users.filter(u => u.custom_role_id);

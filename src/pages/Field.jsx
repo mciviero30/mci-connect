@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Link, useNavigate } from 'react-router-dom';
@@ -196,6 +197,7 @@ export default function Field() {
 
   const { data: jobsData = { authorized: [], unauthorized: [], pending: [] }, isLoading } = useQuery({
     queryKey: ['field-jobs-v2', user?.email],
+    enabled: !!user,
     queryFn: async () => {
       let allJobs = [];
       
@@ -713,7 +715,7 @@ export default function Field() {
                       {/* Dates */}
                       {(job.start_date_field || job.end_date_field) && (
                         <p className="text-xs text-slate-500 mb-1">
-                          📅 {job.start_date_field ? new Date(job.start_date_field).toLocaleDateString() : 'N/A'} → {job.end_date_field ? new Date(job.end_date_field).toLocaleDateString() : 'N/A'}
+                          📅 {job.start_date_field ? formatDate(job.start_date_field) : 'N/A'} → {job.end_date_field ? formatDate(job.end_date_field) : 'N/A'}
                         </p>
                       )}
                     </Link>

@@ -28,7 +28,7 @@ import { useEffect, useState, useMemo } from "react";
 export default function Gastos() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 

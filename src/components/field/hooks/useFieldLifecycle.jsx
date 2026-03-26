@@ -34,11 +34,6 @@ export function useFieldLifecycle({ jobId, queryClient }) {
   useMobileLifecycle({
     onBackground: (data) => {
       if (import.meta.env?.DEV) {
-        console.log('[FieldLifecycle] 🔽 Backgrounded', {
-          jobId,
-          online: data.online,
-          time: new Date().toISOString(),
-        });
       }
       
       // Mark background state for offline sync
@@ -60,12 +55,6 @@ export function useFieldLifecycle({ jobId, queryClient }) {
       const { duration, wasLongBackground } = data;
       
       if (import.meta.env?.DEV) {
-        console.log('[FieldLifecycle] 🔼 Foregrounded', {
-          jobId,
-          duration: `${Math.round(duration/1000)}s`,
-          wasLongBackground,
-          online: data.online,
-        });
       }
 
       // Clear background marker
@@ -87,16 +76,11 @@ export function useFieldLifecycle({ jobId, queryClient }) {
       // No query invalidation, no cache clearing
       
       if (wasLongBackground && import.meta.env?.DEV) {
-        console.log('[FieldLifecycle] ⚠️ Long background detected - state still intact');
       }
     },
 
     onLongBackground: (data) => {
       if (import.meta.env?.DEV) {
-        console.log('[FieldLifecycle] ⏱️ Long background period', {
-          duration: `${Math.round(data.duration/1000)}s`,
-          jobId,
-        });
       }
       
       // State is preserved even after long background
@@ -105,10 +89,6 @@ export function useFieldLifecycle({ jobId, queryClient }) {
 
     onOnline: (data) => {
       if (import.meta.env?.DEV) {
-        console.log('[FieldLifecycle] 📶 Network online', {
-          jobId,
-          offlineDuration: `${Math.round(data.offlineDuration/1000)}s`,
-        });
       }
 
       // Trigger offline sync if available
@@ -119,10 +99,6 @@ export function useFieldLifecycle({ jobId, queryClient }) {
 
     onOffline: (data) => {
       if (import.meta.env?.DEV) {
-        console.log('[FieldLifecycle] 📵 Network offline', {
-          jobId,
-          wasBackground: data.wasBackground,
-        });
       }
 
       // Queue mode activated - writes go to offline queue
@@ -137,7 +113,6 @@ export function useFieldLifecycle({ jobId, queryClient }) {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         if (import.meta.env?.DEV) {
-          console.log('[FieldLifecycle] Visibility restored - queries remain stable');
         }
         
         // CRITICAL: Do NOT refetch - stable cache only
@@ -155,17 +130,6 @@ export function useFieldLifecycle({ jobId, queryClient }) {
   if (import.meta.env?.DEV) {
     // Log lifecycle readiness on mount
     useEffect(() => {
-      console.log('[FieldLifecycle] ✅ Lifecycle protection active', {
-        jobId,
-        features: [
-          'Background/Foreground',
-          'Screen Lock',
-          'Network Changes',
-          'Long Background',
-          'Unsaved Work Protection',
-          'State Preservation',
-        ],
-      });
     }, [jobId]);
   }
 }

@@ -130,6 +130,5 @@ export const canViewPayroll = (user) => {
  * @deprecated Use isAdmin() for clarity
  */
 export const hasFullAccess = (user) => {
-  console.warn('⚠️ hasFullAccess is deprecated. Use isAdmin() instead.');
   return isAdmin(user);
 };

@@ -47,7 +47,6 @@ export const buildCacheKey = (dashboardType, startDate, endDate) => {
   }[dashboardType];
 
   if (!key) {
-    console.warn('[Commission Cache] Unknown dashboard type:', dashboardType);
   }
 
   return key || ['unknown'];
@@ -92,7 +91,6 @@ export const isSimulationOfflineMode = (isSimulation) => {
   if (!isSimulation) return true;
 
   if (import.meta.env.DEV) {
-    console.log('[Commission Safety] Simulation: API calls disabled');
   }
 
   return true;
@@ -115,7 +113,6 @@ export const logCommissionAccess = (event) => {
   };
 
   if (import.meta.env.DEV) {
-    console.log('[Commission Access]', safeEvent);
   }
 };
 
@@ -135,10 +132,6 @@ export const isCacheFresh = (cache, expectedKey) => {
   const isFresh = cacheKey === expKey;
 
   if (!isFresh && import.meta.env.DEV) {
-    console.warn('[Commission Cache] Stale cache detected:', {
-      expected: expectedKey,
-      actual: cache.key
-    });
   }
 
   return isFresh;

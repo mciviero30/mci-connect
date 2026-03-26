@@ -89,7 +89,6 @@ export function setCache(namespace, data, params = {}) {
     try {
       localStorage.setItem(key, JSON.stringify(entry));
     } catch {
-      console.warn('Cache storage failed');
     }
   }
   

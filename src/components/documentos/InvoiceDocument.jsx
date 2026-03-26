@@ -31,12 +31,12 @@ export default function InvoiceDocument({ invoice }) {
         (sum, item) => sum + (Number(item?.total) || Number(item?.unit_price) * Number(item?.quantity) || 0),
         0
     );
-    const safeSubtotal   = Number(invoice.subtotal)    || computedSubtotal;
-    const safeTaxRate    = Number(invoice.tax_rate)    || 0;
-    const safeTaxAmount  = Number(invoice.tax_amount)  || (safeSubtotal * safeTaxRate / 100);
-    const safeTotal      = Number(invoice.total)       || safeSubtotal + safeTaxAmount;
+    const safeSubtotal  = Number(invoice.subtotal)  || computedSubtotal;
+    const safeTaxRate   = Number(invoice.tax_rate)   || 0;
+    const safeTaxAmount = Number(invoice.tax_amount) || (safeSubtotal * safeTaxRate / 100);
+    const safeTotal     = Number(invoice.total)      || safeSubtotal + safeTaxAmount;
     const safeAmountPaid = Number(invoice.amount_paid) || 0;
-    const safeBalance    = Number(invoice.balance)     ?? Math.max(0, safeTotal - safeAmountPaid);
+    const safeBalance   = Number(invoice.balance)    ?? Math.max(0, safeTotal - safeAmountPaid);
 
     const fmt = (n) => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 

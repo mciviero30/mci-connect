@@ -32,7 +32,6 @@ export default function CreateTimeEntryDialog({ open, onOpenChange }) {
     queryKey: ['employees-for-timeentry'],
     queryFn: async () => {
       const directory = await base44.entities.EmployeeDirectory.list('full_name', 100);
-      console.log('👥 Loaded employees:', directory.length);
       return directory;
     },
     enabled: open,
@@ -44,7 +43,6 @@ export default function CreateTimeEntryDialog({ open, onOpenChange }) {
     queryKey: ['jobs-for-timeentry'],
     queryFn: async () => {
       const allJobs = await base44.entities.Job.list('name', 100);
-      console.log('💼 Loaded jobs:', allJobs.length);
       return allJobs;
     },
     enabled: open,
@@ -108,9 +106,8 @@ export default function CreateTimeEntryDialog({ open, onOpenChange }) {
             notes: 'auto_created_from_manual_entry'
           });
         }
-      } catch (e) {
-        console.warn('[AutoCalendar] Could not create shift from manual entry:', e);
-      }
+      } catch (e) { /* intentionally silenced */ }
+
 
       return timeEntry;
     },

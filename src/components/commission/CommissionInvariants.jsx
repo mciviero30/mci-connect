@@ -19,11 +19,6 @@ export const validateCommissionStatusTransition = (oldStatus, newStatus) => {
   const allowed = VALID_TRANSITIONS[oldStatus]?.includes(newStatus);
   
   if (!allowed && import.meta.env.DEV) {
-    console.warn('[Commission Invariant] Invalid status transition:', {
-      from: oldStatus,
-      to: newStatus,
-      allowed: VALID_TRANSITIONS[oldStatus] || []
-    });
   }
 
   return allowed;
@@ -34,12 +29,6 @@ export const validateCommissionStatusTransition = (oldStatus, newStatus) => {
  */
 export const validateCommissionAmountImmutable = (original, current) => {
   if (original && current && original.commission_amount !== current.commission_amount) {
-    console.warn('[Commission Invariant] Amount changed (immutability violation):', {
-      original: original.commission_amount,
-      current: current.commission_amount,
-      commission_id: original.id,
-      timestamp: new Date().toISOString()
-    });
     return false;
   }
   return true;
@@ -63,11 +52,6 @@ export const validateRuleSnapshotConsistency = (commissionRuleSnapshot, activeRu
   });
 
   if (mismatches.length > 0 && import.meta.env.DEV) {
-    console.warn('[Commission Invariant] Rule snapshot mismatch:', {
-      commission_id: commissionRuleSnapshot.commission_id,
-      mismatched_fields: mismatches,
-      timestamp: new Date().toISOString()
-    });
     return false;
   }
 

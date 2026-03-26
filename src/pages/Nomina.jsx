@@ -21,6 +21,9 @@ import { Loader2 } from "lucide-react";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import { useMemo, useCallback } from 'react';
 
+const n = (v, d = 2) => (Number(v) || 0).toFixed(d);
+
+
 export default function Nomina() {
   const { t, language } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
@@ -121,17 +124,17 @@ export default function Nomina() {
         const statusLabel = p.weekPayroll ? statusConfig[p.weekPayroll.status]?.label : statusConfig.draft.label;
         return [
           p.employee.full_name,
-          p.normalHours.toFixed(2),
-          p.overtimeHours.toFixed(2),
-          p.drivingHours.toFixed(2),
-          p.drivingMiles.toFixed(1),
+          n(p.normalHours, 2),
+          n(p.overtimeHours, 2),
+          n(p.drivingHours, 2),
+          n(p.drivingMiles, 1),
           p.workDaysCount,
-          p.perDiemAmount.toFixed(2),
-          p.workPay.toFixed(2),
-          p.drivingPay.toFixed(2),
-          p.reimbursements.toFixed(2),
-          p.bonusAmount.toFixed(2), // NEW
-          p.totalPay.toFixed(2),
+          n(p.perDiemAmount, 2),
+          n(p.workPay, 2),
+          n(p.drivingPay, 2),
+          n(p.reimbursements, 2),
+          n(p.bonusAmount, 2), // NEW
+          n(p.totalPay, 2),
           statusLabel
         ]
       })
@@ -189,10 +192,10 @@ export default function Nomina() {
 
         <StatsSummaryGrid 
           stats={[
-            { label: t('totalWorkPay'), value: `$${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Briefcase, subtitle: `${totals.normalHours.toFixed(1)}h + ${totals.overtimeHours.toFixed(1)}h OT` },
-            { label: t('totalDrivingPay'), value: `$${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Car, subtitle: `${totals.drivingHours.toFixed(1)}h driving` },
+            { label: t('totalWorkPay'), value: `$${totals.workPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Briefcase, subtitle: `${n(totals.normalHours, 1)}h + ${n(totals.overtimeHours, 1)}h OT` },
+            { label: t('totalDrivingPay'), value: `$${totals.drivingPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Car, subtitle: `${n(totals.drivingHours, 1)}h driving` },
             { label: t('perDiem'), value: `$${totals.perDiemAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: DollarSign },
-            { label: t('totalReimbursements'), value: `$${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Download, subtitle: totals.pendingReimbursements > 0 ? `⚠️ $${totals.pendingReimbursements.toFixed(2)} pending` : undefined },
+            { label: t('totalReimbursements'), value: `$${totals.reimbursements.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Download, subtitle: totals.pendingReimbursements > 0 ? `⚠️ $${n(totals.pendingReimbursements, 2)} pending` : undefined },
             { label: language === 'es' ? 'Bonos' : 'Bonuses', value: `$${totals.bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Gift, subtitle: language === 'es' ? 'Trabajos completados' : 'Completed jobs' },
             { label: t('totalPayroll'), value: `$${totals.totalPay.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, icon: Banknote, gradient: 'soft-cyan-gradient' }
           ]}
@@ -244,19 +247,19 @@ export default function Nomina() {
                         <p className="text-sm text-slate-600 dark:text-slate-400">{employee.position || t('employee')} • ${hourlyRate}/hr (OT: ${overtimeRate}/hr)</p>
                         <div className="flex gap-3 mt-3 flex-wrap">
                           <Badge className="badge-soft-blue">
-                            {normalHours.toFixed(1)}h {language === 'es' ? 'normal' : 'normal'}
+                            {n(normalHours, 1)}h {language === 'es' ? 'normal' : 'normal'}
                           </Badge>
                           {overtimeHours > 0 && (
                             <Badge className="badge-soft-amber">
-                              {overtimeHours.toFixed(1)}h OT
+                              {n(overtimeHours, 1)}h OT
                             </Badge>
                           )}
                           <Badge className="badge-soft-green">
-                            {drivingHours.toFixed(1)}h {language === 'es' ? 'manejo' : 'driving'}
+                            {n(drivingHours, 1)}h {language === 'es' ? 'manejo' : 'driving'}
                           </Badge>
                           {perDiemAmount > 0 && (
                             <Badge className="badge-soft-slate">
-                              ${perDiemAmount.toFixed(2)} Per Diem ({workDaysCount}d)
+                              ${n(perDiemAmount, 2)} Per Diem ({workDaysCount}d)
                             </Badge>
                           )}
                         </div>
@@ -272,23 +275,23 @@ export default function Nomina() {
                         <div className="text-xs text-slate-600 dark:text-slate-400 mt-1 space-y-0.5">
                           <div className="flex justify-between gap-4">
                             <span>{language === 'es' ? 'Trabajo' : 'Work'}:</span>
-                            <span className="font-semibold text-slate-700 dark:text-slate-300">${workPay.toFixed(2)}</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">${n(workPay, 2)}</span>
                           </div>
                           <div className="flex justify-between gap-4">
                             <span>{language === 'es' ? 'Manejo' : 'Driving'}:</span>
-                            <span className="font-semibold text-slate-700 dark:text-slate-300">${drivingPay.toFixed(2)}</span>
+                            <span className="font-semibold text-slate-700 dark:text-slate-300">${n(drivingPay, 2)}</span>
                           </div>
                           {reimbursements > 0 && (
                             <div className="flex justify-between gap-4">
                               <span>{t('reimbursements')}:</span>
-                              <span className="font-semibold text-slate-700 dark:text-slate-300">${reimbursements.toFixed(2)}</span>
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">${n(reimbursements, 2)}</span>
                             </div>
                           )}
                           {/* NEW: Prompt #60 - Show bonus amount */}
                           {bonusAmount > 0 && (
                             <div className="flex justify-between gap-4">
                               <span className="text-rose-600 dark:text-rose-400">{language === 'es' ? '🎯 Bono' : '🎯 Bonus'}:</span>
-                              <span className="font-semibold text-rose-600 dark:text-rose-400">${bonusAmount.toFixed(2)}</span>
+                              <span className="font-semibold text-rose-600 dark:text-rose-400">${n(bonusAmount, 2)}</span>
                             </div>
                           )}
                         </div>

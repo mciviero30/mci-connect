@@ -91,8 +91,6 @@ export default function CrearFactura() {
     queryKey: ['jobs'],
     queryFn: async () => {
       const result = await base44.entities.Job.list();
-      console.log('📋 Jobs loaded in CrearFactura:', result?.length || 0, 'jobs');
-      console.log('📋 Jobs data sample:', result?.slice(0, 3)?.map(j => ({ id: j.id, name: j.name })));
       return result;
     },
     initialData: [],
@@ -114,7 +112,6 @@ export default function CrearFactura() {
     queryKey: ['customers'],
     queryFn: async () => {
       const result = await base44.entities.Customer.list();
-      console.log('Customers loaded:', result?.length || 0);
       return result;
     },
     staleTime: 0,
@@ -127,8 +124,6 @@ export default function CrearFactura() {
     queryKey: ['quoteItems'],
     queryFn: async () => {
       const result = await base44.entities.QuoteItem.list();
-      console.log('📦 QuoteItems loaded in CrearFactura:', result?.length || 0, 'items');
-      console.log('📦 QuoteItems sample:', result?.slice(0, 3)?.map(qi => ({ id: qi.id, name: qi.name })));
       return result;
     },
     initialData: [],
@@ -453,16 +448,9 @@ export default function CrearFactura() {
   // New mutation for creating a fresh invoice as a draft.
   const createMutation = useMutation({
     mutationFn: async (invoiceData) => {
-      console.log('Creating invoice with data:', invoiceData);
       
       // DEV LOG
       if (import.meta.env.DEV) {
-        console.log("[Invoice before normalize]", invoiceData.items.map(i => ({
-          item_name: i.item_name,
-          description: i.description,
-          unit: i.unit,
-          unit_price: i.unit_price
-        })));
       }
       
       // Step 1: Normalize and validate data
@@ -470,21 +458,14 @@ export default function CrearFactura() {
       
       // DEBUG: Log quantities BEFORE save
       if (import.meta.env.DEV) {
-        console.log('[QUANTITY SNAPSHOT] BEFORE SAVE:', normalizedData.items.map(i => ({
-          item_name: i.item_name,
-          sent_quantity: invoiceData.items[normalizedData.items.indexOf(i)]?.quantity,
-          saved_quantity: i.quantity
-        })));
       }
       
       // Step 2: Generate invoice number via backend function (thread-safe)
       if (import.meta.env.DEV) {
-        console.log('[InvoiceNumber] calling backend generateInvoiceNumber()');
       }
       const raw = await generateInvoiceNumber({});
       
       if (import.meta.env.DEV) {
-        console.log('[InvoiceNumber] raw response:', raw);
       }
       
       const invoiceNumber = extractInvoiceNumber(raw);
@@ -497,7 +478,6 @@ export default function CrearFactura() {
       const invoice_number = invoiceNumber;
       
       if (import.meta.env.DEV) {
-        console.log('[InvoiceNumber] ✅ resolved:', invoice_number);
       }
 
       // Step 3: Build final data with generated number + approval workflow
@@ -533,7 +513,6 @@ export default function CrearFactura() {
           : '🔒 User identity required. Please logout and login again before creating invoices.');
       }
 
-      console.log('Final invoice data (normalized):', finalData);
       
       // Try to auto-link to existing job if job_name provided but no job_id
       if (!finalData.job_id && finalData.job_name) {
@@ -551,14 +530,8 @@ export default function CrearFactura() {
       
       // DEBUG: Log quantities AFTER reload
       if (import.meta.env.DEV) {
-        console.log('[QUANTITY SNAPSHOT] AFTER SAVE & RELOAD:', result.items.map(i => ({
-          item_name: i.item_name,
-          loaded_quantity: i.quantity,
-          invoice_total: result.total
-        })));
       }
       
-      console.log('Invoice created successfully:', result);
       
       // TRIGGER 2: Manual Invoice Creation Provisioning (ONLY IF APPROVED)
       if (finalData.approval_status === 'approved') {
@@ -566,9 +539,8 @@ export default function CrearFactura() {
           await base44.functions.invoke('provisionJobFromInvoice', {
             invoice_id: result.id
           });
-        } catch (provisionError) {
-          console.warn('Provisioning failed (non-critical):', provisionError);
-        }
+        } catch (provisionError) { /* intentionally silenced */ }
+
       }
       
       return result;
@@ -599,7 +571,6 @@ export default function CrearFactura() {
     
     // This handler is specifically for creating new invoices (when editId is null).
     if (editId) {
-        console.warn("handleSubmit called on an existing invoice. This might be unintended as it's meant for initial creation.");
         return;
     }
 
@@ -637,16 +608,9 @@ export default function CrearFactura() {
         throw new Error("updateMutation called without editId");
       }
       
-      console.log('Updating invoice with data:', data);
       
       // DEV LOG
       if (import.meta.env.DEV) {
-        console.log("[Invoice before normalize]", data.items.map(i => ({
-          item_name: i.item_name,
-          description: i.description,
-          unit: i.unit,
-          unit_price: i.unit_price
-        })));
       }
       
       // Calculate estimated hours from items
@@ -666,14 +630,9 @@ export default function CrearFactura() {
       const recalculatedBalance = normalizedData.total - (normalizedData.amount_paid || 0);
       normalizedData.balance = recalculatedBalance;
 
-      console.log('Final invoice data (normalized):', normalizedData);
       
       // DEBUG: Log quantities on UPDATE
       if (import.meta.env.DEV) {
-        console.log('[QUANTITY SNAPSHOT] UPDATE:', normalizedData.items.map(i => ({
-          item_name: i.item_name,
-          update_quantity: i.quantity
-        })));
       }
       
       return base44.entities.Invoice.update(editId, normalizedData);
@@ -713,7 +672,6 @@ export default function CrearFactura() {
         );
       }
 
-      console.log('Sending invoice with data:', data);
       
       // Calculate estimated hours from items
       const estimated_hours = (data.items || []).reduce((sum, item) => {
@@ -736,12 +694,10 @@ export default function CrearFactura() {
       let invoice_number = normalizedData.invoice_number;
       if (!invoice_number) {
         if (import.meta.env.DEV) {
-          console.log('[InvoiceNumber] calling backend generateInvoiceNumber()');
         }
         const raw = await generateInvoiceNumber({});
         
         if (import.meta.env.DEV) {
-          console.log('[InvoiceNumber] raw response:', raw);
         }
         
         const invoiceNumber = extractInvoiceNumber(raw);
@@ -754,7 +710,6 @@ export default function CrearFactura() {
         invoice_number = invoiceNumber;
         
         if (import.meta.env.DEV) {
-          console.log('[InvoiceNumber] ✅ resolved:', invoice_number);
         }
       }
 
@@ -788,9 +743,8 @@ export default function CrearFactura() {
           await base44.functions.invoke('provisionJobFromInvoice', {
             invoice_id: savedInvoice.id
           });
-        } catch (provisionError) {
-          console.warn('Provisioning failed (non-critical):', provisionError);
-        }
+        } catch (provisionError) { /* intentionally silenced */ }
+
       }
 
       // Send email

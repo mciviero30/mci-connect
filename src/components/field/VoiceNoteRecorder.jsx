@@ -40,7 +40,7 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
             longitude: position.coords.longitude,
           });
         },
-        (error) => console.warn('GPS not available:', error)
+        (error) => {} // geolocation error silenced
       );
     }
   }, [open]);
@@ -49,7 +49,6 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
   useMobileLifecycle({
     onBackground: () => {
       if (isRecording) {
-        console.log('[VoiceNote] App backgrounded - stopping recording');
         stopRecording();
       }
     },
@@ -104,7 +103,6 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
         setRecordingTime(t => t + 1);
       }, 1000);
 
-      console.log('[VoiceNote] Recording started');
     } catch (error) {
       console.error('Failed to start recording:', error);
       setStep('error');
@@ -130,7 +128,6 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
         streamRef.current.getTracks().forEach(track => track.stop());
       }
 
-      console.log('[VoiceNote] Recording stopped');
     }
   };
 
@@ -141,7 +138,6 @@ export default function VoiceNoteRecorder({ open, onOpenChange, jobId, jobName, 
 
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       
-      console.log('[VoiceNote] Processing audio...');
 
       const response = await base44.functions.invoke('processVoiceNote', {
         audioBlob: Array.from(new Uint8Array(await audioBlob.arrayBuffer())),

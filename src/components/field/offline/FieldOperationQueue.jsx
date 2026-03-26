@@ -74,11 +74,6 @@ export async function enqueueOperation(entityType, operationType, entityData, lo
     request.onsuccess = () => {
       const operationId = request.result;
       if (import.meta.env?.DEV) {
-        console.log(`[Queue] ✅ Enqueued ${operationType} for ${entityType}`, {
-          operationId,
-          localId,
-          idempotencyKey,
-        });
       }
       resolve({ ...operation, operation_id: operationId });
     };
@@ -134,7 +129,6 @@ export async function getPendingOperations() {
       operations.sort((a, b) => (a.sequence_number || 0) - (b.sequence_number || 0));
       
       if (import.meta.env?.DEV && operations.length > 0) {
-        console.log(`[Queue] 📋 ${operations.length} operations ready to sync (ordered)`);
       }
       
       resolve(operations);
@@ -212,10 +206,6 @@ export async function markOperationFailed(operationId, errorMessage) {
           operation.status = 'pending_retry';
           
           if (import.meta.env?.DEV) {
-            console.warn(`[Queue] ⚠️ Retry ${operation.retry_count}/5 after ${backoffMs}ms:`, {
-              operationId,
-              entity: operation.entity_type
-            });
           }
         }
         

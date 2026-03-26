@@ -35,7 +35,6 @@ export function useGPSPreWarmer(enabled = true) {
         }
       },
       (error) => {
-        console.log('[GPS PreWarmer] Silent error:', error.code);
       },
       {
         enableHighAccuracy: true,

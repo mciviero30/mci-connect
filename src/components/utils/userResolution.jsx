@@ -29,7 +29,6 @@ export async function resolveUser(record, userIdField, emailField) {
       const users = await base44.entities.User.filter({ id: record[userIdField] });
       return users[0] || null;
     } catch (error) {
-      console.warn(`Failed to resolve user by ID ${record[userIdField]}:`, error);
       // Fall through to email fallback
     }
   }
@@ -41,7 +40,6 @@ export async function resolveUser(record, userIdField, emailField) {
       const users = await base44.entities.User.filter({ email: normalizedEmail });
       return users[0] || null;
     } catch (error) {
-      console.warn(`Failed to resolve user by email ${record[emailField]}:`, error);
       return null;
     }
   }
@@ -77,9 +75,8 @@ export async function batchResolveUsers(records, userIdField, emailField) {
           userMap.set(record.id, userById.get(record[userIdField]));
         }
       }
-    } catch (error) {
-      console.warn('Failed to batch resolve by user_id:', error);
-    }
+    } catch (error) { /* intentionally silenced */ }
+
   }
 
   // Legacy email fallback for unresolved
@@ -95,9 +92,8 @@ export async function batchResolveUsers(records, userIdField, emailField) {
           userMap.set(record.id, userByEmail.get(normalizedEmail));
         }
       }
-    } catch (error) {
-      console.warn('Failed to batch resolve by email:', error);
-    }
+    } catch (error) { /* intentionally silenced */ }
+
   }
 
   return userMap;

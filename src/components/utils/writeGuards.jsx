@@ -66,10 +66,6 @@ export function enforceUserIdOnWrite(data, currentUser, entityName, userIdField 
 
   // NEW RECORD: Enforce user_id
   if (currentUser.id) {
-    console.log(`[WRITE GUARD] ✅ Adding ${userIdField} to new ${entityName} record`, {
-      user_id: currentUser.id,
-      email: currentUser.email
-    });
     
     return {
       ...data,
@@ -91,11 +87,6 @@ export function enforceUserIdOnWrite(data, currentUser, entityName, userIdField 
   }
 
   // LEGACY FALLBACK: Warn if user_id missing (non-strict entities)
-  console.warn(`[WRITE GUARD] ⚠️ Legacy write without user_id for ${entityName}`, {
-    userEmail: currentUser.email,
-    hasUserId: !!currentUser.id,
-    data
-  });
 
   return data;
 }
@@ -122,18 +113,10 @@ export function enforceMultiUserAttribution(data, currentUser, entityName, field
     const targetUserId = sourceUserId || currentUser?.id;
 
     if (targetUserId) {
-      console.log(`[WRITE GUARD] ✅ Adding ${userIdField} to ${entityName}`, {
-        field: userIdField,
-        user_id: targetUserId
-      });
       enhanced[userIdField] = targetUserId;
     } else {
       missingUserIds.push({ field: userIdField, email: enhanced[emailField] });
       
-      console.warn(`[WRITE GUARD] ⚠️ No user_id for ${userIdField} in ${entityName}`, {
-        emailField,
-        email: enhanced[emailField]
-      });
     }
   });
 
@@ -174,12 +157,6 @@ export function trackWriteStats(hasUserId, entityName) {
   // Log stats every 50 writes in DEV
   if (import.meta.env.DEV && totalWriteCount % 50 === 0) {
     const percentage = ((totalWriteCount - legacyWriteCount) / totalWriteCount * 100).toFixed(1);
-    console.log(`[WRITE GUARD STATS] ${percentage}% of writes include user_id`, {
-      total: totalWriteCount,
-      withUserId: totalWriteCount - legacyWriteCount,
-      legacy: legacyWriteCount,
-      lastEntity: entityName
-    });
   }
 }
 
@@ -190,7 +167,6 @@ export function trackWriteStats(hasUserId, entityName) {
 if (typeof window !== 'undefined') {
   window.toggleStrictMode = async (enabled, reason) => {
     window.__STRICT_MODE_OVERRIDE = enabled;
-    console.log(`[WRITE GUARD] STRICT MODE ${enabled ? 'ENABLED' : 'DISABLED'}`);
     
     // PHASE 7: Audit this action
     try {
@@ -199,7 +175,6 @@ if (typeof window !== 'undefined') {
         enabled,
         reason: reason || 'Manual toggle via console'
       });
-      console.log('[WRITE GUARD] ✅ Audit logged');
     } catch (error) {
       console.error('[WRITE GUARD] ⚠️ Failed to log audit:', error.message);
       // Don't block toggle on audit failure
@@ -208,11 +183,6 @@ if (typeof window !== 'undefined') {
   
   window.getStrictModeStatus = () => {
     const status = isStrictModeEnabled();
-    console.log(`[WRITE GUARD] STRICT MODE: ${status ? 'ON' : 'OFF'}`, {
-      entities: Array.from(STRICT_MODE_ENTITIES),
-      canToggle: true,
-      auditWarning: 'Disabling strict mode creates audit log and system alert'
-    });
     return status;
   };
 }

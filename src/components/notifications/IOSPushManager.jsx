@@ -33,7 +33,6 @@ export default function UniversalPushManager({ user }) {
       try {
         // Check if running in iframe (preview mode) - skip notifications
         if (window.self !== window.top) {
-          console.log('Running in iframe - push notifications disabled');
           return;
         }
 
@@ -41,14 +40,12 @@ export default function UniversalPushManager({ user }) {
         const currentPermission = Notification.permission;
         
         if (currentPermission === 'denied') {
-          console.log('Notification permission denied by user');
           return;
         }
 
         // DO NOT request permission on mount - wait for user interaction
         // Permission will be requested when user clicks notification bell or settings
         if (currentPermission !== 'granted') {
-          console.log('Notification permission not granted - waiting for user action');
           return;
         }
 
@@ -58,7 +55,6 @@ export default function UniversalPushManager({ user }) {
           registration = await navigator.serviceWorker.register('/sw.js');
           await navigator.serviceWorker.ready;
         } catch (error) {
-          console.log('Service worker registration not available, using fallback');
           return;
         }
 
@@ -87,10 +83,8 @@ export default function UniversalPushManager({ user }) {
               subscribed_at: new Date().toISOString()
             });
 
-            console.log(`✅ Push notifications enabled for ${platform}`);
-          } catch (subError) {
-            console.log('Push subscription failed, will use in-app notifications only:', subError);
-          }
+          } catch (subError) { /* intentionally silenced */ }
+
         }
 
         // Set badge support (works on Android and some iOS PWAs)
@@ -103,9 +97,8 @@ export default function UniversalPushManager({ user }) {
               } else {
                 await navigator.clearAppBadge();
               }
-            } catch (error) {
-              console.log('Badge update failed:', error);
-            }
+            } catch (error) { /* intentionally silenced */ }
+
           };
         }
 
@@ -148,9 +141,8 @@ export default function UniversalPushManager({ user }) {
         if (window.updateBadgeCount) {
           window.updateBadgeCount(unreadNotifs.length);
         }
-      } catch (error) {
-        console.log('Failed to update badge:', error);
-      }
+      } catch (error) { /* intentionally silenced */ }
+
     };
 
     updateBadge();

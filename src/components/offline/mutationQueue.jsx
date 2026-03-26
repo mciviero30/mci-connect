@@ -43,7 +43,6 @@ export const queueMutation = async (entityType, mutationType, data, tempId = nul
 
   try {
     const id = await addItem(STORES.MUTATIONS, mutation);
-    console.log(`✅ Queued ${mutationType} mutation for ${entityType}:`, id);
     return { ...mutation, id };
   } catch (error) {
     console.error('❌ Failed to queue mutation:', error);
@@ -83,17 +82,14 @@ const executeMutation = async (mutation) => {
     switch (mutationType) {
       case MUTATION_TYPES.CREATE:
         result = await base44.entities[entityType].create(data);
-        console.log(`✅ Created ${entityType}:`, result.id);
         break;
 
       case MUTATION_TYPES.UPDATE:
         result = await base44.entities[entityType].update(data.id, data);
-        console.log(`✅ Updated ${entityType}:`, data.id);
         break;
 
       case MUTATION_TYPES.DELETE:
         await base44.entities[entityType].delete(data.id);
-        console.log(`✅ Deleted ${entityType}:`, data.id);
         result = { success: true };
         break;
 
@@ -138,7 +134,6 @@ const processMutation = async (mutation) => {
         retryCount
       });
 
-      console.log(`✅ Mutation ${mutation.id} completed successfully`);
       return { success: true, result };
 
     } catch (error) {
@@ -171,7 +166,6 @@ const processMutation = async (mutation) => {
 
       // Calculate backoff delay
       const delay = RETRY_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, retryCount - 1);
-      console.log(`⏳ Retrying mutation ${mutation.id} in ${delay}ms (attempt ${retryCount}/${maxRetries})`);
 
       // Update retry count
       await updateItem(STORES.MUTATIONS, {
@@ -193,11 +187,9 @@ export const syncMutations = async (onProgress = null) => {
   const pendingMutations = await getPendingMutations();
 
   if (pendingMutations.length === 0) {
-    console.log('✅ No pending mutations to sync');
     return { synced: 0, failed: 0 };
   }
 
-  console.log(`🔄 Syncing ${pendingMutations.length} pending mutations...`);
 
   let synced = 0;
   let failed = 0;
@@ -224,7 +216,6 @@ export const syncMutations = async (onProgress = null) => {
     }
   }
 
-  console.log(`✅ Sync complete: ${synced} synced, ${failed} failed`);
   return { synced, failed };
 };
 
@@ -239,7 +230,6 @@ export const clearFailedMutations = async () => {
     await deleteItem(STORES.MUTATIONS, mutation.id);
   }
 
-  console.log(`🗑️ Cleared ${failedMutations.length} failed mutations`);
   return failedMutations.length;
 };
 
@@ -250,7 +240,6 @@ export const retryFailedMutations = async () => {
   const allMutations = await getAllItems(STORES.MUTATIONS);
   const failedMutations = allMutations.filter(m => m.status === 'failed');
 
-  console.log(`🔄 Retrying ${failedMutations.length} failed mutations...`);
 
   for (const mutation of failedMutations) {
     // Reset status and retry count

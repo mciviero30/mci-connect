@@ -191,11 +191,9 @@ export default function InvoiceXLSXImporter({ onComplete }) {
       
       const sanitizedFile = new File([file], sanitizedName, { type: file.type });
 
-      console.log('📤 Uploading file:', sanitizedName);
       
       const { file_url } = await base44.integrations.Core.UploadFile({ file: sanitizedFile });
 
-      console.log('✅ File uploaded:', file_url);
 
       const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
         file_url,
@@ -240,7 +238,6 @@ export default function InvoiceXLSXImporter({ onComplete }) {
       });
 
       if (result.status === 'success' && result.output?.invoices) {
-        console.log('✅ Extracted invoices:', result.output.invoices);
 
         const invoicesWithTotals = result.output.invoices.map(invoice => {
           const items = invoice.items || [];

@@ -349,9 +349,8 @@ class FieldStorageService {
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy
         };
-      } catch (err) {
-        console.log('GPS not available:', err);
-      }
+      } catch (err) { /* intentionally silenced */ }
+
     }
 
     const record = {

@@ -142,18 +142,6 @@ export default function ComplianceReviewHub() {
       }
 
       // Log telemetry
-      console.log('[🎯 Geofence Telemetry]', {
-        event_type: 'compliance_item_reviewed',
-        user_email: user.email,
-        source: 'compliance_hub',
-        timestamp: new Date().toISOString(),
-        metadata: {
-          entity_type: entityType,
-          item_id: itemId,
-          review_action: action,
-          has_reason: !!reason,
-        }
-      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['time-exceptions'] });

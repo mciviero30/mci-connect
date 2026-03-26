@@ -105,9 +105,8 @@ export default function ApprovalsHub() {
         await base44.functions.invoke('provisionJobFromInvoice', {
           invoice_id: id
         });
-      } catch (provisionError) {
-        console.warn('Provisioning failed (non-critical):', provisionError);
-      }
+      } catch (provisionError) { /* intentionally silenced */ }
+
 
       return invoice;
     },

@@ -262,7 +262,6 @@ export async function clearOldConflicts(maxAgeDays = 30) {
         } else {
           // Done iterating
           if (import.meta.env?.DEV && deletedCount > 0) {
-            console.log(`[ConflictCleanup] 🗑️ Purged ${deletedCount} conflicts older than ${maxAgeDays} days`);
           }
           resolve(deletedCount);
         }

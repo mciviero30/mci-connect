@@ -17,7 +17,6 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
   const isOffline = !navigator.onLine;
   
   try {
-    console.log(`Starting PDF generation: Job ${jobId}, Set ${dimensionSetId} (${isOffline ? 'OFFLINE' : 'ONLINE'})`);
     
     const { getNextRevisionNumber, storeRevision, generateChangeSummary, getRevisionHistory } = await import('./FieldPDFRevisionControl');
     const { queuePDFGeneration, generatePDFHash } = await import('./FieldPDFQueue');
@@ -38,11 +37,6 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
       include_plans: options.include_plans || false
     });
     
-    console.log('Data collected:', {
-      dimensions: dataset.dimensions.length,
-      benchmarks: dataset.benchmarks.length,
-      photos: dataset.photos.length
-    });
     
     // Step 2: Pre-flight validation
     const { preFlightValidation } = await import('./FieldPDFValidator');
@@ -65,7 +59,6 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
     ];
     
     if (allWarnings.length > 0) {
-      console.warn('PDF validation warnings:', allWarnings);
     }
     
     // Step 3: Generate change summary
@@ -74,14 +67,12 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
       dataset
     );
     
-    console.log('Change summary:', changeSummary.summary_text);
     
     // Step 4: Normalize
     const normalizedData = normalizeForPDF(dataset);
     normalizedData.metadata.change_summary = changeSummary;
     normalizedData.metadata.offline_generated = isOffline;
     
-    console.log('Data normalized and sorted');
     
     // Step 5: Generate PDF
     const pdfResult = await generateFieldPDF(normalizedData, options);
@@ -89,14 +80,6 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
     // Generate hash for duplicate detection
     const dataHash = generatePDFHash(dataset);
     
-    console.log('PDF generated:', {
-      pages: normalizedData.metadata.page_count,
-      size: pdfResult.blob.size,
-      document_id: normalizedData.metadata.document_id,
-      revision: revisionNumber,
-      offline: isOffline,
-      hash: dataHash.substring(0, 12)
-    });
     
     // Step 6: Store revision locally
     await storeRevision({
@@ -110,7 +93,6 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
       data_snapshot: dataset
     });
     
-    console.log('Revision stored:', revisionNumber);
     
     // Step 7: Queue for sync if offline
     if (isOffline) {
@@ -123,14 +105,12 @@ export async function generateProductionPDF(jobId, dimensionSetId, user, options
       );
       
       if (!queueResult.duplicate) {
-        console.log('PDF queued for sync (offline)');
       }
     }
     
     // Step 8: Audit trail
     await logPDFGeneration(pdfResult, normalizedData);
     
-    console.log('PDF generation logged to audit trail');
     
     return {
       success: true,

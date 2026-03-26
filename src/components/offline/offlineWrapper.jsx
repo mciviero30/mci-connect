@@ -29,7 +29,6 @@ export const wrapEntityWithOffline = (entityName, baseEntity) => {
           return await baseEntity.create(data);
         } catch (error) {
           // If online call fails, queue it
-          console.log('⚠️ Online create failed, queueing for offline sync');
           const tempId = `temp_${Date.now()}_${Math.random()}`;
           await queueMutation(entityName, MUTATION_TYPES.CREATE, data, tempId);
           
@@ -45,7 +44,6 @@ export const wrapEntityWithOffline = (entityName, baseEntity) => {
         const tempId = `temp_${Date.now()}_${Math.random()}`;
         await queueMutation(entityName, MUTATION_TYPES.CREATE, data, tempId);
         
-        console.log(`📵 Offline: Queued ${entityName} creation`);
         
         return {
           ...data,
@@ -66,14 +64,12 @@ export const wrapEntityWithOffline = (entityName, baseEntity) => {
         try {
           return await baseEntity.update(id, data);
         } catch (error) {
-          console.log('⚠️ Online update failed, queueing for offline sync');
           await queueMutation(entityName, MUTATION_TYPES.UPDATE, { ...data, id });
           return { ...data, id, _isOffline: true };
         }
       } else {
         // Offline - queue immediately
         await queueMutation(entityName, MUTATION_TYPES.UPDATE, { ...data, id });
-        console.log(`📵 Offline: Queued ${entityName} update for id ${id}`);
         return { ...data, id, _isOffline: true };
       }
     },
@@ -88,14 +84,12 @@ export const wrapEntityWithOffline = (entityName, baseEntity) => {
         try {
           return await baseEntity.delete(id);
         } catch (error) {
-          console.log('⚠️ Online delete failed, queueing for offline sync');
           await queueMutation(entityName, MUTATION_TYPES.DELETE, { id });
           return { success: true, _isOffline: true };
         }
       } else {
         // Offline - queue immediately
         await queueMutation(entityName, MUTATION_TYPES.DELETE, { id });
-        console.log(`📵 Offline: Queued ${entityName} deletion for id ${id}`);
         return { success: true, _isOffline: true };
       }
     }

@@ -37,7 +37,6 @@ export async function logFactoryAction(action, data) {
       description: formatActionDescription(action, data)
     });
     
-    console.log('🏭 Factory Action Logged:', logEntry);
     
     return logEntry;
   } catch (error) {

@@ -92,11 +92,13 @@ export default function QuickSearchDialog({ open, onOpenChange }) {
 
   // Reset on open
   useEffect(() => {
+    let focusTimer = null;
     if (open) {
       setQuery('');
       setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 100);
+      focusTimer = setTimeout(() => inputRef.current?.focus(), 100);
     }
+    return () => { if (focusTimer) clearTimeout(focusTimer); };
   }, [open]);
 
   // Keyboard navigation

@@ -86,10 +86,6 @@ export default function CrearChangeOrderPage() {
       };
 
       if (!user?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Creating ChangeOrder without user_id', {
-          email: user?.email,
-          change_order_number
-        });
       }
 
       return base44.entities.ChangeOrder.create(writeData);

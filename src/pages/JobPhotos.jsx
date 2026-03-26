@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { formatDate } from '@/lib/utils';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
@@ -319,7 +320,7 @@ export default function JobPhotos() {
                   <p className="mt-4 text-slate-300">{selectedImage.description}</p>
                 )}
                 <p className="text-sm text-slate-500 mt-2">
-                  Uploaded by {selectedImage.uploaded_by_name} on {new Date(selectedImage.created_date).toLocaleDateString()}
+                  Uploaded by {selectedImage.uploaded_by_name} on {formatDate(selectedImage.created_date)}
                 </p>
               </div>
             )}

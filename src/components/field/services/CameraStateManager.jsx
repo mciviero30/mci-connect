@@ -14,33 +14,27 @@ class CameraStateManager {
     // Handle visibility changes
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') {
-        console.log('[CameraState] Visibility hidden - pausing streams');
         this.pauseAllStreams();
       } else if (document.visibilityState === 'visible') {
-        console.log('[CameraState] Visibility visible - resuming streams');
         this.resumeAllStreams();
       }
     });
 
     // Handle page freeze/resume (iOS Safari)
     window.addEventListener('freeze', () => {
-      console.log('[CameraState] Page frozen - pausing streams');
       this.pauseAllStreams();
     });
 
     window.addEventListener('resume', () => {
-      console.log('[CameraState] Page resumed - resuming streams');
       this.resumeAllStreams();
     });
 
     // Handle focus/blur (additional safety)
     window.addEventListener('blur', () => {
-      console.log('[CameraState] Window blurred - pausing streams');
       this.pauseAllStreams();
     });
 
     window.addEventListener('focus', () => {
-      console.log('[CameraState] Window focused - resuming streams');
       this.resumeAllStreams();
     });
   }
@@ -108,7 +102,6 @@ class CameraStateManager {
             callback(newStream);
           }
           
-          console.log(`[CameraState] Stream ${id} resumed successfully`);
         } catch (error) {
           console.error(`[CameraState] Failed to resume camera ${id}:`, error);
           

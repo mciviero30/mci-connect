@@ -43,9 +43,8 @@ export function trackRecentlyViewed(type, id, name) {
     ].slice(0, MAX_ITEMS);
 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
-  } catch (error) {
-    console.warn('Failed to track recently viewed:', error);
-  }
+  } catch (error) { /* intentionally silenced */ }
+
 }
 
 export default function RecentlyViewed() {
@@ -58,9 +57,8 @@ export default function RecentlyViewed() {
         if (stored) {
           setItems(JSON.parse(stored));
         }
-      } catch (error) {
-        console.warn('Failed to load recently viewed:', error);
-      }
+      } catch (error) { /* intentionally silenced */ }
+
     };
 
     loadItems();

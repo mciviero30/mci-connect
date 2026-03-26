@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 export default function ChatUnreadBadge({ userEmail, userId, groupId }) {
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ['chat-unread', userId, userEmail, groupId],
+    enabled: !!(groupId && (userId || userEmail)),
     queryFn: async () => {
       if ((!userEmail && !userId) || !groupId) return 0;
       

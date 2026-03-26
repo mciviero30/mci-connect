@@ -99,7 +99,6 @@ export default function Calendario() {
       const data = await base44.entities.ScheduleShift.filter({ 
         date: { $gte: monthStart, $lte: monthEnd }
       });
-      console.log(`📅 [Calendar] Loaded ${data?.length || 0} shifts for ${format(currentDate, 'yyyy-MM')}`, data);
       return data || [];
     },
     initialData: [],
@@ -113,7 +112,6 @@ export default function Calendario() {
     queryFn: async () => {
       try {
         const data = await base44.entities.Job.list();
-        console.log('✅ Jobs loaded:', data?.length);
         return data || [];
       } catch (error) {
         console.error('❌ Error loading jobs:', error);
@@ -316,7 +314,6 @@ export default function Calendario() {
   };
 
   const handleSubmit = async (data) => {
-    console.log('🟡 handleSubmit:', data);
     if (editingShift) {
       return updateMutation.mutateAsync({ id: editingShift.id, data });
     } else {

@@ -73,7 +73,6 @@ export function useZeroDataLoss({
         sessionStorage.setItem(`field_unsaved_${jobId}`, 'true');
         
         if (import.meta.env?.DEV) {
-          console.log(`[ZeroDataLoss] ✅ Auto-saved ${type}`, { draftKey, size: JSON.stringify(data).length });
         }
       } catch (error) {
         console.error(`[ZeroDataLoss] ❌ Auto-save failed for ${type}:`, error);
@@ -86,7 +85,6 @@ export function useZeroDataLoss({
             type,
             jobId,
           }));
-          console.warn('[ZeroDataLoss] ⚠️ Using emergency sessionStorage fallback');
         } catch (e) {
           console.error('[ZeroDataLoss] ❌ Emergency fallback also failed:', e);
         }
@@ -114,7 +112,6 @@ export function useZeroDataLoss({
       sessionStorage.setItem(`field_unsaved_${jobId}`, 'true');
       
       if (import.meta.env?.DEV) {
-        console.log(`[ZeroDataLoss] 💾 Immediate save ${type}`);
       }
     } catch (error) {
       console.error(`[ZeroDataLoss] ❌ Immediate save failed:`, error);
@@ -134,7 +131,6 @@ export function useZeroDataLoss({
       
       if (draft) {
         if (import.meta.env?.DEV) {
-          console.log(`[ZeroDataLoss] ✅ Recovered draft for ${type}`, draft);
         }
         return draft;
       }
@@ -146,7 +142,6 @@ export function useZeroDataLoss({
       if (emergency) {
         const parsed = JSON.parse(emergency);
         if (import.meta.env?.DEV) {
-          console.log(`[ZeroDataLoss] ⚠️ Recovered from emergency storage for ${type}`);
         }
         return parsed.data;
       }
@@ -177,7 +172,6 @@ export function useZeroDataLoss({
       lastSavedRef.current = null;
       
       if (import.meta.env?.DEV) {
-        console.log(`[ZeroDataLoss] 🗑️ Cleared draft for ${type}`);
       }
     } catch (error) {
       console.error(`[ZeroDataLoss] ❌ Clear draft failed:`, error);
@@ -195,7 +189,6 @@ export function useZeroDataLoss({
       // Force immediate save with current ref data
       if (lastSavedRef.current) {
         if (import.meta.env?.DEV) {
-          console.log(`[ZeroDataLoss] 📱 Background detected - ensuring ${type} saved`);
         }
       }
     });
@@ -212,7 +205,6 @@ export function useZeroDataLoss({
 
     const unsubscribe = mobileLifecycle.on('offline', async () => {
       if (import.meta.env?.DEV) {
-        console.log(`[ZeroDataLoss] 📵 Offline detected - ${type} drafts safe in IndexedDB`);
       }
     });
 
@@ -233,7 +225,6 @@ export function useZeroDataLoss({
       }
       
       if (import.meta.env?.DEV) {
-        console.log(`[ZeroDataLoss] 🚨 Emergency beforeunload flush for ${type}`);
       }
       
       // Synchronous save to localStorage as final backup
@@ -270,7 +261,6 @@ export function useZeroDataLoss({
       
       if (import.meta.env?.DEV && lastSavedRef.current) {
         const ageSeconds = Math.round((Date.now() - lastSavedRef.current) / 1000);
-        console.log(`[ZeroDataLoss] Component unmounting - last save ${ageSeconds}s ago`);
       }
     };
   }, []);
@@ -285,7 +275,6 @@ export function useZeroDataLoss({
     const handleError = (event) => {
       if (lastSavedRef.current && Date.now() - lastSavedRef.current < 10000) {
         if (import.meta.env?.DEV) {
-          console.warn(`[ZeroDataLoss] ⚠️ Error detected - draft recently saved (${Math.round((Date.now() - lastSavedRef.current) / 1000)}s ago)`);
         }
       }
     };
@@ -328,7 +317,6 @@ export function useMultiStepZeroDataLoss({ formId, jobId, totalSteps }) {
     await formData.autosave(data);
     
     if (import.meta.env?.DEV) {
-      console.log(`[MultiStepForm] Step ${step}/${totalSteps} saved`, { formId, dataSize: JSON.stringify(data).length });
     }
   }, [currentStep, formData, formId, totalSteps]);
 
@@ -340,7 +328,6 @@ export function useMultiStepZeroDataLoss({ formId, jobId, totalSteps }) {
     ]);
 
     if (import.meta.env?.DEV && (step || data)) {
-      console.log(`[MultiStepForm] ✅ Recovered form state`, { formId, step, hasData: !!data });
     }
 
     return { step, data };
@@ -352,7 +339,6 @@ export function useMultiStepZeroDataLoss({ formId, jobId, totalSteps }) {
     await formData.clear();
     
     if (import.meta.env?.DEV) {
-      console.log(`[MultiStepForm] 🗑️ Cleared form state`, { formId });
     }
   }, [currentStep, formData, formId]);
 

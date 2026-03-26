@@ -33,7 +33,6 @@ export const OfflineProvider = ({ children }) => {
   const syncSilently = async () => {
     try {
       const result = await syncMutations();
-      console.log(`Offline sync: ${result.synced} synced, ${result.failed} failed`);
       const newCount = await getPendingCount();
       setPendingCount(newCount);
     } catch (error) {

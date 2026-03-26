@@ -33,7 +33,6 @@ export function useOfflineTimeTracking(user) {
         return created;
       } catch (error) {
         // Fallback to offline
-        console.warn('Failed to clock in online, saving offline:', error);
         queueMutation({ entity: 'TimeEntry', operation: 'create', data: entry });
         const updated = [...pendingEntries, entry];
         setPendingEntries(updated);
@@ -61,7 +60,6 @@ export function useOfflineTimeTracking(user) {
         await base44.entities.TimeEntry.update(entryId, updateData);
         return true;
       } catch (error) {
-        console.warn('Failed to clock out online, saving offline:', error);
         queueMutation({
           entity: 'TimeEntry',
           operation: 'update',

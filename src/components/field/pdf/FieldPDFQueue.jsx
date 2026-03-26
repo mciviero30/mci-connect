@@ -51,7 +51,6 @@ export async function queuePDFGeneration(jobId, dimensionSetId, options, pdfBlob
       );
       
       if (existing) {
-        console.log('Duplicate PDF generation detected - skipping');
         resolve({ duplicate: true, queue_id: existing.queue_id });
         return;
       }

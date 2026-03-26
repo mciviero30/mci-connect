@@ -37,13 +37,6 @@ export const validateNoDateOverlap = (newStart, newEnd, existingRules, ignoreRul
   });
 
   if (hasOverlap && import.meta.env.DEV) {
-    console.warn('[Rule Versioning] Date overlap detected:', {
-      newStart,
-      newEnd,
-      affectedRuleIds: existingRules
-        .filter(r => r.id !== ignoreRuleId)
-        .map(r => r.id)
-    });
   }
 
   return !hasOverlap;
@@ -64,10 +57,6 @@ export const validateEffectiveDateIsFuture = (effectiveDate) => {
   const isFuture = isAfter(effDate, today);
 
   if (!isFuture && import.meta.env.DEV) {
-    console.warn('[Rule Versioning] Effective date not in future:', {
-      effectiveDate: effDate.toISOString(),
-      today: today.toISOString()
-    });
   }
 
   return isFuture;
@@ -101,7 +90,6 @@ export const validateActiveVersionCoverage = (ruleFamilies) => {
       });
 
       if (import.meta.env.DEV) {
-        console.warn('[Rule Versioning] No active/future version:', family.name);
       }
     }
   });
@@ -150,10 +138,6 @@ export const validateRuleVersionsNeverOverlap = (versions) => {
 export const validateVersionCreationPattern = (previousVersion, newVersion) => {
   // Check if previous version has end_date set to new version's effective_date
   if (!previousVersion?.end_date) {
-    console.warn('[Rule Versioning] Previous version not deactivated:', {
-      previous_id: previousVersion?.id,
-      new_version: newVersion?.version
-    });
     return false;
   }
 
@@ -164,10 +148,6 @@ export const validateVersionCreationPattern = (previousVersion, newVersion) => {
   const isProperClose = isEqual(prevEnd, newStart) || isBefore(prevEnd, newStart);
 
   if (!isProperClose && import.meta.env.DEV) {
-    console.warn('[Rule Versioning] Improper version closure:', {
-      previous_end: prevEnd.toISOString(),
-      new_start: newStart.toISOString()
-    });
   }
 
   return isProperClose;

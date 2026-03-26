@@ -45,7 +45,7 @@ const getTeamIdByState = (state, teams) => {
 
 export default function EmployeeForm({ employee, onClose, isPending = false }) {
   const queryClient = useQueryClient();
-  const toast = useToast(); // I1 FIX: Add toast for consistency
+  const { toast } = useToast(); // I1 FIX: Add toast for consistency
   
   const { data: teams } = useQuery({
     queryKey: ['teams'],
@@ -67,10 +67,6 @@ export default function EmployeeForm({ employee, onClose, isPending = false }) {
       // Client-side filter for position (small set after server filter)
       const validManagers = managers.filter(d => {
         if (!d.user_id) {
-          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ Manager missing user_id', {
-            component: 'EmployeeForm',
-            email: d.employee_email
-          });
           return false;
         }
         return ['CEO', 'manager', 'supervisor'].includes(d.position);

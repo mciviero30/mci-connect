@@ -176,9 +176,6 @@ export default function MobilePhotoCapture({
           };
 
           if (!currentUser?.id) {
-            console.warn('[WRITE GUARD] ⚠️ Creating Photo without user_id (offline?)', {
-              jobId
-            });
           }
 
           return await base44.entities.Photo.create(writeData);

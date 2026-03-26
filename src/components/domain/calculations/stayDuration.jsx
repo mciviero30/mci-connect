@@ -64,15 +64,6 @@ export function calculateStayDuration({ items, techCount, travelTimeHours, rooms
    const totalLaborHours = calculateTotalLaborHours(items);
 
    // DEBUG: Log each item's installation_time
-   console.log('🔍 STAY CALC - Item installation times:', items.map(i => ({
-     name: i.item_name,
-     is_travel: i.is_travel_item,
-     installation_time: i.installation_time,
-     quantity: i.quantity,
-     calculated: (i.installation_time || 0) * (i.quantity || 0)
-   })));
-   console.log('🔍 STAY CALC - Total labor hours:', totalLaborHours);
-   console.log('🔍 STAY CALC - Travel time (one-way):', travelTimeHours, 'hours');
 
    if (totalLaborHours === 0) {
      return null;

@@ -23,7 +23,6 @@ function clearFieldLocalStorage() {
     });
     
     if (import.meta.env?.DEV && fieldKeys.length > 0) {
-      console.log(`[FieldCleanup] 🗑️ Cleared ${fieldKeys.length} localStorage keys`);
     }
   } catch (error) {
     console.error('[FieldCleanup] Failed to clear localStorage:', error);
@@ -43,7 +42,6 @@ function clearFieldSessionStorage() {
     });
     
     if (import.meta.env?.DEV && fieldKeys.length > 0) {
-      console.log(`[FieldCleanup] 🗑️ Cleared ${fieldKeys.length} sessionStorage keys`);
     }
   } catch (error) {
     console.error('[FieldCleanup] Failed to clear sessionStorage:', error);
@@ -68,7 +66,6 @@ async function clearFieldIndexedDB() {
         
         request.onsuccess = () => {
           if (import.meta.env?.DEV) {
-            console.log(`[FieldCleanup] 🗑️ Deleted IndexedDB: ${dbName}`);
           }
           resolve();
         };
@@ -79,7 +76,6 @@ async function clearFieldIndexedDB() {
         };
         
         request.onblocked = () => {
-          console.warn(`[FieldCleanup] IndexedDB ${dbName} deletion blocked (active connections)`);
           resolve(); // Don't block on errors
         };
       });
@@ -95,7 +91,6 @@ async function clearFieldIndexedDB() {
  */
 export async function clearAllFieldData() {
   try {
-    console.log('[FieldCleanup] 🧹 Starting complete Field data wipe...');
     
     // 1. Clear active session
     FieldSessionManager.clearSession();
@@ -111,7 +106,6 @@ export async function clearAllFieldData() {
       console.error('[FieldCleanup] IndexedDB cleanup failed:', err);
     });
     
-    console.log('[FieldCleanup] ✅ Field data wipe complete');
   } catch (error) {
     console.error('[FieldCleanup] ❌ Cleanup failed:', error);
     // Don't throw - logout should proceed even if cleanup fails

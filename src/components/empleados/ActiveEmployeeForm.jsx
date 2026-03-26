@@ -34,10 +34,6 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
       // DEFENSIVE: Validate manager records
       const validManagers = directory.filter(d => {
         if (!d.user_id) {
-          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ Manager missing user_id', {
-            component: 'ActiveEmployeeForm',
-            email: d.employee_email
-          });
           return false;
         }
         return ['CEO', 'manager', 'supervisor'].includes(d.position) && d.status === 'active';
@@ -60,10 +56,6 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
       // DEFENSIVE: Validate employee records
       const validEmployees = directory.filter(d => {
         if (!d.user_id) {
-          console.warn('[EMPLOYEE_SSOT_VIOLATION] ⚠️ Employee missing user_id', {
-            component: 'ActiveEmployeeForm',
-            email: d.employee_email
-          });
           return false;
         }
         return true;

@@ -48,7 +48,6 @@ class GeofenceTelemetryService {
 
     // Validate required fields
     if (!event_type || !user_email) {
-      console.warn('[Geofence Telemetry] Missing required fields:', event);
       return;
     }
 
@@ -85,7 +84,6 @@ class GeofenceTelemetryService {
     };
 
     // Log to console (prepare for future external service)
-    console.log('[🎯 Geofence Telemetry]', payload);
 
     // FUTURE: Send to external telemetry service
     // this._sendToSentry(payload);

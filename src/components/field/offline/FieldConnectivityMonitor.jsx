@@ -21,7 +21,6 @@ export function initConnectivityMonitor(base44Client, user) {
   // Poll connectivity every 30 seconds
   setInterval(() => checkConnectivity(base44Client, user), 30000);
   
-  console.log('Connectivity monitor initialized');
 }
 
 /**
@@ -30,7 +29,6 @@ export function initConnectivityMonitor(base44Client, user) {
 async function handleOnline(base44Client, user) {
   if (isOnline) return;
   
-  console.log('Network connection restored');
   isOnline = true;
   notifyListeners(true);
   
@@ -46,7 +44,6 @@ async function handleOnline(base44Client, user) {
 function handleOffline() {
   if (!isOnline) return;
   
-  console.log('Network connection lost');
   isOnline = false;
   notifyListeners(false);
 }
@@ -76,7 +73,6 @@ async function checkConnectivity(base44Client, user) {
   
   // State changed
   if (wasOnline !== isOnline) {
-    console.log(`Connectivity changed: ${isOnline ? 'online' : 'offline'}`);
     notifyListeners(isOnline);
     
     if (isOnline) {
@@ -90,16 +86,13 @@ async function checkConnectivity(base44Client, user) {
  */
 async function triggerAutoSync(base44Client, user) {
   if (syncInProgress) {
-    console.log('Sync already in progress');
     return;
   }
   
   syncInProgress = true;
   
   try {
-    console.log('Auto-sync triggered');
     const result = await startSync(base44Client, user);
-    console.log('Auto-sync completed:', result);
   } catch (error) {
     console.error('Auto-sync failed:', error);
   } finally {
@@ -148,6 +141,5 @@ export function forceSyncCheck(base44Client, user) {
   if (isOnline) {
     triggerAutoSync(base44Client, user);
   } else {
-    console.log('Cannot sync: offline');
   }
 }

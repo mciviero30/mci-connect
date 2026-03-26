@@ -53,7 +53,7 @@ export default function VerFactura() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const urlParams = new URLSearchParams(window.location.search);
   const invoiceId = urlParams.get('id');
   const { toggleFocusMode } = useUI();
@@ -107,10 +107,6 @@ export default function VerFactura() {
   // DEV LOG
   useEffect(() => {
     if (invoice && import.meta.env.DEV) {
-      console.log("[Invoice loaded]", invoice.items?.map(i => ({
-        item_name: i.item_name,
-        description: i.description
-      })));
     }
   }, [invoice]);
 
@@ -321,9 +317,8 @@ export default function VerFactura() {
           text: `Invoice for ${invoice.customer_name}`,
           url: shareUrl
         });
-      } catch (err) {
-        console.log('Share cancelled');
-      }
+      } catch (err) { /* intentionally silenced */ }
+
     } else {
       await navigator.clipboard.writeText(shareUrl);
       toast({

@@ -69,7 +69,6 @@ export default function OnboardingWizard() {
       const existingForm = onboardingForms.find(f => f.form_type === formType);
       if (existingForm) {
         if (import.meta.env.DEV) {
-          console.log(`⚠️ Form ${formType} already exists, updating...`);
         }
         return base44.entities.OnboardingForm.update(existingForm.id, {
           form_data: formData,
@@ -125,7 +124,6 @@ export default function OnboardingWizard() {
       const totalCompleted = Object.keys(uniqueForms).length;
       
       if (import.meta.env.DEV) {
-        console.log(`📊 Completed ${totalCompleted}/4 forms (unique types: ${Object.keys(uniqueForms).join(', ')})`);
       }
       
       // Move to next step or complete
@@ -153,7 +151,6 @@ export default function OnboardingWizard() {
   useEffect(() => {
     if (user?.onboarding_completed === true) {
       if (import.meta.env.DEV) {
-        console.log('🚫 Onboarding already completed, redirecting...');
       }
       navigate(createPageUrl('Dashboard'), { replace: true });
       return;

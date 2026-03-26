@@ -78,7 +78,6 @@ export default function OfflineSyncValidator({ user }) {
       setIsOnline(online);
       
       if (import.meta.env?.DEV) {
-        console.log(`[OfflineValidator] 📶 Network ${online ? 'ONLINE' : 'OFFLINE'}`);
       }
     });
 
@@ -93,7 +92,6 @@ export default function OfflineSyncValidator({ user }) {
       setSyncStatus(status);
       
       if (import.meta.env?.DEV) {
-        console.log(`[OfflineValidator] 🔄 Sync status: ${status}`);
       }
     });
 

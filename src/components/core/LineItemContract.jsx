@@ -37,7 +37,6 @@ export function validateLineItem(item) {
   
   // item_name is the primary identifier - must exist
   if (!item.item_name && !item.description) {
-    console.warn('LineItem missing both item_name and description');
     return false;
   }
   

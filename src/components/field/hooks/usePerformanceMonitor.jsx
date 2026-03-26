@@ -125,7 +125,6 @@ export function usePerformanceMonitor(componentName, enabled = true) {
     state.telemetrySent.add(telemetryKey);
 
     // Log for debugging (in production, send to analytics)
-    console.warn(`[FASE 10] ${componentName} - ${metric}:`, data);
 
     // Try to send telemetry to analytics
     try {

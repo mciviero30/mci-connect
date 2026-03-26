@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -362,7 +363,7 @@ export default function CommissionAgreements() {
                         <p className="text-slate-600">Signed Date</p>
                         <p className="font-semibold">
                           {agreement.signed_date 
-                            ? new Date(agreement.signed_date).toLocaleDateString() 
+                            ? formatDate(agreement.signed_date) 
                             : 'N/A'}
                         </p>
                       </div>
@@ -370,7 +371,7 @@ export default function CommissionAgreements() {
                         <p className="text-slate-600">Effective Date</p>
                         <p className="font-semibold">
                           {agreement.effective_date 
-                            ? new Date(agreement.effective_date).toLocaleDateString() 
+                            ? formatDate(agreement.effective_date) 
                             : 'N/A'}
                         </p>
                       </div>

@@ -30,7 +30,6 @@ export default function AgreementGate({ children }) {
 
   // Read user from cache (stable)
   const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
-  console.log('[AgreementGate] USER:', user);
   const userEmail = user?.email;
   const userId = user?.id;
   const userFullName = user?.full_name;
@@ -64,7 +63,6 @@ export default function AgreementGate({ children }) {
   // CRITICAL: Do NOT set agreements_signed flag - let frontend track via AgreementSignature table
   const signMutation = useMutation({
     mutationFn: async (agreementData) => {
-      console.log('[AgreementGate signMutation] userEmail:', userEmail, 'user:', user);
       // Check for duplicates
       const existing = await base44.entities.AgreementSignature.filter({
         employee_email: userEmail,
@@ -148,40 +146,30 @@ export default function AgreementGate({ children }) {
   // CRITICAL: Always return children wrapped in fragment - never return bare children
   // CRITICAL: Field routes are sandboxed - skip all gate logic
   if (isFieldRoute) {
-    console.log('[AgreementGate] Field route detected - passing through');
     return <>{children}</>;
   }
 
   // CRITICAL: Exempt admins/CEOs/owners from agreement signing
   if (isExempt) {
-    console.log('[AgreementGate] User exempt (admin/CEO) - passing through', { userEmail, userRole, userPosition });
     return <>{children}</>;
   }
 
   // Defensive checks - NEVER block on loading
   if (!userEmail || isLoading) {
-    console.log('[AgreementGate] No user or loading - passing through', { userEmail, isLoading });
     return <>{children}</>;
   }
 
   // If all signed, pass through immediately
   if (unsignedAgreements.length === 0) {
-    console.log('[AgreementGate] All agreements signed - passing through', { userEmail });
     return <>{children}</>;
   }
 
   // Get current agreement to sign
   if (!currentAgreement) {
-    console.log('[AgreementGate] No current agreement - passing through', { userEmail });
     return <>{children}</>;
   }
 
   // BLOCKING - show agreement modal
-  console.log('[AgreementGate] 🚫 BLOCKING user for agreement', { 
-    userEmail, 
-    unsignedCount: unsignedAgreements.length,
-    currentAgreementType: currentAgreement.type 
-  });
 
   // Block access - render agreement modal
   return (

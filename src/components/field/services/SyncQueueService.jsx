@@ -120,7 +120,6 @@ class SyncQueueService {
       
       if (serverVersion && serverVersion.updated_at > data.updated_at) {
         // CONFLICT DETECTED: Server version is newer
-        console.warn(`⚠️ Conflict detected: ${entity_type}/${entity_id}`);
         
         await fieldStorage.saveConflict(entity_type, entity_id, job_id, data, serverVersion);
         await fieldStorage.removeSyncQueueItem(item.id);
@@ -138,7 +137,6 @@ class SyncQueueService {
     await fieldStorage.markSynced(entity_type, entity_id);
     await fieldStorage.removeSyncQueueItem(item.id);
 
-    console.log(`✅ Synced ${entity_type}/${entity_id}`);
   }
 
   async handleFailure(item, error) {
@@ -166,7 +164,6 @@ class SyncQueueService {
     // Exponential backoff: 1s, 2s, 4s, 8s, 16s
     const delay = BASE_DELAY * Math.pow(2, retries);
 
-    console.log(`⚠️ Sync failed, retry ${retries}/${MAX_RETRIES} in ${delay}ms:`, error.message);
 
     // Update retry count
     const db = await fieldStorage.ensureDB();

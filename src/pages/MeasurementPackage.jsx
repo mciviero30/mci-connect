@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useParams } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -209,7 +210,7 @@ export default function MeasurementPackagePage() {
                   <ConfirmationBadge status={conf.status} />
                 </div>
                 <div className="text-xs text-slate-600">
-                  {conf.confirmed_by} ({conf.confirmed_role}) • {new Date(conf.confirmed_date).toLocaleDateString()}
+                  {conf.confirmed_by} ({conf.confirmed_role}) • {formatDate(conf.confirmed_date)}
                 </div>
               </div>
             ))}

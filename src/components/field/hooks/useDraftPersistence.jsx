@@ -34,7 +34,6 @@ export function useDraftPersistence(key, value, enabled = true) {
       try {
         sessionStorage.setItem(`draft_${key}`, JSON.stringify(value));
         if (import.meta.env?.DEV) {
-          console.log(`[DraftPersistence] Background save for ${key}`);
         }
       } catch (error) {
         console.error('Background save failed:', error);

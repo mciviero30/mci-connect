@@ -34,7 +34,6 @@ class MobileLifecycleManager {
     
     if (!isMobile) {
       if (import.meta.env.DEV) {
-        console.log('[MobileLifecycle] Disabled on desktop');
       }
       return;
     }
@@ -68,36 +67,30 @@ class MobileLifecycleManager {
   }
 
   handleFreeze() {
-    console.log('[MobileLifecycle] Page frozen (iOS)');
     this.onBackground();
   }
 
   handleResume() {
-    console.log('[MobileLifecycle] Page resumed (iOS)');
     this.onForeground();
   }
 
   handleFocus() {
     // DESKTOP FIX: Only trigger if document is visible (prevents false triggers)
     if (!this.state.isBackground || document.visibilityState !== 'visible') return;
-    console.log('[MobileLifecycle] Window focused');
     this.onForeground();
   }
 
   handleBlur() {
     // DESKTOP FIX: Only trigger if document is hidden (prevents false triggers on desktop)
     if (this.state.isBackground || document.visibilityState === 'visible') return;
-    console.log('[MobileLifecycle] Window blurred');
     this.onBackground();
   }
 
   handlePageHide() {
-    console.log('[MobileLifecycle] Page hide (Android)');
     this.onBackground();
   }
 
   handlePageShow() {
-    console.log('[MobileLifecycle] Page show (Android)');
     this.onForeground();
   }
 
@@ -105,11 +98,6 @@ class MobileLifecycleManager {
     if (this.state.isBackground) return;
     
     if (import.meta.env?.DEV) {
-      console.log('[MobileLifecycle] 🔽 App backgrounded', {
-        time: new Date().toISOString(),
-        online: this.state.isOnline,
-        interruptionCount: this.state.interruptionCount + 1,
-      });
     }
     
     this.state.isBackground = true;
@@ -132,12 +120,6 @@ class MobileLifecycleManager {
     const duration = Date.now() - (this.state.lastBackgroundTime || 0);
     
     if (import.meta.env?.DEV) {
-      console.log('[MobileLifecycle] 🔼 App foregrounded', {
-        time: new Date().toISOString(),
-        duration: `${Math.round(duration/1000)}s`,
-        online: this.state.isOnline,
-        wasLongBackground: duration > 30000,
-      });
     }
     
     this.state.isBackground = false;
@@ -163,10 +145,6 @@ class MobileLifecycleManager {
       : 0;
     
     if (import.meta.env?.DEV) {
-      console.log('[MobileLifecycle] 📶 Network online', {
-        time: new Date().toISOString(),
-        offlineDuration: `${Math.round(offlineDuration/1000)}s`,
-      });
     }
     
     this.state.isOnline = true;
@@ -182,10 +160,6 @@ class MobileLifecycleManager {
     if (!this.state.isOnline) return;
     
     if (import.meta.env?.DEV) {
-      console.log('[MobileLifecycle] 📵 Network offline', {
-        time: new Date().toISOString(),
-        wasBackground: this.state.isBackground,
-      });
     }
     
     this.state.isOnline = false;
@@ -209,9 +183,6 @@ class MobileLifecycleManager {
       sessionStorage.setItem('field_snapshot_time', Date.now().toString());
       
       if (import.meta.env?.DEV) {
-        console.log('[MobileLifecycle] ✅ State snapshot captured', {
-          hasActiveElement: !!this.stateSnapshots.get('activeElement'),
-        });
       }
     } catch (error) {
       console.error('[MobileLifecycle] ❌ Failed to capture snapshot:', error);
@@ -233,9 +204,6 @@ class MobileLifecycleManager {
 
       if (import.meta.env?.DEV) {
         const snapshotAge = Date.now() - parseInt(sessionStorage.getItem('field_snapshot_time') || '0');
-        console.log('[MobileLifecycle] ✅ State snapshot restored', {
-          ageSeconds: Math.round(snapshotAge / 1000),
-        });
       }
     } catch (error) {
       console.error('[MobileLifecycle] ❌ Failed to restore snapshot:', error);

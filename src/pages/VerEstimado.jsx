@@ -154,11 +154,9 @@ Lawrenceville, Georgia 30043, U.S.A`
 
   const convertToInvoiceMutation = useMutation({
     mutationFn: async () => {
-      console.log('🔄 Converting quote to invoice from VerEstimado...', quote);
       
       try {
         // AUTO-CREATE WorkAuthorization for approved quotes
-        console.log('🔐 Auto-creating WorkAuthorization...');
         const authorization = await base44.entities.WorkAuthorization.create({
           customer_id: quote.customer_id,
           customer_name: quote.customer_name,
@@ -174,7 +172,6 @@ Lawrenceville, Georgia 30043, U.S.A`
           linked_quote_id: quote.id,
           status: 'approved'
         });
-        console.log('✅ WorkAuthorization created:', authorization.id);
         
         let jobId = quote.job_id;
         let wasJobCreated = false;
@@ -182,7 +179,6 @@ Lawrenceville, Georgia 30043, U.S.A`
         
         // CRITICAL: Create Job in MCI Connect when converting to Invoice
         if (!jobId) {
-          console.log('📁 Creating new job in MCI Connect...');
           
           // Generate job number
           const { data: jobNumberData } = await base44.functions.invoke('generateJobNumber', {});
@@ -207,7 +203,6 @@ Lawrenceville, Georgia 30043, U.S.A`
           
           jobId = newJob.id;
           wasJobCreated = true;
-          console.log('✅ Job created:', jobId, job_number);
           
           // Update quote with job_id
           await base44.entities.Quote.update(quote.id, { job_id: jobId });
@@ -215,9 +210,8 @@ Lawrenceville, Georgia 30043, U.S.A`
           // Sync to MCI Field in background - don't wait
           base44.functions.invoke('syncJobToMCIField', { jobId })
             .then(() => { mciFieldSyncSuccess = true; })
-            .catch(err => console.warn('Background MCI Field sync failed:', err));
+            .catch(() => {}); // sync error silenced
         } else {
-          console.log('✅ Using existing job:', jobId);
           // Load existing job to accumulate contract amounts
           const existingJobs = await base44.entities.Job.filter({ id: jobId });
           if (existingJobs.length > 0) {
@@ -231,12 +225,10 @@ Lawrenceville, Georgia 30043, U.S.A`
               status: 'active'
             });
             
-            console.log(`✅ Job contract updated: $${currentContractAmount} + $${quote.total} = $${newTotal}`);
           }
         }
 
         // Step 3: Create invoice BEFORE marking quote as converted
-        console.log('📄 Creating invoice...');
         
         // Generate invoice number using backend function
         const { data: invoiceNumberData } = await base44.functions.invoke('generateInvoiceNumber', {});
@@ -270,16 +262,13 @@ Lawrenceville, Georgia 30043, U.S.A`
           approval_status: 'approved'
         };
 
-        console.log('Creating invoice with data:', invoiceData);
         const newInvoice = await base44.entities.Invoice.create(invoiceData);
-        console.log('✅ Invoice created successfully:', newInvoice);
 
         // ONLY NOW mark quote as converted_to_invoice (AFTER invoice exists)
         await base44.entities.Quote.update(quote.id, {
           status: 'converted_to_invoice',
           invoice_id: newInvoice.id
         });
-        console.log('✅ Quote marked as converted with invoice link');
 
         // TRIGGER 1: Quote → Invoice Conversion Provisioning (ONLY IF APPROVED) - Run in background
         const newInvoiceApprovalStatus = newInvoice.approval_status || 'approved';
@@ -288,7 +277,7 @@ Lawrenceville, Georgia 30043, U.S.A`
           base44.functions.invoke('provisionJobFromInvoice', {
             invoice_id: newInvoice.id,
             mode: 'convert'
-          }).catch(err => console.warn('Background provisioning failed:', err));
+          }).catch(() => {}); // provisioning error silenced
         }
 
         return { newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess };
@@ -299,7 +288,6 @@ Lawrenceville, Georgia 30043, U.S.A`
       }
     },
     onSuccess: ({ newInvoice, jobId, wasJobCreated, mciFieldSyncSuccess }) => {
-      console.log('✅ Conversion successful, invalidating queries...');
       
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
@@ -405,9 +393,8 @@ Lawrenceville, Georgia 30043, U.S.A`
           text: `${t('quoteFor')} ${quote.customer_name}`,
           url: shareUrl
         });
-      } catch (err) {
-        console.log('Share cancelled');
-      }
+      } catch (err) { /* intentionally silenced */ }
+
     } else {
       await navigator.clipboard.writeText(shareUrl);
       toast({

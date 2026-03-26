@@ -140,7 +140,6 @@ export async function sendPushNotification(options) {
  */
 export async function requestNotificationPermission() {
   if (!('Notification' in window)) {
-    console.warn('Notifications not supported');
     return false;
   }
 

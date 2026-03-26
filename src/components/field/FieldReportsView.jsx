@@ -175,7 +175,6 @@ export default function FieldReportsView({ jobId }) {
   const handleCreateReport = () => {
     if (!newReport.name) return;
     
-    console.log('Creating report with type:', newReport.report_type);
     
     if (editingReport) {
       // Update existing report
@@ -200,7 +199,6 @@ export default function FieldReportsView({ jobId }) {
         include_options: newReport.include_options,
       };
       
-      console.log('Report data being sent:', reportData);
       
       createReportMutation.mutate(reportData);
     }
@@ -216,7 +214,6 @@ export default function FieldReportsView({ jobId }) {
           const comments = await base44.entities.TaskComment.filter({ task_id: task.id }, '-created_date');
           taskCommentsMap[task.id] = comments;
         } catch (err) {
-          console.warn(`Could not fetch comments for task ${task.id}:`, err);
           taskCommentsMap[task.id] = [];
         }
       }

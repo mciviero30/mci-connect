@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Plus, Upload, FileText, Trash2, Eye, Loader2, X } from 'lucide-react';
@@ -111,7 +112,6 @@ export default function FieldDimensionView({ jobId }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    console.log('File selected:', file.name, file.type, file.size);
 
     // Validate file
     const validation = validateFile(file);
@@ -133,13 +133,11 @@ export default function FieldDimensionView({ jobId }) {
     }, 300);
 
     try {
-      console.log('Uploading file...');
       const { file_url } = await base44.integrations.Core.UploadFile({ file });
       
       clearInterval(progressInterval);
       setUploadProgress(100);
       
-      console.log('File uploaded:', file_url);
       
       setNewDimension({ 
         ...newDimension, 
@@ -177,7 +175,6 @@ export default function FieldDimensionView({ jobId }) {
       dimensionData.job_id = jobId;
     }
 
-    console.log('Creating dimension:', dimensionData);
     await createDimensionMutation.mutateAsync(dimensionData);
   };
 
@@ -272,7 +269,7 @@ export default function FieldDimensionView({ jobId }) {
                 )}
                 <div className="flex items-center justify-between mt-3">
                   <span className="text-xs text-slate-500 dark:text-slate-400">
-                    {new Date(dimension.created_date).toLocaleDateString()}
+                    {formatDate(dimension.created_date)}
                   </span>
                   <Button
                     variant="ghost"

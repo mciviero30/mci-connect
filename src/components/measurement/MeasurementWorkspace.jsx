@@ -115,16 +115,13 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
 
   const createPlanMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('[createPlanMutation] Saving plan:', data);
       const result = await base44.entities.Plan.create({
         ...data,
         purpose: 'measurement'
       });
-      console.log('[createPlanMutation] Success:', result);
       return result;
     },
     onSuccess: (data) => {
-      console.log('[createPlanMutation] onSuccess triggered:', data);
       queryClient.invalidateQueries({ queryKey: ['measurement-plans', jobId] });
       setShowUploadPlan(false);
       setNewPlan({ name: '', file: null });
@@ -242,10 +239,8 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
   }, []);
 
   const handleSaveDrawing = React.useCallback(() => {
-    console.log('🔥 SAVE DRAWING CLICKED - Handler executed');
     
     if (!newPlan.file || !newPlan.name) {
-      console.log('[Save Drawing] Validation failed', { file: !!newPlan.file, name: !!newPlan.name });
       toast.error('Please enter name and select file');
       return;
     }
@@ -264,7 +259,6 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
       order: plans.length,
       image_url: newPlan.file,
     };
-    console.log('[Save Drawing] Mutation payload:', payload);
     createPlanMutation.mutate(payload);
   }, [newPlan, jobId, plans.length, createPlanMutation]);
 
@@ -832,7 +826,6 @@ const MeasurementWorkspace = React.memo(function MeasurementWorkspace({ jobId, j
                             }
 
                             if (response.error) {
-                              console.log('[UploadFile] Error response:', response.error);
 
                               const errorCode = response.error?.code || response.error?.status;
                               const errorMsg = response.error?.message || String(response.error);

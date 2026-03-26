@@ -31,7 +31,6 @@ export default function InvitationGate({ children, user }) {
         const response = await base44.functions.invoke('validateInvitationEmail', {});
         const result = response?.data || response;
 
-        console.log('🔒 Invitation validation result:', result);
 
         setValidationState({
           isValidating: false,

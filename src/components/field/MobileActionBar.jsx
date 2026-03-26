@@ -5,7 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { useToast } from '@/components/ui/toast';
 
 export default function MobileActionBar({ jobId, onPhotoAdded, onTaskCreated, onNoteAdded }) {
-  const toast = useToast();
+  const { toast } = useToast();
   const photoInputRef = useRef(null);
   const [uploading, setUploading] = React.useState(false);
 

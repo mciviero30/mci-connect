@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { formatDate } from '@/lib/utils';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -238,7 +239,7 @@ export default function InvitationDetailView({ invitation, onClose, onInvite, is
 
       {saved.last_sent_date && (
         <p className="text-xs text-slate-400 px-1">
-          Last sent: {new Date(saved.last_sent_date).toLocaleDateString()}
+          Last sent: {formatDate(saved.last_sent_date)}
         </p>
       )}
 

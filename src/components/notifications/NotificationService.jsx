@@ -32,8 +32,31 @@ export function useNotificationService() {
     }
   });
 
+  // sendNotification is an alias for createNotification
+  // (used by LiveTimeTracker, AssignmentForm, etc.)
+  const sendNotification = async (data) => {
+    try {
+      return await createNotificationMutation.mutateAsync({
+        recipient_email: data.recipientEmail || data.recipient_email,
+        recipient_name: data.recipientName || data.recipient_name,
+        type: data.type || 'general',
+        title: data.title || '',
+        message: data.message || '',
+        priority: data.priority || 'normal',
+        status: 'unread',
+        action_url: data.actionUrl || data.action_url,
+        related_entity_type: data.relatedEntityType || data.related_entity_type,
+        send_email: data.sendEmail || false,
+      });
+    } catch (e) {
+      // Non-blocking — notification failures should never crash the app
+      console.warn('[NotificationService] sendNotification failed (non-fatal):', e?.message);
+    }
+  };
+
   return {
     createNotification: createNotificationMutation.mutate,
+    sendNotification,
     isCreating: createNotificationMutation.isPending
   };
 }

@@ -26,7 +26,6 @@ export default function PDFDownloadButton({
   const handleDownload = async () => {
     // Additional safety check before generating
     if (!data || !data.id) {
-      console.warn('Cannot generate PDF: Missing data or ID');
       return;
     }
 

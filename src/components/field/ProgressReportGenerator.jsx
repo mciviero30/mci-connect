@@ -113,9 +113,8 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
         };
         heroImg.onerror = () => resolve(); // Fallback if image fails
       });
-    } catch (err) {
-      console.warn('Error adding hero photo:', err);
-    }
+    } catch (err) { /* intentionally silenced */ }
+
   } else {
     // White background fallback
     doc.setFillColor(255, 255, 255);
@@ -401,9 +400,8 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
           doc.setTextColor(120, 53, 15);
           doc.setFont('helvetica', 'normal');
           doc.text(`${plan.name}`, mapX + mapWidth / 2, mapY + mapHeight + 4.5, { align: 'center' });
-        } catch (err) {
-          console.warn('Error adding location map:', err);
-        }
+        } catch (err) { /* intentionally silenced */ }
+
       }
     }
 
@@ -730,9 +728,8 @@ export async function generateProgressReportPDF(report, job, tasks, photos, plan
               doc.text('Photo', photoX + photoSize / 2, photoY + photoSize / 2, { align: 'center' });
             }
           }
-        } catch (err) {
-          console.warn('Error adding photo:', err);
-        }
+        } catch (err) { /* intentionally silenced */ }
+
 
         photoCount++;
         photoX += photoSize + photoSpacing;

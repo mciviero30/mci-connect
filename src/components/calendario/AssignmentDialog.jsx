@@ -126,9 +126,6 @@ export default function AssignmentDialog({
       };
       
       if (!employee?.id && !shift.user_id) {
-        console.warn('[WRITE GUARD] ⚠️ Updating ScheduleShift without user_id', {
-          email: selectedEmployees[0]
-        });
       }
       
       onSubmit(shiftData);
@@ -184,9 +181,6 @@ export default function AssignmentDialog({
         });
         
         if (!employee?.id) {
-          console.warn('[WRITE GUARD] ⚠️ Creating ScheduleShift (appointment) without user_id', {
-            email: selectedEmployees[0]
-          });
         }
       } else {
         for (const email of selectedEmployees) {
@@ -211,9 +205,6 @@ export default function AssignmentDialog({
           });
           
           if (!employee?.id) {
-            console.warn('[WRITE GUARD] ⚠️ Creating ScheduleShift (job work) without user_id', {
-              email
-            });
           }
         }
       }

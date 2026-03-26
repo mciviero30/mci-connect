@@ -38,7 +38,7 @@ export default function Clientes() {
   const [showInvitationModal, setShowInvitationModal] = useState(false);
   const [viewMode, setViewMode] = useState('grid');
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
 
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,

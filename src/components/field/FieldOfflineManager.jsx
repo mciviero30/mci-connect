@@ -227,7 +227,6 @@ export function FieldOfflineProvider({ children, jobId }) {
             await base44.entities.Photo.create(action.data);
           }
           
-          console.log('✓ Synced action:', action.type);
           syncedIds.push(action.id);
         } catch (err) {
           console.error('Failed to sync action:', err);

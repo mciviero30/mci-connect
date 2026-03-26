@@ -105,12 +105,14 @@ export default function GlobalSearch({ open, onOpenChange }) {
 
   // Auto-focus input
   useEffect(() => {
+    let focusTimer = null;
     if (open) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+      focusTimer = setTimeout(() => inputRef.current?.focus(), 100);
       setActiveIndex(0);
     } else {
       setQuery('');
     }
+    return () => { if (focusTimer) clearTimeout(focusTimer); };
   }, [open]);
 
   const getIcon = (type) => {

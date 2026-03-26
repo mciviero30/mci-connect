@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -312,7 +313,7 @@ export default function CommissionReports() {
                         <div>
                           <span className="text-slate-600">Date:</span>
                           <p className="font-medium">
-                            {new Date(result.calculation_date).toLocaleDateString()}
+                            {formatDate(result.calculation_date)}
                           </p>
                         </div>
                         <div>

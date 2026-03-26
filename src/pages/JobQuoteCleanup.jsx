@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { formatDate } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -211,7 +212,7 @@ export default function JobQuoteCleanup() {
                         )}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {quote.customer_name} • ${quote.total?.toLocaleString()} • {new Date(quote.created_date).toLocaleDateString()}
+                        {quote.customer_name} • ${quote.total?.toLocaleString()} • {formatDate(quote.created_date)}
                       </div>
                     </button>
                   </motion.div>

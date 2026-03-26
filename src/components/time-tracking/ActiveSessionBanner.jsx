@@ -22,9 +22,9 @@ function getActiveSession() {
         if (!raw) continue;
         const session = JSON.parse(raw);
         if (session && session.startTime) return { session, key };
-      } catch (e) {}
+      } catch (e) { /* intentionally silenced */ }
     }
-  } catch (e) {}
+  } catch (e) { /* intentionally silenced */ }
   return null;
 }
 

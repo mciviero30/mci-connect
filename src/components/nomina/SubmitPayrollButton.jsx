@@ -41,10 +41,6 @@ export default function SubmitPayrollButton({ employee, weekStart, weekEnd, payr
       };
 
       if (!existingPayroll && !employee?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Creating WeeklyPayroll without user_id', {
-          email: employee?.email,
-          week: format(weekStart, 'yyyy-MM-dd')
-        });
       }
 
       if (existingPayroll) {

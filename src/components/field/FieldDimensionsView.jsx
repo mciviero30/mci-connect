@@ -150,18 +150,15 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
 
   const createPlanMutation = useMutation({
     mutationFn: async (data) => {
-      console.log('[createPlanMutation] Saving measurement plan:', data);
       // FASE 3C-5: CRITICAL - Always include measurement_session_id for measurement plans
       const result = await base44.entities.Plan.create({
         ...data,
         purpose: 'measurement',
         measurement_session_id: measurementSessionId  // Session ownership
       });
-      console.log('[createPlanMutation] Success:', result);
       return result;
     },
     onSuccess: (data) => {
-      console.log('[createPlanMutation] onSuccess triggered:', data);
       queryClient.invalidateQueries({ queryKey: ['field-measurement-plans', jobId, measurementSessionId] });
       setShowUploadPlan(false);
       setNewPlan({ name: '', file: null });
@@ -206,10 +203,8 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
   }, [dimensions.length]);
 
   const handleSaveDrawing = React.useCallback(() => {
-    console.log('🔥 SAVE DRAWING CLICKED - Handler executed');
     
     if (!newPlan.file || !newPlan.name) {
-      console.log('[Save Drawing] Validation failed', { file: !!newPlan.file, name: !!newPlan.name });
       toast.error('Please enter name and select file');
       return;
     }
@@ -228,7 +223,6 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
       order: plans.length,
       image_url: newPlan.file,
     };
-    console.log('[Save Drawing] Mutation payload:', payload);
     createPlanMutation.mutate(payload);
   }, [newPlan, jobId, plans.length, createPlanMutation]);
 
@@ -632,7 +626,6 @@ const FieldDimensionsView = React.memo(function FieldDimensionsView({ jobId, job
 
                             // HANDLE STRUCTURED ERROR OBJECTS
                             if (response.error) {
-                              console.log('[UploadFile] Error response:', response.error);
 
                               const errorCode = response.error?.code || response.error?.status;
                               const errorMsg = response.error?.message || String(response.error);

@@ -81,7 +81,6 @@ export function SyncQueueProvider({ children }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         setQueue(parsed);
-        console.log('📦 Loaded sync queue:', parsed.length, 'items');
       }
     } catch (error) {
       console.error('❌ Error loading sync queue:', error);
@@ -101,7 +100,6 @@ export function SyncQueueProvider({ children }) {
   const addToQueue = useCallback((operation, currentUser) => {
     // CRITICAL: Only queue if offline, otherwise execute immediately
     if (navigator.onLine) {
-      console.log('🌐 Online: executing operation directly (not queueing)');
       return null;
     }
 
@@ -132,7 +130,6 @@ export function SyncQueueProvider({ children }) {
     };
 
     setQueue(prev => [...prev, queueItem]);
-    console.log('📴 Offline: Added to sync queue:', { queueId, entity: operation.entity, idempotencyKey });
     
     return queueId;
   }, []);
@@ -144,7 +141,6 @@ export function SyncQueueProvider({ children }) {
     }
 
     setIsSyncing(true);
-    console.log('🔄 Processing sync queue:', queue.length, 'items');
 
     const results = {
       success: 0,
@@ -172,11 +168,6 @@ export function SyncQueueProvider({ children }) {
         const winner = items[0];
         const losers = items.slice(1);
 
-        console.log('⚠️ CONFLICT RESOLVED by role priority:', {
-          winner: winner.user_name,
-          priority: winner.role_priority,
-          losers: losers.map(l => l.user_name)
-        });
 
         // Keep winner, mark losers as conflict
         results.conflicts.push({
@@ -216,7 +207,6 @@ export function SyncQueueProvider({ children }) {
           const backoffMs = Math.min(1000 * Math.pow(2, item.retries), 60000); // Max 60s
           const elapsed = Date.now() - new Date(item.lastRetryAt).getTime();
           if (elapsed < backoffMs) {
-            console.log(`⏳ Backoff active: ${backoffMs - elapsed}ms remaining for ${item.queueId}`);
             continue; // Skip this item, will retry later
           }
         }
@@ -226,7 +216,6 @@ export function SyncQueueProvider({ children }) {
           if (item.operation === 'create' && item.idempotencyKey) {
             const duplicate = await checkForDuplicate(item);
             if (duplicate) {
-              console.log('⚠️ Duplicate detected, skipping create:', item.idempotencyKey);
               setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
               results.success++;
               continue;
@@ -236,7 +225,6 @@ export function SyncQueueProvider({ children }) {
           await executeOperation(item);
           setQueue(prev => prev.filter(i => i.queueId !== item.queueId));
           results.success++;
-          console.log('✅ Synced:', item.entity, item.operation, item.queueId);
         } catch (error) {
           console.error('❌ Sync failed:', item.queueId, error.message);
           
@@ -282,7 +270,6 @@ export function SyncQueueProvider({ children }) {
       toast.error(`❌ ${results.failed} change(s) failed`);
     }
 
-    console.log('📊 Sync results:', results);
   }, [queue, isSyncing, toast]);
 
   // Execute a single operation (replay from offline queue)
@@ -321,14 +308,12 @@ export function SyncQueueProvider({ children }) {
   // Sync when coming online + app resume
   useEffect(() => {
     const handleOnline = () => {
-      console.log('📡 Connection restored, processing queue...');
       setTimeout(() => processQueue(), 1000);
     };
 
     const handleVisibilityChange = () => {
       // App resumed from background
       if (document.visibilityState === 'visible' && navigator.onLine && queue.length > 0) {
-        console.log('📱 App resumed, checking sync queue...');
         setTimeout(() => processQueue(), 500);
       }
     };
@@ -344,13 +329,19 @@ export function SyncQueueProvider({ children }) {
 
   // Listen for service worker sync events
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.addEventListener('message', (event) => {
-        if (event.data.type === 'SYNC_PENDING_DATA') {
-          processQueue();
-        }
-      });
-    }
+    if (!('serviceWorker' in navigator)) return;
+
+    const handleSWMessage = (event) => {
+      if (event.data.type === 'SYNC_PENDING_DATA') {
+        processQueue();
+      }
+    };
+
+    navigator.serviceWorker.addEventListener('message', handleSWMessage);
+
+    return () => {
+      navigator.serviceWorker.removeEventListener('message', handleSWMessage);
+    };
   }, [processQueue]);
 
   // Periodic sync when online

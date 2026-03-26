@@ -68,7 +68,6 @@ export default function DimensionDialog({
   // FASE 3C-4: Log session ID for debugging (dev only)
   useEffect(() => {
     if (import.meta.env?.DEV && open) {
-      console.log('[DimensionDialog] Using measurement_session_id:', measurementSessionId);
     }
   }, [open, measurementSessionId]);
 

@@ -66,7 +66,6 @@ export const FieldSessionManager = {
     sessionStorage.setItem(MEASUREMENT_SESSION_KEY, JSON.stringify(session));
     
     if (import.meta.env?.DEV) {
-      console.log('[MeasurementSession] 🆕 Started:', sessionId);
     }
     
     return sessionId; // 🔒 FROZEN: Return format
@@ -82,7 +81,6 @@ export const FieldSessionManager = {
   clearMeasurementSession() {
     const session = this.getMeasurementSession();
     if (import.meta.env?.DEV && session) {
-      console.log('[MeasurementSession] 🗑️ Cleared:', session.measurement_session_id);
     }
     sessionStorage.removeItem(MEASUREMENT_SESSION_KEY); // 🔒 FROZEN
   },
@@ -407,7 +405,6 @@ if (typeof window !== 'undefined') {
         console.error('[Emergency Flush] Draft save failed:', error);
       }
       
-      console.log('[FieldSessionManager] 🚨 EMERGENCY FLUSH (session + ALL drafts + form state)');
     }
   });
 }

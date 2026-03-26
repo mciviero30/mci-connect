@@ -37,7 +37,7 @@ export default function Facturas() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const toast = useToast();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("all");
@@ -280,7 +280,6 @@ export default function Facturas() {
     const isValidFormat = /^INV-\d{5}$/.test(rawNumber);
     
     if (import.meta.env.DEV && !isValidFormat && rawNumber) {
-      console.warn(`[HARDENING] Invalid invoice number format: "${rawNumber}" (should be INV-XXXXX)`, { invoice_id: inv?.id });
     }
 
     return {
@@ -305,7 +304,7 @@ export default function Facturas() {
   if (import.meta.env.DEV) {
     safeInvoices.forEach(inv => {
       const bad = !inv.invoice_number || !Array.isArray(inv.items);
-      if (bad) console.warn("[Bad invoice record]", inv?.id, inv);
+      if (bad) console.warn('[Facturas] Invoice data issue:', inv.id);
     });
   }
 

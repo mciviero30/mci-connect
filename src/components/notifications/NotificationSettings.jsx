@@ -88,9 +88,8 @@ export default function NotificationSettings({ user }) {
             });
 
             queryClient.invalidateQueries({ queryKey: ['pushSubscription'] });
-          } catch (subError) {
-            console.log('Push subscription failed, using in-app only:', subError);
-          }
+          } catch (subError) { /* intentionally silenced */ }
+
         }
       } else {
         toast.error(language === 'es' ? '❌ Permiso denegado' : '❌ Permission denied');

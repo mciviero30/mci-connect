@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -335,7 +336,7 @@ export default function CommissionReview() {
                       <div>
                         <p className="text-slate-600">Approved</p>
                         <p className="font-semibold text-sm">
-                          {result.approved_at ? new Date(result.approved_at).toLocaleDateString() : 'N/A'}
+                          {result.approved_at ? formatDate(result.approved_at) : 'N/A'}
                         </p>
                       </div>
                     </div>
@@ -388,7 +389,7 @@ export default function CommissionReview() {
                       <div>
                         <p className="text-slate-600">Paid Date</p>
                         <p className="font-semibold">
-                          {result.paid_at ? new Date(result.paid_at).toLocaleDateString() : 'N/A'}
+                          {result.paid_at ? formatDate(result.paid_at) : 'N/A'}
                         </p>
                       </div>
                       <div>

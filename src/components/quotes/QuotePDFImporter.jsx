@@ -88,7 +88,6 @@ Extract and return this EXACT JSON structure:`,
         }
       });
 
-      console.log('Extracted data:', extractedData);
 
       // Create quote with extracted data
       const quotes = await base44.entities.Quote.list();

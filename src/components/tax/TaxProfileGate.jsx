@@ -19,7 +19,6 @@ export default function TaxProfileGate({ children }) {
   
   // Read user from cache (stable, doesn't cause prop changes)
   const user = queryClient.getQueryData(CURRENT_USER_QUERY_KEY);
-  console.log('[TaxProfileGate] USER:', user);
   
   // Compute stable derived values BEFORE hooks
   const userEmail = user?.email || null;
@@ -40,7 +39,6 @@ export default function TaxProfileGate({ children }) {
   const { data: taxProfile, isLoading, error } = useQuery({
     queryKey: TAX_PROFILE_QUERY_KEY(userEmail),
     queryFn: async () => {
-      console.log('[TaxProfileGate queryFn] userEmail:', userEmail, 'user:', user);
       if (!userEmail) return null;
       const profiles = await base44.entities.TaxProfile.filter({ 
         employee_email: userEmail 
@@ -61,47 +59,34 @@ export default function TaxProfileGate({ children }) {
   
   // CRITICAL: Never block the tax onboarding route itself (prevents infinite loop)
   if (location.pathname.includes('TaxOnboarding')) {
-    console.log('[TaxProfileGate] On TaxOnboarding page - passing through');
     return <>{children}</>;
   }
   
   // Skip gate for special routes (Field, Onboarding)
   if (isFieldRoute || isOnboardingPage) {
-    console.log('[TaxProfileGate] Special route detected - passing through', { 
-      isFieldRoute, isOnboardingPage 
-    });
     return <>{children}</>;
   }
   
   // No user = allow access (defensive)
   if (!userEmail) {
-    console.log('[TaxProfileGate] No user email - passing through');
     return <>{children}</>;
   }
   
   // Onboarding incomplete = skip tax check entirely
   if (onboardingIncomplete) {
-    console.log('[TaxProfileGate] Onboarding incomplete - passing through', { userEmail });
     return <>{children}</>;
   }
 
   // Exempt users (admin/CEO) skip tax check
   if (isExempt) {
-    console.log('[TaxProfileGate] User exempt (admin/CEO) - passing through', { userEmail, userRole, userPosition });
     return <>{children}</>;
   }
 
   // Check tax profile - redirect if incomplete
   if (!isLoading && (!taxProfile || !taxProfile.completed)) {
-    console.log('[TaxProfileGate] 🚫 REDIRECTING to tax onboarding', { 
-      userEmail, 
-      hasTaxProfile: !!taxProfile, 
-      isCompleted: taxProfile?.completed 
-    });
     return <Navigate to={createPageUrl('TaxOnboarding')} replace />;
   }
 
   // All checks passed - render children
-  console.log('[TaxProfileGate] Tax profile verified - passing through', { userEmail, isLoading });
   return <>{children}</>;
 }

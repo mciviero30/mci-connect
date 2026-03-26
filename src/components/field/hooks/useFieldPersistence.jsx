@@ -19,7 +19,6 @@ export function useFieldPersistence(formId, jobId, initialState = {}) {
         const savedState = await fieldPersistence.loadFormState(formId, jobId);
         if (savedState) {
           setState(savedState);
-          console.log(`Restored ${formId} state for job ${jobId}`);
         }
         setIsRestored(true);
       } catch (error) {
@@ -58,18 +57,15 @@ export function useFieldPersistence(formId, jobId, initialState = {}) {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        console.log(`[FieldPersistence] Persisting ${formId} on background`);
         fieldPersistence.saveFormState(formId, jobId, state).catch(console.error);
       }
     };
 
     const handleFreeze = () => {
-      console.log(`[FieldPersistence] Persisting ${formId} on freeze`);
       fieldPersistence.saveFormState(formId, jobId, state).catch(console.error);
     };
 
     const handleBlur = () => {
-      console.log(`[FieldPersistence] Persisting ${formId} on blur`);
       fieldPersistence.saveFormState(formId, jobId, state).catch(console.error);
     };
 

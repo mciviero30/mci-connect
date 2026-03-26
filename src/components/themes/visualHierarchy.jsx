@@ -140,8 +140,6 @@ export function validateScreenComposition(elements) {
   const primaryCount = elements.filter(e => e.hierarchy === 'primary').length;
   
   if (primaryCount > 1) {
-    console.warn('❌ Visual Hierarchy Violation: Multiple primary actions detected');
-    console.warn('Rule: Only ONE primary action per screen');
     return false;
   }
   

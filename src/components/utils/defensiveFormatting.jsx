@@ -22,7 +22,6 @@ export const safeFormatDate = (dateValue, formatStr, fallback = 'N/A') => {
     // Guard against Invalid Date
     if (isNaN(date.getTime())) {
       if (import.meta.env.DEV) {
-        console.warn('[Defensive] Invalid date value:', dateValue);
       }
       return fallback;
     }
@@ -71,7 +70,6 @@ export const safeFormatDecimal = (value, decimals = 2) => {
     const num = Number(value);
     if (isNaN(num)) {
       if (import.meta.env.DEV) {
-        console.warn('[Defensive] Invalid decimal value:', value);
       }
       return '0'.padEnd(decimals + 2, '0');
     }

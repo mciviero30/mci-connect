@@ -51,6 +51,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   
   // GPS Pre-warming for instant location
   const { getCachedLocation } = useGPSPreWarmer(true);
+  
+
 
   const [activeSession, setActiveSession] = useState(null);
   const [elapsed, setElapsed] = useState(0);
@@ -97,12 +99,6 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     staleTime: Infinity
   });
 
-  // SESSION ISOLATION: Include user.id so sessions are never shared between users.
-  const storageKey = useMemo(
-    () => (user?.id ? `liveTimeTracker_${user.id}_${trackingType}` : null),
-    [user?.id, trackingType]
-  );
-
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: () => base44.entities.Job.filter({ status: 'active' }),
@@ -128,6 +124,13 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
 
   // NEW: Notification service
   const { sendNotification } = useNotificationService(user);
+
+  // SESSION ISOLATION: Include user.id in key so sessions are never shared between users.
+  // Returns null until user loads — prevents loading wrong user's session on shared devices.
+  const storageKey = useMemo(
+    () => (user?.id ? `liveTimeTracker_${user.id}_${trackingType}` : null),
+    [user?.id, trackingType]
+  );
 
   // GEOFENCE AUTO-PAUSE: Called by GeofenceMonitor when employee exits the area
   const handleGeofenceExit = async ({ lat, lng, distance }) => {
@@ -163,7 +166,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         }
       ]
     };
-    localStorage.setItem(storageKey, JSON.stringify(updatedSession));
+    if (storageKey) localStorage.setItem(storageKey, JSON.stringify(updatedSession));
     setActiveSession(updatedSession);
     
     // In-app notification to employee (via Notification entity)
@@ -219,7 +222,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     const breaks = [...(activeSession.breaks || [])];
     const lastBreak = breaks[breaks.length - 1];
     if (lastBreak && !lastBreak.end_time && lastBreak.geofence_auto_pause) {
-      lastBreak.end_time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      lastBreak.end_time = format(new Date(), 'HH:mm:ss');
       lastBreak.duration_minutes = durationMinutes;
       lastBreak.end_latitude = lat;
       lastBreak.end_longitude = lng;
@@ -234,7 +237,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       breaks,
       geofencePausedAt: null,
     };
-    localStorage.setItem(storageKey, JSON.stringify(updatedSession));
+    if (storageKey) localStorage.setItem(storageKey, JSON.stringify(updatedSession));
     setActiveSession(updatedSession);
     
     // In-app notification to employee
@@ -279,46 +282,68 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   }, [jobs, getCachedLocation]);
 
   useEffect(() => {
+    // Guard: wait until storageKey is ready (requires user.id)
     if (!storageKey) return;
 
+    // SESSION CLEANUP: Remove stale sessions (>7 days) AND any orphaned legacy keys
+    // (old format: liveTimeTracker_work / liveTimeTracker_driving without user id)
     try {
-      const keys = Object.keys(localStorage);
-      const now = Date.now();
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
-      const currentUserId = user?.id;
+      const cleanupOldSessions = () => {
+        const keys = Object.keys(localStorage);
+        const now = Date.now();
+        const sevenDays = 7 * 24 * 60 * 60 * 1000;
+        const currentUserId = user?.id;
 
-      keys.forEach(key => {
-        if (key.startsWith('liveTimeTracker_')) {
-          try {
-            const session = JSON.parse(localStorage.getItem(key));
-            if (session?.startTime && (now - session.startTime) > sevenDays) {
+        keys.forEach(key => {
+          if (key.startsWith('liveTimeTracker_')) {
+            try {
+              const session = JSON.parse(localStorage.getItem(key));
+
+              // Remove expired sessions (>7 days old)
+              if (session?.startTime && (now - session.startTime) > sevenDays) {
+                localStorage.removeItem(key);
+                return;
+              }
+
+              // Remove legacy keys (old format without user.id) — e.g. liveTimeTracker_work
+              // New format: liveTimeTracker_{userId}_{trackingType}
+              const isLegacyKey = key === 'liveTimeTracker_work' || key === 'liveTimeTracker_driving';
+              if (isLegacyKey) {
+                localStorage.removeItem(key);
+                return;
+              }
+
+              // Remove sessions that don't belong to the current user
+              // New key format: liveTimeTracker_{userId}_{trackingType}
+              if (currentUserId) {
+                const keyBelongsToUser = key.startsWith(`liveTimeTracker_${currentUserId}_`);
+                if (!keyBelongsToUser) {
+                  localStorage.removeItem(key);
+                }
+              }
+            } catch (e) {
+              // Invalid/corrupt session data — remove it
               localStorage.removeItem(key);
-              return;
             }
-            // Remove legacy keys (old format without user.id)
-            if (key === 'liveTimeTracker_work' || key === 'liveTimeTracker_driving') {
-              localStorage.removeItem(key);
-              return;
-            }
-            // Remove sessions belonging to other users
-            if (currentUserId && !key.startsWith(`liveTimeTracker_${currentUserId}_`)) {
-              localStorage.removeItem(key);
-            }
-          } catch (e) {
-            localStorage.removeItem(key);
           }
-        }
-      });
-    } catch (error) {
-      console.warn('Session cleanup failed:', error);
-    }
+        });
+      };
 
+      cleanupOldSessions();
+    } catch (error) { /* intentionally silenced */ }
+
+
+    // Restore session for the current user only
     try {
       const savedSession = JSON.parse(localStorage.getItem(storageKey));
       if (savedSession) {
-        const sessionOwnedByUser = !savedSession.user_id || savedSession.user_id === user?.id;
+        // Extra safety: verify session matches current user before restoring
+        const sessionOwnedByUser =
+          !savedSession.user_id || savedSession.user_id === user?.id;
+
         if (sessionOwnedByUser) {
           setActiveSession(savedSession);
+          // Restore geofencePaused state if session was auto-paused by geofence
           if (savedSession.onBreak) {
             const breaks = savedSession.breaks || [];
             const lastBreak = breaks[breaks.length - 1];
@@ -327,6 +352,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
             }
           }
         } else {
+          // Session belongs to a different user — discard it
           localStorage.removeItem(storageKey);
         }
       }
@@ -342,18 +368,27 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   const clockInProgressRef = useRef(false);
   const clockOutProgressRef = useRef(false);
 
+  // FIX: Use a ref to always have the latest activeSession inside the interval
+  // This prevents stale closure bugs where breakDuration is outdated after breaks
+  const activeSessionRef = useRef(activeSession);
+  useEffect(() => {
+    activeSessionRef.current = activeSession;
+  }, [activeSession]);
+
   useEffect(() => {
     let interval;
     if (activeSession && !activeSession.onBreak) {
       interval = setInterval(() => {
-        // Deduct accumulated break time so display is accurate
-        const secs = Math.floor((Date.now() - activeSession.startTime - (activeSession.breakDuration || 0)) / 1000);
+        // Always read from ref to get the latest breakDuration (avoids stale closure)
+        const session = activeSessionRef.current;
+        if (!session || session.onBreak) return;
+        const secs = Math.floor((Date.now() - session.startTime - (session.breakDuration || 0)) / 1000);
         setElapsed(secs);
 
         // AUTO CLOCK-OUT when limit is reached — use shift limit if set
-        const shiftMax = activeSession.scheduledShift?.enforce_scheduled_hours && activeSession.scheduledShift?.max_daily_hours
-          ? activeSession.scheduledShift.max_daily_hours
-          : (activeSession.workType === 'driving' ? 16 : 10);
+        const shiftMax = session.scheduledShift?.enforce_scheduled_hours && session.scheduledShift?.max_daily_hours
+          ? session.scheduledShift.max_daily_hours
+          : (session.workType === 'driving' ? 16 : 10);
         const maxSecs = shiftMax * 3600;
         if (secs >= maxSecs && !autoClockOutFiredRef.current) {
           autoClockOutFiredRef.current = true;
@@ -365,7 +400,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     // Reset flag when session changes
     if (!activeSession) autoClockOutFiredRef.current = false;
     return () => clearInterval(interval);
-  }, [activeSession]);
+  }, [activeSession?.startTime, activeSession?.onBreak]);
 
   // NEW: Check for clock open from previous day and send notification
   // USE REF to prevent multiple notifications on re-renders
@@ -428,9 +463,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         status: 'confirmed',
         notes: 'auto_generated',
       });
-    } catch (e) {
-      console.warn('[AutoCalendar] Could not create shift:', e);
-    }
+    } catch (e) { /* intentionally silenced */ }
+
   };
 
   const getLocation = useCallback(async (progressCallback = null) => {
@@ -447,24 +481,26 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     if (clockInProgressRef.current) return;
     clockInProgressRef.current = true;
     try {
-      // BLOCK DUPLICATE: check all storage keys for any active session
-      const allKeys = [
-        `liveTimeTracker_${user.id}_work`,
-        `liveTimeTracker_${user.id}_driving`,
-      ];
-    for (const k of allKeys) {
-      try {
-        const existing = JSON.parse(localStorage.getItem(k));
-        if (existing?.startTime) {
-          setLocationError(
-            language === 'es'
-              ? `⛔ Ya tienes una sesión activa en "${existing.jobName}". Haz Clock Out primero antes de iniciar una nueva.`
-              : `⛔ You already have an active session for "${existing.jobName}". Please Clock Out first before starting a new one.`
-          );
-          return;
+      // BLOCK DUPLICATE: check all user-scoped storage keys for any active session
+      if (user?.id) {
+        const allKeys = [
+          `liveTimeTracker_${user.id}_work`,
+          `liveTimeTracker_${user.id}_driving`,
+        ];
+        for (const k of allKeys) {
+          try {
+            const existing = JSON.parse(localStorage.getItem(k));
+            if (existing?.startTime) {
+              setLocationError(
+                language === 'es'
+                  ? `⛔ Ya tienes una sesión activa en "${existing.jobName}". Haz Clock Out primero antes de iniciar una nueva.`
+                  : `⛔ You already have an active session for "${existing.jobName}". Please Clock Out first before starting a new one.`
+              );
+              return;
+            }
+          } catch (e) { /* intentionally silenced */ }
         }
-      } catch (e) {}
-    }
+      }
 
     // PASO 3: Pre-check GPS permissions BEFORE showing job selector
     const permission = await checkGeolocationPermission();
@@ -548,6 +584,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       // Skip geofence validation only for driving hours
       if (effectiveWorkType === 'driving') {
         const session = {
+          user_id: user?.id,                // SESSION ISOLATION: owner tag
           startTime: adjustedCheckIn.getTime(),
           checkIn: format(adjustedCheckIn, 'HH:mm:ss'),
           jobId: selectedJob,
@@ -617,12 +654,12 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
           }
         });
         
-        // OVERRIDE para pruebas
-        if (user?.email === 'marziociviero@hotmail.com') {
-          const OverrideAlert = (await import('@/components/time-tracking/ImprovedGeofenceAlert')).default;
+        // ADMIN OVERRIDE: If user is admin, allow clock-in outside geofence with a flag
+        if (user?.role === 'admin' || user?.email === 'marziociviero@hotmail.com') {
+          const ImprovedGeofenceAlert = (await import('@/components/time-tracking/ImprovedGeofenceAlert')).default;
           setLocationError(
             <div>
-              <OverrideAlert
+              <ImprovedGeofenceAlert
                 distance={distanceMeters}
                 threshold={MAX_DISTANCE}
                 jobName={job.name}
@@ -630,12 +667,16 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
                 jobLat={job.latitude}
                 jobLng={job.longitude}
                 accuracy={location.accuracy}
-                onRetry={() => { setLocationError(null); setShowWorkTypeSelector(true); }}
+                onRetry={() => {
+                  setLocationError(null);
+                  setShowWorkTypeSelector(true);
+                }}
                 language={language}
               />
               <button
                 onClick={async () => {
                   setLocationError(null);
+                  // Force session creation ignoring geofence
                   const session = {
                     user_id: user?.id,
                     startTime: adjustedCheckIn.getTime(),
@@ -660,9 +701,20 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
                   if (!preselectedWorkType) setWorkType('normal');
                   setTaskDetails('');
                 }}
-                style={{ marginTop:'12px', width:'100%', padding:'10px', background:'#f97316', color:'white', borderRadius:'8px', border:'none', fontWeight:'bold', cursor:'pointer', fontSize:'14px' }}
+                style={{
+                  marginTop: '12px',
+                  width: '100%',
+                  padding: '10px',
+                  background: '#f97316',
+                  color: 'white',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                }}
               >
-                🔓 Override — Fichar de todas formas
+                🔓 {language === 'es' ? 'Override Admin — Fichar de todas formas' : 'Admin Override — Clock In Anyway'}
               </button>
             </div>
           );
@@ -714,6 +766,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       // Removed notification to avoid errors
 
       const session = {
+        user_id: user?.id,                // SESSION ISOLATION: owner tag
         startTime: adjustedCheckIn.getTime(),
         checkIn: format(adjustedCheckIn, 'HH:mm:ss'),
         jobId: selectedJob,
@@ -768,7 +821,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         breakStartTime: null,
         breaks,
       };
-      localStorage.setItem(storageKey, JSON.stringify(closedSession));
+      if (storageKey) localStorage.setItem(storageKey, JSON.stringify(closedSession));
       setActiveSession(closedSession);
       setGeofencePaused(false);
       // Small delay so state settles before saving
@@ -1139,7 +1192,6 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         };
       } catch (error) {
         // Silent failure - location not available
-        console.log('[Break Location] GPS unavailable:', error);
         return { location_unknown: true };
       }
     };
@@ -1211,7 +1263,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         breaks
       };
     }
-    localStorage.setItem(storageKey, JSON.stringify(updatedSession));
+    if (storageKey) localStorage.setItem(storageKey, JSON.stringify(updatedSession));
     setActiveSession(updatedSession);
   };
   
@@ -1234,6 +1286,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       const endTime = Date.now();
       const totalHours = Math.max(0, (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60));
 
+      // FIX: Match exact same field names as handleClockOut — add missing breaks, hour_type, status
       const autoClockOutData = {
         user_id: user?.id,
         employee_email: user.email,
@@ -1247,14 +1300,18 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         check_in_longitude: activeSession.location.lng,
         check_out_latitude: location.lat,
         check_out_longitude: location.lng,
-        hours_worked: totalHours,
-        lunch_minutes: Math.floor(activeSession.breakDuration / (1000 * 60)),
-        work_type: activeSession.workType,
-        task_details: activeSession.taskDetails,
+        hours_worked: Number(totalHours.toFixed(2)),
+        total_break_minutes: Math.floor((activeSession.breakDuration || 0) / (1000 * 60)),
+        breaks: activeSession.breaks || [],
+        hour_type: 'normal',
+        work_type: activeSession.workType || 'normal',
+        task_details: activeSession.taskDetails || '',
+        status: 'pending',
         geofence_validated: false,
         geofence_distance_meters: activeSession.distanceMeters,
         requires_location_review: true,
-        exceeds_max_hours: false,
+        exceeds_max_hours: true,
+        breaks_require_review: false,
       };
 
       if (!user?.id) {

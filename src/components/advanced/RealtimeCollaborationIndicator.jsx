@@ -17,7 +17,6 @@ export const RealtimeCollaborationIndicator = ({ entityType, entityId }) => {
     const unsubscribe = base44.entities[entityType]?.subscribe((event) => {
       if (event.id === entityId && event.type === 'update') {
         // Track who's viewing (implement presence system)
-        console.log('Entity updated by:', event.data?.updated_by);
       }
     });
 

@@ -50,7 +50,6 @@ export default function Contabilidad() {
 
   const deleteMutation = useMutation({
     mutationFn: (id) => {
-      console.warn('❌ Transaction deletion is disabled during Finance Hardening Phase 1');
       return Promise.resolve();
     },
     onSuccess: () => {
@@ -66,12 +65,10 @@ export default function Contabilidad() {
   const monthTransactions = useMemo(() => {
     return transactions.filter(t => {
       if (!t.date || t.date === '') {
-        console.warn(`⚠️ Transaction ${t.id} has invalid/missing date field`);
         return false;
       }
       const tDate = new Date(t.date);
       if (isNaN(tDate.getTime())) {
-        console.warn(`⚠️ Transaction ${t.id} has malformed date: "${t.date}"`);
         return false;
       }
       return tDate >= monthStart && tDate <= monthEnd;

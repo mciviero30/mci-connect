@@ -58,7 +58,6 @@ export default function CommissionRuleManagement() {
   // Create new version mutation with end date update for previous version
   const createVersionMutation = useMutation({
     mutationFn: async (newRuleData) => {
-      console.log('[CommissionRuleManagement] Creating new version:', newRuleData);
       
       // Create new version
       const newRule = await base44.entities.CommissionRule.create(newRuleData);
@@ -73,10 +72,8 @@ export default function CommissionRuleManagement() {
             end_date: format(previousEndDate, 'yyyy-MM-dd')
           });
           
-          console.log('[CommissionRuleManagement] Updated previous version end_date');
-        } catch (updateError) {
-          console.warn('[CommissionRuleManagement] Could not update previous version:', updateError);
-        }
+        } catch (updateError) { /* intentionally silenced */ }
+
       }
       
       return newRule;

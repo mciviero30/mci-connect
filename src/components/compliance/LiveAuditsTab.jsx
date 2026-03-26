@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { formatDate } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,7 +114,7 @@ export default function LiveAuditsTab({ isAdmin, user }) {
                         {audit.template_name}
                       </Badge>
                       <span className="text-sm text-slate-500 dark:text-slate-400">
-                        {new Date(audit.submission_date).toLocaleDateString()}
+                        {formatDate(audit.submission_date)}
                       </span>
                     </div>
                     <CardTitle className="text-slate-900 dark:text-white">

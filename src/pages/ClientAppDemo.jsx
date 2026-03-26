@@ -249,7 +249,6 @@ export default function ClientAppDemo() {
                             onClick={async () => {
                               try {
                                 const status = await base44.functions.invoke('checkDemoUserStatus', { email: user.email });
-                                console.log('Demo user status:', status.data);
                                 toast.info(`Role: ${status.data.user.role}`);
                               } catch (error) {
                                 console.error('Check status error:', error);

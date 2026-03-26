@@ -28,7 +28,6 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
       });
       
       // AUTO-CREATE WorkAuthorization
-      console.log('🔐 Auto-creating WorkAuthorization...');
       const authorization = await base44.entities.WorkAuthorization.create({
         customer_id: quote.customer_id,
         customer_name: quote.customer_name,
@@ -44,7 +43,6 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
         linked_quote_id: quote.id,
         status: 'approved'
       });
-      console.log('✅ WorkAuthorization created:', authorization.id);
       
       // Generate invoice number
       const { data: invoiceNumberData } = await base44.functions.invoke('generateInvoiceNumber', {});
@@ -130,8 +128,7 @@ export default function QuoteToInvoiceConverter({ quote, open, onOpenChange }) {
       base44.functions.invoke('provisionJobFromInvoice', {
         invoice_id: newInvoice.id,
         mode: 'convert'
-      }).catch(err => console.warn('Background provisioning failed:', err));
-
+      }).catch(() => {}); // provisioning error silenced
       // Send email to customer if requested
       if (sendEmail && quote.customer_email) {
         await base44.integrations.Core.SendEmail({

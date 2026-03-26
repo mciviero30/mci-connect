@@ -1093,13 +1093,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
 
   // DECLARATIVE GATE 1: Block for onboarding (no navigation)
   if (shouldBlockForOnboarding && !isOnboardingRoute) {
-    console.log('[OnboardingGate] BLOCKING user - onboarding incomplete', {
-      userEmail: user?.email,
-      userRole: user?.role,
-      onboardingCompleted: user?.onboarding_completed,
-      isAdminOrCEO,
-      isClientOnly
-    });
 
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4">

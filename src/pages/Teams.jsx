@@ -25,7 +25,7 @@ import {
 
 export default function Teams() {
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const [showDialog, setShowDialog] = useState(false);
   const [editingTeam, setEditingTeam] = useState(null);
   const [showCapacityDialog, setShowCapacityDialog] = useState(false);

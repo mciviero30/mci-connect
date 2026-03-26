@@ -178,7 +178,6 @@ export function useEnhancedOfflineSync() {
         if (operation === 'create' && idempotencyKey) {
           const existing = await checkDuplicate(entity, data, idempotencyKey);
           if (existing) {
-            console.log('[Offline Sync] Skipping duplicate create:', idempotencyKey);
             successCount++;
             continue; // Skip, already created
           }
@@ -201,7 +200,6 @@ export function useEnhancedOfflineSync() {
         successCount++;
         
         // Log success
-        console.log('[Offline Sync] ✅ Synced:', { entity, operation, queueId: item.queueId });
       } catch (error) {
         console.error('[Offline Sync] ❌ Failed:', item, error);
         

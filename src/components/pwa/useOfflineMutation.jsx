@@ -26,7 +26,6 @@ export function useOfflineMutation({
         } catch (error) {
           // If network error, queue it
           if (error.message.includes('network') || error.message.includes('fetch')) {
-            console.log('📴 Network error, queueing mutation');
             queueMutation(variables);
             throw new Error('QUEUED');
           }

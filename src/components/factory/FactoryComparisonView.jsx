@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { formatDate } from '@/lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -108,7 +109,7 @@ export default function FactoryComparisonView({ dimensionSet }) {
                 <SelectContent>
                   {revisionHistory.map(rev => (
                     <SelectItem key={rev.id} value={rev.id}>
-                      Rev {rev.version_number} - {new Date(rev.created_date).toLocaleDateString()}
+                      Rev {rev.version_number} - {formatDate(rev.created_date)}
                       {rev.captured_by_name && ` by ${rev.captured_by_name}`}
                     </SelectItem>
                   ))}
@@ -127,7 +128,7 @@ export default function FactoryComparisonView({ dimensionSet }) {
                 <SelectContent>
                   {revisionHistory.map(rev => (
                     <SelectItem key={rev.id} value={rev.id}>
-                      Rev {rev.version_number} - {new Date(rev.created_date).toLocaleDateString()}
+                      Rev {rev.version_number} - {formatDate(rev.created_date)}
                       {rev.approved_by_name && ` by ${rev.approved_by_name}`}
                     </SelectItem>
                   ))}
@@ -177,13 +178,13 @@ export default function FactoryComparisonView({ dimensionSet }) {
                 <div>
                   <span className="text-slate-500">Original Captured:</span>
                   <span className="ml-2 font-semibold">
-                    {new Date(comparison.summary.original_date).toLocaleDateString()}
+                    {formatDate(comparison.summary.original_date)}
                   </span>
                 </div>
                 <div>
                   <span className="text-slate-500">Production Approved:</span>
                   <span className="ml-2 font-semibold">
-                    {new Date(comparison.summary.revised_date).toLocaleDateString()}
+                    {formatDate(comparison.summary.revised_date)}
                   </span>
                 </div>
                 <div>

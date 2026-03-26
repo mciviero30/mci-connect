@@ -91,28 +91,23 @@ export function usePersistentState(key, initialValue, options = {}) {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        console.log(`[PersistentState] Saving ${key} on visibility hidden`);
         persistState();
       }
     };
 
     const handleFreeze = () => {
-      console.log(`[PersistentState] Saving ${key} on freeze`);
       persistState();
     };
 
     const handleBlur = () => {
-      console.log(`[PersistentState] Saving ${key} on blur`);
       persistState();
     };
 
     const handlePageHide = () => {
-      console.log(`[PersistentState] Saving ${key} on pagehide`);
       persistState();
     };
 
     const handleBeforeUnload = () => {
-      console.log(`[PersistentState] Emergency flush ${key} on beforeunload`);
       persistState();
     };
 

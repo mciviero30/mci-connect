@@ -114,7 +114,6 @@ export function useAutoSave({
             await fieldStorage.update(entityType, draftId, enrichedData);
             
             if (import.meta.env?.DEV) {
-              console.log(`[AutoSave] Background save for ${entityType}`);
             }
           } catch (error) {
             console.error('Background save failed:', error);

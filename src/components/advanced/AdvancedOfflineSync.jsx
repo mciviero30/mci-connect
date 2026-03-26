@@ -12,7 +12,7 @@ import { useToast } from '@/components/ui/toast';
 
 export const AdvancedOfflineSync = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pendingSync, setPendingSync] = useState(0);
   const [lastSyncTime, setLastSyncTime] = useState(null);

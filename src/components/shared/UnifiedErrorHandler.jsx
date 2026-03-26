@@ -69,7 +69,7 @@ export const shouldRetry = (error, attemptCount = 0, maxRetries = 3) => {
  * Hook for handling errors with retry logic
  */
 export const useErrorHandler = () => {
-  const toast = useToast();
+  const { toast } = useToast();
   const { language } = useLanguage();
 
   const handleError = (error, context = '') => {

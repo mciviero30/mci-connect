@@ -40,7 +40,7 @@ export default function Trabajos() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate(); // OPS-I1 FIX: import and use navigate
-  const toast = useToast();
+  const { toast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [showAIWizard, setShowAIWizard] = useState(false);
   const [editingJob, setEditingJob] = useState(null);

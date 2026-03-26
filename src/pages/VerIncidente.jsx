@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -321,7 +322,7 @@ export default function VerIncidentePage() {
               </div>
             )}
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Cerrado por {incident.closed_by} el {new Date(incident.closed_date).toLocaleDateString()}
+              Cerrado por {incident.closed_by} el {formatDate(incident.closed_date)}
             </p>
           </CardContent>
         </Card>

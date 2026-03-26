@@ -42,7 +42,6 @@ export default function Horarios() {
     queryKey: ['timeEntries'],
     queryFn: async () => {
       const entries = await base44.entities.TimeEntry.list('-date', 200);
-      console.log('📊 Loaded time entries:', entries.length);
       return entries;
     },
     staleTime: 30000, // 30 seconds

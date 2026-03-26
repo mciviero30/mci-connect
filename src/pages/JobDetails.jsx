@@ -48,6 +48,9 @@ import { useToast } from "@/components/ui/toast";
 import ClientInvitationManager from "@/components/field/ClientInvitationManager";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 
+const n = (v, d = 2) => (Number(v) || 0).toFixed(d);
+
+
 export default function JobDetails() {
   const [searchParams] = useSearchParams();
   const jobId = searchParams.get('id');
@@ -100,21 +103,10 @@ export default function JobDetails() {
   const updateJobMutation = useMutation({
     mutationFn: async (data) => {
       // VERIFICATION LOG - Job update
-      console.log('📊 [JOB VERIFICATION] UPDATE PAYLOAD:', {
-        job_id: jobId,
-        fields_updating: Object.keys(data),
-        contract_amount: data.contract_amount,
-        estimated_hours: data.estimated_hours
-      });
       
       const result = await base44.entities.Job.update(jobId, data);
       
       // VERIFICATION LOG - Job after update
-      console.log('📊 [JOB VERIFICATION] AFTER UPDATE:', {
-        job_id: result.id,
-        contract_amount: result.contract_amount,
-        estimated_hours: result.estimated_hours
-      });
       
       return result;
     },
@@ -136,7 +128,6 @@ export default function JobDetails() {
     mutationFn: () => base44.functions.invoke('syncJobToWebsite', { job_id: jobId }),
     onSuccess: (result) => {
       toast.success('✅ Job synced to MCI-us.com successfully!');
-      console.log('Sync result:', result);
     },
     onError: (error) => {
       toast.error(`Sync failed: ${error.message}`);
@@ -246,7 +237,6 @@ export default function JobDetails() {
       try {
         // Get all active employees from EmployeeDirectory
         const employees = await base44.entities.EmployeeDirectory.list('-full_name', 200);
-        console.log('Fetched all employees:', employees);
         
         // Return all active employees (positions may not be filled - show everyone for now)
         return (employees || []).filter(emp => emp.status === 'active' || !emp.status);
@@ -448,7 +438,7 @@ export default function JobDetails() {
                 <div className="flex-1">
                   <h3 className="font-bold text-red-900 dark:text-red-300">⚠️ Over Budget Alert</h3>
                   <p className="text-sm text-red-700 dark:text-red-400">
-                    Current costs: ${totalCosts.toLocaleString()} ({budgetUsed.toFixed(0)}% of budget) • 
+                    Current costs: ${totalCosts.toLocaleString()} ({n(budgetUsed, 0)}% of budget) • 
                     Over by ${Math.abs(budgetVariance).toLocaleString()}
                   </p>
                 </div>
@@ -491,7 +481,7 @@ export default function JobDetails() {
               </p>
               {estimatedCost > 0 && (
                 <p className={`text-xs mt-1 ${isOverBudget ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                  {budgetUsed.toFixed(0)}% of ${estimatedCost.toLocaleString()}
+                  {n(budgetUsed, 0)}% of ${estimatedCost.toLocaleString()}
                 </p>
               )}
             </CardContent>
@@ -506,11 +496,11 @@ export default function JobDetails() {
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Hours</p>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                {totalHours.toFixed(1)}h
+                {n(totalHours, 1)}h
               </p>
               {estimatedHours > 0 && (
                 <p className={`text-xs mt-1 ${totalHours > estimatedHours ? 'text-amber-600' : 'text-green-600'}`}>
-                  Est: {estimatedHours.toFixed(1)}h
+                  Est: {n(estimatedHours, 1)}h
                 </p>
               )}
             </CardContent>
@@ -528,7 +518,7 @@ export default function JobDetails() {
                 ${profit.toLocaleString()}
               </p>
               <p className={`text-xs mt-1 ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {profitMargin.toFixed(1)}% margin
+                {n(profitMargin, 1)}% margin
               </p>
             </CardContent>
           </Card>
@@ -542,7 +532,7 @@ export default function JobDetails() {
               </div>
               <p className="text-xs text-slate-600 dark:text-slate-400 mb-1">Budget Health</p>
               <p className={`text-2xl font-bold ${isOverBudget ? 'text-red-700 dark:text-red-400' : 'text-green-700 dark:text-green-400'}`}>
-                {budgetUsed.toFixed(0)}%
+                {n(budgetUsed, 0)}%
               </p>
               <p className={`text-xs mt-1 ${isOverBudget ? 'text-red-600' : 'text-green-600'}`}>
                 {isOverBudget ? 'Over Budget' : 'On Track'}
@@ -564,7 +554,7 @@ export default function JobDetails() {
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Labor Cost</p>
                 <p className="text-xl font-bold text-slate-900 dark:text-white">${totalPayrollCost.toLocaleString()}</p>
-                <p className="text-xs text-slate-500 mt-1">{totalHours.toFixed(1)}h × $25/hr avg</p>
+                <p className="text-xs text-slate-500 mt-1">{n(totalHours, 1)}h × $25/hr avg</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Expenses</p>
@@ -744,17 +734,17 @@ export default function JobDetails() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-600">{language === 'es' ? 'Costo de Nómina' : 'Payroll Cost'}</span>
-                    <span className="font-semibold text-slate-900">${totalPayrollCost.toFixed(2)}</span>
+                    <span className="font-semibold text-slate-900">${n(totalPayrollCost, 2)}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-600">{language === 'es' ? 'Gastos' : 'Expenses'}</span>
-                    <span className="font-semibold text-slate-900">${totalExpenses.toFixed(2)}</span>
+                    <span className="font-semibold text-slate-900">${n(totalExpenses, 2)}</span>
                   </div>
                   <div className="border-t pt-4 mt-4">
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-slate-900">{t('profitLoss')}</span>
                       <span className={`font-bold text-xl ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        ${profit.toFixed(2)}
+                        ${n(profit, 2)}
                       </span>
                     </div>
                   </div>
@@ -880,7 +870,7 @@ export default function JobDetails() {
                     <p className="text-sm text-amber-700 mb-1">
                       {language === 'es' ? 'Horas Estimadas' : 'Estimated Hours'}
                     </p>
-                    <p className="text-3xl font-bold text-amber-900">{estimatedHours.toFixed(1)}h</p>
+                    <p className="text-3xl font-bold text-amber-900">{n(estimatedHours, 1)}h</p>
                     <p className="text-xs text-amber-600 mt-1">
                       {language === 'es' ? 'Del quote original' : 'From original quote'}
                     </p>
@@ -892,9 +882,9 @@ export default function JobDetails() {
                     <p className="text-sm text-cyan-700 mb-1">
                       {language === 'es' ? 'Horas Trabajadas' : 'Hours Worked'}
                     </p>
-                    <p className="text-3xl font-bold text-cyan-900">{totalHours.toFixed(1)}h</p>
+                    <p className="text-3xl font-bold text-cyan-900">{n(totalHours, 1)}h</p>
                     <p className="text-xs text-cyan-600 mt-1">
-                      {((totalHours / estimatedHours) * 100).toFixed(0)}% {language === 'es' ? 'del estimado' : 'of estimate'}
+                      {n((totalHours / estimatedHours) * 100, 0)}% {language === 'es' ? 'del estimado' : 'of estimate'}
                     </p>
                   </CardContent>
                 </Card>
@@ -909,7 +899,7 @@ export default function JobDetails() {
                       {language === 'es' ? 'Restantes' : 'Remaining'}
                     </p>
                     <p className={`text-3xl font-bold ${totalHours > estimatedHours ? 'text-red-900' : 'text-green-900'}`}>
-                      {totalHours > estimatedHours ? '+' : ''}{(totalHours - estimatedHours).toFixed(1)}h
+                      {totalHours > estimatedHours ? '+' : ''}{n(totalHours - estimatedHours, 1)}h
                     </p>
                     <p className={`text-xs mt-1 ${totalHours > estimatedHours ? 'text-red-600' : 'text-green-600'}`}>
                       {totalHours > estimatedHours 
@@ -950,7 +940,7 @@ export default function JobDetails() {
                           <tr key={entry.id} className="border-b hover:bg-slate-50">
                             <td className="p-3">{entry.employee_name}</td>
                             <td className="p-3">{format(new Date(entry.date), 'MMM dd, yyyy')}</td>
-                            <td className="p-3 font-semibold">{(entry.hours_worked || 0).toFixed(1)}h</td>
+                            <td className="p-3 font-semibold">{n(entry.hours_worked, 1)}h</td>
                             <td className="p-3">
                               <Badge className={
                                 entry.status === 'approved' ? 'bg-green-500 text-white' :
@@ -1003,7 +993,7 @@ export default function JobDetails() {
                             <td className="p-3">{expense.employee_name}</td>
                             <td className="p-3">{format(new Date(expense.date), 'MMM dd, yyyy')}</td>
                             <td className="p-3">{expense.category}</td>
-                            <td className="p-3 font-semibold">${expense.amount.toFixed(2)}</td>
+                            <td className="p-3 font-semibold">${n(expense.amount, 2)}</td>
                             <td className="p-3">
                               <Badge className={
                                 expense.status === 'approved' ? 'bg-green-500 text-white' :
@@ -1146,7 +1136,7 @@ export default function JobDetails() {
                       <Clock className="w-3 h-3" /> Labor
                     </p>
                     <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">${totalPayrollCost.toLocaleString()}</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">{totalHours.toFixed(1)} hours logged</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">{n(totalHours, 1)} hours logged</p>
                   </CardContent>
                 </Card>
 
@@ -1179,7 +1169,7 @@ export default function JobDetails() {
                       ${profit.toLocaleString()}
                     </p>
                     <p className={`text-xs mt-1 ${profit >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {profitMargin.toFixed(1)}% margin
+                      {n(profitMargin, 1)}% margin
                     </p>
                   </CardContent>
                 </Card>
@@ -1197,7 +1187,7 @@ export default function JobDetails() {
                         <div className="flex justify-between mb-2">
                           <span className="text-sm text-slate-600 dark:text-slate-400">Budget Progress</span>
                           <span className={`text-sm font-bold ${isOverBudget ? 'text-red-600' : 'text-green-600'}`}>
-                            {budgetUsed.toFixed(1)}%
+                            {n(budgetUsed, 1)}%
                           </span>
                         </div>
                         <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4 overflow-hidden relative">

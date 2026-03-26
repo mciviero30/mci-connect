@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { formatDate } from '@/lib/utils';
 import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -189,7 +190,7 @@ export default function MiScorecard() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-amber-600">+{rec.points} pts</p>
-                      <p className="text-xs text-slate-500">{new Date(rec.date).toLocaleDateString()}</p>
+                      <p className="text-xs text-slate-500">{formatDate(rec.date)}</p>
                     </div>
                   </div>
                 ))}

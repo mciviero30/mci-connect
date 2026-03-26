@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import CustomReportBuilder from '../components/reporting/CustomReportBuilder';
 import { exportToCSV, exportToPDF } from '../components/reportes/ExportButtons';
 
+const n = (v, d = 2) => (Number(v) || 0).toFixed(d);
+
+
 const COLORS = ['#507DB4', '#6B9DD8', '#8BB4DE', '#A5C9E8', '#BFD9EE', '#D9E9F4'];
 
 export default function ReportingHub() {
@@ -242,11 +245,11 @@ export default function ReportingHub() {
       },
       {
         Metric: 'Total Hours Worked',
-        Value: kpis.totalHours.toFixed(2)
+        Value: n(kpis.totalHours, 2)
       },
       {
         Metric: 'Avg Hours per Employee',
-        Value: kpis.avgHoursPerEmployee.toFixed(2)
+        Value: n(kpis.avgHoursPerEmployee, 2)
       },
       {
         Metric: 'Completed Jobs',
@@ -254,23 +257,23 @@ export default function ReportingHub() {
       },
       {
         Metric: 'Completion Rate',
-        Value: `${kpis.completionRate.toFixed(1)}%`
+        Value: `${n(kpis.completionRate, 1)}%`
       },
       {
         Metric: 'Total Revenue',
-        Value: `$${kpis.totalRevenue.toFixed(2)}`
+        Value: `$${n(kpis.totalRevenue, 2)}`
       },
       {
         Metric: 'Total Expenses',
-        Value: `$${kpis.totalExpenses.toFixed(2)}`
+        Value: `$${n(kpis.totalExpenses, 2)}`
       },
       {
         Metric: 'Profit Margin',
-        Value: `${kpis.profitMargin.toFixed(1)}%`
+        Value: `${n(kpis.profitMargin, 1)}%`
       },
       {
         Metric: 'Notifications Read Rate',
-        Value: `${kpis.readRate.toFixed(1)}%`
+        Value: `${n(kpis.readRate, 1)}%`
       }
     ];
 
@@ -321,7 +324,7 @@ export default function ReportingHub() {
                 <div>
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">Avg Hours/Employee</p>
                   <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-1">
-                    {kpis.avgHoursPerEmployee.toFixed(1)}
+                    {n(kpis.avgHoursPerEmployee, 1)}
                   </p>
                 </div>
                 <Clock className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-[#507DB4] opacity-60" />
@@ -335,7 +338,7 @@ export default function ReportingHub() {
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Completion Rate</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">
-                    {kpis.completionRate.toFixed(1)}%
+                    {n(kpis.completionRate, 1)}%
                   </p>
                 </div>
                 <CheckCircle className="w-12 h-12 text-[#507DB4] opacity-60" />
@@ -349,7 +352,7 @@ export default function ReportingHub() {
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Profit Margin</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">
-                    {kpis.profitMargin.toFixed(1)}%
+                    {n(kpis.profitMargin, 1)}%
                   </p>
                 </div>
                 <TrendingUp className="w-12 h-12 text-[#507DB4] opacity-60" />
@@ -363,7 +366,7 @@ export default function ReportingHub() {
                 <div>
                   <p className="text-sm text-slate-600 dark:text-slate-400">Notification Read Rate</p>
                   <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">
-                    {kpis.readRate.toFixed(1)}%
+                    {n(kpis.readRate, 1)}%
                   </p>
                 </div>
                 <Bell className="w-12 h-12 text-[#507DB4] opacity-60" />
@@ -413,7 +416,7 @@ export default function ReportingHub() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name}: ${n(percent * 100, 0)}%`}
                     outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
@@ -484,15 +487,15 @@ export default function ReportingHub() {
             <CardContent className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Total Revenue:</span>
-                <span className="font-bold text-slate-900 dark:text-slate-100">${kpis.totalRevenue.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">${n(kpis.totalRevenue, 2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Total Expenses:</span>
-                <span className="font-bold text-slate-900 dark:text-slate-100">${kpis.totalExpenses.toFixed(2)}</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">${n(kpis.totalExpenses, 2)}</span>
               </div>
               <div className="flex justify-between pt-3 border-t border-slate-200 dark:border-slate-700">
                 <span className="text-slate-900 dark:text-white font-semibold">Net Profit:</span>
-                <span className="font-bold text-[#507DB4] dark:text-[#6B9DD8]">${(kpis.totalRevenue - kpis.totalExpenses).toFixed(2)}</span>
+                <span className="font-bold text-[#507DB4] dark:text-[#6B9DD8]">${n(kpis.totalRevenue - kpis.totalExpenses, 2)}</span>
               </div>
             </CardContent>
           </Card>
@@ -508,7 +511,7 @@ export default function ReportingHub() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Total Hours:</span>
-                <span className="font-bold text-slate-900 dark:text-white">{kpis.totalHours.toFixed(1)}</span>
+                <span className="font-bold text-slate-900 dark:text-white">{n(kpis.totalHours, 1)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Recognitions Given:</span>
@@ -528,11 +531,11 @@ export default function ReportingHub() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Read Rate:</span>
-                <span className="font-bold text-slate-900 dark:text-white">{kpis.readRate.toFixed(1)}%</span>
+                <span className="font-bold text-slate-900 dark:text-white">{n(kpis.readRate, 1)}%</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Avg Response Time:</span>
-                <span className="font-bold text-slate-900 dark:text-white">{kpis.avgResponseTime.toFixed(1)}h</span>
+                <span className="font-bold text-slate-900 dark:text-white">{n(kpis.avgResponseTime, 1)}h</span>
               </div>
             </CardContent>
           </Card>

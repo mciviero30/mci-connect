@@ -96,7 +96,6 @@ export default function PayrollReminderService({ user }) {
           
           // Skip if payroll already processed
           if (isPayrollProcessed) {
-            console.log('Payroll already processed - skipping critical reminder');
             lastNotificationRef.current[notifKey] = true;
             return;
           }

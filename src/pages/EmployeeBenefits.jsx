@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
@@ -163,7 +164,7 @@ export default function EmployeeBenefits() {
                           {doc.document_name}
                         </p>
                         <p className="text-xs text-slate-600 dark:text-slate-400">
-                          {doc.document_type} • {new Date(doc.created_date).toLocaleDateString()}
+                          {doc.document_type} • {formatDate(doc.created_date)}
                         </p>
                       </div>
                     </div>

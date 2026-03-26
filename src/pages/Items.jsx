@@ -61,10 +61,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+const n = (v, d = 2) => (Number(v) || 0).toFixed(d);
+
+
 export default function Items() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -220,7 +223,7 @@ export default function Items() {
     const laborRate = formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE;
     const laborCost = installationTime * laborRate;
 
-    return (materialCost + laborCost).toFixed(2);
+    return n(materialCost + laborCost, 2);
   }, [formData.category, formData.material_cost, formData.installation_time, formData.is_overtime, STANDARD_LABOR_RATE, isLaborOrService]);
 
   // ============================================
@@ -269,9 +272,8 @@ export default function Items() {
         
         const logoBase64 = btoa(binary);
         doc.addImage(`data:image/png;base64,${logoBase64}`, 'PNG', margin, 5, 35, 15);
-      } catch (err) {
-        console.log('Logo load error:', err);
-      }
+      } catch (err) { /* intentionally silenced */ }
+
 
       // PRICE LIST title (right aligned, white)
       doc.setTextColor(255, 255, 255);
@@ -349,7 +351,7 @@ export default function Items() {
         const itemName = item.name || '';
         const categoryLabel = categoryConfig[item.category]?.label || item.category || '';
         const unitLabel = item.unit || 'pcs';
-        const salePrice = `$${(item.unit_price || 0).toFixed(2)}`;
+        const salePrice = `$${n(item.unit_price, 2)}`;
         const supplier = item.supplier || '';
 
         const nameLines = doc.splitTextToSize(itemName, contentWidth - 80);
@@ -486,8 +488,8 @@ export default function Items() {
       if (data.unit_price < data.cost_per_unit) {
         const proceed = window.confirm(
           language === 'es'
-            ? `⚠️ ALERTA DE MARGEN NEGATIVO\n\nPrecio de Venta: $${data.unit_price}\nCosto Interno: $${data.cost_per_unit}\nPérdida: $${(data.cost_per_unit - data.unit_price).toFixed(2)} por unidad\n\n¿Continuar de todas formas?`
-            : `⚠️ NEGATIVE MARGIN ALERT\n\nSale Price: $${data.unit_price}\nInternal Cost: $${data.cost_per_unit}\nLoss: $${(data.cost_per_unit - data.unit_price).toFixed(2)} per unit\n\nContinue anyway?`
+            ? `⚠️ ALERTA DE MARGEN NEGATIVO\n\nPrecio de Venta: $${data.unit_price}\nCosto Interno: $${data.cost_per_unit}\nPérdida: $${n(data.cost_per_unit - data.unit_price, 2)} por unidad\n\n¿Continuar de todas formas?`
+            : `⚠️ NEGATIVE MARGIN ALERT\n\nSale Price: $${data.unit_price}\nInternal Cost: $${data.cost_per_unit}\nLoss: $${n(data.cost_per_unit - data.unit_price, 2)} per unit\n\nContinue anyway?`
         );
 
         if (!proceed) {
@@ -560,8 +562,8 @@ export default function Items() {
       if (data.unit_price < data.cost_per_unit) {
         const proceed = window.confirm(
           language === 'es'
-            ? `⚠️ ALERTA DE MARGEN NEGATIVO\n\nPrecio de Venta: $${data.unit_price}\nCosto Interno: $${data.cost_per_unit}\nPérdida: $${(data.cost_per_unit - data.unit_price).toFixed(2)} por unidad\n\n¿Continuar de todas formas?`
-            : `⚠️ NEGATIVE MARGIN ALERT\n\nSale Price: $${data.unit_price}\nInternal Cost: $${data.cost_per_unit}\nLoss: $${(data.cost_per_unit - data.unit_price).toFixed(2)} per unit\n\nContinue anyway?`
+            ? `⚠️ ALERTA DE MARGEN NEGATIVO\n\nPrecio de Venta: $${data.unit_price}\nCosto Interno: $${data.cost_per_unit}\nPérdida: $${n(data.cost_per_unit - data.unit_price, 2)} por unidad\n\n¿Continuar de todas formas?`
+            : `⚠️ NEGATIVE MARGIN ALERT\n\nSale Price: $${data.unit_price}\nInternal Cost: $${data.cost_per_unit}\nLoss: $${n(data.cost_per_unit - data.unit_price, 2)} per unit\n\nContinue anyway?`
         );
 
         if (!proceed) {
@@ -918,10 +920,10 @@ export default function Items() {
 
     const marginPercent = ((price - cost) / price * 100);
     return {
-      value: marginPercent.toFixed(1),
+      value: n(marginPercent, 1),
       isNegative: marginPercent < 0,
-      profit: (price - cost).toFixed(2),
-      totalCost: cost.toFixed(2)
+      profit: n(price - cost, 2),
+      totalCost: n(cost, 2)
     };
   }, [formData.unit_price, formData.cost_per_unit, formData.material_cost, formData.installation_time, formData.is_overtime, isLaborOrService, STANDARD_LABOR_RATE]);
 
@@ -974,7 +976,7 @@ export default function Items() {
             <Calculator className="w-4 h-4 text-[#507DB4] dark:text-[#6B9DD8]" />
             <AlertDescription className="text-slate-900 dark:text-slate-100 text-sm flex items-center justify-between">
               <div>
-                <strong>Standard Labor Rate:</strong> ${STANDARD_LABOR_RATE.toFixed(2)}/hour
+                <strong>Standard Labor Rate:</strong> ${n(STANDARD_LABOR_RATE, 2)}/hour
                 <span className="ml-2 text-slate-700 dark:text-slate-300">
                   (Labor/Service costs auto-calculated: Material Cost + Installation Time × Labor Rate)
                 </span>
@@ -1013,7 +1015,7 @@ export default function Items() {
                 <AlertDescription className="text-orange-800">
                   <div className="mt-2 flex flex-wrap gap-2">
                     {negativeMarginItems.map(item => {
-                      const loss = (item.cost_per_unit - item.unit_price).toFixed(2);
+                      const loss = n(item.cost_per_unit - item.unit_price, 2);
                       return (
                         <Badge key={item.id} className="bg-orange-600 text-white">
                           {item.name} (-${loss})
@@ -1110,7 +1112,7 @@ export default function Items() {
                         const categoryLabel = categoryConfig[item.category]?.label || categoryConfig.other.label;
                         const profit = (item.unit_price || 0) - (item.cost_per_unit || 0);
                         const marginPercentage = (item.unit_price > 0 && item.cost_per_unit > 0)
-                          ? ((item.unit_price - item.cost_per_unit) / item.unit_price * 100).toFixed(1)
+                          ? n((item.unit_price - item.cost_per_unit) / item.unit_price * 100, 1)
                           : 0;
 
                         const stockStatus = item.category === 'materials' && item.in_stock_quantity === 0
@@ -1153,10 +1155,10 @@ export default function Items() {
                             </TableCell>
 
                             <TableCell className="text-right font-bold text-[#507DB4] dark:text-[#6B9DD8]">
-                              ${(item.unit_price || 0).toFixed(2)}
+                              ${n(item.unit_price, 2)}
                             </TableCell>
                             <TableCell className="text-right text-slate-600 dark:text-slate-400">
-                              ${(item.cost_per_unit || 0).toFixed(2)}
+                              ${n(item.cost_per_unit, 2)}
                             </TableCell>
                             <TableCell className="text-right">
                               <Badge className={
@@ -1428,8 +1430,8 @@ export default function Items() {
                             <TooltipContent className="bg-slate-900 text-white">
                               <p className="max-w-xs">
                                 {language === 'es'
-                                  ? `Fórmula: Costo de Materiales + (Tiempo de Instalación × $${(formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE).toFixed(2)}/hora)${formData.is_overtime ? ' [Overtime 1.5x]' : ''}`
-                                  : `Formula: Material Cost + (Installation Time × $${(formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE).toFixed(2)}/hour)${formData.is_overtime ? ' [Overtime 1.5x]' : ''}`}
+                                  ? `Fórmula: Costo de Materiales + (Tiempo de Instalación × $${n(formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE, 2)}/hora)${formData.is_overtime ? ' [Overtime 1.5x]' : ''}`
+                                  : `Formula: Material Cost + (Installation Time × $${n(formData.is_overtime ? STANDARD_LABOR_RATE * 1.5 : STANDARD_LABOR_RATE, 2)}/hour)${formData.is_overtime ? ' [Overtime 1.5x]' : ''}`}
                               </p>
                             </TooltipContent>
                           </Tooltip>
@@ -1615,11 +1617,11 @@ export default function Items() {
                               <p className="text-slate-500 font-semibold mb-1">Sale Price:</p>
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="text-red-700 border-red-300">
-                                  ${log.previous_unit_price?.toFixed(2)}
+                                  ${n(log.previous_unit_price, 2)}
                                 </Badge>
                                 <span>→</span>
                                 <Badge variant="outline" className="text-green-700 border-green-300">
-                                  ${log.new_unit_price?.toFixed(2)}
+                                  ${n(log.new_unit_price, 2)}
                                 </Badge>
                               </div>
                             </div>
@@ -1630,11 +1632,11 @@ export default function Items() {
                               <p className="text-slate-500 font-semibold mb-1">Internal Cost:</p>
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="text-red-700 border-red-300">
-                                  ${log.previous_cost_per_unit?.toFixed(2)}
+                                  ${n(log.previous_cost_per_unit, 2)}
                                 </Badge>
                                 <span>→</span>
                                 <Badge variant="outline" className="text-green-700 border-green-300">
-                                  ${log.new_cost_per_unit?.toFixed(2)}
+                                  ${n(log.new_cost_per_unit, 2)}
                                 </Badge>
                               </div>
                             </div>

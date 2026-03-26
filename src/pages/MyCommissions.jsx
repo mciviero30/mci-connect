@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -179,7 +180,7 @@ export default function MyCommissions() {
                     <div>
                       <span className="text-gray-600">Date: </span>
                       <span className="text-gray-900">
-                        {new Date(commission.calculation_date).toLocaleDateString()}
+                        {formatDate(commission.calculation_date)}
                       </span>
                     </div>
                     <div>
@@ -286,7 +287,7 @@ export default function MyCommissions() {
                     <p className="text-sm">
                       <span className="text-gray-600">Paid on:</span>
                       <span className="ml-2 font-semibold">
-                        {new Date(detailRecord.paid_date).toLocaleDateString()}
+                        {formatDate(detailRecord.paid_date)}
                       </span>
                     </p>
                     {detailRecord.paid_via_method && (

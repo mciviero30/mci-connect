@@ -29,9 +29,8 @@ export const getLocationWithFallback = async (language = 'en', options = {}) => 
           };
         }
       }
-    } catch (e) {
-      console.log('[GPS Cache] Failed to read:', e);
-    }
+    } catch (e) { /* intentionally silenced */ }
+
   }
 
   // TIER 2: High-accuracy GPS with retries

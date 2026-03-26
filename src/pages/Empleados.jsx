@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { formatDate } from '@/lib/utils';
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
@@ -150,7 +151,6 @@ const EmployeeFormDialog = ({ employee, onClose, currentUser }) => {
       return;
     }
     
-    console.log('Saving employee data:', formData);
     mutation.mutate(formData);
   };
 
@@ -362,7 +362,7 @@ export default function Empleados() {
       const toInvite = invitations.filter(e => selectedPending.has(e.id));
       let sent = 0;
       for (const inv of toInvite) {
-        try { await inviteSingle(inv); sent++; } catch (_) {}
+        try { await inviteSingle(inv); sent++; } catch (_) { /* intentionally silenced */ }
       }
       return sent;
     },
@@ -728,7 +728,7 @@ export default function Empleados() {
                       {inv.team_name && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Team: {inv.team_name}</p>}
                       <p className="text-xs mt-2 text-red-500 font-medium">Terminated</p>
                       {inv.terminated_date && (
-                        <p className="text-xs text-slate-400">{new Date(inv.terminated_date).toLocaleDateString()}</p>
+                        <p className="text-xs text-slate-400">{formatDate(inv.terminated_date)}</p>
                       )}
                     </div>
                   ))}

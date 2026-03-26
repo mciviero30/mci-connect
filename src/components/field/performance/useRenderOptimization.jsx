@@ -21,7 +21,6 @@ export function useRenderOptimization(componentName, deps = []) {
     
     if (import.meta.env?.DEV && timeSinceLastRender < 16) {
       // Rendering faster than 60fps - possible render loop
-      console.warn(`[RenderOptimization] ⚠️ ${componentName} rendered ${timeSinceLastRender}ms after last render (possible loop)`);
     }
     
     lastRenderRef.current = now;
@@ -31,7 +30,6 @@ export function useRenderOptimization(componentName, deps = []) {
   useEffect(() => {
     return () => {
       if (import.meta.env?.DEV && renderCountRef.current > 50) {
-        console.warn(`[RenderOptimization] ${componentName} rendered ${renderCountRef.current} times`);
       }
     };
   }, [componentName]);
@@ -75,7 +73,6 @@ export function useExpensiveComputation(computeFn, deps, label = 'computation') 
     computeCountRef.current++;
     
     if (import.meta.env?.DEV && duration > 10) {
-      console.log(`[ExpensiveComputation] ${label} took ${duration.toFixed(1)}ms (run #${computeCountRef.current})`);
     }
     
     lastResultRef.current = result;

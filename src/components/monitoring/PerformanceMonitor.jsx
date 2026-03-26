@@ -139,7 +139,6 @@ export const usePerformanceTracking = (metricName) => {
     
     return () => {
       const duration = performance.now() - startTime;
-      console.log(`[Performance] ${metricName}: ${duration.toFixed(2)}ms`);
       
       // Send to analytics if needed
       if (window.base44?.analytics) {

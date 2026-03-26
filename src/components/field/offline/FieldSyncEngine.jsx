@@ -26,13 +26,11 @@ let syncListeners = [];
  */
 export async function startSync(base44Client, user) {
   if (currentSyncStatus === SYNC_STATUS.SYNCING) {
-    console.log('[Sync] Already in progress, skipping');
     return { skipped: true };
   }
   
   // HARDENING: Verify network is truly available
   if (!navigator.onLine) {
-    console.log('[Sync] Offline - skipping sync');
     return { skipped: true, reason: 'offline' };
   }
   
@@ -47,7 +45,6 @@ export async function startSync(base44Client, user) {
       return { success: true, synced: 0 };
     }
     
-    console.log(`[Sync] Starting: ${operations.length} operations`);
     
     // Batch operations by entity type
     const batches = batchOperations(operations);
@@ -69,11 +66,6 @@ export async function startSync(base44Client, user) {
     
     // Log summary
     if (import.meta.env?.DEV) {
-      console.log('[Sync] Summary:', {
-        synced: results.success.length,
-        failed: results.failed.length,
-        conflicts: results.conflicts.length
-      });
     }
     
     // O3 FIX: Cleanup completed operations to prevent IndexedDB bloat
@@ -82,7 +74,6 @@ export async function startSync(base44Client, user) {
       await clearCompletedOperations();
       
       if (import.meta.env?.DEV) {
-        console.log('[Sync] 🗑️ Cleaned up completed operations');
       }
     } catch (error) {
       console.error('[Sync] Failed to cleanup operations:', error);
@@ -94,7 +85,6 @@ export async function startSync(base44Client, user) {
       await clearOldConflicts(30);
       
       if (import.meta.env?.DEV) {
-        console.log('[Sync] 🗑️ Cleaned up old conflicts');
       }
     } catch (error) {
       console.error('[Sync] Failed to cleanup conflicts:', error);
@@ -204,10 +194,6 @@ async function syncOperation(operation, base44Client, user) {
         const existing = await checkIdempotencyKey(entityName, idempotency_key, entity_data.job_id, base44Client);
         if (existing) {
           if (import.meta.env?.DEV) {
-            console.log(`[Sync] ⚠️ Skipping duplicate create (idempotency key matched)`, {
-              idempotencyKey,
-              existingId: existing.id,
-            });
           }
           await markOperationComplete(operation.operation_id, existing.id);
           await markAsSynced(entity_type, local_id, existing.id);
@@ -233,10 +219,6 @@ async function syncOperation(operation, base44Client, user) {
       // PRECISION PRESERVATION: Validate checksum before sync
       const currentChecksum = generateChecksum(entity_data);
       if (checksum && currentChecksum !== checksum) {
-        console.warn('[Sync] ⚠️ Data integrity warning - checksum mismatch', {
-          expected: checksum,
-          actual: currentChecksum,
-        });
       }
       
       // Create on server
@@ -258,7 +240,6 @@ async function syncOperation(operation, base44Client, user) {
       await markAsSynced(entity_type, local_id, created.id);
       
       if (import.meta.env?.DEV) {
-        console.log(`[Sync] ✅ Created ${entityName}`, { localId: local_id, serverId: created.id });
       }
       
       return { server_id: created.id };

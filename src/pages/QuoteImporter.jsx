@@ -49,7 +49,6 @@ export default function QuoteImporter() {
 
   const handleFileSelect = (e) => {
     const selectedFiles = Array.from(e.target.files);
-    console.log('📁 Files selected:', selectedFiles.length);
     setFiles(selectedFiles);
     setExtractedQuotes([]);
     setErrors([]);
@@ -194,12 +193,10 @@ export default function QuoteImporter() {
       setCurrentFile(i + 1);
       const file = files[i];
 
-      console.log(`📄 Processing file ${i + 1}/${files.length}: ${file.name}`);
 
       try {
         // Upload file first
         const { file_url } = await base44.integrations.Core.UploadFile({ file });
-        console.log(`✅ Uploaded: ${file.name}`);
 
         // Extract data with AI
         const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
@@ -239,7 +236,6 @@ export default function QuoteImporter() {
         });
 
         if (result.status === 'success' && result.output) {
-          console.log(`✅ Extracted: ${file.name}`, result.output);
           quotes.push({
             ...result.output,
             fileName: file.name,
@@ -262,7 +258,6 @@ export default function QuoteImporter() {
       }
     }
 
-    console.log(`✅ Processing complete. Success: ${quotes.length}, Errors: ${fileErrors.length}`);
     setExtractedQuotes(quotes);
     setErrors(fileErrors);
     setProcessing(false);
@@ -342,7 +337,6 @@ export default function QuoteImporter() {
       alert(`✅ ${language === 'es' ? 'Importación completada' : 'Import completed'}!\n\n${language === 'es' ? 'Exitosos' : 'Success'}: ${results.success}\n${language === 'es' ? 'Fallidos' : 'Failed'}: ${results.failed}`);
       
       if (results.failed > 0) {
-        console.log('Import errors:', results.errors);
       }
     }
   });

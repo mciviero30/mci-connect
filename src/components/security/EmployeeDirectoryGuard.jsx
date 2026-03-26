@@ -16,13 +16,15 @@ export default function EmployeeDirectoryGuard({ children, user }) {
     return <>{children}</>;
   }
 
-  // App owner bypass (safety fallback)
-  if (user.email === 'mciviero30@gmail.com') {
-    return <>{children}</>;
-  }
+  // Admin/CEO/Owner bypass (safety fallback)
+  // Using role check only — no hardcoded emails
+  const isOwnerOrAdmin = 
+    user.role === 'admin' ||
+    user.role === 'ceo' ||
+    user.position === 'CEO' ||
+    user.is_owner === true;
 
-  // Admin/CEO bypass (safety fallback)
-  if (user.role === 'admin' || user.role === 'ceo' || user.position === 'CEO') {
+  if (isOwnerOrAdmin) {
     return <>{children}</>;
   }
 
@@ -154,6 +156,5 @@ export default function EmployeeDirectoryGuard({ children, user }) {
   }
 
   // VALID: User has EmployeeDirectory record
-  console.log(`✅ EmployeeDirectory record found for user ${user.email} (${user.id})`);
   return <>{children}</>;
 }

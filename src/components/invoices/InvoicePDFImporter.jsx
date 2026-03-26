@@ -89,7 +89,6 @@ Extract and return this EXACT JSON structure:`,
         }
       });
 
-      console.log('Extracted data:', extractedData);
 
       // Create invoice with extracted data
       const invoices = await base44.entities.Invoice.list();

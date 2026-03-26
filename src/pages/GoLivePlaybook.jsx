@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { formatDate } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -270,7 +271,7 @@ export default function GoLivePlaybook() {
               {audit[`status_${currentStatus}`] && (
                 <div className="text-xs text-slate-500 dark:text-slate-400 pt-2 border-t">
                   Set by {audit[`status_${currentStatus}`].changed_by_name} on{' '}
-                  {new Date(audit[`status_${currentStatus}`].changed_at).toLocaleDateString()}
+                  {formatDate(audit[`status_${currentStatus}`].changed_at)}
                 </div>
               )}
             </div>
@@ -334,12 +335,12 @@ export default function GoLivePlaybook() {
                         {auditData.status === 'confirmed' ? (
                           <>
                             ✓ Confirmed by {auditData.confirmed_by_name} on{' '}
-                            {new Date(auditData.confirmed_at).toLocaleDateString()}
+                            {formatDate(auditData.confirmed_at)}
                           </>
                         ) : (
                           <>
                             Unconfirmed by {auditData.confirmed_by_name} on{' '}
-                            {new Date(auditData.confirmed_at).toLocaleDateString()}
+                            {formatDate(auditData.confirmed_at)}
                           </>
                         )}
                       </div>

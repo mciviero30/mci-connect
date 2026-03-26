@@ -47,17 +47,6 @@ function emitPerformanceEvent(eventType, metadata) {
   lastEmitted[eventType] = now;
 
   // Emit via TelemetryService (if exists)
-  console.log('[🎯 Performance Telemetry]', {
-    event_type: `performance_${eventType}`,
-    timestamp: new Date().toISOString(),
-    source: 'client',
-    metadata: {
-      ...metadata,
-      user_agent: navigator.userAgent,
-      viewport: `${window.innerWidth}x${window.innerHeight}`,
-      connection: navigator.connection?.effectiveType || 'unknown',
-    }
-  });
 }
 
 /**
@@ -203,7 +192,6 @@ class LongTaskObserver {
 
       this.observer.observe({ entryTypes: ['longtask'] });
     } catch (error) {
-      console.warn('[PerformanceMonitor] LongTask observer not supported:', error.message);
       this.active = false;
     }
   }

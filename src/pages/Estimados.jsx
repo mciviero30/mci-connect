@@ -37,7 +37,7 @@ export default function Estimados() {
   const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const toast = useToast();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("all");
@@ -242,7 +242,6 @@ export default function Estimados() {
    const isValidFormat = /^(EST-|QT-)\d{5}$/.test(rawNumber);
 
    if (import.meta.env.DEV && !isValidFormat && rawNumber) {
-     console.warn(`[HARDENING] Invalid quote number format: "${rawNumber}" (should be EST-XXXXX or QT-XXXXX)`, { quote_id: q?.id });
    }
 
    return {

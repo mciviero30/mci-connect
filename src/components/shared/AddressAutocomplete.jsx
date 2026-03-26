@@ -36,6 +36,7 @@ export default function AddressAutocomplete({
       if (existingScript) {
         // Wait for existing script to load
         existingScript.addEventListener('load', initializeGooglePlaces);
+        return () => existingScript.removeEventListener('load', initializeGooglePlaces);
       } else {
         // Load Google Maps Places API dynamically
         const script = document.createElement('script');

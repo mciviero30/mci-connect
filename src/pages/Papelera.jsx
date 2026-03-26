@@ -14,7 +14,7 @@ import { Card } from "@/components/ui/card";
 export default function Papelera() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const toast = useToast();
+  const { toast } = useToast();
   const { language } = useLanguage();
   const [selectedItems, setSelectedItems] = useState([]);
 

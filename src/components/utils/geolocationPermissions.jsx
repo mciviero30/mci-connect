@@ -27,7 +27,6 @@ export async function checkGeolocationPermission() {
   } catch (error) {
     // Safari on iOS < 16 doesn't support permissions.query for geolocation
     // Assume prompt state
-    console.log('[Geolocation] Permissions API not supported, assuming prompt');
     return 'prompt';
   }
 }

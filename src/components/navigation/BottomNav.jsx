@@ -44,6 +44,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   useEffect(() => {
     const checkSession = () => {
       try {
+        // NEW FORMAT: liveTimeTracker_{userId}_{trackingType} — scan all matching keys
         const allKeys = Object.keys(localStorage);
         for (const key of allKeys) {
           if (!key.startsWith('liveTimeTracker_')) continue;
@@ -52,7 +53,7 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
             if (!raw) continue;
             const s = JSON.parse(raw);
             if (s?.startTime) { setActiveSession(s); return; }
-          } catch (e) {}
+          } catch (e) { /* intentionally silenced */ }
         }
         setActiveSession(null);
       } catch (e) { setActiveSession(null); }

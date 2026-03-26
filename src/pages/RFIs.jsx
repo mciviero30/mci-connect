@@ -337,10 +337,6 @@ function CreateRFIDialog({ open, onClose, jobs, user }) {
     };
 
     if (!user?.id) {
-      console.warn('[WRITE GUARD] ⚠️ Creating RFI without user_id', {
-        email: user?.email,
-        job: selectedJob?.name
-      });
     }
 
     createMutation.mutate(writeData);

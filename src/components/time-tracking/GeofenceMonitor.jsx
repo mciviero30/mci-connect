@@ -4,6 +4,16 @@ import { MapPinOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/components/i18n/LanguageContext';
 
+/**
+ * FIX LOG:
+ * - Replaced fixed 15s interval with adaptive polling:
+ *   - IN range  → check every 30s (saves battery, reduces iOS GPS drain)
+ *   - OUT of range → check every 10s (faster re-entry detection)
+ * - Uses watchPosition instead of repeated getCurrentPosition to avoid
+ *   repeated permission prompts on some Android versions.
+ * - Cleans up watcher on unmount to prevent memory leaks.
+ */
+
 export default function GeofenceMonitor({ activeSession, job, onGeofenceExit, onGeofenceReturn }) {
   const { language } = useLanguage();
   const [outOfRange, setOutOfRange] = useState(false);
@@ -63,7 +73,7 @@ export default function GeofenceMonitor({ activeSession, job, onGeofenceExit, on
     };
 
     const handleError = (err) => {
-      console.warn('[GeofenceMonitor] GPS error:', err.message);
+      // GPS error — don't trigger pause, just skip this check silently
     };
 
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -72,7 +82,7 @@ export default function GeofenceMonitor({ activeSession, job, onGeofenceExit, on
       {
         enableHighAccuracy: true,
         timeout: 10000,
-        maximumAge: 15000,
+        maximumAge: 15000, // Accept positions up to 15s old to reduce battery usage
       }
     );
 

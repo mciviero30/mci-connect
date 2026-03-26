@@ -402,9 +402,8 @@ async function matchItemToCatalog(itemDescription, catalog) {
           return { match, confidence: result.confidence, matchType: 'semantic' };
         }
       }
-    } catch (e) {
-      console.warn('Semantic matching failed:', e);
-    }
+    } catch (e) { /* intentionally silenced */ }
+
   }
   
   return { match: null, confidence: 0, matchType: 'none' };
@@ -517,9 +516,8 @@ export async function suggestOptimalAssignee(workUnitId) {
   let employeeSkills = [];
   try {
     employeeSkills = await base44.entities.EmployeeSkill.list();
-  } catch (e) {
-    console.warn('Could not fetch employee skills:', e);
-  }
+  } catch (e) { /* intentionally silenced */ }
+
   
   // Build employee context with skills
   const employeeContext = employees.map(emp => {

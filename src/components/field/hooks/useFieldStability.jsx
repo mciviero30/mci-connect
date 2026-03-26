@@ -53,13 +53,11 @@ export function useFieldStability(jobId) {
     // Page freeze handler (iOS)
     const handleFreeze = () => {
       if (import.meta.env?.DEV) {
-        console.log('[FieldStability] ❄️ Page frozen - state persisted');
       }
     };
 
     const handleResume = () => {
       if (import.meta.env?.DEV) {
-        console.log('[FieldStability] ♨️ Page resumed - state intact');
       }
     };
 

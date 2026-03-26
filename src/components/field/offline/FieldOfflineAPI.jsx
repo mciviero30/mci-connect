@@ -15,7 +15,6 @@ import { getOnlineStatus } from './FieldConnectivityMonitor';
 export async function createDimension(dimensionData) {
   // FASE 3C-4: Validate measurement_session_id exists (required for measurements)
   if (!dimensionData.measurement_session_id) {
-    console.warn('[FieldOfflineAPI] Creating dimension without measurement_session_id - may cause collisions');
   }
 
   // Save to local store with session scoping

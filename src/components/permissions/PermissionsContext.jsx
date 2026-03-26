@@ -95,7 +95,6 @@ export const usePermissions = () => {
   if (!context) {
     // DEFENSIVE: Instead of throwing, return default safe permissions
     if (import.meta.env.DEV) {
-      console.warn('usePermissions called outside PermissionsProvider - returning default permissions');
     }
     return {
       isAdmin: false,

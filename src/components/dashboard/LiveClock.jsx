@@ -24,9 +24,7 @@ export default function LiveClock() {
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ['activeJobs'],
     queryFn: async () => {
-      console.log('Loading active jobs...');
       const result = await base44.entities.Job.filter({ status: 'active' }, 'name');
-      console.log('Active jobs loaded:', result);
       return result;
     },
     staleTime: 120000,
@@ -35,11 +33,9 @@ export default function LiveClock() {
   
   const createTimeEntry = useMutation({
     mutationFn: (data) => {
-      console.log('Creating time entry:', data);
       return base44.entities.TimeEntry.create(data);
     },
     onSuccess: (data) => {
-      console.log('Time entry created successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['myTimeEntries'] });
       queryClient.invalidateQueries({ queryKey: ['timeEntries'] });
     },
@@ -51,7 +47,6 @@ export default function LiveClock() {
 
   const createBreakLog = useMutation({
     mutationFn: (data) => {
-      console.log('Creating break log:', data);
       return base44.entities.BreakLog.create(data);
     },
   });
@@ -115,7 +110,6 @@ export default function LiveClock() {
       
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          console.log('Location obtained:', position.coords);
           resolve({ 
             latitude: position.coords.latitude, 
             longitude: position.coords.longitude 
@@ -135,8 +129,6 @@ export default function LiveClock() {
   };
 
   const handleClockIn = async () => {
-    console.log('Clock in clicked. Selected job:', selectedJob);
-    console.log('Available jobs:', jobs);
     
     if (!selectedJob) {
       alert('Please select a job first');
@@ -148,7 +140,6 @@ export default function LiveClock() {
 
     try {
       const location = await getLocation();
-      console.log('Clock in location:', location);
       
       const now = Date.now();
       const job = jobs.find(j => j.id === selectedJob);
@@ -171,7 +162,6 @@ export default function LiveClock() {
         breakDuration: 0,
       };
       
-      console.log('Starting session:', session);
       localStorage.setItem('clockedInData', JSON.stringify(session));
       setClockedInData(session);
       setBreaks([]);
@@ -224,7 +214,6 @@ export default function LiveClock() {
     
     try {
       const location = await getLocation();
-      console.log('Clock out location:', location);
       
       const endTime = new Date();
       const startTime = new Date(clockedInData.startTime);
@@ -250,9 +239,7 @@ export default function LiveClock() {
         check_out_longitude: location.longitude,
       };
 
-      console.log('Submitting time entry:', timeEntryData);
       const createdEntry = await createTimeEntry.mutateAsync(timeEntryData);
-      console.log('Time entry created:', createdEntry);
       
       if (breaks.length > 0) {
         for (const breakItem of breaks) {
@@ -392,7 +379,6 @@ export default function LiveClock() {
                 <Select 
                   value={selectedJob} 
                   onValueChange={(value) => {
-                    console.log('Job selected:', value);
                     setSelectedJob(value);
                   }}
                   disabled={isProcessing}

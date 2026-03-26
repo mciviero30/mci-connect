@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { useLanguage } from '@/components/i18n/LanguageContext';
@@ -135,7 +136,7 @@ export default function VerChangeOrderPage() {
               <Calendar className="w-4 h-4 text-slate-400" />
               <span className="text-slate-600 dark:text-slate-400">Fecha:</span>
               <span className="font-semibold text-slate-900 dark:text-white">
-                {new Date(changeOrder.request_date || changeOrder.created_date).toLocaleDateString()}
+                {formatDate(changeOrder.request_date || changeOrder.created_date)}
               </span>
             </div>
             <div className="flex items-center gap-2">

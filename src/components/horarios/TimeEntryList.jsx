@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDate } from '@/lib/utils';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -269,8 +270,8 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     // C2 FIX: Check if entry is billed before allowing edit
     if (entry.billed_at) {
       toast.error(language === 'es' 
-        ? `🔒 No se puede editar. Esta entrada fue facturada el ${new Date(entry.billed_at).toLocaleDateString()}.`
-        : `🔒 Cannot edit. This entry was billed on ${new Date(entry.billed_at).toLocaleDateString()}.`);
+        ? `🔒 No se puede editar. Esta entrada fue facturada el ${formatDate(entry.billed_at)}.`
+        : `🔒 Cannot edit. This entry was billed on ${formatDate(entry.billed_at)}.`);
       return;
     }
 

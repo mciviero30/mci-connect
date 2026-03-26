@@ -194,11 +194,9 @@ export default function QuoteXLSXImporter({ onComplete }) {
       
       const sanitizedFile = new File([file], sanitizedName, { type: file.type });
 
-      console.log('📤 Uploading file:', sanitizedName);
       
       const { file_url } = await base44.integrations.Core.UploadFile({ file: sanitizedFile });
 
-      console.log('✅ File uploaded:', file_url);
       setProcessingStep(language === 'es' ? '🤖 Extrayendo datos con IA... (esto puede tomar 30-60 segundos)' : '🤖 Extracting data with AI... (this may take 30-60 seconds)');
 
       // Set a longer timeout for AI processing
@@ -253,7 +251,6 @@ export default function QuoteXLSXImporter({ onComplete }) {
       const result = await Promise.race([extractionPromise, timeoutPromise]);
 
       if (result.status === 'success' && result.output?.quotes) {
-        console.log('✅ Extracted quotes:', result.output.quotes);
         setProcessingStep(language === 'es' ? '✅ Procesando datos...' : '✅ Processing data...');
 
         const quotesWithTotals = result.output.quotes.map(quote => {

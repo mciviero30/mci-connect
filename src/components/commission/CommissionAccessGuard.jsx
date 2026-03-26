@@ -24,13 +24,6 @@ export default function CommissionAccessGuard({ children, requiredRole = 'admin'
 
   // Log access attempt in DEV only (no alerts)
   if (import.meta.env.DEV && user && !hasAccess) {
-    console.warn('[Commission Access Block]', {
-      event: 'unauthorized_access_attempt',
-      user_id: user.id,
-      user_email: user.email,
-      user_role: user.role,
-      timestamp: new Date().toISOString()
-    });
   }
 
   if (isLoading) {

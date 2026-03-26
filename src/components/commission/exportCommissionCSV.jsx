@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/utils';
 /**
  * Export commission data to CSV
  * Read-only utility function
@@ -35,7 +36,7 @@ export const exportCommissionCSV = (data, filename = 'commissions.csv') => {
     result.job_name || '',
     result.employee_name || '',
     result.employee_email || '',
-    result.calculation_date ? new Date(result.calculation_date).toLocaleDateString() : '',
+    result.calculation_date ? formatDate(result.calculation_date) : '',
     result.job_revenue?.toFixed(2) || '0.00',
     result.job_expenses?.toFixed(2) || '0.00',
     result.net_profit?.toFixed(2) || '0.00',
@@ -43,9 +44,9 @@ export const exportCommissionCSV = (data, filename = 'commissions.csv') => {
     result.commission_amount?.toFixed(2) || '0.00',
     result.status || '',
     result.approved_by || '',
-    result.approved_at ? new Date(result.approved_at).toLocaleDateString() : '',
+    result.approved_at ? formatDate(result.approved_at) : '',
     result.paid_by || '',
-    result.paid_at ? new Date(result.paid_at).toLocaleDateString() : '',
+    result.paid_at ? formatDate(result.paid_at) : '',
     (result.notes || '').replace(/"/g, '""'), // Escape quotes in notes
   ]);
 

@@ -148,10 +148,6 @@ export default function Manejo() {
       };
 
       if (!user?.id) {
-        console.warn('[WRITE GUARD] ⚠️ Creating DrivingLog without user_id', {
-          email: user?.email,
-          miles
-        });
       }
 
       return base44.entities.DrivingLog.create(writeData);

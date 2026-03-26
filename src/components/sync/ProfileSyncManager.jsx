@@ -4,7 +4,6 @@ import { base44 } from '@/api/base44Client';
 import { CURRENT_USER_QUERY_KEY } from '@/components/constants/queryKeys';
 
 export default function ProfileSyncManager({ user }) {
-  console.log('[ProfileSyncManager] USER PROP:', user);
   const queryClient = useQueryClient();
   const userRef = useRef(user);
 
@@ -14,26 +13,22 @@ export default function ProfileSyncManager({ user }) {
   }, [user]);
 
   useEffect(() => {
-    console.log('[ProfileSyncManager useEffect 1] user:', user);
     if (!user) return;
 
     // Listen for storage events from other tabs/windows
     const handleStorageChange = async (e) => {
       if (e.key === 'profile_updated' || e.key === 'user_profile_updated') {
-        console.log('🔄 Profile update detected from another tab, fetching fresh data...');
         // Fetch fresh user data and update cache directly (NO INVALIDATION)
         try {
           const freshUser = await base44.auth.me();
           queryClient.setQueryData(CURRENT_USER_QUERY_KEY, freshUser);
-        } catch (err) {
-          console.warn('Failed to refresh user:', err);
-        }
+        } catch (err) { /* intentionally silenced */ }
+
       }
     };
 
     // Listen for custom profile update events (same tab)
     const handleProfileUpdate = async (e) => {
-      console.log('🔄 Profile update event received, fetching fresh data...');
       // Use ref to avoid stale closure
       const currentUser = userRef.current;
       if (!currentUser) return;
@@ -42,9 +37,8 @@ export default function ProfileSyncManager({ user }) {
       try {
         const freshUser = await base44.auth.me();
         queryClient.setQueryData(CURRENT_USER_QUERY_KEY, freshUser);
-      } catch (err) {
-        console.warn('Failed to refresh user:', err);
-      }
+      } catch (err) { /* intentionally silenced */ }
+
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -63,7 +57,6 @@ export default function ProfileSyncManager({ user }) {
 
   // FIRST LOGIN MIGRATION: Background sync (non-blocking)
   useEffect(() => {
-    console.log('[ProfileSyncManager useEffect 2] user:', user);
     if (!user?.id) return;
 
     // Check if first login (no onboarding_completed flag)
@@ -80,11 +73,9 @@ export default function ProfileSyncManager({ user }) {
         try {
           const freshUser = await base44.auth.me();
           queryClient.setQueryData(CURRENT_USER_QUERY_KEY, freshUser);
-        } catch (err) {
-          console.warn('Failed to refresh user after migration:', err);
-        }
+        } catch (err) { /* intentionally silenced */ }
+
       }).catch(err => {
-        console.warn('⚠️ Background migration failed:', err);
         sessionStorage.setItem(`first_login_migrated_${user.id}`, 'failed');
       });
     }
@@ -92,7 +83,6 @@ export default function ProfileSyncManager({ user }) {
 
   // Sync with MCI Web when profile updates (background)
   useEffect(() => {
-    console.log('[ProfileSyncManager useEffect 3] user:', user);
     if (!user) return;
 
     const handleProfileUpdateForSync = () => {

@@ -48,7 +48,6 @@ class FieldErrorBoundary extends React.Component {
         sessionStorage.setItem(`field_error_recovery_${jobId}`, Date.now().toString());
         
         // Preserve all drafts and pending work
-        console.log('Error recovered - all drafts preserved');
       }
     } catch (e) {
       console.error('Failed to mark error recovery:', e);

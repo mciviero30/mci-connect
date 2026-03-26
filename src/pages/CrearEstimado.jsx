@@ -291,26 +291,13 @@ export default function CrearEstimado() {
 
   const createMutation = useMutation({
     mutationFn: async (quoteData) => {
-      console.log('Creating quote with data:', quoteData);
       
       // VERIFICATION LOG - Quote before normalization
-      console.log('📊 [QUOTE VERIFICATION] RAW PAYLOAD:', quoteData.items.map(i => ({
-        item_name: i.item_name,
-        quantity_sent: i.quantity,
-        auto_calculated: i.auto_calculated,
-        manual_override: i.manual_override
-      })));
       
       // Step 1: Normalize and validate data
       const normalizedData = normalizeQuoteForSave(quoteData);
       
       // VERIFICATION LOG - Quote after normalization
-      console.log('📊 [QUOTE VERIFICATION] NORMALIZED PAYLOAD:', normalizedData.items.map(i => ({
-        item_name: i.item_name,
-        quantity_normalized: i.quantity,
-        auto_calculated: i.auto_calculated,
-        manual_override: i.manual_override
-      })));
       
       // Step 2: Generate quote number via backend function (thread-safe)
       const response = await generateQuoteNumber({});
@@ -345,22 +332,13 @@ export default function CrearEstimado() {
           : '🔒 User identity required. Please logout and login again before creating quotes.');
       }
 
-      console.log('Final quote data (normalized):', finalData);
       const result = await base44.entities.Quote.create(finalData);
       
       // VERIFICATION LOG - Quote after DB save
-      console.log('📊 [QUOTE VERIFICATION] LOADED FROM DB:', result.items.map(i => ({
-        item_name: i.item_name,
-        quantity_loaded: i.quantity,
-        auto_calculated: i.auto_calculated,
-        manual_override: i.manual_override
-      })));
       
-      console.log('Quote created successfully:', result);
       return result;
     },
     onSuccess: async (data) => {
-      console.log('Quote creation successful, invalidating queries...');
       clearDraft(); // Clear draft after successful save
       await queryClient.invalidateQueries({ queryKey: ['quotes'] });
       await queryClient.refetchQueries({ queryKey: ['quotes'] });
@@ -384,7 +362,6 @@ export default function CrearEstimado() {
 
   const updateMutation = useMutation({
     mutationFn: async (quoteData) => {
-      console.log('Updating quote with data:', quoteData);
       
       // Normalize and validate data
       const normalizedData = normalizeQuoteForSave(quoteData);
@@ -395,19 +372,10 @@ export default function CrearEstimado() {
       }
 
       // VERIFICATION LOG - Quote update
-      console.log('📊 [QUOTE VERIFICATION] UPDATE PAYLOAD:', normalizedData.items.map(i => ({
-        item_name: i.item_name,
-        quantity_update: i.quantity
-      })));
       
-      console.log('Final quote data (normalized):', normalizedData);
       const result = await base44.entities.Quote.update(editId, normalizedData);
       
       // VERIFICATION LOG - Quote after update reload
-      console.log('📊 [QUOTE VERIFICATION] RELOADED AFTER UPDATE:', result.items.map(i => ({
-        item_name: i.item_name,
-        quantity_reloaded: i.quantity
-      })));
       
       return result;
     },
@@ -681,7 +649,6 @@ export default function CrearEstimado() {
     
     // 🚫 GUARD: Prevent double-submit while saving
     if (createMutation.isPending || updateMutation.isPending) {
-      console.warn('🚫 Save already in progress, ignoring duplicate submit');
       return;
     }
     
@@ -752,14 +719,6 @@ export default function CrearEstimado() {
       profit_margin
     };
 
-    console.log('🔍 ITEMS BEFORE SAVE (with derived):', enrichedItems.map(i => ({
-      item_name: i.item_name,
-      description: i.description,
-      quantity: i.quantity,
-      unit_price: i.unit_price,
-      auto_calculated: i.auto_calculated,
-      calculation_type: i.calculation_type
-    })));
 
     if (editId) {
       updateMutation.mutate(dataToSave);
