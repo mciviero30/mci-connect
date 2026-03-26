@@ -106,13 +106,19 @@ export default function TimeTracking() {
   // Restore active session from localStorage on mount
   useEffect(() => {
     try {
-      const savedSession = localStorage.getItem('liveTimeTracker_work');
-      if (savedSession) {
-        const session = JSON.parse(savedSession);
-        if (session?.startTime) {
-          setSessionData(session);
-          setShowCleanUI(true);
-        }
+      const allKeys = Object.keys(localStorage);
+      for (const key of allKeys) {
+        if (!key.startsWith('liveTimeTracker_')) continue;
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) continue;
+          const session = JSON.parse(raw);
+          if (session?.startTime) {
+            setSessionData(session);
+            setShowCleanUI(true);
+            break;
+          }
+        } catch (e) {}
       }
     } catch (e) {
       setShowCleanUI(false);
@@ -123,17 +129,23 @@ export default function TimeTracking() {
   useEffect(() => {
     if (todayEntry && !showCleanUI && !sessionData) {
       try {
-        const savedSession = localStorage.getItem('liveTimeTracker_work');
-        if (savedSession) {
-          const session = JSON.parse(savedSession);
-          if (session?.startTime) {
-            setSessionData(session);
-            setShowCleanUI(true);
+        const allKeys = Object.keys(localStorage);
+        for (const key of allKeys) {
+          if (!key.startsWith('liveTimeTracker_')) continue;
+          try {
+            const raw = localStorage.getItem(key);
+            if (!raw) continue;
+            const session = JSON.parse(raw);
+            if (session?.startTime) {
+              setSessionData(session);
+              setShowCleanUI(true);
+              break;
+            }
+          } catch (e) {
+            localStorage.removeItem(key);
           }
         }
-      } catch (e) {
-        localStorage.removeItem('liveTimeTracker_work');
-      }
+      } catch (e) {}
     }
   }, [todayEntry, showCleanUI, sessionData]);
 
@@ -157,7 +169,8 @@ export default function TimeTracking() {
             ? { ...sessionData, onBreak: false, breakStartTime: null }
             : { ...sessionData, onBreak: true, breakStartTime: Date.now() };
           setSessionData(updated);
-          localStorage.setItem('liveTimeTracker_work', JSON.stringify(updated));
+          const storageKey = user?.id ? `liveTimeTracker_${user.id}_work` : 'liveTimeTracker_work';
+          localStorage.setItem(storageKey, JSON.stringify(updated));
         }}
         onClockOut={() => {
           setShowCleanUI(false);

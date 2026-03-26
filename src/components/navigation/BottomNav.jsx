@@ -44,12 +44,15 @@ const BottomNav = React.memo(function BottomNav({ user, pendingExpenses, navigat
   useEffect(() => {
     const checkSession = () => {
       try {
-        const work = localStorage.getItem('liveTimeTracker_work');
-        const driving = localStorage.getItem('liveTimeTracker_driving');
-        const raw = work || driving;
-        if (raw) {
-          const s = JSON.parse(raw);
-          if (s?.startTime) { setActiveSession(s); return; }
+        const allKeys = Object.keys(localStorage);
+        for (const key of allKeys) {
+          if (!key.startsWith('liveTimeTracker_')) continue;
+          try {
+            const raw = localStorage.getItem(key);
+            if (!raw) continue;
+            const s = JSON.parse(raw);
+            if (s?.startTime) { setActiveSession(s); return; }
+          } catch (e) {}
         }
         setActiveSession(null);
       } catch (e) { setActiveSession(null); }
