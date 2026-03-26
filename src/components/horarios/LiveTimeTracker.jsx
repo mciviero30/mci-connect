@@ -152,7 +152,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         ...(activeSession.breaks || []),
         {
           type: 'break',
-          start_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+          start_time: format(new Date(), 'HH:mm:ss'),
           end_time: null,
           duration_minutes: 0,
           start_latitude: lat,
@@ -414,7 +414,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         date: today,
       });
       if (existing.length > 0) return; // Already has a shift for this employee+job+day
-      const checkInHour = new Date(startTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+      const checkInHour = format(new Date(startTimestamp), 'HH:mm:ss');
       await base44.entities.ScheduleShift.create({
         user_id: user.id,
         employee_email: user.email,
@@ -705,7 +705,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       const breaks = [...(activeSession.breaks || [])];
       const lastBreak = breaks[breaks.length - 1];
       if (lastBreak && !lastBreak.end_time) {
-        lastBreak.end_time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        lastBreak.end_time = format(new Date(), 'HH:mm:ss');
         lastBreak.duration_minutes = Math.floor(breakTime / (1000 * 60));
       }
       const closedSession = {
@@ -1103,7 +1103,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       const breaks = [...(activeSession.breaks || [])];
       const lastBreak = breaks[breaks.length - 1];
       if (lastBreak && !lastBreak.end_time) {
-        lastBreak.end_time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        lastBreak.end_time = format(new Date(), 'HH:mm:ss');
         lastBreak.duration_minutes = durationMinutes;
         
         // Add end location data (PASO 2)
@@ -1133,7 +1133,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       const breaks = [...(activeSession.breaks || [])];
       const newBreak = {
         type: 'lunch',
-        start_time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        start_time: format(new Date(), 'HH:mm:ss'),
         end_time: null,
         duration_minutes: 0,
       };
