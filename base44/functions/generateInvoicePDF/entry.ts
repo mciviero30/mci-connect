@@ -210,6 +210,10 @@ Deno.serve(async (req) => {
         currentY = tableHeaderY + 9;
         doc.setTextColor(0, 0, 0);
         
+        console.log('TABLE START Y:', currentY);
+        console.log('FIRST ITEM nameLines count:', invoice.items[0]?.item_name ? doc.splitTextToSize(invoice.items[0].item_name, contentWidth - 75).length : 0);
+        console.log('FIRST ITEM descLines count:', invoice.items[0]?.description ? doc.splitTextToSize(invoice.items[0].description, contentWidth - 75).length : 0);
+        
         for (let i = 0; i < invoice.items.length; i++) {
             const item = invoice.items[i];
             
