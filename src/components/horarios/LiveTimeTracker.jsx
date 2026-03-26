@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
@@ -51,8 +51,6 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   
   // GPS Pre-warming for instant location
   const { getCachedLocation } = useGPSPreWarmer(true);
-  
-  const storageKey = `liveTimeTracker_${trackingType}`;
 
   const [activeSession, setActiveSession] = useState(null);
   const [elapsed, setElapsed] = useState(0);
@@ -98,6 +96,12 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     queryFn: () => base44.auth.me(),
     staleTime: Infinity
   });
+
+  // SESSION ISOLATION: Include user.id so sessions are never shared between users.
+  const storageKey = useMemo(
+    () => (user?.id ? `liveTimeTracker_${user.id}_${trackingType}` : null),
+    [user?.id, trackingType]
+  );
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
@@ -275,45 +279,59 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
   }, [jobs, getCachedLocation]);
 
   useEffect(() => {
-    // B5 FIX: Cleanup old sessions (>7 days) to prevent localStorage bloat
+    if (!storageKey) return;
+
     try {
-      const cleanupOldSessions = () => {
-        const keys = Object.keys(localStorage);
-        const now = Date.now();
-        const sevenDays = 7 * 24 * 60 * 60 * 1000;
-        
-        keys.forEach(key => {
-          if (key.startsWith('liveTimeTracker_')) {
-            try {
-              const session = JSON.parse(localStorage.getItem(key));
-              if (session?.startTime && (now - session.startTime) > sevenDays) {
-                localStorage.removeItem(key);
-                console.log(`🧹 Cleaned up old session: ${key}`);
-              }
-            } catch (e) {
-              // Invalid session data - remove it
+      const keys = Object.keys(localStorage);
+      const now = Date.now();
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      const currentUserId = user?.id;
+
+      keys.forEach(key => {
+        if (key.startsWith('liveTimeTracker_')) {
+          try {
+            const session = JSON.parse(localStorage.getItem(key));
+            if (session?.startTime && (now - session.startTime) > sevenDays) {
+              localStorage.removeItem(key);
+              return;
+            }
+            // Remove legacy keys (old format without user.id)
+            if (key === 'liveTimeTracker_work' || key === 'liveTimeTracker_driving') {
+              localStorage.removeItem(key);
+              return;
+            }
+            // Remove sessions belonging to other users
+            if (currentUserId && !key.startsWith(`liveTimeTracker_${currentUserId}_`)) {
               localStorage.removeItem(key);
             }
+          } catch (e) {
+            localStorage.removeItem(key);
           }
-        });
-      };
-      
-      cleanupOldSessions();
+        }
+      });
     } catch (error) {
       console.warn('Session cleanup failed:', error);
     }
-    
-    const savedSession = JSON.parse(localStorage.getItem(storageKey));
-    if (savedSession) {
-      setActiveSession(savedSession);
-      // Restore geofencePaused state if session was auto-paused by geofence
-      if (savedSession.onBreak) {
-        const breaks = savedSession.breaks || [];
-        const lastBreak = breaks[breaks.length - 1];
-        if (lastBreak?.geofence_auto_pause && !lastBreak.end_time) {
-          setGeofencePaused(true);
+
+    try {
+      const savedSession = JSON.parse(localStorage.getItem(storageKey));
+      if (savedSession) {
+        const sessionOwnedByUser = !savedSession.user_id || savedSession.user_id === user?.id;
+        if (sessionOwnedByUser) {
+          setActiveSession(savedSession);
+          if (savedSession.onBreak) {
+            const breaks = savedSession.breaks || [];
+            const lastBreak = breaks[breaks.length - 1];
+            if (lastBreak?.geofence_auto_pause && !lastBreak.end_time) {
+              setGeofencePaused(true);
+            }
+          }
+        } else {
+          localStorage.removeItem(storageKey);
         }
       }
+    } catch (e) {
+      localStorage.removeItem(storageKey);
     }
   }, [storageKey]);
 
@@ -430,7 +448,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     clockInProgressRef.current = true;
     try {
       // BLOCK DUPLICATE: check all storage keys for any active session
-      const allKeys = ['liveTimeTracker_work', 'liveTimeTracker_driving'];
+      const allKeys = [
+        `liveTimeTracker_${user.id}_work`,
+        `liveTimeTracker_${user.id}_driving`,
+      ];
     for (const k of allKeys) {
       try {
         const existing = JSON.parse(localStorage.getItem(k));
