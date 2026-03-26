@@ -11,16 +11,20 @@ function formatTime(seconds) {
 }
 
 function getActiveSession() {
-  const keys = ['liveTimeTracker_work', 'liveTimeTracker_driving'];
-  for (const key of keys) {
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) {
+  // NEW FORMAT: liveTimeTracker_{userId}_{trackingType}
+  // Scan all localStorage keys for any active session belonging to current user
+  try {
+    const allKeys = Object.keys(localStorage);
+    for (const key of allKeys) {
+      if (!key.startsWith('liveTimeTracker_')) continue;
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
         const session = JSON.parse(raw);
         if (session && session.startTime) return { session, key };
-      }
-    } catch (e) {}
-  }
+      } catch (e) {}
+    }
+  } catch (e) {}
   return null;
 }
 
