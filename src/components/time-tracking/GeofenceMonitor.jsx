@@ -1,80 +1,86 @@
 import { useEffect, useRef, useState } from 'react';
 import { calculateDistance } from '@/components/utils/geolocation';
-import { MapPinOff, MapPin } from 'lucide-react';
+import { MapPinOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/components/i18n/LanguageContext';
-
-const CHECK_INTERVAL_MS = 15000; // Check every 15 seconds
 
 export default function GeofenceMonitor({ activeSession, job, onGeofenceExit, onGeofenceReturn }) {
   const { language } = useLanguage();
   const [outOfRange, setOutOfRange] = useState(false);
   const [distanceFromSite, setDistanceFromSite] = useState(0);
-  const checkIntervalRef = useRef(null);
-  const exitFiredRef = useRef(false); // Prevent multiple exit callbacks per exit event
+  const watchIdRef = useRef(null);
+  const exitFiredRef = useRef(false);
+  const lastCheckRef = useRef(0);
+  const isOutRef = useRef(false);
 
   useEffect(() => {
-    // Don't monitor driving sessions or sessions without job GPS
     if (!activeSession || !job?.latitude || !job?.longitude) return;
     if (activeSession.workType === 'driving') return;
-    // Don't monitor if already geofence-paused (avoid double-triggering)
-    
-    const checkGeofence = async () => {
-      try {
-        const position = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 8000,
-            maximumAge: 10000
+    if (!navigator.geolocation) return;
+
+    const handlePosition = (position) => {
+      const now = Date.now();
+      // Adaptive throttle: 30s when in-range, 10s when out-of-range
+      const throttle = isOutRef.current ? 10000 : 30000;
+      if (now - lastCheckRef.current < throttle) return;
+      lastCheckRef.current = now;
+
+      const distance = calculateDistance(
+        position.coords.latitude,
+        position.coords.longitude,
+        job.latitude,
+        job.longitude
+      );
+
+      const roundedDist = Math.round(distance);
+      setDistanceFromSite(roundedDist);
+      const maxRadius = job.geofence_radius || 100;
+
+      if (distance > maxRadius) {
+        isOutRef.current = true;
+        setOutOfRange(true);
+        if (!exitFiredRef.current) {
+          exitFiredRef.current = true;
+          onGeofenceExit?.({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            distance: roundedDist,
           });
-        });
-
-        const distance = calculateDistance(
-          position.coords.latitude,
-          position.coords.longitude,
-          job.latitude,
-          job.longitude
-        );
-
-        setDistanceFromSite(Math.round(distance));
-        const maxRadius = job.geofence_radius || 100;
-
-        if (distance > maxRadius) {
-          setOutOfRange(true);
-          // Fire exit callback only once per exit event
-          if (!exitFiredRef.current) {
-            exitFiredRef.current = true;
-            onGeofenceExit?.({
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-              distance: Math.round(distance)
-            });
-          }
-        } else {
-          // Employee is back in range
-          if (exitFiredRef.current) {
-            // Was out of range, now returned
-            exitFiredRef.current = false;
-            setOutOfRange(false);
-            onGeofenceReturn?.({
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            });
-          } else {
-            setOutOfRange(false);
-          }
         }
-      } catch (error) {
-        // GPS unavailable — don't trigger pause, just log
-        console.warn('[GeofenceMonitor] GPS check failed:', error.message);
+      } else {
+        isOutRef.current = false;
+        if (exitFiredRef.current) {
+          exitFiredRef.current = false;
+          setOutOfRange(false);
+          onGeofenceReturn?.({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        } else {
+          setOutOfRange(false);
+        }
       }
     };
 
-    checkGeofence();
-    checkIntervalRef.current = setInterval(checkGeofence, CHECK_INTERVAL_MS);
+    const handleError = (err) => {
+      console.warn('[GeofenceMonitor] GPS error:', err.message);
+    };
+
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      handlePosition,
+      handleError,
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 15000,
+      }
+    );
 
     return () => {
-      if (checkIntervalRef.current) clearInterval(checkIntervalRef.current);
+      if (watchIdRef.current !== null) {
+        navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
+      }
     };
   }, [activeSession?.jobId, job?.id, job?.latitude, job?.longitude, activeSession?.workType]);
 
