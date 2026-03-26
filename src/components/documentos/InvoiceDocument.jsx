@@ -25,8 +25,23 @@ export default function InvoiceDocument({ invoice }) {
     // Display as-is without recalculation
     const displayItems = invoice.items || [];
 
+    // DEFENSIVE NUMERICS — prevent crashes when fields are null/undefined/missing
+    // If subtotal was never stored, derive it from items so the document is always accurate
+    const computedSubtotal = displayItems.reduce(
+        (sum, item) => sum + (Number(item?.total) || Number(item?.unit_price) * Number(item?.quantity) || 0),
+        0
+    );
+    const safeSubtotal   = Number(invoice.subtotal)    || computedSubtotal;
+    const safeTaxRate    = Number(invoice.tax_rate)    || 0;
+    const safeTaxAmount  = Number(invoice.tax_amount)  || (safeSubtotal * safeTaxRate / 100);
+    const safeTotal      = Number(invoice.total)       || safeSubtotal + safeTaxAmount;
+    const safeAmountPaid = Number(invoice.amount_paid) || 0;
+    const safeBalance    = Number(invoice.balance)     ?? Math.max(0, safeTotal - safeAmountPaid);
+
+    const fmt = (n) => Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
     const isPaid = invoice.status === 'paid';
-    const hasBalance = invoice.balance > 0;
+    const hasBalance = safeBalance > 0;
 
     return (
         <div className="bg-white p-10 max-w-4xl mx-auto shadow-lg print:shadow-none print:rounded-none print:mx-0 print:p-0 print:w-full font-sans">
@@ -157,33 +172,33 @@ export default function InvoiceDocument({ invoice }) {
                     <div className="space-y-1 mb-3">
                         <div className="flex justify-between py-2 text-sm">
                             <span className="text-slate-700">Sub Total</span>
-                            <span className="font-semibold text-slate-900">{invoice.subtotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="font-semibold text-slate-900">{fmt(safeSubtotal)}</span>
                         </div>
 
-                        {invoice.tax_amount > 0 && (
+                        {safeTaxAmount > 0 && (
                             <div className="flex justify-between py-2 text-sm">
-                                <span className="text-slate-700">Tax ({invoice.tax_rate}%)</span>
-                                <span className="font-semibold text-slate-900">{invoice.tax_amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                <span className="text-slate-700">Tax ({safeTaxRate}%)</span>
+                                <span className="font-semibold text-slate-900">{fmt(safeTaxAmount)}</span>
                             </div>
                         )}
                     </div>
 
                     <div className="px-6 py-3 rounded flex justify-between items-center mb-3" style={{ background: 'linear-gradient(to right, #f1f5f9 0%, #cbd5e1 100%)' }}>
                         <span className="font-bold text-lg text-slate-900">Total</span>
-                        <span className="font-bold text-2xl text-slate-900">${invoice.total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                        <span className="font-bold text-2xl text-slate-900">${fmt(safeTotal)}</span>
                     </div>
 
-                    {invoice.amount_paid > 0 && (
+                    {safeAmountPaid > 0 && (
                         <div className="px-6 py-3 rounded flex justify-between items-center border border-emerald-200 mb-3" style={{ background: 'linear-gradient(to right, #d1fae5 0%, #6ee7b7 100%)' }}>
                             <span className="font-semibold text-emerald-800">Amount Paid</span>
-                            <span className="font-bold text-emerald-800 text-lg">-${invoice.amount_paid.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="font-bold text-emerald-800 text-lg">-${fmt(safeAmountPaid)}</span>
                         </div>
                     )}
 
                     {hasBalance && (
                         <div className="px-6 py-3 rounded flex justify-between items-center" style={{ background: 'linear-gradient(to right, #000000 0%, #4a4a4a 100%)' }}>
                             <span className="font-bold text-white text-base">Balance Due</span>
-                            <span className="font-bold text-white text-2xl">${invoice.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                            <span className="font-bold text-white text-2xl">${fmt(safeBalance)}</span>
                         </div>
                     )}
                 </div>
