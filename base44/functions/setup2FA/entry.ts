@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import * as OTPAuth from 'npm:otpauth@9.3.2';
 import QRCode from 'npm:qrcode@1.5.4';
 
