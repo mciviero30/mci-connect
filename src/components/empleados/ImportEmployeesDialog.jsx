@@ -4,7 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Upload, CheckCircle2, XCircle, FileSpreadsheet, AlertTriangle } from "lucide-react";
-import * as XLSX from "xlsx";
+// Lazy XLSX loader — keeps the 400KB chunk out of the initial bundle
+const loadXLSX = () => import('xlsx').then(m => m.default || m);
 
 export default function ImportEmployeesDialog({ open, onClose }) {
   const queryClient = useQueryClient();

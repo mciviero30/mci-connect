@@ -76,6 +76,8 @@ export default defineConfig({
               id.includes('class-variance') || id.includes('tailwind-merge')) return 'vendor-utils';
 
           // ── Everything else ───────────────────────────────────────────
+          // Base44 SDK
+          if (id.includes('@base44')) return 'vendor-base44';
           if (id.includes('node_modules')) return 'vendor-misc';
         }
       }

@@ -1,5 +1,6 @@
 import { base44 } from '@/api/base44Client';
-import * as XLSX from 'xlsx';
+// Lazy XLSX loader — keeps the 400KB chunk out of the initial bundle
+const loadXLSX = () => import('xlsx').then(m => m.default || m);
 import { toast } from 'sonner';
 
 /**

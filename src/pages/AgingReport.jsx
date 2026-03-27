@@ -12,7 +12,8 @@ import { useLanguage } from '@/components/i18n/LanguageContext';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
-import * as XLSX from 'xlsx';
+// Lazy XLSX loader — keeps the 400KB chunk out of the initial bundle
+const loadXLSX = () => import('xlsx').then(m => m.default || m);
 
 export default function AgingReport() {
   const { t, language } = useLanguage();

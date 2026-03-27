@@ -1,7 +1,8 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FileSpreadsheet } from 'lucide-react';
-import * as XLSX from 'xlsx';
+// Lazy XLSX loader — keeps the 400KB chunk out of the initial bundle
+const loadXLSX = () => import('xlsx').then(m => m.default || m);
 
 /**
  * I5 - Universal Excel Export Hook
