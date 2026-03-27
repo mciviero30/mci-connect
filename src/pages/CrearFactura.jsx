@@ -80,7 +80,7 @@ export default function CrearFactura() {
   // QUERY OPTIMIZATION: Add staleTime and refetch config to all lookups
   const { data: invoices } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 200),
     initialData: [],
     staleTime: 300000,
     refetchOnMount: false,
@@ -90,7 +90,7 @@ export default function CrearFactura() {
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
     queryFn: async () => {
-      const result = await base44.entities.Job.list();
+      const result = await base44.entities.Job.list('-created_date', 200);
       return result;
     },
     initialData: [],
@@ -101,7 +101,7 @@ export default function CrearFactura() {
 
   const { data: quotes } = useQuery({
     queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list(),
+    queryFn: () => base44.entities.Quote.list('-created_date', 200),
     initialData: [],
     staleTime: 300000,
     refetchOnMount: false,

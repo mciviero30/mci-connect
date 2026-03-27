@@ -106,7 +106,7 @@ export default function ExecutiveControlTower() {
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices-month'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 500),
     staleTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false

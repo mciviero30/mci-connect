@@ -34,7 +34,7 @@ export default function PaymentReconciliation() {
   const { data: openInvoices = [], isLoading: loadingInvoices } = useQuery({
     queryKey: ['openInvoices'],
     queryFn: async () => {
-      const all = await base44.entities.Invoice.list();
+      const all = await base44.entities.Invoice.list('-created_date', 500);
       return all.filter(inv => inv.status === 'sent' || inv.status === 'partial');
     },
     initialData: [],

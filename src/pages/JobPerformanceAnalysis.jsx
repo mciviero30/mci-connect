@@ -49,7 +49,7 @@ export default function JobPerformanceAnalysis() {
 
   const { data: quotes } = useQuery({
     queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list(),
+    queryFn: () => base44.entities.Quote.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,

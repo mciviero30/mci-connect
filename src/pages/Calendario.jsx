@@ -111,7 +111,7 @@ export default function Calendario() {
     queryKey: ['jobs'],
     queryFn: async () => {
       try {
-        const data = await base44.entities.Job.list();
+        const data = await base44.entities.Job.list('-created_date', 200);
         return data || [];
       } catch (error) {
         console.error('❌ Error loading jobs:', error);

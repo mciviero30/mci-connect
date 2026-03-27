@@ -80,7 +80,7 @@ export default function SystemReadiness() {
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.list('-created_date', 500),
     enabled: isActive,
   });
 
@@ -104,13 +104,13 @@ export default function SystemReadiness() {
 
   const { data: quotes = [] } = useQuery({
     queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list(),
+    queryFn: () => base44.entities.Quote.list('-created_date', 500),
     enabled: isActive,
   });
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 500),
     enabled: isActive,
   });
 

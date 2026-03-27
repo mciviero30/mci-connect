@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSmartPagination, PaginationControls } from "@/components/hooks/useSmartPagination";
+import { useBackendPagination } from "@/components/hooks/useBackendPagination";
 import { useErrorHandler } from "@/components/shared/UnifiedErrorHandler";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -133,11 +134,10 @@ export default function Facturas() {
     nextPage,
     prevPage,
     resetPagination
-  } = useSmartPagination({
-    entityName: 'Invoice',
+  } = useBackendPagination({
+    functionName: 'listInvoicesPaginated',
     filters: paginationFilters,
-    sortBy: '-created_date',
-    pageSize: 18,
+    pageSize: 25,
     enabled: !!user
   });
 

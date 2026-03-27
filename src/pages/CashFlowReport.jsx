@@ -23,7 +23,7 @@ export default function CashFlowReport() {
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,

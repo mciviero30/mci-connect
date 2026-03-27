@@ -48,7 +48,7 @@ export default function ProfitabilityDashboard() {
 
   const { data: jobs = [], isLoading: loadingJobs } = useQuery({
     queryKey: ['profitability-jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.list('-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 

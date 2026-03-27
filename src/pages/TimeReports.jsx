@@ -35,7 +35,7 @@ export default function TimeReports() {
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['activeJobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.list('-created_date', 200),
     staleTime: 600000,
   });
 

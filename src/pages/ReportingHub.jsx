@@ -52,7 +52,7 @@ export default function ReportingHub() {
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
@@ -61,7 +61,7 @@ export default function ReportingHub() {
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,

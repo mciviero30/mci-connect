@@ -45,7 +45,7 @@ export default function MisProyectos() {
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.list('-created_date', 200),
     initialData: []
   });
 

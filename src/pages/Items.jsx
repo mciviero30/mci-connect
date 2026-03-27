@@ -91,13 +91,13 @@ export default function Items() {
 
   const { data: quotes = [] } = useQuery({
     queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list(),
+    queryFn: () => base44.entities.Quote.list('-created_date', 500),
     initialData: []
   });
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 500),
     initialData: []
   });
 
