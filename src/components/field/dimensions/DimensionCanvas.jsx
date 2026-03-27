@@ -57,6 +57,47 @@ export default function DimensionCanvas({
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   
+  // FASE D6.3: saveToHistory — stores snapshot of current dimensions+markups
+  const saveToHistory = (action) => {
+    const snapshot = {
+      action,
+      dimensions: dimensions ? [...dimensions] : [],
+      markups: markups ? [...markups] : [],
+    };
+    setHistory(prev => {
+      const trimmed = prev.slice(0, historyIndex + 1);
+      return [...trimmed, snapshot];
+    });
+    setHistoryIndex(prev => prev + 1);
+  };
+
+  // FASE D6.3: Undo — restore previous snapshot
+  const applyUndo = () => {
+    if (historyIndex <= 0) return;
+    const prev = historyIndex - 1;
+    const snapshot = history[prev];
+    if (!snapshot) return;
+    setHistoryIndex(prev);
+    // Restore dimensions via parent
+    if (snapshot.dimensions && onDimensionUpdate) {
+      snapshot.dimensions.forEach(d => onDimensionUpdate(d));
+    }
+    toast.success('Undo');
+  };
+
+  // FASE D6.3: Redo — restore next snapshot
+  const applyRedo = () => {
+    if (historyIndex >= history.length - 1) return;
+    const next = historyIndex + 1;
+    const snapshot = history[next];
+    if (!snapshot) return;
+    setHistoryIndex(next);
+    if (snapshot.dimensions && onDimensionUpdate) {
+      snapshot.dimensions.forEach(d => onDimensionUpdate(d));
+    }
+    toast.success('Redo');
+  };
+
   // FASE D6.1: Performance optimization refs
   const rafId = useRef(null);
   const lastMoveTime = useRef(0);
@@ -882,13 +923,7 @@ export default function DimensionCanvas({
       {/* D6.3: Undo/Redo Controls */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex gap-2 bg-slate-900/90 backdrop-blur-sm px-3 py-2 rounded-xl border border-slate-700">
         <Button
-          onClick={() => {
-            if (historyIndex > 0) {
-              setHistoryIndex(prev => prev - 1);
-              // TODO: Apply undo logic
-              toast.success('Undo');
-            }
-          }}
+          onClick={applyUndo}
           disabled={historyIndex <= 0}
           size="sm"
           className="bg-slate-800 hover:bg-slate-700 min-w-[40px] min-h-[40px] disabled:opacity-30"
@@ -897,13 +932,7 @@ export default function DimensionCanvas({
           ↶
         </Button>
         <Button
-          onClick={() => {
-            if (historyIndex < history.length - 1) {
-              setHistoryIndex(prev => prev + 1);
-              // TODO: Apply redo logic
-              toast.success('Redo');
-            }
-          }}
+          onClick={applyRedo}
           disabled={historyIndex >= history.length - 1}
           size="sm"
           className="bg-slate-800 hover:bg-slate-700 min-w-[40px] min-h-[40px] disabled:opacity-30"

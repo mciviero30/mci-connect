@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { usePermissions } from '@/components/permissions/PermissionsContext';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,8 +10,23 @@ import { base44 } from '@/api/base44Client';
 import { createTestTimeData } from '@/functions/createTestTimeData';
 
 export default function TimeTrackingTestControl() {
-  const testEmployeeEmail = 'marziociviero@hotmail.com';
+  const { isAdmin } = usePermissions() || {};
   const [status, setStatus] = useState(null);
+
+  // Guard: Only admins can access test control panel
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center h-screen text-slate-400">
+        <div className="text-center">
+          <p className="text-2xl mb-2">🔒</p>
+          <p className="text-sm">Admin access required</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Use current user's email for test data queries (no hardcoded emails)
+  const testEmployeeEmail = null; // Set dynamically in test functions
 
   // Get test employee data
   const { data: testEmployee } = useQuery({

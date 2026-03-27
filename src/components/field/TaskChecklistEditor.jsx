@@ -6,6 +6,26 @@ import { Textarea } from '@/components/ui/textarea';
 
 export default function TaskChecklistEditor({ checklist = [], onChange, taskId, jobId }) {
   const [newItem, setNewItem] = useState('');
+  const fileInputRef = React.useRef(null);
+  const [photoItemIndex, setPhotoItemIndex] = React.useState(null);
+
+  const handlePhotoCapture = (e) => {
+    const file = e.target.files?.[0];
+    if (!file || photoItemIndex === null) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const updated = [...checklist];
+      updated[photoItemIndex] = {
+        ...updated[photoItemIndex],
+        photo_url: reader.result,
+        photo_name: file.name,
+      };
+      onChange(updated);
+      setPhotoItemIndex(null);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
 
   const handleAddItem = () => {
     if (!newItem.trim()) return;
@@ -123,14 +143,25 @@ export default function TaskChecklistEditor({ checklist = [], onChange, taskId, 
                       size="sm"
                       variant="outline"
                       onClick={() => {
-                        // TODO: Trigger camera for this item
-                        alert('Photo capture coming soon');
+                        setPhotoItemIndex(idx);
+                        fileInputRef.current?.click();
                       }}
                       className="flex-1 border-slate-700 text-slate-300 hover:bg-slate-800"
                     >
                       <Camera className="w-4 h-4 mr-2" />
-                      Photo
+                      {checklist[idx]?.photo_url ? 'Retake' : 'Photo'}
                     </Button>
+                    {checklist[idx]?.photo_url && (
+                      <img src={checklist[idx].photo_url} alt="Checklist item photo" className="w-10 h-10 rounded object-cover border border-slate-600" />
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      className="hidden"
+                      onChange={handlePhotoCapture}
+                    />
                     
                     <Button
                       size="sm"
