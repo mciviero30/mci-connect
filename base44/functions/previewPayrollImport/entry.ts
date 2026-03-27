@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 // Lightweight UUID v4 generator using Web Crypto (built-in to Deno)
 function uuidv4() {
