@@ -44,9 +44,9 @@ export default function Horarios() {
       const entries = await base44.entities.TimeEntry.list('-date', 200);
       return entries;
     },
-    staleTime: 30000, // 30 seconds
+    staleTime: 120000, // 2 minutes — payroll data doesn't change every second
     refetchOnMount: true,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
     initialData: []
   });
 

@@ -655,7 +655,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         });
         
         // ADMIN OVERRIDE: If user is admin, allow clock-in outside geofence with a flag
-        if (user?.role === 'admin' || user?.email === 'marziociviero@hotmail.com') {
+        if (user?.role === 'admin' || user?.role === 'ceo') {
           const ImprovedGeofenceAlert = (await import('@/components/time-tracking/ImprovedGeofenceAlert')).default;
           setLocationError(
             <div>

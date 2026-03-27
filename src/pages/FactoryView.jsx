@@ -401,8 +401,21 @@ function ProductionGroups({ groups, job, dimensionSet }) {
     
     const packet = prepareGroupForExport(group, job, dimensionSet);
     
-    // TODO: Generate PDF for this specific group
-    alert(`Preparing ${packet.packet_name} for export`);
+    // PDF export via backend function (uses FieldPDFGenerator)
+    try {
+      const response = await base44.functions.invoke('generateMeasurementPackagePDF', {
+        jobId: job?.id,
+        groupId: group.id,
+        packetName: packet.packet_name
+      });
+      if (response?.url) {
+        window.open(response.url, '_blank');
+      } else {
+        alert(`PDF generado: ${packet.packet_name}`);
+      }
+    } catch (err) {
+      alert(`Error generando PDF: ${err?.message || 'Por favor intenta de nuevo.'}`);
+    }
   };
   
   return (
