@@ -200,9 +200,12 @@ export default function TimeTracking() {
   }, [showCleanUI, sessionData]);
 
   // If there's an active session, show the CleanTimeTrackerUI overlay.
+  // IMPORTANT FIX: show CleanTimeTrackerUI based on localStorage session ONLY —
+  // do NOT gate on todayEntry (DB query) because it may not resolve fast enough,
+  // leaving the user stuck on 'Start Work Day' with no way to Clock Out.
   // Break and ClockOut are handled internally by LiveTimeTracker — when the user
   // taps ClockOut from here, we just clear state so LiveTimeTracker takes over.
-  if (showCleanUI && sessionData && todayEntry) {
+  if (showCleanUI && sessionData) {
     return (
       <CleanTimeTrackerUI
         activeSession={sessionData}
