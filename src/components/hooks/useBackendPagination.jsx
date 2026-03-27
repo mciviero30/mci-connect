@@ -1,6 +1,6 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
 /**
  * TRUE Backend Pagination Hook
@@ -11,6 +11,10 @@ import { useState, useCallback, useRef } from 'react';
  * @param {object} filters      - server-side filters passed to backend
  * @param {number} pageSize     - items per page (max 200)
  * @param {boolean} enabled     - whether to run the query
+ *
+ * FIX #1 (TQ v5): keepPreviousData → placeholderData: keepPreviousData
+ * FIX #2 (cursor reset): when filters change, reset cursorStack to [null]
+ * FIX #3 (stable queryKey): serialize filters to prevent infinite refetch loops
  */
 export function useBackendPagination({
   functionName,
@@ -19,19 +23,41 @@ export function useBackendPagination({
   enabled = true,
 }) {
   const queryClient = useQueryClient();
+
+  // Stable serialization of filters for deep comparison
+  const serializedFilters = useMemo(
+    () => JSON.stringify(filters),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [JSON.stringify(filters)]
+  );
+
   // cursors[0] = null (first page), cursors[1] = nextCursor of page 0, etc.
   const [cursorStack, setCursorStack] = useState([null]);
   const [pageIndex, setPageIndex] = useState(0);
 
+  // FIX #2: When filters change (new search term, status filter, etc.)
+  // reset the cursor stack so we start from page 1 of the new results
+  const prevSerializedFilters = useRef(serializedFilters);
+  useEffect(() => {
+    if (prevSerializedFilters.current !== serializedFilters) {
+      prevSerializedFilters.current = serializedFilters;
+      setCursorStack([null]);
+      setPageIndex(0);
+      prefetched.current.clear();
+    }
+  }, [serializedFilters]);
+
   const currentCursor = cursorStack[pageIndex] ?? null;
 
-  const queryKey = [functionName, filters, pageSize, currentCursor];
+  // FIX #3: Use serializedFilters in queryKey for stable deep comparison
+  const queryKey = [functionName, serializedFilters, pageSize, currentCursor];
 
   const fetchPage = useCallback(async (cursor) => {
+    const parsedFilters = JSON.parse(serializedFilters);
     const res = await base44.functions.invoke(functionName, {
       limit: pageSize,
       cursor,
-      filters,
+      filters: parsedFilters,
     });
     // base44 functions.invoke wraps response in { data: ... }
     const data = res?.data ?? res;
@@ -39,15 +65,16 @@ export function useBackendPagination({
       throw new Error('Invalid response from ' + functionName);
     }
     return data;
-  }, [functionName, pageSize, JSON.stringify(filters)]);
+  }, [functionName, pageSize, serializedFilters]);
 
+  // FIX #1: TanStack Query v5 uses placeholderData: keepPreviousData (imported helper)
   const { data, isLoading, error, isFetching } = useQuery({
     queryKey,
     queryFn: () => fetchPage(currentCursor),
     enabled: !!functionName && enabled,
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   });
 
   const items = data?.items ?? [];
@@ -57,11 +84,11 @@ export function useBackendPagination({
   // Prefetch next page when we know the cursor
   const prefetched = useRef(new Set());
   if (hasMore && nextCursorFromServer) {
-    const key = JSON.stringify([functionName, filters, pageSize, nextCursorFromServer]);
+    const key = JSON.stringify([functionName, serializedFilters, pageSize, nextCursorFromServer]);
     if (!prefetched.current.has(key)) {
       prefetched.current.add(key);
       queryClient.prefetchQuery({
-        queryKey: [functionName, filters, pageSize, nextCursorFromServer],
+        queryKey: [functionName, serializedFilters, pageSize, nextCursorFromServer],
         queryFn: () => fetchPage(nextCursorFromServer),
         staleTime: 60 * 1000,
       });
@@ -72,9 +99,8 @@ export function useBackendPagination({
     if (!hasMore || !nextCursorFromServer) return;
     setCursorStack(prev => {
       const next = [...prev];
-      // If we're going forward into known territory, reuse; otherwise append
       if (next[pageIndex + 1] !== undefined) {
-        // already have it
+        // already have cursor for this page — reuse
       } else {
         next.push(nextCursorFromServer);
       }
