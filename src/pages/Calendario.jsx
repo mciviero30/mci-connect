@@ -102,7 +102,7 @@ export default function Calendario() {
       return data || [];
     },
     initialData: [],
-    staleTime: 0, // FORCE FRESH DATA - No caching
+    staleTime: 30000, // FORCE FRESH DATA - No caching
     refetchOnMount: true,
     refetchOnWindowFocus: true
   });

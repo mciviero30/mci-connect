@@ -25,7 +25,7 @@ export default function RealTimeNotifications({ userEmail }) {
     },
     enabled: !!userEmail,
     refetchInterval: 15000, // Poll every 15 seconds for better real-time
-    staleTime: 0,
+    staleTime: 30000,
   });
 
   useEffect(() => {

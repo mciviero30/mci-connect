@@ -168,7 +168,7 @@ export default function JobDetails() {
     queryKey: ['jobExpenses', jobId],
     queryFn: () => base44.entities.Expense.filter({ job_id: jobId }, '-date'),
     enabled: !!jobId,
-    staleTime: 0,
+    staleTime: 30000,
   });
 
   const { data: inventoryTransactions = [] } = useQuery({

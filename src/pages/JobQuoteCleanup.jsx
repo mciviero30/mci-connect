@@ -35,7 +35,7 @@ export default function JobQuoteCleanup() {
       const quotes = await base44.entities.Quote.filter({ job_id: null }, '-created_date', 100);
       return quotes;
     },
-    staleTime: 0
+    staleTime: 30000
   });
 
   // Fetch all jobs for matching

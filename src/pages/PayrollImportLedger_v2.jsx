@@ -361,7 +361,7 @@ function BatchDetailStep({ batchId, onBack }) {
   const { data: batches = [] } = useQuery({
     queryKey: ["payrollBatches_v2"],
     queryFn: () => base44.entities.PayrollBatch.list("-created_date", 50),
-    staleTime: 0,
+    staleTime: 30000,
   });
 
   const { data: allocations = [] } = useQuery({
@@ -507,7 +507,7 @@ function HistoryStep({ confirmationResult, onNewImport, onViewDetail }) {
     queryKey: ["payrollBatches_v2"],
     queryFn: () =>
       base44.entities.PayrollBatch.list("-created_date", 50),
-    staleTime: 0,
+    staleTime: 30000,
   });
 
   return (

@@ -267,7 +267,7 @@ export default function Empleados() {
          .filter(Boolean)
          .sort((a, b) => (a.full_name || '').toLowerCase().localeCompare((b.full_name || '').toLowerCase()));
      },
-     staleTime: 0,
+     staleTime: 30000,
      refetchOnMount: 'stale',
      refetchOnWindowFocus: 'stale',
      retry: 3,
@@ -277,7 +277,7 @@ export default function Empleados() {
   const { data: allInvitations = [] } = useQuery({
     queryKey: ['employeeInvitations'],
     queryFn: () => base44.entities.EmployeeInvitation.list('-invited_date', 200),
-    staleTime: 0,
+    staleTime: 30000,
     refetchOnMount: true,
   });
 

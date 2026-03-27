@@ -94,7 +94,7 @@ export default function CrearFactura() {
       return result;
     },
     initialData: [],
-    staleTime: 0,
+    staleTime: 30000,
     refetchOnMount: true,
     refetchOnWindowFocus: false
   });
@@ -114,7 +114,7 @@ export default function CrearFactura() {
       const result = await base44.entities.Customer.list('-created_date', 500);
       return result;
     },
-    staleTime: 0,
+    staleTime: 30000,
     refetchOnMount: true,
     refetchOnWindowFocus: false,
     retry: 3
@@ -127,7 +127,7 @@ export default function CrearFactura() {
       return result;
     },
     initialData: [],
-    staleTime: 0,
+    staleTime: 30000,
     refetchOnMount: true,
     refetchOnWindowFocus: false
   });

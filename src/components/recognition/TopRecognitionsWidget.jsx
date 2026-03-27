@@ -41,7 +41,7 @@ export default function TopRecognitionsWidget({ limit = 5 }) {
 
       return topEmployees;
     },
-    staleTime: 0,
+    staleTime: 30000,
     gcTime: 0,
     initialData: undefined,
   });

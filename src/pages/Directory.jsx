@@ -26,7 +26,7 @@ export default function Directory() {
     queryFn: () => base44.entities.EmployeeDirectory.filter({ 
       status: 'active'
     }, '-created_date', 200),
-    staleTime: 0,
+    staleTime: 30000,
     refetchOnMount: 'stale',
     refetchOnWindowFocus: 'stale',
     enabled: !!user,
