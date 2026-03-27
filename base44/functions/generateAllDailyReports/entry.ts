@@ -58,7 +58,6 @@ Deno.serve(async (req) => {
     console.error('Error generating daily reports:', error);
     return Response.json({ 
       error: error.message,
-      stack: error.stack 
-    }, { status: 500 });
+      }, { status: 500 });
   }
 });
