@@ -120,7 +120,6 @@ Return JSON only.`;
     console.error('[VoiceNote] Processing error:', error);
     return Response.json({ 
       error: error.message,
-      details: error.stack 
-    }, { status: 500 });
+      }, { status: 500 });
   }
 });
