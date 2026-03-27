@@ -3,8 +3,25 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // AUTH: require authenticated user with appropriate role
+    let currentUser;
+    try {
+      currentUser = await base44.auth.me();
+    } catch {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const allowedRoles = ['admin', 'ceo', 'manager', 'field_supervisor', 'foreman'];
+    if (!allowedRoles.includes(currentUser?.role)) {
+      return Response.json({ error: 'Forbidden: insufficient permissions' }, { status: 403 });
+    }
+
     const { job_id, report_date, manager_note, weather, crew_size } = await req.json();
-    
+
+    if (!job_id) {
+      return Response.json({ error: 'job_id is required' }, { status: 400 });
+    }
+
     const targetDate = report_date || new Date().toISOString().split('T')[0];
     const startOfDay = new Date(targetDate + 'T00:00:00Z');
     const endOfDay = new Date(targetDate + 'T23:59:59Z');
@@ -43,7 +60,7 @@ Deno.serve(async (req) => {
     const punchItemsResolvedToday = allTasks.filter(t => {
       if (t.task_type !== 'punch_item') return false;
       const updated = new Date(t.updated_date);
-      return updated >= startOfDay && updated <= endOfDay && 
+      return updated >= startOfDay && updated <= endOfDay &&
              ['completed', 'accepted'].includes(t.punch_status || t.status);
     });
 
@@ -115,32 +132,30 @@ Deno.serve(async (req) => {
       weather: weather || '',
       crew_size: crew_size || 0,
       client_visible: true,
-      generated_by: 'auto'
+      generated_by: currentUser.email || 'auto'
     };
 
     let report;
     if (existingReports.length > 0) {
-      // Update existing
       report = await base44.asServiceRole.entities.DailyFieldReport.update(
         existingReports[0].id,
         reportData
       );
     } else {
-      // Create new
       report = await base44.asServiceRole.entities.DailyFieldReport.create(reportData);
     }
 
-    return Response.json({ 
-      success: true, 
+    return Response.json({
+      success: true,
       report,
       message: `Daily report generated for ${targetDate}`
     });
 
   } catch (error) {
     console.error('Error generating daily report:', error);
-    return Response.json({ 
-      error: error.message,
-      stack: error.stack 
+    // Never expose stack traces in production
+    return Response.json({
+      error: 'Internal server error'
     }, { status: 500 });
   }
 });
