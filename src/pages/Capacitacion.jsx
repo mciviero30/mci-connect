@@ -29,7 +29,7 @@ export default function Capacitacion() {
   });
   const { data: courses, isLoading } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => base44.entities.Course.list(),
+    queryFn: () => base44.entities.Course.list('-created_date', 300),
     initialData: [],
   });
 

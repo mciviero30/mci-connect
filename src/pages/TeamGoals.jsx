@@ -20,7 +20,7 @@ export default function TeamGoals() {
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryFn: () => base44.entities.Team.list('-created_date', 200),
     staleTime: 1800000,
   });
 

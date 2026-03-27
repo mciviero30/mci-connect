@@ -32,7 +32,7 @@ export default function CashFlowReport() {
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list(),
+    queryFn: () => base44.entities.Expense.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
@@ -41,7 +41,7 @@ export default function CashFlowReport() {
 
   const { data: items = [] } = useQuery({
     queryKey: ['quoteItems'],
-    queryFn: () => base44.entities.QuoteItem.list(),
+    queryFn: () => base44.entities.QuoteItem.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,

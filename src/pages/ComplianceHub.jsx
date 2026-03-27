@@ -34,7 +34,7 @@ export default function ComplianceHub() {
 
   const { data: allCertifications = [] } = useQuery({
     queryKey: ['all-certifications'],
-    queryFn: () => base44.entities.Certification.list(),
+    queryFn: () => base44.entities.Certification.list('-created_date', 300),
     enabled: isAdmin,
     staleTime: 600000,
     refetchOnMount: false,
@@ -43,7 +43,7 @@ export default function ComplianceHub() {
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['all-onboarding'],
-    queryFn: () => base44.entities.OnboardingForm.list(),
+    queryFn: () => base44.entities.OnboardingForm.list('-created_date', 500),
     enabled: isAdmin,
     staleTime: 600000,
     refetchOnMount: false,

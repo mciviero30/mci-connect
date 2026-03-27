@@ -115,7 +115,7 @@ export default function ImportEmployeesDialog({ open, onClose }) {
   const { mutate: doImport, isPending } = useMutation({
     mutationFn: async () => {
       // Load existing to avoid duplicates
-      const existing = await base44.entities.EmployeeDirectory.list();
+      const existing = await base44.entities.EmployeeDirectory.list('-created_date', 200);
       const existingEmails = new Set(
         existing.map((e) => e.employee_email?.toLowerCase().trim()).filter(Boolean)
       );

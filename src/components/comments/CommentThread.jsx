@@ -310,7 +310,7 @@ export default function CommentThread({ entityType, entityId }) {
   
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.User.list('-created_date', 200),
     staleTime: 1800000,
   });
 

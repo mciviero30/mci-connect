@@ -24,7 +24,7 @@ export default function BankSync() {
 
   const { data: bankAccounts = [], isLoading } = useQuery({
     queryKey: ['bankAccounts'],
-    queryFn: () => base44.entities.BankAccount.list(),
+    queryFn: () => base44.entities.BankAccount.list('-created_date', 300),
     initialData: [],
   });
 

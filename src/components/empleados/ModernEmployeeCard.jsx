@@ -81,7 +81,7 @@ export default function ModernEmployeeCard({ employee, onboardingProgress, onVie
   // Load team name if team_id exists but team_name is missing
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryFn: () => base44.entities.Team.list('-created_date', 200),
     initialData: [],
     staleTime: 300000,
     enabled: !!employee.team_id && !employee.team_name

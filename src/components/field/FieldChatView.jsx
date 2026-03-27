@@ -14,7 +14,7 @@ export default function FieldChatView({ jobId }) {
     queryFn: async () => {
       const members = await base44.entities.ProjectMember.filter({ project_id: jobId });
       const emails = members.map(m => m.user_email);
-      const users = await base44.entities.User.list();
+      const users = await base44.entities.User.list('-created_date', 200);
       return users.filter(u => emails.includes(u.email));
     },
     enabled: !!jobId,

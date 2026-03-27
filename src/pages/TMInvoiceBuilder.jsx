@@ -63,7 +63,7 @@ export default function TMInvoiceBuilder() {
 
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
-    queryFn: () => base44.entities.QuoteItem.list(),
+    queryFn: () => base44.entities.QuoteItem.list('-created_date', 500),
     initialData: [],
   });
 

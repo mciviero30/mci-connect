@@ -16,7 +16,7 @@ export default function PendingInvitationCard({ employee }) {
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryFn: () => base44.entities.Team.list('-created_date', 200),
     initialData: [],
     staleTime: 60000
   });

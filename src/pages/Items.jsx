@@ -111,7 +111,7 @@ export default function Items() {
   const { data: companySettings } = useQuery({
     queryKey: ['companySettings'],
     queryFn: async () => {
-      const settings = await base44.entities.CompanySettings.list();
+      const settings = await base44.entities.CompanySettings.list('-created_date', 200);
       return settings[0]; // Should only have one record
     }
   });

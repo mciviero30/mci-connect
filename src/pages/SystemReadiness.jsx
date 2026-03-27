@@ -52,7 +52,7 @@ export default function SystemReadiness() {
   const { data: readinessRecord, isLoading } = useQuery({
     queryKey: ['systemReadiness'],
     queryFn: async () => {
-      const records = await base44.entities.SystemReadiness.list();
+      const records = await base44.entities.SystemReadiness.list('-created_date', 300);
       if (records.length > 0) return records[0];
       
       return await base44.entities.SystemReadiness.create({
@@ -86,19 +86,19 @@ export default function SystemReadiness() {
 
   const { data: tasks = [] } = useQuery({
     queryKey: ['tasks'],
-    queryFn: () => base44.entities.Task.list(),
+    queryFn: () => base44.entities.Task.list('-created_date', 300),
     enabled: isActive,
   });
 
   const { data: photos = [] } = useQuery({
     queryKey: ['photos'],
-    queryFn: () => base44.entities.Photo.list(),
+    queryFn: () => base44.entities.Photo.list('-created_date', 300),
     enabled: isActive,
   });
 
   const { data: shifts = [] } = useQuery({
     queryKey: ['scheduleShifts'],
-    queryFn: () => base44.entities.ScheduleShift.list(),
+    queryFn: () => base44.entities.ScheduleShift.list('-created_date', 500),
     enabled: isActive,
   });
 
@@ -116,19 +116,19 @@ export default function SystemReadiness() {
 
   const { data: timeEntries = [] } = useQuery({
     queryKey: ['timeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list(),
+    queryFn: () => base44.entities.TimeEntry.list('-created_date', 500),
     enabled: isActive,
   });
 
   const { data: payrolls = [] } = useQuery({
     queryKey: ['payrolls'],
-    queryFn: () => base44.entities.WeeklyPayroll.list(),
+    queryFn: () => base44.entities.WeeklyPayroll.list('-created_date', 500),
     enabled: isActive,
   });
 
   const { data: commissions = [] } = useQuery({
     queryKey: ['commissions'],
-    queryFn: () => base44.entities.CommissionResult.list(),
+    queryFn: () => base44.entities.CommissionResult.list('-created_date', 300),
     enabled: isActive,
   });
 

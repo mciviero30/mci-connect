@@ -44,7 +44,7 @@ export default function AdminCleanup() {
 
       // Clean TimeEntries
       setProgress('Limpiando registros de horas...');
-      const timeEntries = await base44.entities.TimeEntry.list();
+      const timeEntries = await base44.entities.TimeEntry.list('-created_date', 1000);
       for (const entry of timeEntries) {
         await base44.entities.TimeEntry.delete(entry.id);
       }
@@ -52,7 +52,7 @@ export default function AdminCleanup() {
 
       // Clean DrivingLogs
       setProgress('Limpiando registros de manejo...');
-      const drivingLogs = await base44.entities.DrivingLog.list();
+      const drivingLogs = await base44.entities.DrivingLog.list('-created_date', 500);
       for (const log of drivingLogs) {
         await base44.entities.DrivingLog.delete(log.id);
       }
@@ -60,7 +60,7 @@ export default function AdminCleanup() {
 
       // Clean Expenses
       setProgress('Limpiando gastos...');
-      const expenses = await base44.entities.Expense.list();
+      const expenses = await base44.entities.Expense.list('-created_date', 1000);
       for (const expense of expenses) {
         await base44.entities.Expense.delete(expense.id);
       }
@@ -68,7 +68,7 @@ export default function AdminCleanup() {
 
       // Clean WeeklyPayrolls
       setProgress('Limpiando nóminas...');
-      const payrolls = await base44.entities.WeeklyPayroll.list();
+      const payrolls = await base44.entities.WeeklyPayroll.list('-created_date', 500);
       for (const payroll of payrolls) {
         await base44.entities.WeeklyPayroll.delete(payroll.id);
       }
@@ -76,7 +76,7 @@ export default function AdminCleanup() {
 
       // Clean JobAssignments
       setProgress('Limpiando asignaciones de trabajo...');
-      const assignments = await base44.entities.JobAssignment.list();
+      const assignments = await base44.entities.JobAssignment.list('-created_date', 500);
       for (const assignment of assignments) {
         await base44.entities.JobAssignment.delete(assignment.id);
       }
@@ -84,7 +84,7 @@ export default function AdminCleanup() {
 
       // Clean ChatMessages
       setProgress('Limpiando mensajes de chat...');
-      const messages = await base44.entities.ChatMessage.list();
+      const messages = await base44.entities.ChatMessage.list('-created_date', 500);
       for (const message of messages) {
         await base44.entities.ChatMessage.delete(message.id);
       }
@@ -92,7 +92,7 @@ export default function AdminCleanup() {
 
       // Clean TimeOffRequests
       setProgress('Limpiando solicitudes de tiempo libre...');
-      const timeOffRequests = await base44.entities.TimeOffRequest.list();
+      const timeOffRequests = await base44.entities.TimeOffRequest.list('-created_date', 500);
       for (const request of timeOffRequests) {
         await base44.entities.TimeOffRequest.delete(request.id);
       }
@@ -100,7 +100,7 @@ export default function AdminCleanup() {
 
       // Clean FormSubmissions
       setProgress('Limpiando envíos de formularios...');
-      const submissions = await base44.entities.FormSubmission.list();
+      const submissions = await base44.entities.FormSubmission.list('-created_date', 500);
       for (const submission of submissions) {
         await base44.entities.FormSubmission.delete(submission.id);
       }
@@ -108,7 +108,7 @@ export default function AdminCleanup() {
 
       // Clean Posts (Announcements)
       setProgress('Limpiando anuncios...');
-      const posts = await base44.entities.Post.list();
+      const posts = await base44.entities.Post.list('-created_date', 500);
       for (const post of posts) {
         await base44.entities.Post.delete(post.id);
       }
@@ -116,7 +116,7 @@ export default function AdminCleanup() {
 
       // Clean Recognitions
       setProgress('Limpiando reconocimientos...');
-      const recognitions = await base44.entities.Recognition.list();
+      const recognitions = await base44.entities.Recognition.list('-created_date', 500);
       for (const recognition of recognitions) {
         await base44.entities.Recognition.delete(recognition.id);
       }
@@ -124,7 +124,7 @@ export default function AdminCleanup() {
 
       // Clean Jobs
       setProgress('Limpiando trabajos...');
-      const jobs = await base44.entities.Job.list();
+      const jobs = await base44.entities.Job.list('-created_date', 1000);
       for (const job of jobs) {
         await base44.entities.Job.delete(job.id);
       }
@@ -132,7 +132,7 @@ export default function AdminCleanup() {
 
       // Clean Quotes
       setProgress('Limpiando estimados...');
-      const quotes = await base44.entities.Quote.list();
+      const quotes = await base44.entities.Quote.list('-created_date', 1000);
       for (const quote of quotes) {
         await base44.entities.Quote.delete(quote.id);
       }
@@ -140,7 +140,7 @@ export default function AdminCleanup() {
 
       // Clean Invoices
       setProgress('Limpiando facturas...');
-      const invoices = await base44.entities.Invoice.list();
+      const invoices = await base44.entities.Invoice.list('-created_date', 1000);
       for (const invoice of invoices) {
         await base44.entities.Invoice.delete(invoice.id);
       }
@@ -148,7 +148,7 @@ export default function AdminCleanup() {
 
       // Clean Transactions (Accounting)
       setProgress('Limpiando transacciones contables...');
-      const transactions = await base44.entities.Transaction.list();
+      const transactions = await base44.entities.Transaction.list('-created_date', 1000);
       for (const transaction of transactions) {
         await base44.entities.Transaction.delete(transaction.id);
       }
@@ -171,8 +171,8 @@ export default function AdminCleanup() {
   const scanForDuplicates = async () => {
     setScanningDuplicates(true);
     try {
-      const customers = await base44.entities.Customer.list();
-      const employees = await base44.entities.User.list(); // Assuming 'User' entity represents employees
+      const customers = await base44.entities.Customer.list('-created_date', 500);
+      const employees = await base44.entities.User.list('-created_date', 1000); // Assuming 'User' entity represents employees
 
       // Find duplicate customers by email or phone
       const customerDuplicates = [];
@@ -259,9 +259,9 @@ export default function AdminCleanup() {
   const scanForOrphanedRecords = async () => {
     setScanningOrphans(true);
     try {
-      const timeEntries = await base44.entities.TimeEntry.list();
-      const expenses = await base44.entities.Expense.list();
-      const jobs = await base44.entities.Job.list();
+      const timeEntries = await base44.entities.TimeEntry.list('-created_date', 1000);
+      const expenses = await base44.entities.Expense.list('-created_date', 1000);
+      const jobs = await base44.entities.Job.list('-created_date', 1000);
       
       const jobIds = new Set(jobs.map(j => j.id));
 
@@ -291,7 +291,7 @@ export default function AdminCleanup() {
   const assignOrphanedRecord = async (recordType, recordId, newJobId) => {
     try {
       const entity = recordType === 'timeEntry' ? base44.entities.TimeEntry : base44.entities.Expense;
-      const jobs = await base44.entities.Job.list();
+      const jobs = await base44.entities.Job.list('-created_date', 1000);
       const selectedJob = jobs.find(j => j.id === newJobId);
       
       if (selectedJob) {

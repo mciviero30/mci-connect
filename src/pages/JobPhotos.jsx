@@ -28,7 +28,7 @@ export default function JobPhotos() {
   const { data: job } = useQuery({
     queryKey: ['job', jobId],
     queryFn: async () => {
-      const jobs = await base44.entities.Job.list();
+      const jobs = await base44.entities.Job.list('-created_date', 300);
       return jobs.find(j => j.id === jobId);
     },
     enabled: !!jobId

@@ -24,7 +24,7 @@ export default function CompanySettings() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['companySettings'],
     queryFn: async () => {
-      const data = await base44.entities.CompanySettings.list();
+      const data = await base44.entities.CompanySettings.list('-created_date', 200);
       return data[0] || {};
     },
   });

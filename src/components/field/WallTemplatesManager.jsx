@@ -25,7 +25,7 @@ export default function WallTemplatesManager({ open, onOpenChange }) {
 
   const { data: templates = [], isLoading } = useQuery({
     queryKey: ['wall-templates'],
-    queryFn: () => base44.entities.WallTypeTemplate.list(),
+    queryFn: () => base44.entities.WallTypeTemplate.list('-created_date', 300),
   });
 
   const updateMutation = useMutation({

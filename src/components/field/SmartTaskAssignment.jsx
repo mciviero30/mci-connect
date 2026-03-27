@@ -23,12 +23,12 @@ export default function SmartTaskAssignment({ task, jobId, onAssign }) {
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.User.list('-created_date', 200),
   });
 
   const { data: employeeSkills = [] } = useQuery({
     queryKey: ['employee-skills'],
-    queryFn: () => base44.entities.EmployeeSkill.list(),
+    queryFn: () => base44.entities.EmployeeSkill.list('-created_date', 300),
   });
 
   const analyzeBestMatch = async () => {

@@ -33,7 +33,7 @@ export default function ClientNotificationEngine() {
         role: 'client'
       });
 
-      const job = await base44.entities.Job.list().then(jobs => jobs.find(j => j.id === jobId));
+      const job = await base44.entities.Job.list('-created_date', 300).then(jobs => jobs.find(j => j.id === jobId));
 
       for (const member of members) {
         if (rule.notification_type === 'email' || rule.notification_type === 'both') {

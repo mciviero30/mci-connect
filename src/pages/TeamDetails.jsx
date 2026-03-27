@@ -19,7 +19,7 @@ export default function TeamDetails() {
   const { data: team, isLoading: loadingTeam } = useQuery({
     queryKey: ['team', teamId],
     queryFn: async () => {
-      const teams = await base44.entities.Team.list();
+      const teams = await base44.entities.Team.list('-created_date', 200);
       return teams.find(t => t.id === teamId);
     },
     enabled: !!teamId,

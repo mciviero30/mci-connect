@@ -515,7 +515,7 @@ export async function suggestOptimalAssignee(workUnitId) {
   // Fetch employee skills from Skill Matrix
   let employeeSkills = [];
   try {
-    employeeSkills = await base44.entities.EmployeeSkill.list();
+    employeeSkills = await base44.entities.EmployeeSkill.list('-created_date', 300);
   } catch (e) { /* intentionally silenced */ }
 
   

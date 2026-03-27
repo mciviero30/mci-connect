@@ -23,7 +23,7 @@ export default function ItemsMatchImporter({ isOpen, onClose, onAddItems }) {
   // Fetch catalog
   const { data: catalogItems = [] } = useQuery({
     queryKey: ['itemCatalog'],
-    queryFn: () => base44.entities.ItemCatalog.list(),
+    queryFn: () => base44.entities.ItemCatalog.list('-created_date', 300),
     enabled: isOpen,
   });
 

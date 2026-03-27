@@ -82,7 +82,7 @@ export default function VerEstimado() {
 
   const { data: catalogItems = [] } = useQuery({
     queryKey: ['quoteItems'],
-    queryFn: () => base44.entities.QuoteItem.list(),
+    queryFn: () => base44.entities.QuoteItem.list('-created_date', 500),
     initialData: [],
   });
 

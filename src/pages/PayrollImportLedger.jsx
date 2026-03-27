@@ -59,7 +59,7 @@ export default function PayrollImportLedger() {
   // Get existing batches
   const { data: batches = [] } = useQuery({
     queryKey: ["payrollBatches"],
-    queryFn: () => base44.entities.PayrollBatch.list(),
+    queryFn: () => base44.entities.PayrollBatch.list('-created_date', 300),
     staleTime: 300000,
     refetchOnMount: false,
   });
@@ -67,7 +67,7 @@ export default function PayrollImportLedger() {
   // Get employees
   const { data: employees = [] } = useQuery({
     queryKey: ["employeeDirectory"],
-    queryFn: () => base44.entities.EmployeeDirectory.list(),
+    queryFn: () => base44.entities.EmployeeDirectory.list('-created_date', 200),
     staleTime: 600000,
     refetchOnMount: false,
   });

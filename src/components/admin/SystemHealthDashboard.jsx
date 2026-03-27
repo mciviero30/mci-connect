@@ -44,10 +44,10 @@ export default function SystemHealthDashboard({ language = 'en' }) {
     queryKey: ['entityCounts'],
     queryFn: async () => {
       const [jobs, employees, invoices, expenses] = await Promise.all([
-        base44.entities.Job.list(),
-        base44.entities.User.list(),
-        base44.entities.Invoice.list(),
-        base44.entities.Expense.list(),
+        base44.entities.Job.list('-created_date', 300),
+        base44.entities.User.list('-created_date', 200),
+        base44.entities.Invoice.list('-created_date', 300),
+        base44.entities.Expense.list('-created_date', 500),
       ]);
       return {
         jobs: jobs.length,

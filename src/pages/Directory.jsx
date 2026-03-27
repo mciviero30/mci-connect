@@ -34,7 +34,7 @@ export default function Directory() {
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['onboardingForms'],
-    queryFn: () => base44.entities.OnboardingForm.list(),
+    queryFn: () => base44.entities.OnboardingForm.list('-created_date', 500),
     staleTime: 60000,
     enabled: !!user,
     initialData: []
@@ -42,7 +42,7 @@ export default function Directory() {
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryFn: () => base44.entities.Team.list('-created_date', 200),
     staleTime: 300000,
     enabled: !!user,
     initialData: []

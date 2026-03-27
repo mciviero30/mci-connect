@@ -68,7 +68,7 @@ export default function QuickStatsWidgets({ user }) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers', user?.id],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => base44.entities.Customer.list('-created_date', 500),
     enabled: !!user?.id,
   });
 

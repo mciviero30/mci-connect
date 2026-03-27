@@ -78,7 +78,7 @@ export default function ExecutiveControlTower() {
 
   const { data: certifications = [] } = useQuery({
     queryKey: ['all-certifications'],
-    queryFn: () => base44.entities.Certification.list(),
+    queryFn: () => base44.entities.Certification.list('-created_date', 300),
     staleTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -86,7 +86,7 @@ export default function ExecutiveControlTower() {
 
   const { data: onboardingForms = [] } = useQuery({
     queryKey: ['all-onboarding-forms'],
-    queryFn: () => base44.entities.OnboardingForm.list(),
+    queryFn: () => base44.entities.OnboardingForm.list('-created_date', 500),
     staleTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -98,7 +98,7 @@ export default function ExecutiveControlTower() {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['transactions-month'],
-    queryFn: () => base44.entities.Transaction.list(),
+    queryFn: () => base44.entities.Transaction.list('-created_date', 500),
     staleTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false
@@ -114,7 +114,7 @@ export default function ExecutiveControlTower() {
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses-month'],
-    queryFn: () => base44.entities.Expense.list(),
+    queryFn: () => base44.entities.Expense.list('-created_date', 500),
     staleTime: 600000,
     refetchOnMount: false,
     refetchOnWindowFocus: false

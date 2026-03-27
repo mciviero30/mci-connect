@@ -129,7 +129,7 @@ export default function Calendario() {
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      const directory = await base44.entities.EmployeeDirectory.list();
+      const directory = await base44.entities.EmployeeDirectory.list('-created_date', 200);
       
       // Only exclude records with no email (can't identify them) and deleted/archived
       const validEmployees = directory.filter(d => {

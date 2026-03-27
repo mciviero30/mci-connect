@@ -58,7 +58,7 @@ export default function Configuracion() {
   const { data: companySettings, isLoading: loadingSettings } = useQuery({
     queryKey: ['companySettings'],
     queryFn: async () => {
-      const settings = await base44.entities.CompanySettings.list();
+      const settings = await base44.entities.CompanySettings.list('-created_date', 200);
       return settings[0] || {};
     },
     initialData: {}
@@ -900,10 +900,10 @@ function SystemMaintenanceTools() {
     setScanning(true);
     try {
       const [expenses, jobFiles, employeeDocuments, aiDocuments] = await Promise.all([
-        base44.entities.Expense.list(),
-        base44.entities.JobFile.list(),
-        base44.entities.EmployeeDocument.list(),
-        base44.entities.AIDocument.list()
+        base44.entities.Expense.list('-created_date', 500),
+        base44.entities.JobFile.list('-created_date', 300),
+        base44.entities.EmployeeDocument.list('-created_date', 300),
+        base44.entities.AIDocument.list('-created_date', 300)
       ]);
 
       const totalFiles =

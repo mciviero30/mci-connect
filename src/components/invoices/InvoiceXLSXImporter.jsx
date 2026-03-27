@@ -39,7 +39,7 @@ export default function InvoiceXLSXImporter({ onComplete }) {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => base44.entities.Customer.list('-created_date', 500),
     initialData: []
   });
 

@@ -91,7 +91,7 @@ Extract and return this EXACT JSON structure:`,
 
 
       // Create invoice with extracted data
-      const invoices = await base44.entities.Invoice.list();
+      const invoices = await base44.entities.Invoice.list('-created_date', 300);
       const existingNumbers = invoices
         .map(inv => inv.invoice_number)
         .filter(n => n?.startsWith('INV-'))

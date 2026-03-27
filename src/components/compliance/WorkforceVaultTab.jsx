@@ -44,7 +44,7 @@ export default function WorkforceVaultTab({ isAdmin, user }) {
   const { data: certifications = [] } = useQuery({
     queryKey: ['certifications-vault'],
     queryFn: () => isAdmin 
-      ? base44.entities.Certification.list()
+      ? base44.entities.Certification.list('-created_date', 300)
       : base44.entities.Certification.filter({ employee_email: user?.email })
   });
 

@@ -72,7 +72,7 @@ export default function CustomerDetails() {
     queryFn: async () => {
       if (customerJobs.length === 0) return [];
       const jobIds = customerJobs.map(j => j.id);
-      const entries = await base44.entities.TimeEntry.list();
+      const entries = await base44.entities.TimeEntry.list('-created_date', 500);
       return entries.filter(e => e.job_id && jobIds.includes(e.job_id));
     },
     enabled: customerJobs.length > 0,
@@ -84,7 +84,7 @@ export default function CustomerDetails() {
     queryFn: async () => {
       if (customerJobs.length === 0) return [];
       const jobIds = customerJobs.map(j => j.id);
-      const expenses = await base44.entities.Expense.list();
+      const expenses = await base44.entities.Expense.list('-created_date', 500);
       return expenses.filter(e => e.job_id && jobIds.includes(e.job_id));
     },
     enabled: customerJobs.length > 0,

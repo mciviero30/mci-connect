@@ -29,7 +29,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
   const { data: managers } = useQuery({
     queryKey: ['managers'],
     queryFn: async () => {
-      const directory = await base44.entities.EmployeeDirectory.list();
+      const directory = await base44.entities.EmployeeDirectory.list('-created_date', 200);
       
       // DEFENSIVE: Validate manager records
       const validManagers = directory.filter(d => {
@@ -246,7 +246,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
       }
 
       // PHASE 4: Lifecycle Hardening - Sync to EmployeeDirectory with user_id
-      const existingDirectory = await base44.entities.EmployeeDirectory.list();
+      const existingDirectory = await base44.entities.EmployeeDirectory.list('-created_date', 200);
       const directoryEntry = existingDirectory.find(d => d.employee_email === employee.email);
       
       const directoryData = {
@@ -323,7 +323,7 @@ export default function ActiveEmployeeForm({ employee, onClose }) {
       }
 
       // PHASE 4: Lifecycle Hardening - Update directory status
-      const existingDirectory = await base44.entities.EmployeeDirectory.list();
+      const existingDirectory = await base44.entities.EmployeeDirectory.list('-created_date', 200);
       const directoryEntry = existingDirectory.find(d => d.employee_email === employee.email);
       if (directoryEntry) {
         await base44.entities.EmployeeDirectory.update(directoryEntry.id, { 

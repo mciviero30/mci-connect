@@ -52,7 +52,7 @@ export default function FieldDimensionView({ jobId }) {
       if (jobId) {
         return base44.entities.Task.filter({ job_id: jobId });
       } else {
-        return base44.entities.Task.list();
+        return base44.entities.Task.list('-created_date', 300);
       }
     },
   });

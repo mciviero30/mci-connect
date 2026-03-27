@@ -108,7 +108,7 @@ export default function GoLivePlaybook() {
   const { data: settings, isLoading } = useQuery({
     queryKey: ['company-settings'],
     queryFn: async () => {
-      const allSettings = await base44.entities.CompanySettings.list();
+      const allSettings = await base44.entities.CompanySettings.list('-created_date', 200);
       if (allSettings.length > 0) {
         return allSettings[0];
       }

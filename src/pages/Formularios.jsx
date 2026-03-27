@@ -33,7 +33,7 @@ export default function Formularios() {
 
   const { data: templates, isLoading } = useQuery({
     queryKey: ['formTemplates'],
-    queryFn: () => base44.entities.FormTemplate.list(),
+    queryFn: () => base44.entities.FormTemplate.list('-created_date', 200),
     initialData: [],
   });
 

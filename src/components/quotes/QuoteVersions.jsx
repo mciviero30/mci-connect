@@ -23,7 +23,7 @@ export default function QuoteVersions({ quote, asMenuItem = false }) {
     queryKey: ['quoteVersions', quote.id, quote.parent_quote_id],
     queryFn: async () => {
       const parentId = quote.parent_quote_id || quote.id;
-      const allQuotes = await base44.entities.Quote.list();
+      const allQuotes = await base44.entities.Quote.list('-created_date', 300);
       return allQuotes.filter(q => 
         q.id === parentId || 
         q.parent_quote_id === parentId ||
@@ -35,7 +35,7 @@ export default function QuoteVersions({ quote, asMenuItem = false }) {
 
   const createVersionMutation = useMutation({
     mutationFn: async () => {
-      const quotes = await base44.entities.Quote.list();
+      const quotes = await base44.entities.Quote.list('-created_date', 300);
       const existingNumbers = quotes
         .map(q => q.quote_number)
         .filter(n => n?.startsWith('EST-'))

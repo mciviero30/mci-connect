@@ -231,7 +231,7 @@ export default function Empleados() {
        const [profiles, users, teams] = await Promise.all([
          base44.entities.EmployeeProfile.list('-created_date', 200),
          base44.entities.User.list('-created_date', 200),
-         base44.entities.Team.list()
+         base44.entities.Team.list('-created_date', 200)
        ]);
 
        return profiles
@@ -299,7 +299,7 @@ export default function Empleados() {
     queryKey: ['onboardingForms'],
     queryFn: async () => {
       try {
-        return await base44.entities.OnboardingForm.list();
+        return await base44.entities.OnboardingForm.list('-created_date', 500);
       } catch (err) {
         console.error('onboardingForms query failed:', err);
         return [];

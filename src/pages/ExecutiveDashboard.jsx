@@ -51,7 +51,7 @@ export default function ExecutiveDashboard() {
 
   const { data: taxProfiles = [] } = useQuery({
     queryKey: ['all-tax-profiles'],
-    queryFn: () => base44.entities.TaxProfile.list(),
+    queryFn: () => base44.entities.TaxProfile.list('-created_date', 300),
     enabled: isAdmin,
     staleTime: 300000,
     refetchOnMount: false,
@@ -60,7 +60,7 @@ export default function ExecutiveDashboard() {
 
   const { data: allEmployees = [] } = useQuery({
     queryKey: ['all-employees'],
-    queryFn: () => base44.entities.EmployeeDirectory.list(),
+    queryFn: () => base44.entities.EmployeeDirectory.list('-created_date', 200),
     enabled: isAdmin,
     staleTime: 300000,
     refetchOnMount: false,

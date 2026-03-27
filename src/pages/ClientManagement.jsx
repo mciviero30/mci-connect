@@ -52,7 +52,7 @@ export default function ClientManagement() {
   const { data: users = [] } = useQuery({
     queryKey: ['users-list'],
     enabled: true, // admin-only page, catalog query
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.User.list('-created_date', 200),
   });
 
   const createMembershipMutation = useMutation({

@@ -90,7 +90,7 @@ Extract and return this EXACT JSON structure:`,
 
 
       // Create quote with extracted data
-      const quotes = await base44.entities.Quote.list();
+      const quotes = await base44.entities.Quote.list('-created_date', 300);
       const existingNumbers = quotes
         .map(q => q.quote_number)
         .filter(n => n?.startsWith('EST-'))

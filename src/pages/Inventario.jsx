@@ -53,7 +53,7 @@ export default function Inventario() {
 
   const { data: teams = [] } = useQuery({
     queryKey: ['teams'],
-    queryFn: () => base44.entities.Team.list(),
+    queryFn: () => base44.entities.Team.list('-created_date', 200),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
@@ -89,7 +89,7 @@ export default function Inventario() {
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
-    queryFn: () => base44.entities.Customer.list(),
+    queryFn: () => base44.entities.Customer.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,

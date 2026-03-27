@@ -30,19 +30,19 @@ export default function ProfitabilityDashboard() {
 
   const { data: expenses = [], isLoading: loadingExpenses } = useQuery({
     queryKey: ['profitability-expenses'],
-    queryFn: () => base44.entities.Expense.list(),
+    queryFn: () => base44.entities.Expense.list('-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: timeEntries = [], isLoading: loadingTime } = useQuery({
     queryKey: ['profitability-time'],
-    queryFn: () => base44.entities.TimeEntry.list(),
+    queryFn: () => base44.entities.TimeEntry.list('-created_date', 500),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: commissions = [], isLoading: loadingCommissions } = useQuery({
     queryKey: ['profitability-commissions'],
-    queryFn: () => base44.entities.CommissionRecord.list(),
+    queryFn: () => base44.entities.CommissionRecord.list('-created_date', 300),
     staleTime: 5 * 60 * 1000,
   });
 
@@ -54,7 +54,7 @@ export default function ProfitabilityDashboard() {
 
   const { data: employees = [], isLoading: loadingEmployees } = useQuery({
     queryKey: ['profitability-employees'],
-    queryFn: () => base44.entities.EmployeeDirectory.list(),
+    queryFn: () => base44.entities.EmployeeDirectory.list('-created_date', 200),
     staleTime: 5 * 60 * 1000,
   });
 

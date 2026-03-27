@@ -60,12 +60,12 @@ export default function TravelBookingDialog({ open, onOpenChange, booking, onSub
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list()
+    queryFn: () => base44.entities.Job.list('-created_date', 300)
   });
 
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list()
+    queryFn: () => base44.entities.User.list('-created_date', 200)
   });
 
   useEffect(() => {

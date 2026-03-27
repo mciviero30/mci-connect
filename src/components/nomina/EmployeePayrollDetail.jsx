@@ -34,7 +34,7 @@ export default function EmployeePayrollDetail({ employee, initialWeekStart, init
 
   const { data: jobs } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.list('-created_date', 300),
     initialData: [],
     staleTime: 300000
   });

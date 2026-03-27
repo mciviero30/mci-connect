@@ -55,14 +55,14 @@ export default function TripCalculator({ jobAddress, selectedTeamIds, onAddAllIt
 
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
-    queryFn: () => base44.entities.QuoteItem.list(),
+    queryFn: () => base44.entities.QuoteItem.list('-created_date', 500),
     initialData: [],
   });
 
   const { data: companySettings = {} } = useQuery({
     queryKey: ['companySettings'],
     queryFn: async () => {
-      const data = await base44.entities.CompanySettings.list();
+      const data = await base44.entities.CompanySettings.list('-created_date', 200);
       return data[0] || {};
     },
     staleTime: Infinity,

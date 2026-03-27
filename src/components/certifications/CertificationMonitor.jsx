@@ -20,7 +20,7 @@ export default function CertificationMonitor({ userEmail }) {
   // Fetch certifications for monitoring
   const { data: certifications = [] } = useQuery({
     queryKey: ['certifications'],
-    queryFn: () => base44.entities.Certification.list(),
+    queryFn: () => base44.entities.Certification.list('-created_date', 300),
     staleTime: 300000, // 5 minutes
     enabled: !!userEmail
   });

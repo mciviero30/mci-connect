@@ -44,7 +44,7 @@ export async function giveRecognition(toEmail, recognition, fromUser) {
  * Get all recognitions for leaderboard/feed
  */
 export async function getAllRecognitions(limit = 50) {
-  const users = await base44.entities.User.list();
+  const users = await base44.entities.User.list('-created_date', 200);
   
   const allRecognitions = [];
   for (const user of users) {

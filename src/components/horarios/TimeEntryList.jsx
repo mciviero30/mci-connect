@@ -78,7 +78,7 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
   // Fetch jobs for validation
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.list('-created_date', 300),
     staleTime: 600000, // 10 min - jobs change occasionally
     gcTime: 900000,
     refetchOnMount: false,

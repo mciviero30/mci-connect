@@ -13,12 +13,12 @@ export default function CashFlowForecast({ days = 30 }) {
   // Fetch all financial data
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices-forecast'],
-    queryFn: () => base44.entities.Invoice.list()
+    queryFn: () => base44.entities.Invoice.list('-created_date', 300)
   });
 
   const { data: quotes = [] } = useQuery({
     queryKey: ['quotes-forecast'],
-    queryFn: () => base44.entities.Quote.list()
+    queryFn: () => base44.entities.Quote.list('-created_date', 300)
   });
 
   const { data: jobs = [] } = useQuery({
@@ -33,7 +33,7 @@ export default function CashFlowForecast({ days = 30 }) {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['transactions-forecast'],
-    queryFn: () => base44.entities.Transaction.list()
+    queryFn: () => base44.entities.Transaction.list('-created_date', 500)
   });
 
   // Calculate forecast

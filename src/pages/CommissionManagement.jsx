@@ -42,7 +42,7 @@ export default function CommissionManagement() {
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
     queryFn: async () => {
-      return base44.entities.User.list();
+      return base44.entities.User.list('-created_date', 200);
     }
   });
 

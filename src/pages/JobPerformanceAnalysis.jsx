@@ -58,7 +58,7 @@ export default function JobPerformanceAnalysis() {
 
   const { data: timeEntries } = useQuery({
     queryKey: ['timeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list(),
+    queryFn: () => base44.entities.TimeEntry.list('-created_date', 500),
     initialData: [],
     staleTime: 300000,
     refetchOnMount: false,
@@ -76,7 +76,7 @@ export default function JobPerformanceAnalysis() {
 
   const { data: employees } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.User.list('-created_date', 200),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,
@@ -86,7 +86,7 @@ export default function JobPerformanceAnalysis() {
   // NEW: Query for expenses for profitability calculation
   const { data: expenses } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list(),
+    queryFn: () => base44.entities.Expense.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,

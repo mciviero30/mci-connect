@@ -23,7 +23,7 @@ export default function AvailabilityOverview({ employees, currentDate, isAdmin }
   // Fetch all availability data
   const { data: allAvailability = [] } = useQuery({
     queryKey: ['all-availability'],
-    queryFn: () => base44.entities.EmployeeAvailability.list(),
+    queryFn: () => base44.entities.EmployeeAvailability.list('-created_date', 300),
   });
 
   // Fetch all time off data

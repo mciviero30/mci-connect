@@ -31,7 +31,7 @@ export default function EditEmployeeForm({ employee, currentUser, onFormChange }
   const { data: teams = [], isLoading: teamsLoading } = useQuery({
     queryKey: ['teams'],
     queryFn: async () => {
-      const allTeams = await base44.entities.Team.list();
+      const allTeams = await base44.entities.Team.list('-created_date', 200);
       return allTeams;
     },
     initialData: [],

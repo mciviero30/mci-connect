@@ -67,21 +67,21 @@ export default function CustomReportBuilder({ open, onClose }) {
   // Fetch data based on report type
   const { data: employees = [] } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => base44.entities.User.list(),
+    queryFn: () => base44.entities.User.list('-created_date', 200),
     enabled: reportType === 'employees',
     initialData: []
   });
 
   const { data: jobs = [] } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => base44.entities.Job.list(),
+    queryFn: () => base44.entities.Job.list('-created_date', 300),
     enabled: reportType === 'projects',
     initialData: []
   });
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list(),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 300),
     enabled: reportType === 'financial',
     initialData: []
   });
@@ -102,14 +102,14 @@ export default function CustomReportBuilder({ open, onClose }) {
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list(),
+    queryFn: () => base44.entities.Expense.list('-created_date', 500),
     enabled: currentConfig?.relatedData.includes('expenses'),
     initialData: []
   });
 
   const { data: recognitions = [] } = useQuery({
     queryKey: ['recognitions'],
-    queryFn: () => base44.entities.Recognition.list(),
+    queryFn: () => base44.entities.Recognition.list('-created_date', 500),
     enabled: currentConfig?.relatedData.includes('recognitions'),
     initialData: []
   });

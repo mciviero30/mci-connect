@@ -111,7 +111,7 @@ export default function CrearFactura() {
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
-      const result = await base44.entities.Customer.list();
+      const result = await base44.entities.Customer.list('-created_date', 500);
       return result;
     },
     staleTime: 0,
@@ -123,7 +123,7 @@ export default function CrearFactura() {
   const { data: quoteItems = [] } = useQuery({
     queryKey: ['quoteItems'],
     queryFn: async () => {
-      const result = await base44.entities.QuoteItem.list();
+      const result = await base44.entities.QuoteItem.list('-created_date', 500);
       return result;
     },
     initialData: [],
@@ -135,7 +135,7 @@ export default function CrearFactura() {
   const { data: companySettings } = useQuery({
     queryKey: ['companySettings'],
     queryFn: async () => {
-      const data = await base44.entities.CompanySettings.list();
+      const data = await base44.entities.CompanySettings.list('-created_date', 200);
       return data[0] || {};
     },
     staleTime: 900000,

@@ -70,7 +70,7 @@ export default function ReportingHub() {
 
   const { data: expenses = [] } = useQuery({
     queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list(),
+    queryFn: () => base44.entities.Expense.list('-created_date', 500),
     initialData: [],
     staleTime: 600000,
     refetchOnMount: false,

@@ -25,7 +25,7 @@ export default function OutOfAreaCalculator({
   const { data: companySettings } = useQuery({
     queryKey: ['companySettings'],
     queryFn: async () => {
-      const settings = await base44.entities.CompanySettings.list();
+      const settings = await base44.entities.CompanySettings.list('-created_date', 200);
       return settings[0] || {};
     },
     initialData: {},
