@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSmartPagination, PaginationControls } from "@/components/hooks/useSmartPagination";
@@ -40,6 +40,12 @@ export default function Estimados() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => { setDebouncedSearch(searchTerm); }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [teamFilter, setTeamFilter] = useState("all");
   const [showAIWizard, setShowAIWizard] = useState(false);
@@ -60,6 +66,7 @@ export default function Estimados() {
   const paginationFilters = { deleted_at: null };
   if (statusFilter !== 'all') paginationFilters.status = statusFilter;
   if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
+  if (debouncedSearch) paginationFilters.search = debouncedSearch;
 
   const {
     items: quotes,
@@ -250,18 +257,8 @@ export default function Estimados() {
    };
   });
 
-  const filteredQuotes = safeQuotes.filter(quote => {
-   const searchLower = searchTerm.toLowerCase();
-   const matchesSearch = !searchTerm ||
-     quote.customer_name?.toLowerCase().includes(searchLower) ||
-     quote.quote_number?.toLowerCase().includes(searchLower) ||
-     quote.job_name?.toLowerCase().includes(searchLower);
-
-   const matchesStatus = statusFilter === 'all' || quote.status === statusFilter;
-   const matchesTeam = teamFilter === 'all' || quote.team_id === teamFilter;
-
-   return matchesSearch && matchesStatus && matchesTeam;
-  });
+  // Search is now server-side (Bug #3 fix)
+  const filteredQuotes = safeQuotes;
 
   // Memoize expensive filters
   const { draftQuotes, sentQuotes, approvedQuotes, convertedQuotes } = useMemo(() => ({
