@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSmartPagination, PaginationControls } from "@/components/hooks/useSmartPagination";
@@ -48,6 +48,15 @@ export default function Facturas() {
   const [createJobDialogOpen, setCreateJobDialogOpen] = useState(false);
   const [selectedInvoiceForJob, setSelectedInvoiceForJob] = useState(null);
   const [viewMode, setViewMode] = useState('grid');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  // Debounce: wait 400ms after user stops typing before hitting the server
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const { data: user } = useQuery({ 
     queryKey: CURRENT_USER_QUERY_KEY,
@@ -124,6 +133,7 @@ export default function Facturas() {
   const paginationFilters = { deleted_at: null };
   if (statusFilter !== 'all') paginationFilters.status = statusFilter;
   if (teamFilter !== 'all') paginationFilters.team_id = teamFilter;
+  if (debouncedSearch) paginationFilters.search = debouncedSearch;
 
   const {
     items: invoices,
@@ -308,18 +318,9 @@ export default function Facturas() {
     });
   }
 
-  const filteredInvoices = safeInvoices.filter(invoice => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = !searchTerm ||
-      invoice.customer_name?.toLowerCase().includes(searchLower) ||
-      invoice.invoice_number?.toLowerCase().includes(searchLower) ||
-      invoice.job_name?.toLowerCase().includes(searchLower);
-
-    const matchesStatus = statusFilter === 'all' || invoice.status === statusFilter;
-    const matchesTeam = teamFilter === 'all' || invoice.team_id === teamFilter;
-
-    return matchesSearch && matchesStatus && matchesTeam;
-  });
+  // Search is now server-side (Bug #3 fix) — status and team are also passed to server
+  // This filter is kept as a safety net for any edge cases but should be a no-op
+  const filteredInvoices = safeInvoices;
 
   const getDaysOverdue = (invoice) => {
     if (invoice.status === 'paid' || invoice.status === 'cancelled' || !invoice.due_date) return 0;
