@@ -162,8 +162,7 @@ Deno.serve(async (req) => {
     return Response.json({ 
       ok: false, 
       error: error.message,
-      stack: error.stack 
-    }, { status: 500 });
+      }, { status: 500 });
   }
 });
 
