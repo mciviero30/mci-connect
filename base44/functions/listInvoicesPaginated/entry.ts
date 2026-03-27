@@ -10,8 +10,12 @@ import { requireUser, safeJsonError } from './_auth/entry.ts';
  *  - Admins / CEO / administrators → see ALL invoices
  *  - Everyone else → only invoices they created OR belong to an assigned job
  *
- * Cursor logic is always wrapped inside $and so it never clobbers the
- * security $or (Bug #1 fix).
+ * Search (Bug #3 fix):
+ *  - Accepts optional `search` string in filters
+ *  - Matches against customer_name, invoice_number, job_name server-side
+ *  - Resets cursor/pagination when search changes (handled client-side)
+ *
+ * Cursor logic always uses $and so it never clobbers security/search clauses (Bug #1 fix).
  */
 Deno.serve(async (req) => {
   try {
@@ -29,8 +33,8 @@ Deno.serve(async (req) => {
       user.position === 'CEO' ||
       user.position === 'administrator';
 
-    // ── 1. Start with caller-supplied filters ───────────────────────────────
-    let queryFilters = { ...filters };
+    // ── 1. Separate search term from the rest of filters ────────────────────
+    const { search, ...queryFilters } = filters;
 
     // ── 2. Security filter (non-admin) ──────────────────────────────────────
     let securityClause = null;
@@ -52,7 +56,20 @@ Deno.serve(async (req) => {
       };
     }
 
-    // ── 3. Cursor filter ────────────────────────────────────────────────────
+    // ── 3. Full-text search clause (server-side) ─────────────────────────────
+    let searchClause = null;
+    if (search && search.trim().length > 0) {
+      const term = search.trim();
+      searchClause = {
+        $or: [
+          { customer_name: { $regex: term, $options: 'i' } },
+          { invoice_number: { $regex: term, $options: 'i' } },
+          { job_name:       { $regex: term, $options: 'i' } },
+        ],
+      };
+    }
+
+    // ── 4. Cursor filter ────────────────────────────────────────────────────
     let cursorClause = null;
     if (cursor?.created_date && cursor?.id) {
       cursorClause = {
@@ -68,16 +85,17 @@ Deno.serve(async (req) => {
       };
     }
 
-    // ── 4. Merge everything with $and so nothing overwrites anything ────────
+    // ── 5. Merge all clauses with $and ──────────────────────────────────────
     const andClauses = [];
     if (securityClause) andClauses.push(securityClause);
+    if (searchClause)   andClauses.push(searchClause);
     if (cursorClause)   andClauses.push(cursorClause);
 
     if (andClauses.length > 0) {
       queryFilters.$and = andClauses;
     }
 
-    // ── 5. Fetch limit + 1 to detect next page ──────────────────────────────
+    // ── 6. Fetch limit + 1 to detect next page ──────────────────────────────
     const items = await base44.asServiceRole.entities.Invoice.filter(
       queryFilters,
       '-created_date',
