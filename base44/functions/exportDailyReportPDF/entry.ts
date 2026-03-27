@@ -4,6 +4,19 @@ import { jsPDF } from 'npm:jspdf';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // AUTH: require authenticated user
+    let currentUser;
+    try {
+      currentUser = await base44.auth.me();
+    } catch {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    const allowedRoles = ['admin', 'ceo', 'manager', 'field_supervisor', 'foreman', 'employee'];
+    if (!allowedRoles.includes(currentUser?.role)) {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { report_id } = await req.json();
 
     // Fetch report
@@ -160,8 +173,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('PDF generation error:', error);
     return Response.json({ 
-      error: error.message,
-      stack: error.stack 
+      error: 'Internal server error'
     }, { status: 500 });
   }
 });
