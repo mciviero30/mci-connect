@@ -5,6 +5,13 @@ import { requireUser, safeJsonError } from './_auth.js';
  * TRUE SERVER-SIDE PAGINATION WITH CURSOR
  * Returns only requested page (no client-side slice)
  * Cursor: { created_date, id } for stable ordering
+ *
+ * Security model:
+ *  - Admins / CEO / administrators → see ALL invoices
+ *  - Everyone else → only invoices they created OR belong to an assigned job
+ *
+ * Cursor logic is always wrapped inside $and so it never clobbers the
+ * security $or (Bug #1 fix).
  */
 Deno.serve(async (req) => {
   try {
@@ -17,14 +24,17 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'limit cannot exceed 200' }, { status: 400 });
     }
 
-    const isAdmin = user.role === 'admin' || user.position === 'CEO' || user.position === 'administrator';
+    const isAdmin =
+      user.role === 'admin' ||
+      user.position === 'CEO' ||
+      user.position === 'administrator';
 
-    // Build query filters
+    // ── 1. Start with caller-supplied filters ───────────────────────────────
     let queryFilters = { ...filters };
 
-    // Security: Non-admin users only see their own invoices or invoices for jobs they're assigned to
+    // ── 2. Security filter (non-admin) ──────────────────────────────────────
+    let securityClause = null;
     if (!isAdmin) {
-      // Get user's assigned jobs
       const userJobs = await base44.entities.Job.filter({});
       const assignedJobIds = userJobs
         .filter(job => {
@@ -34,84 +44,67 @@ Deno.serve(async (req) => {
         })
         .map(j => j.id);
 
-      // Filter: created by user OR job_id in assigned jobs
-      queryFilters.$or = [
-        { created_by: user.email },
-        { job_id: { $in: assignedJobIds } }
-      ];
+      securityClause = {
+        $or: [
+          { created_by: user.email },
+          { job_id: { $in: assignedJobIds } },
+        ],
+      };
     }
 
-    // Cursor-based filtering
+    // ── 3. Cursor filter ────────────────────────────────────────────────────
+    let cursorClause = null;
     if (cursor?.created_date && cursor?.id) {
-      // For descending order: created_date < cursor OR (created_date = cursor AND id < cursor.id)
-      queryFilters.$or = [
-        { created_date: { $lt: cursor.created_date } },
-        {
-          $and: [
-            { created_date: cursor.created_date },
-            { id: { $lt: cursor.id } }
-          ]
-        }
-      ];
-      
-      // Merge with security filters if non-admin
-      if (!isAdmin) {
-        const securityOr = queryFilters.$or;
-        delete queryFilters.$or;
-        
-        queryFilters.$and = [
+      cursorClause = {
+        $or: [
+          { created_date: { $lt: cursor.created_date } },
           {
-            $or: [
-              { created_by: user.email },
-              { job_id: { $in: assignedJobIds } }
-            ]
+            $and: [
+              { created_date: cursor.created_date },
+              { id: { $lt: cursor.id } },
+            ],
           },
-          {
-            $or: [
-              { created_date: { $lt: cursor.created_date } },
-              {
-                $and: [
-                  { created_date: cursor.created_date },
-                  { id: { $lt: cursor.id } }
-                ]
-              }
-            ]
-          }
-        ];
-      }
+        ],
+      };
     }
 
-    // Fetch limit + 1 to check if more exist
+    // ── 4. Merge everything with $and so nothing overwrites anything ────────
+    const andClauses = [];
+    if (securityClause) andClauses.push(securityClause);
+    if (cursorClause)   andClauses.push(cursorClause);
+
+    if (andClauses.length > 0) {
+      queryFilters.$and = andClauses;
+    }
+
+    // ── 5. Fetch limit + 1 to detect next page ──────────────────────────────
     const items = await base44.asServiceRole.entities.Invoice.filter(
       queryFilters,
       '-created_date',
       limit + 1
     );
 
-    // Determine if more pages exist
-    const hasMore = items.length > limit;
+    const hasMore   = items.length > limit;
     const pageItems = hasMore ? items.slice(0, limit) : items;
 
-    // Generate next cursor from last item
-    const nextCursor = hasMore && pageItems.length > 0
-      ? {
-          created_date: pageItems[pageItems.length - 1].created_date,
-          id: pageItems[pageItems.length - 1].id
-        }
-      : null;
+    const nextCursor =
+      hasMore && pageItems.length > 0
+        ? {
+            created_date: pageItems[pageItems.length - 1].created_date,
+            id:           pageItems[pageItems.length - 1].id,
+          }
+        : null;
 
     return Response.json({
-      items: pageItems,
+      items:  pageItems,
       nextCursor,
       hasMore,
-      count: pageItems.length
+      count:  pageItems.length,
     });
 
   } catch (error) {
     if (error instanceof Response) throw error;
-    if (import.meta.env?.DEV) {
-      console.error('Error in listInvoicesPaginated:', error);
-    }
+    console.error('[listInvoicesPaginated]', error);
     return safeJsonError('Pagination failed', 500, error.message);
   }
 });
