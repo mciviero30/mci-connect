@@ -3,15 +3,7 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
-
-    // AUTH: require authenticated user to prevent notification spam
-    let currentUser;
-    try {
-      currentUser = await base44.auth.me();
-    } catch {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    
     const {
       recipientEmail,
       recipientName,
@@ -75,7 +67,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Error creating notification:', error);
     return Response.json({ 
-      error: 'Failed to create notification',
+      error: 'Failed to create notification'
     }, { status: 500 });
   }
 });
