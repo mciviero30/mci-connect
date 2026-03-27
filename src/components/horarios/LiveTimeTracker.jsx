@@ -334,31 +334,36 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
 
 
     // Restore session for the current user only
+    // FIX: Scan ALL user-scoped keys (work + driving) — not just the one matching trackingType.
+    // This prevents "stuck" sessions where the component mounts with a different trackingType
+    // than what was used during clock-in, leaving the user unable to clock out.
     try {
-      const savedSession = JSON.parse(localStorage.getItem(storageKey));
-      if (savedSession) {
-        // Extra safety: verify session matches current user before restoring
-        const sessionOwnedByUser =
-          !savedSession.user_id || savedSession.user_id === user?.id;
-
-        if (sessionOwnedByUser) {
-          setActiveSession(savedSession);
-          // Restore geofencePaused state if session was auto-paused by geofence
-          if (savedSession.onBreak) {
-            const breaks = savedSession.breaks || [];
-            const lastBreak = breaks[breaks.length - 1];
-            if (lastBreak?.geofence_auto_pause && !lastBreak.end_time) {
-              setGeofencePaused(true);
+      const userPrefix = `liveTimeTracker_${user?.id}_`;
+      const allKeys = Object.keys(localStorage).filter(k => k.startsWith(userPrefix));
+      for (const key of allKeys) {
+        try {
+          const savedSession = JSON.parse(localStorage.getItem(key));
+          if (savedSession?.startTime) {
+            const sessionOwnedByUser = !savedSession.user_id || savedSession.user_id === user?.id;
+            if (sessionOwnedByUser) {
+              setActiveSession(savedSession);
+              if (savedSession.onBreak) {
+                const breaks = savedSession.breaks || [];
+                const lastBreak = breaks[breaks.length - 1];
+                if (lastBreak?.geofence_auto_pause && !lastBreak.end_time) {
+                  setGeofencePaused(true);
+                }
+              }
+              break;
+            } else {
+              localStorage.removeItem(key);
             }
           }
-        } else {
-          // Session belongs to a different user — discard it
-          localStorage.removeItem(storageKey);
+        } catch (e) {
+          localStorage.removeItem(key);
         }
       }
-    } catch (e) {
-      localStorage.removeItem(storageKey);
-    }
+    } catch (e) { /* intentionally silenced */ }
   }, [storageKey]);
 
   // Auto clock-out ref to prevent multiple triggers
@@ -972,7 +977,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
 
         if (!user?.id) return;
         onSave(cappedData);
-        localStorage.removeItem(storageKey);
+        // Clear ALL user-scoped session keys (handles trackingType mismatch)
+        try {
+          const prefix = user?.id ? `liveTimeTracker_${user.id}_` : null;
+          if (prefix) {
+            Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
+          } else {
+            localStorage.removeItem(storageKey);
+          }
+        } catch (_) { localStorage.removeItem(storageKey); }
         setActiveSession(null);
         setElapsed(0);
         setLocationError(null);
@@ -1102,7 +1115,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
 
       onSave(timeEntryData);
 
-      localStorage.removeItem(storageKey);
+      // Clear ALL user-scoped session keys (handles trackingType mismatch)
+        try {
+          const prefix = user?.id ? `liveTimeTracker_${user.id}_` : null;
+          if (prefix) {
+            Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
+          } else {
+            localStorage.removeItem(storageKey);
+          }
+        } catch (_) { localStorage.removeItem(storageKey); }
       setActiveSession(null);
       setElapsed(0);
       setLocationError(null);
@@ -1320,7 +1341,15 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       }
 
       onSave(autoClockOutData);
-      localStorage.removeItem(storageKey);
+      // Clear ALL user-scoped session keys (handles trackingType mismatch)
+        try {
+          const prefix = user?.id ? `liveTimeTracker_${user.id}_` : null;
+          if (prefix) {
+            Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
+          } else {
+            localStorage.removeItem(storageKey);
+          }
+        } catch (_) { localStorage.removeItem(storageKey); }
       setActiveSession(null);
       setElapsed(0);
       setLocationError(null);
