@@ -20,7 +20,7 @@ L.Icon.Default.mergeOptions({
 });
 
 export default function LiveGPSTracking() {
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false); // default off to save credits
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   const { data: user } = useQuery({
@@ -43,7 +43,7 @@ export default function LiveGPSTracking() {
         (e.check_in_latitude && e.check_in_longitude)
       );
     },
-    refetchInterval: autoRefresh ? 30000 : false, // Refresh every 30s if enabled
+    refetchInterval: autoRefresh ? 60000 : false, // 60s when enabled (credit optimization) // Refresh every 30s if enabled
     initialData: [],
   });
 
