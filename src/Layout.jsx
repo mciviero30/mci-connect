@@ -1613,12 +1613,27 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             );
           }
 
-          // No user and not loading - show login prompt
+          // No user and not loading - redirect to login
+          // BUILD v4 - 2026-03-28
           if (!user && !isLoading) {
+            // Attempt redirect to login page
+            try {
+              const fromUrl = window.location.href;
+              window.location.href = `/login?from_url=${encodeURIComponent(fromUrl)}`;
+            } catch(e) {
+              // fallback: show manual login button
+            }
             return (
               <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-slate-900">
                 <div className="text-center">
+                  <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                   <p className="text-slate-600 dark:text-slate-400 mb-4">Redirigiendo a login...</p>
+                  <button
+                    onClick={() => { window.location.href = `/login?from_url=${encodeURIComponent(window.location.href)}`; }}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm"
+                  >
+                    Ir al Login
+                  </button>
                 </div>
               </div>
             );
