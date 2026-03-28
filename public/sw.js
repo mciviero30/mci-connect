@@ -1,10 +1,14 @@
 /**
- * MCI Connect Service Worker
- * Handles caching and offline support for the PWA
+ * MCI Connect Service Worker v3
+ * Bump CACHE_VERSION to force cache clear on all clients
  */
 
-const CACHE_NAME = 'mci-connect-v1';
-const STATIC_CACHE = 'mci-static-v1';
+// === BUMP THIS TO FORCE A FULL CACHE CLEAR ===
+const CACHE_VERSION = 'v3';
+// =============================================
+
+const CACHE_NAME = `mci-connect-${CACHE_VERSION}`;
+const STATIC_CACHE = `mci-static-${CACHE_VERSION}`;
 
 // Assets to cache on install
 const PRECACHE_URLS = [
@@ -25,14 +29,17 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate: clean up old caches
+// Activate: clean up ALL old caches (different version = delete)
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME && name !== STATIC_CACHE)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log(`[SW] Deleting old cache: ${name}`);
+            return caches.delete(name);
+          })
       );
     }).then(() => {
       // Take control of all clients immediately
@@ -57,7 +64,7 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension and other non-http schemes
   if (!url.protocol.startsWith('http')) return;
 
-  // For navigation requests (HTML), use network-first with cache fallback
+  // For navigation requests (HTML), use NETWORK-FIRST (always get latest build)
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -91,13 +98,12 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
-// Message handler — allows app to communicate with SW
+// Message handler
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
   if (event.data && event.data.type === 'CACHE_UPDATED') {
-    // Notify all clients
     self.clients.matchAll().then((clients) => {
       clients.forEach((client) => {
         client.postMessage({ type: 'CACHE_UPDATED' });
