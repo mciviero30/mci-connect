@@ -23,10 +23,8 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: (id) => id.startsWith('https://'),
       output: {
         manualChunks: (id) => {
-          if (id.startsWith('https://')) return undefined;
           if (id.includes('jspdf') || id.includes('jsPDF')) return 'vendor-jspdf';
           if (id.includes('html2canvas')) return 'vendor-html2canvas';
           if (id.includes('tesseract')) return 'vendor-tesseract';
