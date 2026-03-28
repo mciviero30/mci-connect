@@ -3,21 +3,19 @@ import { base44 } from "@/api/base44Client";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import {
-  MessageSquare, Send, Users, Image, Smile, Search,
-  Paperclip, X, UserPlus, Hash, AtSign, Menu, MoreVertical,
+  MessageSquare, Send, Users, Image, Smile,
+  Paperclip, X, UserPlus, Hash, AtSign, Menu,
   Loader2, WifiOff
 } from "lucide-react";
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import CreateGroupDialog from "../components/chat/CreateGroupDialog";
-import UserProfileModal from "../components/chat/UserProfileModal";
 import DirectMessagesList from "../components/chat/DirectMessagesList";
 import MentionInput from "../components/chat/MentionInput";
 import { useToast } from "@/components/ui/toast";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
 import OnlineStatusManager from "../components/chat/OnlineStatusManager";
-import { StreamChat } from "stream-chat";
 
 const EMOJIS = [
   "😀","😃","😄","😁","😆","😅","🤣","😂","🙂","🙃","😉","😊","😇",
@@ -40,40 +38,56 @@ const EmojiPicker = ({ onSelect }) => (
 const MessageBubble = ({ msg, currentUserId, onReply, onDelete }) => {
   const isMe = msg.user?.id === currentUserId;
   const [showActions, setShowActions] = useState(false);
+
+  const renderContent = () => {
+    const imgAtt = msg.attachments?.find(a => a.type === "image");
+    const fileAtt = msg.attachments?.find(a => a.type === "file");
+    if (imgAtt) {
+      return <img src={imgAtt.image_url || imgAtt.thumb_url} alt="img" className="max-w-[200px] rounded-lg" />;
+    }
+    if (fileAtt) {
+      return (
+        <a href={fileAtt.asset_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 underline text-xs">
+          <Paperclip className="w-3 h-3" />{fileAtt.title || "Archivo"}
+        </a>
+      );
+    }
+    return <span className="whitespace-pre-wrap break-words">{msg.text}</span>;
+  };
+
   return (
-    <div className={`flex gap-2 mb-2 ${isMe ? "flex-row-reverse" : ""}`}
-      onMouseEnter={() => setShowActions(true)} onMouseLeave={() => setShowActions(false)}>
+    <div
+      className={`flex gap-2 mb-2 ${isMe ? "flex-row-reverse" : ""}`}
+      onMouseEnter={() => setShowActions(true)}
+      onMouseLeave={() => setShowActions(false)}
+    >
       {!isMe && (
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] flex items-center justify-center flex-shrink-0 text-white text-xs font-bold">
           {(msg.user?.name || "?")[0].toUpperCase()}
         </div>
       )}
-      <div className={`max-w-[75%] ${isMe ? "items-end" : "items-start"} flex flex-col gap-0.5`}>
-        {!isMe && <span className="text-[9px] font-semibold text-slate-500 px-1">{msg.user?.name || msg.user?.id}</span>}
+      <div className={`max-w-[75%] flex flex-col gap-0.5 ${isMe ? "items-end" : "items-start"}`}>
+        {!isMe && (
+          <span className="text-[9px] font-semibold text-slate-500 px-1">{msg.user?.name || msg.user?.id}</span>
+        )}
         {msg.quoted_message && (
           <div className="bg-slate-100 dark:bg-slate-700 rounded-lg px-2 py-1 text-[9px] text-slate-500 border-l-2 border-[#507DB4] mb-0.5">
-            <span className="font-semibold">{msg.quoted_message.user?.name}</span>: {msg.quoted_message.text?.substring(0, 60)}
+            <span className="font-semibold">{msg.quoted_message.user?.name}: </span>
+            {msg.quoted_message.text?.substring(0, 60)}
           </div>
         )}
-        <div className={`relative group rounded-2xl px-3 py-2 text-xs shadow-sm ${
-          isMe ? "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] text-white rounded-tr-sm"
-               : "bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-tl-sm border border-slate-100 dark:border-slate-700"
+        <div className={`relative rounded-2xl px-3 py-2 text-xs shadow-sm ${
+          isMe
+            ? "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] text-white rounded-tr-sm"
+            : "bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-tl-sm border border-slate-100 dark:border-slate-700"
         }`}>
-          {msg.attachments?.length > 0 && msg.attachments[0].type === "image" ? (
-            <img src={msg.attachments[0].image_url || msg.attachments[0].thumb_url} alt="img"
-              className="max-w-[200px] rounded-lg" />
-          ) : msg.attachments?.length > 0 && msg.attachments[0].type === "file" ? (
-            <a href={msg.attachments[0].asset_url} target="_blank" rel="noreferrer"
-              className="flex items-center gap-1 underline">
-              <Paperclip className="w-3 h-3" />{msg.attachments[0].title || "Archivo"}
-            </a>
-          ) : (
-            <span className="whitespace-pre-wrap break-words">{msg.text}</span>
-          )}
+          {renderContent()}
           {showActions && (
             <div className={`absolute top-0 ${isMe ? "left-0 -translate-x-full" : "right-0 translate-x-full"} flex gap-0.5 bg-white dark:bg-slate-700 rounded-lg shadow-md border border-slate-100 dark:border-slate-600 px-1 py-0.5 z-10`}>
               <button onClick={() => onReply(msg)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-600 rounded text-[9px] text-slate-600 dark:text-slate-300">↩</button>
-              {isMe && <button onClick={() => onDelete(msg.id)} className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded text-[9px] text-red-500">✕</button>}
+              {isMe && (
+                <button onClick={() => onDelete(msg.id)} className="p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded text-[9px] text-red-500">✕</button>
+              )}
             </div>
           )}
         </div>
@@ -85,19 +99,29 @@ const MessageBubble = ({ msg, currentUserId, onReply, onDelete }) => {
   );
 };
 
+// Load StreamChat from CDN to avoid npm build issues
+let StreamChatSDK = null;
+async function getStreamChat() {
+  if (StreamChatSDK) return StreamChatSDK;
+  const mod = await import("https://esm.sh/stream-chat@9.38.0");
+  StreamChatSDK = mod.StreamChat;
+  return StreamChatSDK;
+}
+
 export default function Chat() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const toast = useToast();
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
+  const clientRef = useRef(null);
+  const channelRef = useRef(null);
 
-  const [streamClient, setStreamClient] = useState(null);
-  const [streamChannel, setStreamChannel] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [streamUserId, setStreamUserId] = useState(null);
   const [isConnecting, setIsConnecting] = useState(true);
   const [connectionError, setConnectionError] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]);
 
   const [message, setMessage] = useState("");
   const [replyingTo, setReplyingTo] = useState(null);
@@ -107,10 +131,7 @@ export default function Chat() {
   const [selectedCustomGroup, setSelectedCustomGroup] = useState(null);
   const [showSidebar, setShowSidebar] = useState(false);
   const [showCreateGroup, setShowCreateGroup] = useState(false);
-  const [showUserProfile, setShowUserProfile] = useState(false);
-  const [selectedProfileEmail, setSelectedProfileEmail] = useState(null);
   const [showNewDM, setShowNewDM] = useState(false);
-  const [typingUsers, setTypingUsers] = useState([]);
   const [uploading, setUploading] = useState(false);
 
   const { data: currentUser } = useQuery({
@@ -137,37 +158,46 @@ export default function Chat() {
     staleTime: 60000,
   });
 
-  // Connect to Stream Chat
+  // Connect to Stream
   useEffect(() => {
-    let client = null;
+    let mounted = true;
     const connect = async () => {
       setIsConnecting(true);
       setConnectionError(null);
       try {
+        const StreamChat = await getStreamChat();
         const res = await base44.functions.streamChatToken();
+        if (!mounted) return;
         if (res.error) throw new Error(res.error);
+
         const { token, userId, apiKey, userName, userImage } = res;
         setStreamUserId(userId);
-        client = StreamChat.getInstance(apiKey);
+
+        const client = StreamChat.getInstance(apiKey);
         await client.connectUser(
           { id: userId, name: userName, image: userImage || undefined },
           token
         );
-        setStreamClient(client);
+        clientRef.current = client;
+        if (mounted) setIsConnecting(false);
       } catch (err) {
         console.error("Stream connect error:", err);
-        setConnectionError(err.message);
-      } finally {
-        setIsConnecting(false);
+        if (mounted) {
+          setConnectionError(err.message);
+          setIsConnecting(false);
+        }
       }
     };
     connect();
     return () => {
-      if (client) client.disconnectUser().catch(console.error);
+      mounted = false;
+      if (clientRef.current) {
+        clientRef.current.disconnectUser().catch(() => {});
+        clientRef.current = null;
+      }
     };
   }, []);
 
-  // Get active channel ID
   const getChannelId = useCallback(() => {
     if (chatMode === "direct" && selectedDMConv) return `dm_${selectedDMConv.id}`;
     if (chatMode === "groups" && selectedCustomGroup) return `group_${selectedCustomGroup.id}`;
@@ -176,11 +206,20 @@ export default function Chat() {
 
   // Subscribe to channel
   useEffect(() => {
-    if (!streamClient) return;
-    let channel = null;
+    if (!clientRef.current || isConnecting) return;
+    let active = true;
+
     const subscribe = async () => {
       try {
-        const channelId = getChannelId().replace(/[^a-zA-Z0-9_-]/g, "_");
+        // Stop watching old channel
+        if (channelRef.current) {
+          await channelRef.current.stopWatching().catch(() => {});
+          channelRef.current = null;
+        }
+
+        const rawId = getChannelId();
+        const channelId = rawId.replace(/[^a-zA-Z0-9_-]/g, "_").substring(0, 64);
+
         let channelName = "General";
         if (chatMode === "channels") {
           const job = jobs.find(j => j.id === selectedGroup);
@@ -190,49 +229,60 @@ export default function Chat() {
         } else if (chatMode === "direct" && selectedDMConv) {
           channelName = selectedDMConv.other_user_name || "DM";
         }
-        channel = streamClient.channel("messaging", channelId, { name: channelName });
-        await channel.watch();
-        const state = channel.state.messages || [];
-        setMessages([...state]);
-        setStreamChannel(channel);
 
-        channel.on("message.new", (event) => {
-          setMessages(prev => [...prev, event.message]);
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        const ch = clientRef.current.channel("messaging", channelId, { name: channelName });
+        await ch.watch();
+        if (!active) return;
+
+        channelRef.current = ch;
+        setMessages([...(ch.state.messages || [])]);
+
+        ch.on("message.new", (e) => {
+          if (!active) return;
+          setMessages(prev => {
+            const exists = prev.find(m => m.id === e.message.id);
+            return exists ? prev : [...prev, e.message];
+          });
+          setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
         });
-        channel.on("message.deleted", (event) => {
-          setMessages(prev => prev.filter(m => m.id !== event.message.id));
+        ch.on("message.deleted", (e) => {
+          if (!active) return;
+          setMessages(prev => prev.filter(m => m.id !== e.message.id));
         });
-        channel.on("typing.start", (event) => {
-          if (event.user?.id !== streamClient.userID) {
-            setTypingUsers(prev => [...new Set([...prev, event.user?.name || event.user?.id])]);
-          }
+        ch.on("typing.start", (e) => {
+          if (!active || e.user?.id === clientRef.current?.userID) return;
+          setTypingUsers(prev => [...new Set([...prev, e.user?.name || e.user?.id])]);
         });
-        channel.on("typing.stop", (event) => {
-          setTypingUsers(prev => prev.filter(u => u !== (event.user?.name || event.user?.id)));
+        ch.on("typing.stop", (e) => {
+          if (!active) return;
+          setTypingUsers(prev => prev.filter(u => u !== (e.user?.name || e.user?.id)));
         });
-        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "auto" }), 100);
+
+        setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "auto" }), 150);
       } catch (err) {
-        console.error("Channel subscribe error:", err);
+        console.error("Channel error:", err);
       }
     };
+
     subscribe();
     return () => {
-      if (channel) {
-        channel.stopWatching().catch(console.error);
-        setStreamChannel(null);
-        setMessages([]);
+      active = false;
+      if (channelRef.current) {
+        channelRef.current.stopWatching().catch(() => {});
+        channelRef.current = null;
       }
+      setMessages([]);
+      setTypingUsers([]);
     };
-  }, [streamClient, chatMode, selectedGroup, selectedDMConv, selectedCustomGroup]);
+  }, [clientRef.current, isConnecting, chatMode, selectedGroup, selectedDMConv?.id, selectedCustomGroup?.id]);
 
   const handleSend = async (e) => {
     if (e) e.preventDefault();
-    if (!message.trim() || !streamChannel) return;
-    const opts = {};
-    if (replyingTo) opts.quoted_message_id = replyingTo.id;
+    const text = message.trim();
+    if (!text || !channelRef.current) return;
+    const opts = replyingTo ? { quoted_message_id: replyingTo.id } : {};
     try {
-      await streamChannel.sendMessage({ text: message.trim(), ...opts });
+      await channelRef.current.sendMessage({ text, ...opts });
       setMessage("");
       setReplyingTo(null);
     } catch (err) {
@@ -241,17 +291,18 @@ export default function Chat() {
   };
 
   const handleFileUpload = async (e, type = "file") => {
-    const file = e.target.files[0];
-    if (!file || !streamChannel) return;
+    const file = e.target.files?.[0];
+    if (!file || !channelRef.current) return;
+    e.target.value = "";
     setUploading(true);
     try {
       const response = type === "image"
-        ? await streamChannel.sendImage(file)
-        : await streamChannel.sendFile(file);
-      await streamChannel.sendMessage({
+        ? await channelRef.current.sendImage(file)
+        : await channelRef.current.sendFile(file);
+      await channelRef.current.sendMessage({
         text: "",
         attachments: [{
-          type: type,
+          type,
           [type === "image" ? "image_url" : "asset_url"]: response.file,
           title: file.name,
         }]
@@ -264,12 +315,12 @@ export default function Chat() {
   };
 
   const handleDelete = async (msgId) => {
-    if (!streamClient) return;
-    try { await streamClient.deleteMessage(msgId); } catch (err) { console.error(err); }
+    if (!clientRef.current) return;
+    try { await clientRef.current.deleteMessage(msgId); } catch (err) { console.error(err); }
   };
 
   const handleTyping = () => {
-    if (streamChannel) streamChannel.keystroke().catch(() => {});
+    channelRef.current?.keystroke().catch(() => {});
   };
 
   const channels = [
@@ -296,8 +347,8 @@ export default function Chat() {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3 p-6">
         <WifiOff className="w-10 h-10 text-slate-400" />
-        <p className="text-sm font-semibold text-slate-700">No se pudo conectar al chat</p>
-        <p className="text-xs text-slate-500 text-center">{connectionError}</p>
+        <p className="text-sm font-semibold text-slate-700 dark:text-slate-200">No se pudo conectar al chat</p>
+        <p className="text-xs text-slate-500 text-center max-w-xs">{connectionError}</p>
         <Button onClick={() => window.location.reload()} size="sm">Reintentar</Button>
       </div>
     );
@@ -319,15 +370,12 @@ export default function Chat() {
           </div>
           <div className="flex-1 min-w-0">
             <h1 className="text-xs font-semibold text-white truncate">{currentChat.name}</h1>
-            <p className="text-[8px] text-white/80">
-              {streamClient ? "● En línea — Stream Chat" : "Conectando..."}
-            </p>
+            <p className="text-[8px] text-white/80">● Stream Chat — Tiempo real</p>
           </div>
         </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden min-h-0 relative">
-        {/* Sidebar Backdrop */}
         {showSidebar && (
           <div className="fixed inset-0 bg-black/60 md:hidden z-40" onClick={() => setShowSidebar(false)} />
         )}
@@ -339,7 +387,6 @@ export default function Chat() {
           md:border-r md:border-slate-200 md:dark:border-slate-700
           md:h-full h-[calc(100vh-3.5rem-3.5rem)]`}>
 
-          {/* Sidebar Header */}
           <div className="flex-shrink-0 h-11 px-2 bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] flex items-center justify-between">
             <h2 className="text-xs font-semibold text-white">Mensajes</h2>
             <div className="flex gap-0.5">
@@ -370,7 +417,6 @@ export default function Chat() {
             </div>
           </div>
 
-          {/* Channel List */}
           <div className="flex-1 overflow-y-auto">
             {chatMode === "channels" && channels.map(ch => {
               const Icon = ch.icon;
@@ -394,26 +440,28 @@ export default function Chat() {
               );
             })}
 
-            {chatMode === "groups" && customGroups.filter(g => g.is_active && g.members?.includes(currentUser?.email)).map(group => {
-              const isActive = selectedCustomGroup?.id === group.id;
-              return (
-                <button key={group.id}
-                  onClick={() => { setChatMode("groups"); setSelectedCustomGroup(group); setSelectedDMConv(null); setShowSidebar(false); }}
-                  className={`w-full px-3 py-2.5 flex items-center gap-2.5 transition-colors border-b border-slate-200 dark:border-slate-700 ${
-                    isActive ? "bg-[#507DB4]/10" : "hover:bg-slate-100 dark:hover:bg-slate-700"
-                  }`}>
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    isActive ? "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]" : "bg-slate-200 dark:bg-slate-700"
-                  }`}>
-                    <Users className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0 text-left">
-                    <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{group.group_name}</p>
-                    <p className="text-[9px] text-slate-500">{group.members?.length || 0} miembros</p>
-                  </div>
-                </button>
-              );
-            })}
+            {chatMode === "groups" && customGroups
+              .filter(g => g.is_active && g.members?.includes(currentUser?.email))
+              .map(group => {
+                const isActive = selectedCustomGroup?.id === group.id;
+                return (
+                  <button key={group.id}
+                    onClick={() => { setChatMode("groups"); setSelectedCustomGroup(group); setSelectedDMConv(null); setShowSidebar(false); }}
+                    className={`w-full px-3 py-2.5 flex items-center gap-2.5 transition-colors border-b border-slate-200 dark:border-slate-700 ${
+                      isActive ? "bg-[#507DB4]/10" : "hover:bg-slate-100 dark:hover:bg-slate-700"
+                    }`}>
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      isActive ? "bg-gradient-to-br from-[#507DB4] to-[#6B9DD8]" : "bg-slate-200 dark:bg-slate-700"
+                    }`}>
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{group.group_name}</p>
+                      <p className="text-[9px] text-slate-500">{group.members?.length || 0} miembros</p>
+                    </div>
+                  </button>
+                );
+              })}
 
             {chatMode === "direct" && (
               <DirectMessagesList
@@ -426,7 +474,7 @@ export default function Chat() {
           </div>
         </div>
 
-        {/* Messages Area */}
+        {/* Messages */}
         <div className="flex-1 flex flex-col bg-slate-50 dark:bg-slate-900 overflow-hidden">
           <div className="flex-1 overflow-y-auto px-3 py-3 pb-24">
             {messages.length === 0 && (
@@ -460,13 +508,13 @@ export default function Chat() {
           {/* Input */}
           <div className="flex-shrink-0 w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
             {replyingTo && (
-              <div className="px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 flex items-center justify-between">
+              <div className="px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-200 dark:border-blue-800 flex items-center justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-[9px] font-semibold text-blue-600">Respondiendo a {replyingTo.user?.name}</p>
-                  <p className="text-[10px] text-slate-600 truncate">{replyingTo.text?.substring(0, 60)}</p>
+                  <p className="text-[9px] font-semibold text-blue-600 dark:text-blue-400">Respondiendo a {replyingTo.user?.name}</p>
+                  <p className="text-[10px] text-slate-600 dark:text-slate-400 truncate">{replyingTo.text?.substring(0, 60)}</p>
                 </div>
-                <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-blue-100 rounded">
-                  <X className="w-3.5 h-3.5 text-blue-600" />
+                <button onClick={() => setReplyingTo(null)} className="p-1 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded">
+                  <X className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 </button>
               </div>
             )}
@@ -495,7 +543,7 @@ export default function Chat() {
                     onKeyUp={handleTyping}
                     employees={employees}
                     placeholder="Escribe un mensaje"
-                    className="bg-transparent border-none text-xs text-slate-900 dark:text-white placeholder:text-slate-500 focus:ring-0 px-3 py-2"
+                    className="bg-transparent border-none text-xs text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:ring-0 px-3 py-2"
                   />
                 </div>
 
@@ -511,7 +559,7 @@ export default function Chat() {
                 </Popover>
 
                 <button type="submit"
-                  disabled={!message.trim() || !streamChannel || uploading}
+                  disabled={!message.trim() || !channelRef.current || uploading}
                   className="p-2 bg-gradient-to-br from-[#507DB4] to-[#6B9DD8] text-white rounded-full shadow-md hover:shadow-lg transition-all disabled:opacity-40 flex-shrink-0 active:scale-95">
                   {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
