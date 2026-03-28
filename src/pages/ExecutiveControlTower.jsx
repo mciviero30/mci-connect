@@ -55,7 +55,7 @@ export default function ExecutiveControlTower() {
       const entries = await base44.entities.TimeEntry.filter({ date: today });
       return entries.filter(e => e.check_in && !e.check_out); // Currently working
     },
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 300000 // 5min - was 30s (credit optimization), // Refresh every 30 seconds
     staleTime: 30000
   });
 
