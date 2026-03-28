@@ -12,9 +12,6 @@ export default defineConfig({
   resolve: {
     dedupe: ['react', 'react-dom'],
   },
-  optimizeDeps: {
-    include: ['stream-chat'],
-  },
   build: {
     chunkSizeWarningLimit: 600,
     minify: 'terser',
@@ -26,66 +23,29 @@ export default defineConfig({
       },
     },
     rollupOptions: {
+      external: (id) => id.startsWith('https://'),
       output: {
         manualChunks: (id) => {
-          // ── Heavy PDF / canvas ──────────────────────────────────────
+          if (id.startsWith('https://')) return undefined;
           if (id.includes('jspdf') || id.includes('jsPDF')) return 'vendor-jspdf';
           if (id.includes('html2canvas')) return 'vendor-html2canvas';
-
-          // ── OCR (Tesseract) ─────────────────────────────────────────
           if (id.includes('tesseract')) return 'vendor-tesseract';
-
-          // ── 3D (Three.js) ───────────────────────────────────────────
           if (id.includes('three')) return 'vendor-three';
-
-          // ── Spreadsheet (xlsx) ──────────────────────────────────────
           if (id.includes('xlsx')) return 'vendor-xlsx';
-
-          // ── Maps ────────────────────────────────────────────────────
           if (id.includes('leaflet') || id.includes('react-leaflet')) return 'vendor-leaflet';
-
-          // ── Charts ──────────────────────────────────────────────────
           if (id.includes('recharts')) return 'vendor-recharts';
-
-          // ── Animations ──────────────────────────────────────────────
           if (id.includes('framer-motion')) return 'vendor-motion';
-
-          // ── Rich text / markdown ────────────────────────────────────
           if (id.includes('react-quill') || id.includes('react-markdown')) return 'vendor-richtext';
-
-          // ── Date utilities ──────────────────────────────────────────
           if (id.includes('date-fns') || id.includes('moment')) return 'vendor-dates';
-
-          // ── Forms ───────────────────────────────────────────────────
           if (id.includes('react-hook-form') || id.includes('@hookform')) return 'vendor-forms';
-
-          // ── DnD ─────────────────────────────────────────────────────
           if (id.includes('hello-pangea') || id.includes('dnd')) return 'vendor-dnd';
-
-          // ── Gantt ───────────────────────────────────────────────────
           if (id.includes('gantt-task')) return 'vendor-gantt';
-
-          // ── Stream Chat ──────────────────────────────────────────────
-          if (id.includes('stream-chat')) return 'vendor-stream';
-
-          // ── Core React ──────────────────────────────────────────────
           if (id.includes('react-dom') || id.includes('react-router')) return 'vendor-react';
-
-          // ── Radix UI ─────────────────────────────────────────────────
           if (id.includes('@radix-ui')) return 'vendor-radix';
-
-          // ── Tanstack ─────────────────────────────────────────────────
           if (id.includes('@tanstack')) return 'vendor-tanstack';
-
-          // ── Icons ─────────────────────────────────────────────────────
           if (id.includes('lucide')) return 'vendor-icons';
-
-          // ── Utilities (lodash, clsx, zod, etc.) ──────────────────────
           if (id.includes('lodash') || id.includes('clsx') || id.includes('zod') ||
               id.includes('class-variance') || id.includes('tailwind-merge')) return 'vendor-utils';
-
-          // ── Everything else ───────────────────────────────────────────
-          // Base44 SDK
           if (id.includes('@base44')) return 'vendor-base44';
           if (id.includes('node_modules')) return 'vendor-misc';
         }
