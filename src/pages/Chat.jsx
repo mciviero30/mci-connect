@@ -84,7 +84,7 @@ export default function Chat() {
       return base44.entities.ChatMessage.filter({ group_id: selectedGroup }, 'created_date');
     },
     initialData: [],
-    refetchInterval: 2000,
+    refetchInterval: 15000, // 15s - was 2s (credit optimization)
   });
 
   const { data: jobs } = useQuery({
@@ -105,7 +105,7 @@ export default function Chat() {
     queryKey: ['chatGroups'],
     queryFn: () => base44.entities.ChatGroup.list('-created_date'),
     initialData: [],
-    refetchInterval: 5000,
+    refetchInterval: 30000, // 30s - was 5s (credit optimization)
   });
 
   const sendMutation = useMutation({
