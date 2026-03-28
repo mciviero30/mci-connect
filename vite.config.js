@@ -9,6 +9,12 @@ export default defineConfig({
     }),
     react(),
   ],
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
+  optimizeDeps: {
+    include: ['stream-chat'],
+  },
   build: {
     chunkSizeWarningLimit: 600,
     minify: 'terser',
@@ -58,6 +64,9 @@ export default defineConfig({
 
           // ── Gantt ───────────────────────────────────────────────────
           if (id.includes('gantt-task')) return 'vendor-gantt';
+
+          // ── Stream Chat ──────────────────────────────────────────────
+          if (id.includes('stream-chat')) return 'vendor-stream';
 
           // ── Core React ──────────────────────────────────────────────
           if (id.includes('react-dom') || id.includes('react-router')) return 'vendor-react';
