@@ -111,7 +111,7 @@ import EmployeeDirectoryGuard from "@/components/security/EmployeeDirectoryGuard
 import FocusModeIndicator from "@/components/shared/FocusModeIndicator";
 import SessionTimeoutManager from "@/components/security/SessionTimeoutManager";
 import WelcomeScreen from "@/components/onboarding/WelcomeScreen";
-import { hasFullAccess, getNavigationForRole } from "@/components/core/roleRules";
+import { hasFullAccess } from "@/components/core/roleRules";
 import { Hammer } from "lucide-react";
 import OfflineBanner from "@/components/resilience/OfflineBanner";
 import { clearAllFieldData } from "@/components/field/services/FieldCleanupService";
