@@ -97,17 +97,23 @@ export default function UniversalMessageBubble({
           </div>
         );
       
-      default:
-        const messageText = message.message?.replace(/@(\w+(?:\s+\w+)*)/g, (match) => {
-          return `<span class="${isDark ? 'bg-blue-500/30 text-blue-300' : 'bg-blue-500/20 text-blue-700'} px-2 py-0.5 rounded-lg font-bold">${match}</span>`;
-        });
-        
+        default: {
+        // XSS-SAFE: parse @mentions as React elements — no innerHTML
+        const renderMentions = (text) => {
+          if (!text) return null;
+          const parts = text.split(/(@\w+(?:\s+\w+)*)/g);
+          return parts.map((part, idx) =>
+            part.startsWith('@')
+              ? <span key={idx} className={isDark ? 'bg-blue-500/30 text-blue-300 px-2 py-0.5 rounded-lg font-bold' : 'bg-blue-500/20 text-blue-700 px-2 py-0.5 rounded-lg font-bold'}>{part}</span>
+              : part
+          );
+        };
         return (
-          <p 
-            className="break-words whitespace-pre-wrap"
-            dangerouslySetInnerHTML={{ __html: messageText }}
-          />
+          <p className="break-words whitespace-pre-wrap">
+            {renderMentions(message.message)}
+          </p>
         );
+        }
     }
   };
 
