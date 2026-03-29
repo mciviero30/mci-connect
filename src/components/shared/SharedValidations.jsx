@@ -82,10 +82,15 @@ export const validateGeofence = (distance, radius = 100, accuracy = 0) => {
     return { valid: false, error: 'Invalid distance' };
   }
   
-  if (distanceMeters > radius) {
-    return { 
-      valid: false, 
-      error: `You are ${distanceMeters}m away from job site. Must be within ${radius}m.` 
+  // ACCURACY BUFFER: poor GPS gets benefit of the doubt (max 50m buffer)
+  const accuracyBuffer = accuracy > 30 ? Math.min(accuracy * 0.5, 50) : 0;
+  const effectiveDistance = Math.max(0, distanceMeters - accuracyBuffer);
+
+  if (effectiveDistance > radius) {
+    const bufferNote = accuracyBuffer > 0 ? ` (GPS ±${Math.round(accuracy)}m)` : '';
+    return {
+      valid: false,
+      error: `You are ${Math.round(effectiveDistance)}m from job site. Must be within ${radius}m.${bufferNote}`
     };
   }
   
