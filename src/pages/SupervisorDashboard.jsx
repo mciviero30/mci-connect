@@ -86,7 +86,7 @@ export default function SupervisorDashboard() {
           <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-blue-100 text-sm">{language === 'es' ? 'Horas Pendientes' : 'Pending Hours'}</p>
+                <p className="text-blue-100 text-sm">{language === 'es' ? 'Horas a Revisar' : 'Hours to Review'}</p>
                 <Clock className="w-5 h-5 text-blue-100" />
               </div>
               <p className="text-3xl font-bold">{stats.pendingTimeEntries}</p>
@@ -97,7 +97,7 @@ export default function SupervisorDashboard() {
           <Card className="bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg border-0">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-amber-100 text-sm">{language === 'es' ? 'Gastos Pendientes' : 'Pending Expenses'}</p>
+                <p className="text-amber-100 text-sm">{language === 'es' ? 'Gastos del Equipo' : 'Team Expenses'}</p>
                 <AlertTriangle className="w-5 h-5 text-amber-100" />
               </div>
               <p className="text-3xl font-bold">{stats.pendingExpenses}</p>
@@ -132,16 +132,16 @@ export default function SupervisorDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-blue-600" />
-                {language === 'es' ? 'Aprobar Horas' : 'Approve Hours'}
+                {language === 'es' ? 'Horas del Equipo' : 'Team Hours'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 dark:text-slate-400 mb-4">
-                {stats.pendingTimeEntries} {language === 'es' ? 'entradas pendientes de aprobación' : 'pending time entries to approve'}
+                {stats.pendingTimeEntries} {language === 'es' ? 'entradas pendientes de revisión' : 'pending time entries to review'}
               </p>
               <Link to={createPageUrl('Horarios')}>
                 <Button className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white">
-                  {language === 'es' ? 'Revisar Horas' : 'Review Hours'}
+                  {language === 'es' ? 'Ver Horas' : 'View Hours'}
                 </Button>
               </Link>
             </CardContent>
@@ -151,16 +151,16 @@ export default function SupervisorDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
-                {language === 'es' ? 'Aprobar Gastos' : 'Approve Expenses'}
+                {language === 'es' ? 'Gastos del Equipo' : 'Team Expenses'}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-600 dark:text-slate-400 mb-4">
-                {stats.pendingExpenses} {language === 'es' ? 'gastos pendientes de aprobación' : 'pending expenses to approve'}
+                {stats.pendingExpenses} {language === 'es' ? 'gastos pendientes (solo lectura)' : 'pending expenses (view only)'}
               </p>
               <Link to={createPageUrl('Gastos')}>
                 <Button className="w-full bg-gradient-to-r from-[#507DB4] to-[#6B9DD8] text-white">
-                  {language === 'es' ? 'Revisar Gastos' : 'Review Expenses'}
+                  {language === 'es' ? 'Ver Gastos' : 'View Expenses'}
                 </Button>
               </Link>
             </CardContent>
