@@ -10,6 +10,7 @@ import GeolocationAuditMap from "@/components/time-tracking/GeolocationAuditMap"
 import { format } from "date-fns";
 import { useLanguage } from "@/components/i18n/LanguageContext";
 import { useToast } from "@/components/ui/toast";
+import { isCEOOrAdmin } from "@/components/core/roleRules";
 
 export default function ManagerApprovalView() {
   const { language } = useLanguage();
@@ -24,8 +25,8 @@ export default function ManagerApprovalView() {
     staleTime: Infinity,
   });
 
-  // STRICT: Only admin and CEO can approve/reject
-  const canApprove = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
+  // STRICT: Only CEO-level roles can approve/reject
+  const canApprove = isCEOOrAdmin(currentUser);
   // Foreman and supervisor can VIEW (read-only), but cannot approve/reject
   const canView = canApprove
     || currentUser?.role === 'supervisor'
