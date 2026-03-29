@@ -681,7 +681,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
               <button
                 onClick={async () => {
                   setLocationError(null);
-                  // Force session creation ignoring geofence
+                  // Force session creation ignoring geofence — AUDIT REQUIRED
                   const session = {
                     user_id: user?.id,
                     startTime: adjustedCheckIn.getTime(),
@@ -705,6 +705,44 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
                   setShowWorkTypeSelector(false);
                   if (!preselectedWorkType) setWorkType('normal');
                   setTaskDetails('');
+                  // MANDATORY AUDIT LOG: every admin override must be recorded
+                  try {
+                    telemetry.log({
+                      event_type: 'admin_geofence_override',
+                      user_email: user?.email,
+                      job_id: selectedJob,
+                      distance_meters: Math.round(distanceMeters),
+                      accuracy: location?.accuracy,
+                      source: 'frontend',
+                      metadata: {
+                        job_name: job.name,
+                        user_role: user?.role,
+                        override_by: user?.full_name,
+                        timestamp: new Date().toISOString(),
+                      }
+                    });
+                    // Notify OTHER admins (not self) about this override
+                    const allAdmins = await base44.entities.EmployeeDirectory.filter({ role: 'admin', employment_status: 'active' });
+                    const otherAdmins = allAdmins.filter(a => (a.employee_email || a.email) !== user?.email);
+                    if (otherAdmins.length > 0) {
+                      await Promise.all(otherAdmins.map(admin => sendNotification({
+                        recipientEmail: admin.employee_email || admin.email,
+                        recipientName: admin.full_name,
+                        type: 'security_alert',
+                        priority: 'high',
+                        title: language === 'es' ? '🔓 Override de Geofence Usado' : '🔓 Geofence Override Used',
+                        message: language === 'es'
+                          ? `${user?.full_name} (${user?.role}) usó override de geofence para fichar en ${job.name} a ${Math.round(distanceMeters)}m de distancia.`
+                          : `${user?.full_name} (${user?.role}) used geofence override to clock in at ${job.name}, ${Math.round(distanceMeters)}m away.`,
+                        actionUrl: '/Horarios',
+                        relatedEntityType: 'timeentry',
+                        sendEmail: true
+                      })));
+                    }
+                  } catch (auditErr) {
+                    // Never block clock-in due to audit failure, but log it
+                    console.warn('[LiveTimeTracker] Admin override audit failed:', auditErr);
+                  }
                 }}
                 style={{
                   marginTop: '12px',
