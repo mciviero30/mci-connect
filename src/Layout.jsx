@@ -667,7 +667,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       section: 'GENERAL',
       items: [
         { title: 'Manager Dashboard', url: createPageUrl("ManagerDashboard"), icon: TrendingUp },
-        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'Commission Agreements', url: createPageUrl("CommissionAgreements"), icon: DollarSign },
         { title: 'Commission Reports', url: createPageUrl("CommissionReports"), icon: BarChart3 },
         { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
@@ -772,7 +771,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       icon: Shield,
       items: [
         { title: 'Supervisor Dashboard', url: createPageUrl("SupervisorDashboard"), icon: TrendingUp },
-        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'My Profile', url: createPageUrl("EmployeeProfile"), icon: User },
       ]
     },
@@ -821,7 +819,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
       icon: Hammer,
       items: [
         { title: 'Foreman Dashboard', url: createPageUrl("ForemanDashboard"), icon: Hammer },
-        { title: 'Dashboard', url: createPageUrl("Dashboard"), icon: LayoutDashboard },
         { title: 'My Profile', url: createPageUrl("EmployeeProfile"), icon: User },
       ]
     },
