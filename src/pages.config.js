@@ -105,6 +105,7 @@ const ExecutiveDashboard = lazy(() => import('./pages/ExecutiveDashboard'));
 const FactoryView = lazy(() => import('./pages/FactoryView'));
 const ForemanDashboard = lazy(() => import('./pages/ForemanDashboard'));
 const SupervisorDashboard = lazy(() => import('./pages/SupervisorDashboard'));
+const TimeTrackingTestControl = lazy(() => import('./pages/TimeTrackingTestControl'));
 const Facturas = lazy(() => import('./pages/Facturas'));
 const Field = lazy(() => import('./pages/Field'));
 const FieldExport = lazy(() => import('./pages/FieldExport'));
@@ -259,6 +260,7 @@ export const PAGES = {
     "FactoryView": FactoryView,
   "ForemanDashboard": ForemanDashboard,
   "SupervisorDashboard": SupervisorDashboard,
+  "TimeTrackingTestControl": TimeTrackingTestControl,
     "Facturas": Facturas,
     "Field": Field,
     "FieldExport": FieldExport,
