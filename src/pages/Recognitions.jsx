@@ -3,7 +3,6 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Award, TrendingUp, Sparkles, Users, Wand2 } from 'lucide-react';
-import AIContentGenerator from '../components/ai/AIContentGenerator';
 import PageHeader from '../components/shared/PageHeader';
 import RecognitionFeed from '../components/recognition/RecognitionFeed';
 import TopRecognitionsWidget from '../components/recognition/TopRecognitionsWidget';
@@ -164,21 +163,6 @@ export default function Recognitions() {
           prefillData={aiGeneratedContent}
         />
 
-        <AIContentGenerator
-          open={showAIGenerator}
-          onOpenChange={setShowAIGenerator}
-          type="recognition"
-          employees={allEmployees.filter(e => e.employment_status !== 'deleted')}
-          onContentGenerated={(content) => {
-            setAIGeneratedContent({
-              employee_email: content.employee_email,
-              message: content.message,
-              recognition_type: content.recognition_type,
-              points: content.points
-            });
-            setShowKudosDialog(true);
-          }}
-        />
       </div>
     </div>
   );
