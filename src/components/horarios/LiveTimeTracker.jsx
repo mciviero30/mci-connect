@@ -1460,7 +1460,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
     });
 
     try {
-      const location = await getLocation();
+      // GPS fallback: if location unavailable during auto clock-out, proceed without coords
+      let location = null;
+      try {
+        location = await getLocation();
+      } catch (gpsErr) {
+        console.warn('[AutoClockOut] GPS unavailable, saving without check-out coords', gpsErr);
+        // location stays null — fields below handle null gracefully
+      }
       const endTime = Date.now();
       const totalHours = Math.max(0, (endTime - activeSession.startTime - activeSession.breakDuration) / (1000 * 60 * 60));
 
@@ -1476,8 +1483,8 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         check_out: format(new Date(), 'HH:mm:ss'),
         check_in_latitude: activeSession.location.lat,
         check_in_longitude: activeSession.location.lng,
-        check_out_latitude: location.lat,
-        check_out_longitude: location.lng,
+        check_out_latitude: location?.lat ?? null,
+        check_out_longitude: location?.lng ?? null,
         hours_worked: Number(totalHours.toFixed(2)),
         total_break_minutes: Math.floor((activeSession.breakDuration || 0) / (1000 * 60)),
         breaks: activeSession.breaks || [],
