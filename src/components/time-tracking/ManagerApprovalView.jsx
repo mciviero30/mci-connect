@@ -26,6 +26,10 @@ export default function ManagerApprovalView() {
 
   // STRICT: Only admin and CEO can approve/reject
   const canApprove = currentUser?.role === 'admin' || currentUser?.role === 'ceo';
+  // Foreman and supervisor can VIEW (read-only), but cannot approve/reject
+  const canView = canApprove
+    || currentUser?.role === 'supervisor'
+    || currentUser?.role === 'foreman';
 
   const { data: pendingEntries = [], isLoading } = useQuery({
     queryKey: ['managerPendingEntries', selectedFilter],
@@ -75,8 +79,8 @@ export default function ManagerApprovalView() {
     return acc;
   }, {});
 
-  // Block non-admins/managers entirely
-  if (currentUser && !canApprove) {
+  // Block anyone who can't even view (not admin, ceo, supervisor, foreman)
+  if (currentUser && !canView) {
     return (
       <Card>
         <CardContent className="py-12 text-center">
@@ -86,8 +90,8 @@ export default function ManagerApprovalView() {
           </p>
           <p className="text-sm text-slate-500 mt-1">
             {language === 'es'
-              ? 'Solo administradores y managers pueden aprobar horas.'
-              : 'Only admins and managers can approve time entries.'}
+              ? 'No tienes acceso para ver esta sección.'
+              : 'You do not have access to this section.'}
           </p>
         </CardContent>
       </Card>
@@ -96,6 +100,16 @@ export default function ManagerApprovalView() {
 
   return (
     <div className="space-y-6">
+      {!canApprove && canView && (
+        <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 flex items-center gap-2">
+          <ShieldX className="w-4 h-4 text-blue-500 shrink-0" />
+          <p className="text-sm text-blue-700 dark:text-blue-300">
+            {language === 'es'
+              ? 'Modo lectura — solo administradores pueden aprobar o rechazar horas.'
+              : 'Read-only — only administrators can approve or reject time entries.'}
+          </p>
+        </div>
+      )}
       {mapEntry && (
         <GeolocationAuditMap
           entry={mapEntry}
@@ -196,7 +210,7 @@ export default function ManagerApprovalView() {
                           )}
                         </div>
 
-                        {entry.status === 'pending' && (
+                        {entry.status === 'pending' && canApprove && (
                           <div className="flex gap-2 ml-4">
                             <Button
                               size="sm"
