@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import AIPredictiveJobAnalytics from "@/components/ai/AIPredictiveJobAnalytics";
 import { useSearchParams, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1267,11 +1266,6 @@ export default function JobDetails() {
           <TabsContent value="budget">
             <div className="space-y-6">
               {/* AI Predictive Analytics */}
-              <AIPredictiveJobAnalytics 
-                job={job}
-                timeEntries={timeEntries}
-                expenses={expenses}
-              />
               
               <CostAccumulationChart
                 job={job}
