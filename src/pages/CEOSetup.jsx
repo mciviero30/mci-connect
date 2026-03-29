@@ -62,6 +62,13 @@ export default function CEOSetup() {
   // Invite admin/manager emails
   const inviteUsersMutation = useMutation({
     mutationFn: async (emails) => {
+      // RUNTIME ROLE GUARD: verify CEO/admin server-side before asServiceRole writes
+      const currentUser = await base44.auth.me();
+      const isCEORuntime = currentUser?.role === 'ceo' || currentUser?.position === 'CEO' || currentUser?.role === 'admin';
+      if (!isCEORuntime) {
+        throw new Error('Unauthorized: Only CEO or admin can invite users.');
+      }
+      
       const validEmails = emails.filter(e => e && e.trim());
       
       for (const email of validEmails) {
