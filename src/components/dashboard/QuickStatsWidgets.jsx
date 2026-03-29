@@ -74,7 +74,7 @@ export default function QuickStatsWidgets({ user }) {
 
   const { data: invoices = [] } = useQuery({
     queryKey: ['invoices', user?.id],
-    queryFn: () => base44.entities.Invoice.list('-created_date', 200),
+    queryFn: () => base44.entities.Invoice.list('-created_date', 500),
     enabled: !!user?.id,
   });
 
@@ -94,18 +94,27 @@ export default function QuickStatsWidgets({ user }) {
     const totalCustomers = customers.length;
     const activeJobs = jobs.filter(j => j.status === 'active').length;
     const paidInvoices = invoices.filter(i => i.status === 'paid');
-    const totalRevenue = paidInvoices.reduce((sum, inv) => sum + (inv.total || 0), 0);
+    // Use amount_paid if available (most accurate), fallback to total
+    const totalRevenue = paidInvoices.reduce((sum, inv) => {
+      const amount = parseFloat(inv.amount_paid || inv.total || 0);
+      return sum + amount;
+    }, 0);
     const pendingInvoices = invoices.filter(i => ['draft', 'sent', 'partial'].includes(i.status)).length;
     const unconvertedQuotes = quotes.filter(q => q.status !== 'converted_to_invoice').length;
+    const now = new Date();
     const thisMonthRevenue = invoices
       .filter(i => {
-        const invoiceDate = new Date(i.invoice_date);
-        const now = new Date();
-        return invoiceDate.getMonth() === now.getMonth() && 
-               invoiceDate.getFullYear() === now.getFullYear() &&
-               i.status === 'paid';
+        // Fallback: invoice_date → created_date
+        const dateStr = i.invoice_date || i.created_date;
+        if (!dateStr) return false;
+        try {
+          const invoiceDate = new Date(dateStr);
+          return invoiceDate.getMonth() === now.getMonth() && 
+                 invoiceDate.getFullYear() === now.getFullYear() &&
+                 i.status === 'paid';
+        } catch { return false; }
       })
-      .reduce((sum, inv) => sum + (inv.total || 0), 0);
+      .reduce((sum, inv) => sum + parseFloat(inv.amount_paid || inv.total || 0), 0);
 
     return {
       totalCustomers,
