@@ -29,13 +29,17 @@ export default function Horarios() {
   const navigate = useNavigate();
   // STRICT: Only admin and CEO can approve/reject/manage time entries
   const isAdmin = user?.role === 'admin' || user?.role === 'ceo';
+  // Foreman and supervisor can VIEW time entries (read-only, no approve/reject)
+  const canView = isAdmin
+    || user?.role === 'supervisor'
+    || user?.role === 'foreman';
 
-  // SECURITY: Redirect non-admin/ceo users to their own hours page
+  // SECURITY: Redirect employees (not admin/ceo/supervisor/foreman) to their own hours page
   useEffect(() => {
-    if (user && !isAdmin) {
+    if (user && !canView) {
       navigate(createPageUrl('MisHoras'), { replace: true });
     }
-  }, [user, isAdmin]);
+  }, [user, canView]);
 
   // FIXED: Direct query with auto-refresh
   const { data: timeEntries = [], isLoading } = useQuery({
@@ -87,6 +91,17 @@ export default function Horarios() {
               )
             }
           />
+
+          {!isAdmin && canView && (
+            <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-500 shrink-0" />
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                {language === 'es'
+                  ? 'Modo lectura — solo administradores pueden aprobar o rechazar horas.'
+                  : 'Read-only view — only administrators can approve or reject time entries.'}
+              </p>
+            </div>
+          )}
 
           <StatsSummaryGrid 
             stats={[
