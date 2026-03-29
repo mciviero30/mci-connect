@@ -15,7 +15,6 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import AIService from '@/components/services/AIService';
 
 const rankColors = {
   1: 'bg-amber-500 text-white',
@@ -36,7 +35,11 @@ export default function OptimalAssigneeSuggestor({ workUnitId, jobId, currentAss
 
   // Fetch suggestions
   const suggestMutation = useMutation({
-    mutationFn: () => AIService.suggestOptimalAssignee(workUnitId),
+    mutationFn: async () => {
+      // Fetch active employees as assignment candidates (replaces AI suggestion)
+      const employees = await base44.entities.EmployeeDirectory.filter({ employment_status: 'active' }, 'full_name', 20);
+      return { suggestions: employees.map(e => ({ id: e.id, name: e.full_name, email: e.employee_email || e.email, score: null })) };
+    },
     onSuccess: (result) => {
       setSuggestions(result);
     },
