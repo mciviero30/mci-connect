@@ -1000,13 +1000,7 @@ export default function Dashboard() {
 
 
         {/* Performance Monitor (Admin Only - Dev) */}
-        {isAdmin && import.meta.env?.DEV && (
-          <FadeInUp delay={0.3}>
-            <div className="mb-2 sm:mb-3 md:mb-4">
-              <PerformanceMonitor />
-            </div>
-          </FadeInUp>
-        )}
+
 
         {/* Widgets Grid with Stagger Animation */}
          <StaggerContainer staggerDelay={0.05}>
