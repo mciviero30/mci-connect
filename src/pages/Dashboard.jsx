@@ -59,7 +59,7 @@ import { exportToExcel } from "@/components/shared/UniversalExcelExport";
 import ActualVsEstimatedChart from "../components/dashboard/ActualVsEstimatedChart";
 import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
 import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/advanced/MicroInteractions";
-import { hasFullAccess } from "@/components/core/roleRules";
+import { hasFullAccess, hasManagerAccess, getRoleLabel } from "@/components/core/roleRules";
 
 // Default layouts
 const DEFAULT_ADMIN_LAYOUT = [
@@ -97,6 +97,11 @@ export default function Dashboard() {
 
   // I5 FIX: Use hasFullAccess from roleRules for consistency
   const isAdmin = hasFullAccess(user);
+  const userRole = user?.role?.toLowerCase?.() || 'employee';
+  const isManager = hasManagerAccess(user) && !isAdmin;
+  const isSupervisor = userRole === 'supervisor';
+  const isForeman = userRole === 'foreman';
+  const roleLabel = getRoleLabel(user);
 
   // UI Visibility Policy
   const { canSeeDebug, canSeeAdmin } = useUIVisibility();
