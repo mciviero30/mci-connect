@@ -103,6 +103,8 @@ const Estimados = lazy(() => import('./pages/Estimados'));
 const ExecutiveControlTower = lazy(() => import('./pages/ExecutiveControlTower'));
 const ExecutiveDashboard = lazy(() => import('./pages/ExecutiveDashboard'));
 const FactoryView = lazy(() => import('./pages/FactoryView'));
+const ForemanDashboard = lazy(() => import('./pages/ForemanDashboard'));
+const SupervisorDashboard = lazy(() => import('./pages/SupervisorDashboard'));
 const Facturas = lazy(() => import('./pages/Facturas'));
 const Field = lazy(() => import('./pages/Field'));
 const FieldExport = lazy(() => import('./pages/FieldExport'));
@@ -255,6 +257,8 @@ export const PAGES = {
     "ExecutiveControlTower": ExecutiveControlTower,
     "ExecutiveDashboard": ExecutiveDashboard,
     "FactoryView": FactoryView,
+  "ForemanDashboard": ForemanDashboard,
+  "SupervisorDashboard": SupervisorDashboard,
     "Facturas": Facturas,
     "Field": Field,
     "FieldExport": FieldExport,
