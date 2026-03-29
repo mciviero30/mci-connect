@@ -211,13 +211,25 @@ export default function TimeTracking() {
         activeSession={sessionData}
         elapsed={elapsedTime}
         onBreakToggle={() => {
-          // FIX: Use the same session key that LiveTimeTracker uses (user-scoped + trackingType)
-          // Detect the actual key from localStorage (handles both work and driving types)
-          const updated = sessionData.onBreak
-            ? { ...sessionData, onBreak: false, breakStartTime: null }
-            : { ...sessionData, onBreak: true, breakStartTime: Date.now() };
+          // FIX: Properly accumulate breakDuration when toggling break from overlay.
+          // Old code wrote sessionData without updating breakDuration,
+          // causing hours overcounting when session was later saved.
+          const now = Date.now();
+          let updated;
+          if (sessionData.onBreak) {
+            // ENDING break: accumulate elapsed break time
+            const breakElapsed = sessionData.breakStartTime ? (now - sessionData.breakStartTime) : 0;
+            updated = {
+              ...sessionData,
+              onBreak: false,
+              breakStartTime: null,
+              breakDuration: (sessionData.breakDuration || 0) + breakElapsed,
+            };
+          } else {
+            // STARTING break: record start time
+            updated = { ...sessionData, onBreak: true, breakStartTime: now };
+          }
           setSessionData(updated);
-          // Find the correct user-scoped key
           if (user?.id) {
             const allKeys = Object.keys(localStorage).filter(k => k.startsWith(`liveTimeTracker_${user.id}_`));
             const activeKey = allKeys[0] || `liveTimeTracker_${user.id}_work`;
