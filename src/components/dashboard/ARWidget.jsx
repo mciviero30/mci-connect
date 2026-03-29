@@ -13,9 +13,12 @@ export default function ARWidget() {
 
   const { data: unpaidInvoices = [] } = useQuery({
     queryKey: ['ar-summary'],
-    queryFn: () => base44.entities.Invoice.filter({
-      status: { $in: ['sent', 'overdue', 'partial'] }
-    }),
+    queryFn: async () => {
+      // Fetch all non-paid invoices and filter client-side
+      // (avoids $in syntax issues with the Base44 API)
+      const all = await base44.entities.Invoice.list('-due_date', 500);
+      return all.filter(inv => ['sent', 'overdue', 'partial'].includes(inv.status));
+    },
     staleTime: 60000, // 1 min
   });
 
