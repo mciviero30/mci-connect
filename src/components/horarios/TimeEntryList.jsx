@@ -307,15 +307,19 @@ export default function TimeEntryList({ timeEntries, onApproveEntry, onRejectEnt
     };
 
     // Recalculate hours if times changed — with MIDNIGHT CROSS FIX
+    // Recalculate hours if times changed — with MIDNIGHT CROSS FIX
     if (editFormData.check_in && editFormData.check_out) {
       const [inH, inM, inS = 0] = editFormData.check_in.split(':').map(Number);
       const [outH, outM, outS = 0] = editFormData.check_out.split(':').map(Number);
-      let inMinutes = inH * 60 + inM + inS / 60;
+      let inMinutes  = inH * 60 + inM + inS / 60;
       let outMinutes = outH * 60 + outM + outS / 60;
-      // If checkout is earlier than checkin, it crossed midnight — add 24 hours
+      // Midnight cross: checkout before checkin means next day
       if (outMinutes < inMinutes) outMinutes += 24 * 60;
-      const hoursWorked = (outMinutes - inMinutes) / 60;
-      updates.hours_worked = Math.max(0, hoursWorked - ((editingEntry.lunch_minutes || 0) / 60));
+      const grossHours = (outMinutes - inMinutes) / 60;
+      // Subtract ALL tracked breaks (total_break_minutes) — not just lunch.
+      // lunch_minutes is legacy; prefer total_break_minutes if available.
+      const breakMins = editingEntry.total_break_minutes || editingEntry.lunch_minutes || 0;
+      updates.hours_worked = Math.max(0, grossHours - (breakMins / 60));
     }
 
     updateEntryMutation.mutate({
