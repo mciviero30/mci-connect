@@ -14,7 +14,6 @@ export default function NotificationSettings({ user }) {
   const { language } = useLanguage();
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [isTesting, setIsTesting] = useState(false);
 
   const { data: pushSubscription } = useQuery({
     queryKey: ['pushSubscription', user?.email],
@@ -97,41 +96,6 @@ export default function NotificationSettings({ user }) {
     } catch (error) {
       console.error('Failed to enable notifications:', error);
       toast.error(language === 'es' ? 'Error al activar notificaciones' : 'Failed to enable notifications');
-    }
-  };
-
-  const handleTestNotification = async () => {
-    setIsTesting(true);
-    try {
-      // Create test notification in database
-      await base44.entities.Notification.create({
-        recipient_email: user.email,
-        recipient_name: user.full_name,
-        title: '🔔 Test Notification',
-        message: 'This is a test notification. If you see this, notifications are working!',
-        type: 'system_alert',
-        priority: 'medium',
-        link: '/page/NotificationCenter',
-        read: false
-      });
-
-      // Also send browser notification if permitted
-      if (Notification.permission === 'granted') {
-        new Notification('🔔 Test Notification', {
-          body: 'This is a test notification. Notifications are working!',
-          icon: '/logo192.png',
-          badge: '/badge-icon.png',
-          vibrate: [200, 100, 200]
-        });
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      toast.success(language === 'es' ? '✅ Notificación de prueba enviada' : '✅ Test notification sent');
-    } catch (error) {
-      console.error('Failed to send test notification:', error);
-      toast.error(language === 'es' ? 'Error al enviar prueba' : 'Failed to send test');
-    } finally {
-      setIsTesting(false);
     }
   };
 
@@ -223,27 +187,6 @@ export default function NotificationSettings({ user }) {
           </div>
         )}
 
-        {/* Test Notification Button */}
-        <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-          <Button
-            onClick={handleTestNotification}
-            disabled={!notificationEnabled || isTesting}
-            variant="outline"
-            className="w-full border-indigo-300 text-indigo-600 hover:bg-indigo-50 dark:border-indigo-700 dark:text-indigo-400 dark:hover:bg-indigo-900/20 rounded-xl"
-          >
-            {isTesting ? (
-              <>
-                <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-                {language === 'es' ? 'Enviando...' : 'Sending...'}
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4 mr-2" />
-                {language === 'es' ? 'Enviar Notificación de Prueba' : 'Send Test Notification'}
-              </>
-            )}
-          </Button>
-        </div>
 
         {/* Platform Info */}
         <div className="text-xs text-slate-500 dark:text-slate-400 text-center">
