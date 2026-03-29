@@ -14,6 +14,7 @@ import { useLanguage } from "@/components/i18n/LanguageContext";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
 import SectionErrorBoundary from "@/components/errors/SectionErrorBoundary";
 import { CURRENT_USER_QUERY_KEY } from "@/components/constants/queryKeys";
+import { isCEOOrAdmin } from "@/components/core/roleRules";
 import CreateTimeEntryDialog from "../components/horarios/CreateTimeEntryDialog";
 
 export default function Horarios() {
@@ -27,8 +28,8 @@ export default function Horarios() {
     refetchOnWindowFocus: false
   });
   const navigate = useNavigate();
-  // STRICT: Only admin and CEO can approve/reject/manage time entries
-  const isAdmin = user?.role === 'admin' || user?.role === 'ceo';
+  // STRICT: Only CEO-level roles can approve/reject/manage time entries
+  const isAdmin = isCEOOrAdmin(user);
   // Foreman and supervisor can VIEW time entries (read-only, no approve/reject)
   const canView = isAdmin
     || user?.role === 'supervisor'
