@@ -27,27 +27,36 @@ export default function Reportes() {
   });
   const [activeTab, setActiveTab] = useState('overview');
 
+  // Derive ISO date strings for server-side filtering — avoids loading 500 records
+  const startStr = format(dateRange.start, 'yyyy-MM-dd');
+  const endStr   = format(dateRange.end,   'yyyy-MM-dd');
+
+
   const { data: invoices = [] } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: () => base44.entities.Invoice.list('-invoice_date', 500),
+    queryKey: ['invoices', startStr, endStr],
+    queryFn: () => base44.entities.Invoice.filter(
+      { invoice_date: { $gte: startStr, $lte: endStr } }, '-invoice_date', 500),
     initialData: []
   });
 
   const { data: quotes = [] } = useQuery({
-    queryKey: ['quotes'],
-    queryFn: () => base44.entities.Quote.list('-quote_date', 500),
+    queryKey: ['quotes', startStr, endStr],
+    queryFn: () => base44.entities.Quote.filter(
+      { quote_date: { $gte: startStr, $lte: endStr } }, '-quote_date', 500),
     initialData: []
   });
 
   const { data: expenses = [] } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: () => base44.entities.Expense.list('-date', 500),
+    queryKey: ['expenses', startStr, endStr],
+    queryFn: () => base44.entities.Expense.filter(
+      { date: { $gte: startStr, $lte: endStr } }, '-date', 500),
     initialData: []
   });
 
   const { data: timeEntries = [] } = useQuery({
-    queryKey: ['timeEntries'],
-    queryFn: () => base44.entities.TimeEntry.list('-date', 500),
+    queryKey: ['timeEntries', startStr, endStr],
+    queryFn: () => base44.entities.TimeEntry.filter(
+      { date: { $gte: startStr, $lte: endStr } }, '-date', 500),
     initialData: []
   });
 
