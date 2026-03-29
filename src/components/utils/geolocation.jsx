@@ -45,10 +45,10 @@ export const getCurrentLocation = (language = 'en') => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         // Check for low accuracy (possible mock location)
-        if (pos.coords.accuracy > 100) {
+        if (pos.coords.accuracy > 200) {  // 200m allows indoor/parking accuracy
           return reject(language === 'es' 
-            ? '⚠️ Precisión GPS muy baja. Asegúrate de estar al aire libre y tener señal GPS fuerte.' 
-            : '⚠️ GPS accuracy too low. Make sure you are outdoors with strong GPS signal.');
+            ? '⚠️ Precisión GPS muy baja. Intenta acercarte a una ventana o salir al exterior.' 
+            : '⚠️ GPS accuracy too low. Try moving outdoors or near a window.');
         }
         
         resolve({ 
