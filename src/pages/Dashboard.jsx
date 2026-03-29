@@ -1019,6 +1019,28 @@ export default function Dashboard() {
                   className={`grid gap-2 sm:gap-3 ${!isAdmin ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'}`}
                 >
                   <AnimatePresence>
+            {/* Role-specific banner */}
+            {(isForeman || isSupervisor) && (
+              <div className="mb-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 flex items-center justify-between gap-3">
+                <p className="text-sm text-amber-800 dark:text-amber-300">
+                  {language === 'es'
+                    ? 'Tienes un panel personalizado para tu rol.'
+                    : 'You have a dedicated panel for your role.'}
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-amber-400 text-amber-800 dark:text-amber-300 shrink-0"
+                  onClick={() => {
+                    window.location.href = isForeman
+                      ? createPageUrl('ForemanDashboard')
+                      : createPageUrl('SupervisorDashboard');
+                  }}
+                >
+                  {language === 'es' ? 'Ver mi panel' : 'View my panel'}
+                </Button>
+              </div>
+            )}
                     {widgets.filter(w => w.visible).sort((a, b) => a.position - b.position).map((widget, index) => (
                       <Draggable key={widget.id} draggableId={widget.id} index={index} isDragDisabled={!isEditMode}>
                         {(provided) => (
