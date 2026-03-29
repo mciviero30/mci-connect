@@ -20,7 +20,7 @@
  *   }
  *   
  *   export const pagesConfig = {
- *       mainPage: "HomePage",
+ *       mainPage: 'Home',
  *       Pages: PAGES,
  *   };
  * 
@@ -42,7 +42,7 @@
  *   };
  *
  * To change the main page from HomePage to Dashboard, use find_replace:
- *   Old: mainPage: "HomePage",
+ *   Old: mainPage: 'Home',
  *   New: mainPage: "Dashboard",
  *
  * The mainPage value must match a key in the PAGES object exactly.
