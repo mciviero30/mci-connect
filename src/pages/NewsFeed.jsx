@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Megaphone, Heart, Plus, Upload, Cake, PartyPopper, Wand2 } from "lucide-react";
-import AIContentGenerator from "../components/ai/AIContentGenerator";
 import { Badge } from "@/components/ui/badge";
 import { format, isSameDay, isSameMonth } from "date-fns";
 import PageHeader from "../components/shared/PageHeader";
@@ -369,20 +368,6 @@ export default function NewsFeed() {
             </Card>
           )}
         </div>
-        <AIContentGenerator
-          open={showAIGenerator}
-          onOpenChange={setShowAIGenerator}
-          type="announcement"
-          onContentGenerated={(content) => {
-            setNewPost({
-              title: content.title,
-              content: content.content,
-              image_url: content.image_url || '',
-              priority: content.priority
-            });
-            setCreating(true);
-          }}
-        />
       </div>
     </div>
   );
