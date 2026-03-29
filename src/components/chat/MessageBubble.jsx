@@ -80,18 +80,23 @@ export default function MessageBubble({
           </div>
         );
       
-      default:
-        // Parse mentions
-        const messageText = message.message.replace(/@(\w+(?:\s+\w+)*)/g, (match) => {
-          return `<span class="bg-blue-500/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-lg font-bold">${match}</span>`;
-        });
-        
+        default: {
+        // XSS-SAFE: parse @mentions as React elements — no innerHTML
+        const renderMentions = (text) => {
+          if (!text) return null;
+          const parts = text.split(/(@\w+(?:\s+\w+)*)/g);
+          return parts.map((part, idx) =>
+            part.startsWith('@')
+              ? <span key={idx} className="bg-blue-500/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-lg font-bold">{part}</span>
+              : part
+          );
+        };
         return (
-          <p 
-            className="break-words whitespace-pre-wrap font-medium"
-            dangerouslySetInnerHTML={{ __html: messageText }}
-          />
+          <p className="break-words whitespace-pre-wrap font-medium">
+            {renderMentions(message.message)}
+          </p>
         );
+        }
     }
   };
 
