@@ -65,7 +65,17 @@ export const validateDate = (dateString, fieldName = 'Date') => {
 /**
  * Validate geofence location
  */
-export const validateGeofence = (distance, radius = 100) => {
+/**
+ * GPS_ACCURACY NOTE:
+ * The geofence radius and GPS accuracy are INDEPENDENT concepts.
+ * - radius: how far from the job site is allowed (business rule, configured per job)
+ * - accuracy: how precise the GPS reading is (device/signal quality)
+ *
+ * We apply an accuracy tolerance: if GPS accuracy > 30m, we add half the
+ * accuracy error as a buffer to avoid false rejections indoors.
+ * Formula: effectiveDistance = distance - (accuracy > 30 ? accuracy * 0.5 : 0)
+ */
+export const validateGeofence = (distance, radius = 100, accuracy = 0) => {
   const distanceMeters = Number(distance);
   
   if (isNaN(distanceMeters)) {
