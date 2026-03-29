@@ -189,6 +189,16 @@ export default function Gastos() {
 
 
 
+          {canViewAllExpenses && !isCEOOrAdmin(user) && (
+            <div className="mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 flex items-center gap-2">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
+                {language === 'es'
+                  ? 'Modo lectura — solo administradores pueden aprobar o rechazar gastos.'
+                  : 'Read-only view — only administrators can approve or reject expenses.'}
+              </p>
+            </div>
+          )}
+
         <StatsSummaryGrid 
           stats={[
             { label: t('pending'), value: pendingExpenses.length, icon: Receipt },
