@@ -57,7 +57,6 @@ import ARWidget from "../components/dashboard/ARWidget";
 import { FileSpreadsheet } from "lucide-react";
 import { exportToExcel } from "@/components/shared/UniversalExcelExport";
 import ActualVsEstimatedChart from "../components/dashboard/ActualVsEstimatedChart";
-import { AIPredictor } from "@/components/advanced/AIPredictor";
 import { PerformanceMonitor } from "@/components/monitoring/PerformanceMonitor";
 import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/advanced/MicroInteractions";
 import { hasFullAccess } from "@/components/core/roleRules";
@@ -993,18 +992,7 @@ export default function Dashboard() {
           </FadeInUp>
         )}
 
-        {/* AI Predictions (Admin Only) */}
-        {isAdmin && (
-          <FadeInUp delay={0.2}>
-            <div className="mb-2 sm:mb-3 md:mb-4">
-              <AIPredictor 
-                jobs={Array.isArray(jobs) ? jobs : []} 
-                timeEntries={allTimeEntries} 
-                invoices={[]} 
-              />
-            </div>
-          </FadeInUp>
-        )}
+
 
         {/* Performance Monitor (Admin Only - Dev) */}
         {isAdmin && import.meta.env?.DEV && (
