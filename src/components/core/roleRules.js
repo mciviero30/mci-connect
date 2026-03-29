@@ -83,3 +83,14 @@ export function getRoleLabel(user) {
   };
   return labels[role] ?? user.role;
 }
+
+/**
+ * Returns true only if the user is CEO or admin (payroll & approvals)
+ * @param {Object} user
+ * @returns {boolean}
+ */
+export function isCEOOrAdmin(user) {
+  if (!user) return false;
+  const role = user.role?.toLowerCase?.();
+  return role === 'admin' || role === 'ceo' || role === 'administrator' || role === 'super_admin' || role === 'owner';
+}
