@@ -92,7 +92,6 @@ import EnhancedOfflineSync from "@/components/offline/EnhancedOfflineSync";
 import BackgroundSyncManager from "@/components/mobile/BackgroundSyncManager";
 import InstallPrompt from "@/components/mobile/InstallPrompt";
 import NetworkSpeedIndicator from "@/components/mobile/NetworkSpeedIndicator";
-import AIAssistant from "@/components/ai/AIAssistant";
 import NotificationService from "@/components/notifications/NotificationService";
 import NotificationEngine from "@/components/notifications/NotificationEngine";
 import UniversalNotificationEngine from "@/components/notifications/UniversalNotificationEngine";
@@ -560,7 +559,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
         { title: 'Inventory', url: createPageUrl("Inventario"), icon: Package },
         { title: 'Calendar', url: createPageUrl("Calendario"), icon: CalendarDays },
         { title: 'Job Analysis', url: createPageUrl("JobPerformanceAnalysis"), icon: BarChart3 },
-        { title: 'AI Schedule Center', url: createPageUrl("AIScheduleCenter"), icon: Target },
       ]
     },
     {
@@ -1532,7 +1530,6 @@ const LayoutContent = ({ children, currentPageName, user, isLoading, error, isFi
             </div>
           </div>
 
-          <AIAssistant currentPage={currentPageName} />
           <EnhancedOfflineSync />
 
           {/* Bottom Navigation: Hidden ONLY in Field Mode (always visible in Focus Mode for navigation) */}
