@@ -16,7 +16,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import AIExpenseAnalyzer from "../components/gastos/AIExpenseAnalyzer";
 import SmartExpenseApproval from "../components/gastos/SmartExpenseApproval";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LoadMoreButton from "@/components/shared/LoadMoreButton";
@@ -195,11 +194,6 @@ export default function Gastos() {
           ]}
           loading={isLoading}
         />
-
-        {/* AI Expense Analyzer */}
-        <div className="mb-8">
-          <AIExpenseAnalyzer expenses={expenses} showFullAnalysis={true} />
-        </div>
 
         <ExpenseList 
           expenses={expenses} 
