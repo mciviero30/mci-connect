@@ -640,7 +640,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
       // CUSTOMIZABLE GEOFENCING: Use job's configured radius (default 100m)
       const MAX_DISTANCE = job.geofence_radius || 100;
       
-      if (distanceMeters > MAX_DISTANCE) {
+        // ACCURACY BUFFER: poor GPS (>30m accuracy) gets tolerance (max 50m)
+        const gpsBuffer = (location.accuracy > 30) ? Math.min(location.accuracy * 0.5, 50) : 0;
+        const effectiveDistIn = Math.max(0, distanceMeters - gpsBuffer);
+        
+        if (effectiveDistIn > MAX_DISTANCE) {
         // PASO 4: Log geofence failure (deduplicated)
         telemetry.log({
           event_type: 'clock_in_geofence_failed',
@@ -1051,7 +1055,11 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
             job.longitude
           );
 
-          if (checkOutDistanceMeters > MAX_DISTANCE) {
+          // ACCURACY BUFFER: same indoor tolerance as clock-in
+          const coBuffer = (location.accuracy > 30) ? Math.min(location.accuracy * 0.5, 50) : 0;
+          const effectiveDistOut = Math.max(0, checkOutDistanceMeters - coBuffer);
+          
+          if (effectiveDistOut > MAX_DISTANCE) {
             // PASO 4: Log geofence failure
             telemetry.log({
               event_type: 'clock_out_geofence_failed',
