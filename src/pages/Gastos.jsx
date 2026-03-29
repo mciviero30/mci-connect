@@ -40,12 +40,16 @@ export default function Gastos() {
     gcTime: Infinity
   });
 
-  // SECURITY: Non-admin users should only see their own expenses via MisGastos
+  // SECURITY: supervisor/foreman can view all expenses (read-only); others see only their own
+  const canViewAllExpenses = hasFullAccess(user)
+    || user?.role === 'supervisor'
+    || user?.role === 'foreman';
+
   useEffect(() => {
-    if (user && !hasFullAccess(user)) {
+    if (user && !canViewAllExpenses) {
       navigate(createPageUrl('MisGastos'), { replace: true });
     }
-  }, [user]);
+  }, [user, canViewAllExpenses]);
 
   const { handleError } = useErrorHandler();
 
