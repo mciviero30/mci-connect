@@ -1,10 +1,10 @@
-// Placeholder file, this should be overridden by the generated code
-
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
-
-  return (
-    <div>
-    </div>
-  );
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate('/Dashboard', { replace: true });
+  }, [navigate]);
+  return null;
 }
