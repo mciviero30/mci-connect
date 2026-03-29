@@ -331,8 +331,9 @@ export default function Configuracion() {
     updateNotificationPrefsMutation.mutate(notificationPrefs);
   };
 
-  const isAdmin = user?.role === 'admin' || user?.role === 'ceo';
-  const canEditProfile = user?.role === 'admin' || user?.role === 'ceo';
+  const ADMIN_ROLES = ['admin', 'ceo', 'owner', 'super_admin', 'administrator'];
+  const isAdmin = ADMIN_ROLES.includes(user?.role?.toLowerCase?.());
+  const canEditProfile = isAdmin;
   const browserSupportsNotifications = 'Notification' in window;
   const notificationPermission = browserSupportsNotifications ? Notification.permission : 'default';
 
