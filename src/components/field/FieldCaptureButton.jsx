@@ -14,7 +14,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { base44 } from '@/api/base44Client';
-import { processFieldCapture, ActivityTypeLabels, SeverityColors } from './AIFieldProcessor';
+// Stubs replacing deleted AIFieldProcessor
+const ActivityTypeLabels = { en: {}, es: {} };
+const SeverityColors = { low: 'border-green-200 bg-green-50', medium: 'border-yellow-200 bg-yellow-50', high: 'border-red-200 bg-red-50', critical: 'border-red-400 bg-red-100' };
+async function processFieldCapture(data) {
+  // Simplified processing — returns structured report from raw capture data
+  return {
+    activity_type: data.activity_type || 'general',
+    description: data.text_notes || '',
+    photo_urls: data.photo_urls || [],
+    audio_url: data.audio_url || null,
+    issues: [],
+    job_id: data.job_id,
+    job_name: data.job_name,
+    captured_by: data.captured_by,
+    captured_by_name: data.captured_by_name,
+    status: 'submitted',
+    date: new Date().toISOString().split('T')[0],
+  };
+}
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function FieldCaptureButton({ jobId, jobName, onCaptureProcessed }) {
