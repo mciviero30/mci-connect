@@ -22,7 +22,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import AIJobWizard from "../components/trabajos/AIJobWizard";
 import ModernJobCard from "../components/trabajos/ModernJobCard";
 import FilterBar from "../components/shared/FilterBar";
 import { useJobClosureValidation } from "../components/trabajos/JobStatusValidator";
@@ -451,10 +450,6 @@ export default function Trabajos() {
               </DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <AIJobWizard
-                onComplete={handleWizardComplete}
-                onCancel={() => setShowAIWizard(false)}
-              />
             </div>
           </DialogContent>
         </Dialog>
