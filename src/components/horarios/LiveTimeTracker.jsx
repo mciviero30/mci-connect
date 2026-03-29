@@ -1060,7 +1060,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
               distance_meters: checkOutDistanceMeters,
               accuracy: location.accuracy,
               source: 'frontend',
-              metadata: { 
+              metadata: {
                 job_name: job.name,
                 max_distance: MAX_DISTANCE,
                 job_address: job.address,
@@ -1068,10 +1068,100 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
                 job_longitude: job.longitude
               }
             });
-            
+
             // Import improved alert component
             const ImprovedGeofenceAlert = (await import('@/components/time-tracking/ImprovedGeofenceAlert')).default;
-            
+
+            // ADMIN OVERRIDE: Admin/CEO can force clock-out even outside geofence
+            if (user?.role === 'admin' || user?.role === 'ceo') {
+              setLocationError(
+                <div>
+                  <ImprovedGeofenceAlert
+                    distance={checkOutDistanceMeters}
+                    threshold={MAX_DISTANCE}
+                    jobName={job.name}
+                    jobAddress={job.address}
+                    jobLat={job.latitude}
+                    jobLng={job.longitude}
+                    accuracy={location.accuracy}
+                    onRetry={() => {
+                      setLocationError(null);
+                      handleClockOut();
+                    }}
+                    language={language}
+                  />
+                  <button
+                    onClick={async () => {
+                      setLocationError(null);
+                      // MANDATORY AUDIT LOG for admin override on clock-out
+                      try {
+                        telemetry.log({
+                          event_type: 'admin_geofence_override_clockout',
+                          user_email: user?.email,
+                          job_id: activeSession.jobId,
+                          distance_meters: Math.round(checkOutDistanceMeters),
+                          accuracy: location?.accuracy,
+                          source: 'frontend',
+                          metadata: {
+                            job_name: job.name,
+                            user_role: user?.role,
+                            override_by: user?.full_name,
+                            timestamp: new Date().toISOString(),
+                          }
+                        });
+                        // Notify other admins
+                        const allAdmins = await base44.entities.EmployeeDirectory.filter({ role: 'admin', employment_status: 'active' });
+                        const otherAdmins = allAdmins.filter(a => (a.employee_email || a.email) !== user?.email);
+                        if (otherAdmins.length > 0) {
+                          await Promise.all(otherAdmins.map(admin => sendNotification({
+                            recipientEmail: admin.employee_email || admin.email,
+                            recipientName: admin.full_name,
+                            type: 'security_alert',
+                            priority: 'high',
+                            title: language === 'es' ? '🔓 Override de Salida Usado' : '🔓 Clock-Out Override Used',
+                            message: language === 'es'
+                              ? `${user?.full_name} (${user?.role}) usó override para fichar salida en ${job.name} a ${Math.round(checkOutDistanceMeters)}m`
+                              : `${user?.full_name} (${user?.role}) used override to clock out at ${job.name}, ${Math.round(checkOutDistanceMeters)}m from site`,
+                            actionUrl: '/Horarios',
+                            relatedEntityType: 'timeentry',
+                            sendEmail: true
+                          })));
+                        }
+                      } catch (auditErr) {
+                        console.warn('[LiveTimeTracker] Clock-out override audit failed:', auditErr);
+                      }
+                      // Proceed with clock-out — skip geofence, mark for review
+                      clockOutProgressRef.current = false;
+                      // Re-call handleClockOut but skip geofence check via flag
+                      // We do this by proceeding past the geofence block manually:
+                      // Set a flag and re-invoke
+                      activeSession.adminClockOutOverride = true;
+                      const storageKeyLocal = `liveTimeTracker_${user?.id}_${activeSession.workType === 'driving' ? 'driving' : 'work'}`;
+                      localStorage.setItem(storageKeyLocal, JSON.stringify(activeSession));
+                      handleClockOut();
+                    }}
+                    style={{
+                      marginTop: '12px',
+                      width: '100%',
+                      padding: '10px 16px',
+                      backgroundColor: '#dc2626',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                    }}
+                  >
+                    🔓 {language === 'es' ? 'Override Admin — Fichar Salida de todas formas' : 'Admin Override — Clock Out Anyway'}
+                  </button>
+                </div>
+              );
+              setShowWorkTypeSelector(false);
+              return;
+            }
+
+            // Non-admin: show alert + notify admins
             setLocationError(
               <ImprovedGeofenceAlert
                 distance={checkOutDistanceMeters}
@@ -1088,7 +1178,7 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
                 language={language}
               />
             );
-            
+
             // Notify admins (parallel)
             const admins = await base44.entities.EmployeeDirectory.filter({ role: 'admin', employment_status: 'active' });
             await Promise.all(admins.map(admin => sendNotification({
@@ -1106,6 +1196,10 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
               })));
             return;
           }
+
+          // SUCCESS: Within geofence (silent - no notification spam)
+        }
+      }
 
           // SUCCESS: Within geofence (silent - no notification spam)
           // Removed notification to avoid errors
