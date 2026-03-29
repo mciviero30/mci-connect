@@ -1014,7 +1014,14 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         };
 
         if (!user?.id) return;
-        onSave(cappedData);
+        try {
+          onSave(cappedData);
+        } catch (saveError) {
+          setLocationError(language === 'es'
+            ? '⚠️ Error al guardar horas. Tu sesión sigue activa — intenta de nuevo.'
+            : '⚠️ Save failed. Your session is still active — please try again.');
+          throw saveError;
+        }
         // Clear ALL user-scoped session keys (handles trackingType mismatch)
         try {
           const prefix = user?.id ? `liveTimeTracker_${user.id}_` : null;
@@ -1151,17 +1158,27 @@ export default function LiveTimeTracker({ trackingType, onSave, isLoading, prese
         return;
       }
 
-      onSave(timeEntryData);
+      // SAFE SAVE: clear session from localStorage only after onSave succeeds
+      // This prevents orphan sessions if onSave throws
+      try {
+        onSave(timeEntryData);
+      } catch (saveError) {
+        // onSave failed — keep session in localStorage so user doesn't lose hours
+        setLocationError(language === 'es'
+          ? '⚠️ Error al guardar. Tu sesión sigue activa — intenta de nuevo.'
+          : '⚠️ Save failed. Your session is still active — please try again.');
+        throw saveError; // re-throw so outer catch handles UI
+      }
 
       // Clear ALL user-scoped session keys (handles trackingType mismatch)
-        try {
-          const prefix = user?.id ? `liveTimeTracker_${user.id}_` : null;
-          if (prefix) {
-            Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
-          } else {
-            localStorage.removeItem(storageKey);
-          }
-        } catch (_) { localStorage.removeItem(storageKey); }
+      try {
+        const prefix = user?.id ? `liveTimeTracker_${user.id}_` : null;
+        if (prefix) {
+          Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
+        } else {
+          localStorage.removeItem(storageKey);
+        }
+      } catch (_) { localStorage.removeItem(storageKey); }
       setActiveSession(null);
       setElapsed(0);
       setLocationError(null);
