@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageHeader from "../components/shared/PageHeader";
-import AIEstimateInput from "../components/quotes/AIEstimateInput";
 import FilterBar from "../components/shared/FilterBar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { format } from "date-fns";
@@ -469,13 +468,6 @@ export default function Estimados() {
               </DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <AIEstimateInput
-                onComplete={() => {
-                  setShowAIWizard(false);
-                  queryClient.invalidateQueries({ queryKey: ['quotes'] });
-                }}
-                onCancel={() => setShowAIWizard(false)}
-              />
             </div>
           </DialogContent>
         </Dialog>
