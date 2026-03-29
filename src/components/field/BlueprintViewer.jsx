@@ -20,7 +20,6 @@ import CreateTaskDialog from './CreateTaskDialog.jsx';
 import BlueprintMiniMap from './BlueprintMiniMap.jsx';
 import BlueprintFilterBar from './BlueprintFilterBar.jsx';
 import LiveCollaborators from './LiveCollaborators.jsx';
-import AILearningEngine from './AILearningEngine.jsx';
 import ClientPunchDialog from '../client/ClientPunchDialog.jsx';
 import PunchItemReview from './PunchItemReview.jsx';
 import MeasurementOverlay from './overlays/MeasurementOverlay.jsx';
@@ -1132,11 +1131,6 @@ export default function BlueprintViewer({ plan, tasks, jobId, onBack, isClientVi
         {/* AI Learning Engine - Dropdown panel */}
         {showAILearning && (
           <div className="absolute left-14 top-16 z-40 w-80">
-            <AILearningEngine 
-              jobId={jobId} 
-              planId={plan?.id}
-              onNewPattern={() => setHasNewAIPatterns(true)}
-            />
           </div>
         )}
 
