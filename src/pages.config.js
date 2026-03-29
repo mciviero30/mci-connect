@@ -48,8 +48,6 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import { lazy, Suspense } from 'react';
-const AIAssistantPersonal = lazy(() => import('./pages/AIAssistantPersonal'));
-const AIScheduleCenter = lazy(() => import('./pages/AIScheduleCenter'));
 const AdminCleanup = lazy(() => import('./pages/AdminCleanup'));
 const AdvancedAnalytics = lazy(() => import('./pages/AdvancedAnalytics'));
 const AgingReport = lazy(() => import('./pages/AgingReport'));
@@ -202,8 +200,6 @@ import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "AIAssistantPersonal": AIAssistantPersonal,
-    "AIScheduleCenter": AIScheduleCenter,
     "AdminCleanup": AdminCleanup,
     "AdvancedAnalytics": AdvancedAnalytics,
     "AgingReport": AgingReport,
